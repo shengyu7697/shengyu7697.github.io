@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-114035046-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <title>std::shared_ptr 用法與範例 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇介紹 C++ 的 std::shared_ptr 用法，一開始會先介紹原始指標與智慧型指標寫法上的差異，再來介紹如何開始使用智慧型指標，並提供一些範例參考。   需要引入的標頭檔: &amp;lt;memory&amp;gt; 範例1. 原始指標宣告與智慧型指標宣告的比較我們先來看看原始指標是怎麼寫跟怎麼用，如 UseRawPointer() 內容所示，另外有的對應的智慧型指標的版本，如 UseSmartPo">
+<meta name="keywords" content="C&#x2F;C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="std::shared_ptr 用法與範例">
+<meta property="og:url" content="https://shengyu7697.github.io/blog/2019/11/21/std-shared-ptr/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇介紹 C++ 的 std::shared_ptr 用法，一開始會先介紹原始指標與智慧型指標寫法上的差異，再來介紹如何開始使用智慧型指標，並提供一些範例參考。   需要引入的標頭檔: &amp;lt;memory&amp;gt; 範例1. 原始指標宣告與智慧型指標宣告的比較我們先來看看原始指標是怎麼寫跟怎麼用，如 UseRawPointer() 內容所示，另外有的對應的智慧型指標的版本，如 UseSmartPo">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-09-01T23:54:13.680Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="std::shared_ptr 用法與範例">
+<meta name="twitter:description" content="本篇介紹 C++ 的 std::shared_ptr 用法，一開始會先介紹原始指標與智慧型指標寫法上的差異，再來介紹如何開始使用智慧型指標，並提供一些範例參考。   需要引入的標頭檔: &amp;lt;memory&amp;gt; 範例1. 原始指標宣告與智慧型指標宣告的比較我們先來看看原始指標是怎麼寫跟怎麼用，如 UseRawPointer() 內容所示，另外有的對應的智慧型指標的版本，如 UseSmartPo">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="https://shengyu7697.github.io">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu0907" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-std-shared-ptr" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/11/21/std-shared-ptr/" class="article-date">
+  <time datetime="2019-11-21T14:00:00.000Z" itemprop="datePublished">2019-11-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      std::shared_ptr 用法與範例
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>本篇介紹 C++ 的 std::shared_ptr 用法，一開始會先介紹原始指標與智慧型指標寫法上的差異，再來介紹如何開始使用智慧型指標，並提供一些範例參考。  </p>
+<p><strong>需要引入的標頭檔</strong>: <code>&lt;memory&gt;</code></p>
+<h2 id="範例1-原始指標宣告與智慧型指標宣告的比較"><a href="#範例1-原始指標宣告與智慧型指標宣告的比較" class="headerlink" title="範例1. 原始指標宣告與智慧型指標宣告的比較"></a>範例1. 原始指標宣告與智慧型指標宣告的比較</h2><p>我們先來看看原始指標是怎麼寫跟怎麼用，如 UseRawPointer() 內容所示，<br>另外有的對應的智慧型指標的版本，如 UseSmartPointer() 內容所示，  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">UseRawPointer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 使用原始指標</span></span><br><span class="line">    Song* pSong = <span class="keyword">new</span> Song(<span class="string">"Just The Way You Are"</span>, <span class="string">"Bruno Mars"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Use pSong...</span></span><br><span class="line">    pSong-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 別忘了要 delete!</span></span><br><span class="line">    <span class="keyword">delete</span> pSong;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">UseSmartPointer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 使用智慧型指標</span></span><br><span class="line">    <span class="built_in">shared_ptr</span>&lt;Song&gt; song2(<span class="keyword">new</span> Song(<span class="string">"Just The Way You Are"</span>, <span class="string">"Bruno Mars"</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Use song2...</span></span><br><span class="line">    song2-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">&#125; <span class="comment">// song2 在這裡自動地被 deleted</span></span><br></pre></td></tr></table></figure>
+<h2 id="範例2-開始使用智慧型指標"><a href="#範例2-開始使用智慧型指標" class="headerlink" title="範例2. 開始使用智慧型指標"></a>範例2. 開始使用智慧型指標</h2><p>以下為幾種初始化寫法，盡可能地使用 <code>make_shared</code> 而不是用 new，範例如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 盡可能地使用 make_shared</span></span><br><span class="line"><span class="keyword">auto</span> sp1 = make_shared&lt;Song&gt;(<span class="string">"The Beatles"</span>, <span class="string">"Hey Jude"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Ok, but slightly less efficient.</span></span><br><span class="line"><span class="comment">// Note: Using new expression as constructor argument</span></span><br><span class="line"><span class="comment">// creates no named variable for other code to access.</span></span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; sp2(<span class="keyword">new</span> Song(<span class="string">"Lady Gaga"</span>, <span class="string">"Poker Face"</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// When initialization must be separate from declaration, e.g. class members,</span></span><br><span class="line"><span class="comment">// initialize with nullptr to make your programming intent explicit.</span></span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; sp5(<span class="literal">nullptr</span>);</span><br><span class="line"><span class="comment">//等於: shared_ptr&lt;Song&gt; sp5;</span></span><br><span class="line">sp5 = make_shared&lt;Song&gt;(<span class="string">"Avril Lavigne"</span>, <span class="string">"What The Hell"</span>);</span><br></pre></td></tr></table></figure></p>
+<h2 id="範例3-手動釋放記憶體"><a href="#範例3-手動釋放記憶體" class="headerlink" title="範例3. 手動釋放記憶體"></a>範例3. 手動釋放記憶體</h2><p>如果需要手動釋放記憶體的話，可以使用智慧型指標裡的 reset() 函式，這邊要注意的是使用”<strong>點</strong>“來存取   <code>std::shared_ptr.reset()</code>，範例如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SmartPointerDemo2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Create the object and pass it to a smart pointer</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;LargeObject&gt; pLarge(<span class="keyword">new</span> LargeObject());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Call a method on the object</span></span><br><span class="line">    pLarge-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在離開函式前手動釋放記憶體</span></span><br><span class="line">    pLarge.reset();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="範例4-存取-std-shared-ptr-的原始指標"><a href="#範例4-存取-std-shared-ptr-的原始指標" class="headerlink" title="範例4. 存取 std::shared_ptr 的原始指標"></a>範例4. 存取 std::shared_ptr 的原始指標</h2><p>透過<code>std::shared_ptr.get()</code>可以取得原始指標，大概有兩種情況會使用到，一種是需要呼叫傳統的api，會需要傳遞原始指標，另一種是直接用原始指標，範例如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-shared-ptr.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LargeObject</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">DoSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"DoSomething\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LegacyLargeObjectFunction</span><span class="params">(LargeObject *lo)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"LegacyLargeObjectFunction\n"</span>);</span><br><span class="line">    lo-&gt;DoSomething();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===1===\n"</span>);</span><br><span class="line">    <span class="comment">// Create the object and pass it to a smart pointer</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;LargeObject&gt; pLarge(<span class="keyword">new</span> LargeObject());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===2===\n"</span>);</span><br><span class="line">    <span class="comment">// Call a method on the object</span></span><br><span class="line">    pLarge-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===3===\n"</span>);</span><br><span class="line">    <span class="comment">// 傳遞原始指標給 legacy API</span></span><br><span class="line">    LegacyLargeObjectFunction(pLarge.get());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===4===\n"</span>);</span><br><span class="line">    <span class="comment">// 用原始指標去接</span></span><br><span class="line">    LargeObject *p = pLarge.get();</span><br><span class="line">    LegacyLargeObjectFunction(p);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===5===\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">===1===</span><br><span class="line">===2===</span><br><span class="line">DoSomething</span><br><span class="line">===3===</span><br><span class="line">LegacyLargeObjectFunction</span><br><span class="line">DoSomething</span><br><span class="line">===4===</span><br><span class="line">LegacyLargeObjectFunction</span><br><span class="line">DoSomething</span><br><span class="line">===5===</span><br></pre></td></tr></table></figure></p>
+<h2 id="ShengYu-探索實驗1-生命週期"><a href="#ShengYu-探索實驗1-生命週期" class="headerlink" title="ShengYu 探索實驗1. 生命週期"></a>ShengYu 探索實驗1. 生命週期</h2><p>看看生命週期以及印出這兩種的記憶體位置<br><figure class="highlight c++"><figcaption><span>std-shared-ptr-exp1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-shared-ptr-exp1.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LargeObject</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    LargeObject() &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"LargeObject::LargeObject()\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~LargeObject() &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"LargeObject::~LargeObject()\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">DoSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"DoSomething, x=%d\n"</span>, x);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> x = <span class="number">10</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===1===\n"</span>);</span><br><span class="line">    LargeObject *p = <span class="keyword">new</span> LargeObject();</span><br><span class="line">    p-&gt;DoSomething();</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%p\n"</span>, p);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===2===\n"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;LargeObject&gt; pLarge(p);</span><br><span class="line">    pLarge-&gt;DoSomething();</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%p\n"</span>, pLarge.get());</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%p\n"</span>, p);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===3===\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//delete p; // double free or corruption</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===4===\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">===1===</span><br><span class="line">LargeObject::LargeObject()</span><br><span class="line">DoSomething, x=10</span><br><span class="line">0x1524030</span><br><span class="line">===2===</span><br><span class="line">DoSomething, x=10</span><br><span class="line">0x1524030</span><br><span class="line">0x1524030</span><br><span class="line">===3===</span><br><span class="line">===4===</span><br><span class="line">LargeObject::~LargeObject()</span><br></pre></td></tr></table></figure></p>
+<h2 id="範例5-判斷兩個-shared-ptr-是不是都是指到同一個物件"><a href="#範例5-判斷兩個-shared-ptr-是不是都是指到同一個物件" class="headerlink" title="範例5. 判斷兩個 shared_ptr 是不是都是指到同一個物件"></a>範例5. 判斷兩個 shared_ptr 是不是都是指到同一個物件</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> song1 = <span class="keyword">new</span> Song(<span class="string">"Village People"</span>, <span class="string">"YMCA"</span>);</span><br><span class="line"><span class="keyword">auto</span> song2 = <span class="keyword">new</span> Song(<span class="string">"Village People"</span>, <span class="string">"YMCA"</span>);</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; p1(song1);</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; p2(song2);</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; p3(p2);</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; <span class="string">"p1 == p2 = "</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; (p1 == p2) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; <span class="string">"p3 == p2 = "</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; (p3 == p2) &lt;&lt; <span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
+<p>參考<br>[1] std::shared_ptr - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/memory/shared_ptr" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/memory/shared_ptr</a><br>[2] How to: Create and Use shared_ptr instances<br><a href="https://docs.microsoft.com/zh-tw/cpp/cpp/how-to-create-and-use-shared-ptr-instances?view=vs-2019" target="_blank" rel="noopener">https://docs.microsoft.com/zh-tw/cpp/cpp/how-to-create-and-use-shared-ptr-instances?view=vs-2019</a><br>圖表一與圖表二把 “參考計數器 ref count” 解釋地很好<br>[3] 智慧型指標 (新式 C++)<br><a href="https://docs.microsoft.com/zh-tw/cpp/cpp/smart-pointers-modern-cpp?view=vs-2019" target="_blank" rel="noopener">https://docs.microsoft.com/zh-tw/cpp/cpp/smart-pointers-modern-cpp?view=vs-2019</a>  </p>
+<p><strong>其他相關文章推薦</strong><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2018/10/01/std-deque/" title="std::deque 介紹與用法">std::deque 介紹與用法</a><br><a href="/blog/2020/02/06/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/blog/2020/02/05/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/blog/2019/12/13/std-unordered-map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/blog/2019/11/30/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/blog/2019/12/19/std-random-shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/blog/2020/02/08/std-async/" title="std::async 用法與範例">std::async 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/11/21/std-shared-ptr/" data-id="ckjgyygq1005vucs1rdsi1b8d" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/blog/2019/11/22/Python-install-pyserial/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          [Python] 安裝 pyserial 模組
+        
+      </div>
+    </a>
+  
+  
+    <a href="/blog/2019/11/20/std-atomic-flag/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">std::atomic_flag 用法與範例</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">103</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">85</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">25</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">115</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">37</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a><span class="archive-list-count">30</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">32</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/blog/2020/12/24/Cpp-string-to-integer/">C/C++ 3種字串轉數字的方法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2020/12/21/Cpp-variable-length-argument/">C/C++ 不定長度參數</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2020/12/14/Linux-proc-memory-status/">Linux Android 行程記憶體使用量</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2020/12/10/Cpp-exception/">C++ exception 例外處理</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2020/12/07/Python-tkinter-filedialog-directory/">[Python] 選擇資料夾對話框</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 ShengYu Peng<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="https://shengyu7697.github.io" class="mobile-nav-link">About</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
