@@ -86,6 +86,56 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-Cpp-debug-print" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/16/Cpp-debug-print/" class="article-date">
+  <time datetime="2018-03-16T14:00:00.000Z" itemprop="datePublished">2018-03-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/16/Cpp-debug-print/">慣C除錯</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>本篇介紹在 C/C++ 下使用 printf 來 debug 的一些技巧，  </p>
+<p><a href="https://gist.github.com/shengyu7697/a3c7d65dcfb1f1d8ceca87cf8e7dabc5" target="_blank" rel="noopener">Gist</a>  </p>
+<p><a href="https://stackoverflow.com/questions/1941307/c-debug-print-macros" target="_blank" rel="noopener">https://stackoverflow.com/questions/1941307/c-debug-print-macros</a>  </p>
+<p>最簡單的<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...)  printf(<span class="meta-string">"[DEBUG] %s, %s(), line:%d, msg:"</span> fmt, __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span></span><br></pre></td></tr></table></figure></p>
+<p>Tom Kuschel 的版本<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 3</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG) &amp;&amp; DEBUG &gt; 0</span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d:%s(): "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
+<p>以下為我的版本, DEBUG 可以定義不同數字等級, 決定輸出的訊息種類.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 4</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> DEBUG &gt;= 4 <span class="comment">// filename:function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s():%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 3 <span class="comment">// filename:function</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s() "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 2 <span class="comment">// filename:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 1 <span class="comment">// function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s():%d "</span> fmt, \</span></span><br><span class="line">    __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
+<p>使用<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DEBUG_PRINT(<span class="string">"Debugging is enabled.\n"</span>);</span><br><span class="line">DEBUG_PRINT(<span class="string">"Debug level: %d"</span>, (<span class="keyword">int</span>) DEBUG);</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>20180220 updated: <a href="https://github.com/libimobiledevice/libusbmuxd/blob/c724e70fb52ba45291dc73a2e369c0c5bae0ec2e/src/libusbmuxd.c#L88" target="_blank" rel="noopener">libusbmuxd 另一種用法</a></p>
+<hr>
+<p>20190409 updated: 新增顯示檔名<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="comment">// 提醒：For Windows use '\\' instead of '/'.</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __FILENAME__ (strrchr(__FILE__, <span class="meta-string">'/'</span>) ? strrchr(__FILE__, <span class="meta-string">'/'</span>) + 1 : __FILE__)</span></span><br><span class="line"><span class="comment">// function() filename:line</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DRBUG_PRINT(fmt, ...) do &#123; fprintf(stderr, <span class="meta-string">"[DEBUG] %s() %s:%d "</span> fmt, __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__); &#125; while(0)</span></span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Cpp-debug-print/" data-id="ckjmxcrhc001aias1ljsz28ku" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-使用-libevent-Library" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2018/03/16/使用-libevent-Library/" class="article-date">
@@ -117,7 +167,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/使用-libevent-Library/" data-id="ckjlhxgov001brps1y9nm6gzv" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/使用-libevent-Library/" data-id="ckjmxcrhf001fias1387ur5jp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -160,7 +210,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/安裝-Google-protobuf-Library/" data-id="ckjlhxgp0001krps1wa0w00z9" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/安裝-Google-protobuf-Library/" data-id="ckjmxcrhf001gias1ul9tl26e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li></ul>
@@ -203,7 +253,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/使用-Google-gflags-Library/" data-id="ckjlhxgoy001hrps1v7rih3gj" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/使用-Google-gflags-Library/" data-id="ckjmxcrhe001dias1hxi7w7me" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li></ul>
@@ -248,59 +298,10 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/使用-Google-Logging-Library-glog/" data-id="ckjlhxgou0019rps11d61u5s6" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/使用-Google-Logging-Library-glog/" data-id="ckjmxcrhd001cias1jm5akzxd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-慣C除錯" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/16/慣C除錯/" class="article-date">
-  <time datetime="2018-03-16T07:40:01.000Z" itemprop="datePublished">2018-03-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/16/慣C除錯/">慣C除錯</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <p><a href="https://gist.github.com/shengyu7697/a3c7d65dcfb1f1d8ceca87cf8e7dabc5" target="_blank" rel="noopener">Gist</a>  </p>
-<p><a href="https://stackoverflow.com/questions/1941307/c-debug-print-macros" target="_blank" rel="noopener">https://stackoverflow.com/questions/1941307/c-debug-print-macros</a>  </p>
-<p>最簡單的<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...)  printf(<span class="meta-string">"[DEBUG] %s, %s(), line:%d, msg:"</span> fmt, __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span></span><br></pre></td></tr></table></figure></p>
-<p>Tom Kuschel 的版本<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 3</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG) &amp;&amp; DEBUG &gt; 0</span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d:%s(): "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
-<p>以下為我的版本, DEBUG 可以定義不同數字等級, 決定輸出的訊息種類.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 4</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> DEBUG &gt;= 4 <span class="comment">// filename:function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s():%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 3 <span class="comment">// filename:function</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s() "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 2 <span class="comment">// filename:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 1 <span class="comment">// function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s():%d "</span> fmt, \</span></span><br><span class="line">    __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
-<p>使用<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DEBUG_PRINT(<span class="string">"Debugging is enabled.\n"</span>);</span><br><span class="line">DEBUG_PRINT(<span class="string">"Debug level: %d"</span>, (<span class="keyword">int</span>) DEBUG);</span><br></pre></td></tr></table></figure></p>
-<hr>
-<p>20180220 updated: <a href="https://github.com/libimobiledevice/libusbmuxd/blob/c724e70fb52ba45291dc73a2e369c0c5bae0ec2e/src/libusbmuxd.c#L88" target="_blank" rel="noopener">libusbmuxd 另一種用法</a></p>
-<hr>
-<p>20190409 updated: 新增顯示檔名<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="comment">// 提醒：For Windows use '\\' instead of '/'.</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __FILENAME__ (strrchr(__FILE__, <span class="meta-string">'/'</span>) ? strrchr(__FILE__, <span class="meta-string">'/'</span>) + 1 : __FILE__)</span></span><br><span class="line"><span class="comment">// function() filename:line</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DRBUG_PRINT(fmt, ...) do &#123; fprintf(stderr, <span class="meta-string">"[DEBUG] %s() %s:%d "</span> fmt, __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__); &#125; while(0)</span></span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/慣C除錯/" data-id="ckjlhxgow001drps19gp3d8g2" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -349,7 +350,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/14/multiple-platforms-socket-cplusplus/" data-id="ckjlhxgot0017rps19se3jh82" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/14/multiple-platforms-socket-cplusplus/" data-id="ckjmxcrhd001bias1gosu3xh2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Socket/">Socket</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Survey/">Survey</a></li></ul>
@@ -394,7 +395,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/13/openmediavault-forgot-password/" data-id="ckjlhxgov001crps1qjvets02" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/13/openmediavault-forgot-password/" data-id="ckjmxcrhc0019ias1lm1tqsww" class="article-share-link">Share</a>
       
       
     </footer>
@@ -440,7 +441,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/12/glfw-glew-glm-glut/" data-id="ckjlhxgty00amrps1xhj6rnj4" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/12/glfw-glew-glm-glut/" data-id="ckjmxcrhb0017ias1bw5by2xq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GLFW/">GLFW</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
@@ -481,7 +482,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/12/OpenGL-load-obj/" data-id="ckjlhxgox001frps1rnh3ws53" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/12/OpenGL-load-obj/" data-id="ckjmxcrp6007lias1omdr3yo6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
@@ -522,7 +523,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/12/編譯安裝-GLFW/" data-id="ckjlhxgsa006urps1wlqqhvru" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/12/編譯安裝-GLFW/" data-id="ckjmxcrhb0018ias12jpfp41w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GLFW/">GLFW</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
@@ -570,7 +571,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/10/PyQt-ui-by-qt-designer/" data-id="ckjlhxgoq0013rps17uxgmm11" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/10/PyQt-ui-by-qt-designer/" data-id="ckjmxcrha0016ias1g4su6hbc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -627,7 +628,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/10/深度相機列表/" data-id="ckjlhxgor0014rps1jfj8i90z" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/10/深度相機列表/" data-id="ckjmxcrsb00ecias1v60v1dbw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Survey/">Survey</a></li></ul>
@@ -639,9 +640,9 @@ ga('send', 'pageview');
 
 
   
-    <article id="post-Ubuntu-安裝-nginx" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Ubuntu-nginx" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/blog/2018/03/08/Ubuntu-安裝-nginx/" class="article-date">
+    <a href="/blog/2018/03/08/Ubuntu-nginx/" class="article-date">
   <time datetime="2018-03-08T14:00:00.000Z" itemprop="datePublished">2018-03-08</time>
 </a>
     
@@ -653,7 +654,7 @@ ga('send', 'pageview');
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/08/Ubuntu-安裝-nginx/">Ubuntu 安裝 nginx</a>
+      <a class="article-title" href="/blog/2018/03/08/Ubuntu-nginx/">Ubuntu 安裝 nginx</a>
     </h1>
   
 
@@ -673,10 +674,102 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/08/Ubuntu-安裝-nginx/" data-id="ckjlhxgoq0012rps1ec53mtt4" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/08/Ubuntu-nginx/" data-id="ckjmxcrh90015ias1fp5ym0sp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Ubuntu-Vagrant" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/07/Ubuntu-Vagrant/" class="article-date">
+  <time datetime="2018-03-07T14:00:00.000Z" itemprop="datePublished">2018-03-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/07/Ubuntu-Vagrant/">Vagrant 教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>本篇紀錄在 Ubuntu 下使用 Vagrant 基本指令與流程，  </p>
+<p><a href="https://www.vagrantup.com/downloads.html" target="_blank" rel="noopener">官網最新的 vagrant 下載</a><br><a href="http://www.vagrantbox.es/" target="_blank" rel="noopener">vagrant box 列表</a> 這是別人做好的 box image  </p>
+<p>作業系統： Ubuntu 16.04<br>版本：vagrant 2.0.2  </p>
+<h2 id="Step-1-下載-box-image-只有第一次需要做"><a href="#Step-1-下載-box-image-只有第一次需要做" class="headerlink" title="Step 1. 下載 box image (只有第一次需要做)"></a>Step 1. 下載 box image (只有第一次需要做)</h2><p>box image 會下載到 <code>~/.vagrant.d/boxes/</code><br>Ubuntu 14.04<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add u1404 https://github.com/kraksoft/vagrant-box-ubuntu/releases/download/14.04/ubuntu-14.04-amd64.box</span><br></pre></td></tr></table></figure></p>
+<p>Ubuntu 12.04<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add u1204 http://files.vagrantup.com/precise64.box</span><br></pre></td></tr></table></figure></p>
+<h2 id="Setp-2-初始一個虛擬機-與-啟動"><a href="#Setp-2-初始一個虛擬機-與-啟動" class="headerlink" title="Setp 2. 初始一個虛擬機 與 啟動"></a>Setp 2. 初始一個虛擬機 與 啟動</h2><p>啟動一個 虛擬環境 (使用 u1404 這個 box 樣本)<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vagrant init u1404 <span class="comment"># 初始化生成一個 Vagrantfile 檔案</span></span><br><span class="line">vagrant up <span class="comment"># 開機啟動</span></span><br></pre></td></tr></table></figure></p>
+<p>他會生成的虛擬機器檔在 <code>~/VirtualBox VMs</code> 這個目錄下  </p>
+<p>以下為一些常用的基本指令:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vagrant halt <span class="comment"># 關機</span></span><br><span class="line">vagrant ssh <span class="comment"># 登入</span></span><br><span class="line">vagrant destroy <span class="comment"># 刪除</span></span><br><span class="line">vagrant reload <span class="comment"># 重啟</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="修改虛擬機的-Ram-Size"><a href="#修改虛擬機的-Ram-Size" class="headerlink" title="修改虛擬機的 Ram Size"></a>修改虛擬機的 Ram Size</h2><p>修改 Vagrantfile 裡的 <code>vb.memory = &quot;1024&quot;</code>, 再重啟  </p>
+<p>參考<br><a href="https://about.gitlab.com/downloads/#ubuntu1404" target="_blank" rel="noopener">https://about.gitlab.com/downloads/#ubuntu1404</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/Ubuntu-Vagrant/" data-id="ckjmxcrh70012ias1he7z6fch" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vagrant/">Vagrant</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Windows-cmder" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/07/Windows-cmder/" class="article-date">
+  <time datetime="2018-03-07T14:00:00.000Z" itemprop="datePublished">2018-03-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/07/Windows-cmder/">cmder 安裝</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>本篇紀錄在 Windows 7 下安裝 cmder，cmder 用來取代內建的 terminal，實在是好用很多，<br>作業系統： Win 7<br>版本：cmder v1.3.5  </p>
+<p><a href="http://cmder.net/" target="_blank" rel="noopener">官網</a>  </p>
+<h2 id="讓-ls-可以顯示中文"><a href="#讓-ls-可以顯示中文" class="headerlink" title="讓 ls 可以顯示中文"></a>讓 ls 可以顯示中文</h2><p><code>Settings &gt; Startup &gt; Environment</code> 加入 <code>set LANG=zh_TW.UTF8</code><br>修改後如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set PATH=%ConEmuBaseDir%\Scripts;%PATH%</span><br><span class="line">set LANG=zh_TW.UTF8</span><br></pre></td></tr></table></figure></p>
+<p>參考<br><a href="http://wentaoma.com/2016/08/31/cmder-chinese-encode/" target="_blank" rel="noopener">http://wentaoma.com/2016/08/31/cmder-chinese-encode/</a><br><a href="https://jeffjade.com/2016/01/13/2016-01-13-windows-software-cmder/" target="_blank" rel="noopener">https://jeffjade.com/2016/01/13/2016-01-13-windows-software-cmder/</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/Windows-cmder/" data-id="ckjmxcrh80013ias1h254roo3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
 
     </footer>
   </div>
@@ -719,7 +812,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/PyGetMyPublicIP/" data-id="ckjlhxgon000yrps127tev40p" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/PyGetMyPublicIP/" data-id="ckjmxcrh60011ias14lckpc2c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -763,7 +856,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/編譯-cmake-on-Windows/" data-id="ckjlhxgou001arps12ac4avj9" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/編譯-cmake-on-Windows/" data-id="ckjmxcrh90014ias1u4gfblfc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
@@ -775,10 +868,10 @@ ga('send', 'pageview');
 
 
   
-    <article id="post-cmder-安裝" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Ubuntu-Unity" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/blog/2018/03/07/cmder-安裝/" class="article-date">
-  <time datetime="2018-03-07T02:30:34.000Z" itemprop="datePublished">2018-03-07</time>
+    <a href="/blog/2018/03/06/Ubuntu-Unity/" class="article-date">
+  <time datetime="2018-03-06T14:00:00.000Z" itemprop="datePublished">2018-03-06</time>
 </a>
     
   </div>
@@ -789,7 +882,7 @@ ga('send', 'pageview');
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/07/cmder-安裝/">cmder 安裝</a>
+      <a class="article-title" href="/blog/2018/03/06/Ubuntu-Unity/">Ubuntu 安裝 Unity (Unity 3D)</a>
     </h1>
   
 
@@ -798,106 +891,15 @@ ga('send', 'pageview');
     <div class="article-entry" itemprop="articleBody">
       
         
-        <p>作業系統： Win 7<br>版本：cmder v1.3.5  </p>
-<p><a href="http://cmder.net/" target="_blank" rel="noopener">官網</a></p>
-<h2 id="讓-ls-可以顯示中文"><a href="#讓-ls-可以顯示中文" class="headerlink" title="讓 ls 可以顯示中文"></a>讓 ls 可以顯示中文</h2><p><code>Settings &gt; Startup &gt; Environment</code> 加入 <code>set LANG=zh_TW.UTF8</code><br>修改後如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set PATH=%ConEmuBaseDir%\Scripts;%PATH%</span><br><span class="line">set LANG=zh_TW.UTF8</span><br></pre></td></tr></table></figure></p>
-<p>參考<br><a href="http://wentaoma.com/2016/08/31/cmder-chinese-encode/" target="_blank" rel="noopener">http://wentaoma.com/2016/08/31/cmder-chinese-encode/</a><br><a href="https://jeffjade.com/2016/01/13/2016-01-13-windows-software-cmder/" target="_blank" rel="noopener">https://jeffjade.com/2016/01/13/2016-01-13-windows-software-cmder/</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/cmder-安裝/" data-id="ckjlhxgop0010rps1p9mjkq5r" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Vagrant-教學" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/07/Vagrant-教學/" class="article-date">
-  <time datetime="2018-03-07T02:07:22.000Z" itemprop="datePublished">2018-03-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/07/Vagrant-教學/">Vagrant 教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <p><a href="https://www.vagrantup.com/downloads.html" target="_blank" rel="noopener">官網最新的 vagrant 下載</a><br><a href="http://www.vagrantbox.es/" target="_blank" rel="noopener">vagrant box 列表</a> 這是別人做好的 box image  </p>
-<p>作業系統： Ubuntu 16.04<br>版本：vagrant 2.0.2  </p>
-<h2 id="Step-1-下載-box-image-只有第一次需要做"><a href="#Step-1-下載-box-image-只有第一次需要做" class="headerlink" title="Step 1. 下載 box image (只有第一次需要做)"></a>Step 1. 下載 box image (只有第一次需要做)</h2><p>box image 會下載到 <code>~/.vagrant.d/boxes/</code><br>Ubuntu 14.04<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add u1404 https://github.com/kraksoft/vagrant-box-ubuntu/releases/download/14.04/ubuntu-14.04-amd64.box</span><br></pre></td></tr></table></figure></p>
-<p>Ubuntu 12.04<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add u1204 http://files.vagrantup.com/precise64.box</span><br></pre></td></tr></table></figure></p>
-<h2 id="Setp-2-初始一個虛擬機-與-啟動"><a href="#Setp-2-初始一個虛擬機-與-啟動" class="headerlink" title="Setp 2. 初始一個虛擬機 與 啟動"></a>Setp 2. 初始一個虛擬機 與 啟動</h2><p>啟動一個 虛擬環境 (使用 u1404 這個 box 樣本)<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vagrant init u1404 <span class="comment"># 初始化生成一個 Vagrantfile 檔案</span></span><br><span class="line">vagrant up <span class="comment"># 開機啟動</span></span><br></pre></td></tr></table></figure></p>
-<p>他會生成的虛擬機器檔在 <code>~/VirtualBox VMs</code> 這個目錄下  </p>
-<p>以下為一些常用的基本指令:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vagrant halt <span class="comment"># 關機</span></span><br><span class="line">vagrant ssh <span class="comment"># 登入</span></span><br><span class="line">vagrant destroy <span class="comment"># 刪除</span></span><br><span class="line">vagrant reload <span class="comment"># 重啟</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="修改虛擬機的-Ram-Size"><a href="#修改虛擬機的-Ram-Size" class="headerlink" title="修改虛擬機的 Ram Size"></a>修改虛擬機的 Ram Size</h2><p>修改 Vagrantfile 裡的 <code>vb.memory = &quot;1024&quot;</code>, 再重啟</p>
-<p>參考<br><a href="https://about.gitlab.com/downloads/#ubuntu1404" target="_blank" rel="noopener">https://about.gitlab.com/downloads/#ubuntu1404</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/07/Vagrant-教學/" data-id="ckjlhxgoo000zrps1kpsq3338" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vagrant/">Vagrant</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Ubuntu-安裝-Unity" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/06/Ubuntu-安裝-Unity/" class="article-date">
-  <time datetime="2018-03-06T07:49:41.000Z" itemprop="datePublished">2018-03-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/06/Ubuntu-安裝-Unity/">Ubuntu 安裝 Unity (Unity 3D)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <p>安裝 Unity 5.5.1<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install gdebi</span><br><span class="line">wget http://beta.unity3d.com/download/f5287bef00ff/unity-editor_amd64-5.5.1xf1Linux.deb</span><br><span class="line">sudo gdebi unity-editor_amd64-5.5.1xf1Linux.deb</span><br></pre></td></tr></table></figure></p>
+        <p>本篇紀錄如何在 Ubuntu 安裝 Unity (Unity 3D)，<br>安裝 Unity 5.5.1<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install gdebi</span><br><span class="line">wget http://beta.unity3d.com/download/f5287bef00ff/unity-editor_amd64-5.5.1xf1Linux.deb</span><br><span class="line">sudo gdebi unity-editor_amd64-5.5.1xf1Linux.deb</span><br></pre></td></tr></table></figure></p>
 <p>移除 (待驗證)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get remove unity-editor</span><br></pre></td></tr></table></figure></p>
 <p>安裝 Mono (C Sharp 環境) (待驗證)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install mono-devel</span><br><span class="line">sudo apt-get install mono-complete</span><br><span class="line">sudo apt-get install mono-runtime</span><br><span class="line">sudo apt-get install mono-xsp4</span><br><span class="line">sudo apt-get install monodevelop</span><br></pre></td></tr></table></figure></p>
-<p>參考<br><a href="https://www.youtube.com/watch?v=5QC_4D87UFQ" target="_blank" rel="noopener">https://www.youtube.com/watch?v=5QC_4D87UFQ</a></p>
+<p>參考<br><a href="https://www.youtube.com/watch?v=5QC_4D87UFQ" target="_blank" rel="noopener">https://www.youtube.com/watch?v=5QC_4D87UFQ</a>  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/06/Ubuntu-安裝-Unity/" data-id="ckjlhxgos0016rps1skmsafeo" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/06/Ubuntu-Unity/" data-id="ckjmxcrh60010ias1xcsxozmh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-Sharp/">C Sharp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -909,10 +911,10 @@ ga('send', 'pageview');
 
 
   
-    <article id="post-Ubuntu-安裝-C-Sharp-環境" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Ubuntu-C-Sharp" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/blog/2018/03/06/Ubuntu-安裝-C-Sharp-環境/" class="article-date">
-  <time datetime="2018-03-06T07:40:29.000Z" itemprop="datePublished">2018-03-06</time>
+    <a href="/blog/2018/03/06/Ubuntu-C-Sharp/" class="article-date">
+  <time datetime="2018-03-06T14:00:00.000Z" itemprop="datePublished">2018-03-06</time>
 </a>
     
   </div>
@@ -923,7 +925,7 @@ ga('send', 'pageview');
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/06/Ubuntu-安裝-C-Sharp-環境/">Ubuntu 安裝 C Sharp 環境 (使用 Mono)</a>
+      <a class="article-title" href="/blog/2018/03/06/Ubuntu-C-Sharp/">Ubuntu 安裝 C Sharp 環境 (使用 Mono)</a>
     </h1>
   
 
@@ -932,15 +934,15 @@ ga('send', 'pageview');
     <div class="article-entry" itemprop="articleBody">
       
         
-        <p>詳細安裝步驟可參考<a href="http://www.mono-project.com/download/stable/" target="_blank" rel="noopener">這裡</a><br>以下為我的環境安裝方式：</p>
+        <p>本篇紀錄在 Ubuntu 下安裝 C Sharp 環境 (使用 Mono)，<br>詳細安裝步驟可參考<a href="http://www.mono-project.com/download/stable/" target="_blank" rel="noopener">這裡</a><br>以下為我的環境安裝方式：  </p>
 <p>使用系統： Ubuntu 16.04<br>加入 repository<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF</span><br><span class="line">echo &quot;deb http://download.mono-project.com/repo/ubuntu stable-xenial main&quot; | sudo tee /etc/apt/sources.list.d/mono-official-stable.list</span><br><span class="line">sudo apt-get update</span><br></pre></td></tr></table></figure></p>
 <p>安裝 Mono<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install mono-devel</span><br></pre></td></tr></table></figure></p>
-<p>開啟 monoDevelope 使用！</p>
+<p>開啟 monoDevelope 使用！  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/06/Ubuntu-安裝-C-Sharp-環境/" data-id="ckjlhxgor0015rps1i22pfzic" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/06/Ubuntu-C-Sharp/" data-id="ckjmxcrh5000zias11jy70rdu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-Sharp/">C Sharp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -990,7 +992,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/05/PyReportMyIP/" data-id="ckjlhxgom000vrps1sdyi50o8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/05/PyReportMyIP/" data-id="ckjmxcrh4000yias1jkbblzym" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1038,7 +1040,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/27/Python-Bluetooth-on-RPi/" data-id="ckjlhxgop0011rps1oc2tt1n7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/27/Python-Bluetooth-on-RPi/" data-id="ckjmxcrh3000wias16nh0t4xk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a></li></ul>
@@ -1084,7 +1086,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/27/Setting-RPi3-WiFi-via-the-command-line/" data-id="ckjlhxgol000urps1rymehks7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/27/Setting-RPi3-WiFi-via-the-command-line/" data-id="ckjmxcrh4000xias174hvka2o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a></li></ul>
@@ -1127,7 +1129,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/27/Disable-IPv6-on-RPi3/" data-id="ckjlhxgon000xrps11zgwpuh5" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/27/Disable-IPv6-on-RPi3/" data-id="ckjmxcrh2000vias1dj3ix5of" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a></li></ul>
@@ -1169,7 +1171,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/23/GIMP-Crop/" data-id="ckjlhxgom000wrps19w1mjomg" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/23/GIMP-Crop/" data-id="ckjmxcrh2000uias1kcfbn2dy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li></ul>
@@ -1214,7 +1216,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/22/Crawler-Tutorial-Python/" data-id="ckjlhxgoj000qrps1dd122dej" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/22/Crawler-Tutorial-Python/" data-id="ckjmxcrh1000tias14qh81hkw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1260,7 +1262,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/13/Hexo-google-analytics/" data-id="ckjlhxgol000trps1zokm7ng7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/13/Hexo-google-analytics/" data-id="ckjmxcrh1000sias1qtanzn6x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li></ul>
@@ -1308,7 +1310,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/Install-Arduino/" data-id="ckjlhxgoh000orps19znuuepy" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/Install-Arduino/" data-id="ckjmxcrgx000oias1b6q9a3s0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Arduino/">Arduino</a></li></ul>
@@ -1365,7 +1367,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/Use-MPU6050-on-the-Arduino/" data-id="ckjlhxgok000rrps17dgt0vqh" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/Use-MPU6050-on-the-Arduino/" data-id="ckjmxcrgz000qias1c08r1fu1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Arduino/">Arduino</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IMU/">IMU</a></li></ul>
@@ -1408,7 +1410,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/改造-Google-Daydream-Controller/" data-id="ckjlhxgok000srps1p8285rh4" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/改造-Google-Daydream-Controller/" data-id="ckjmxcrh0000rias1a7z4id2k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Survey/">Survey</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VR/">VR</a></li></ul>
@@ -1448,7 +1450,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/Introduction-to-MPU6050/" data-id="ckjlhxgoi000prps145rikc6o" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/02/09/Introduction-to-MPU6050/" data-id="ckjmxcrgy000pias1gepsg0gg" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IMU/">IMU</a></li></ul>
@@ -1485,7 +1487,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">85</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">115</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">41</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">85</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">116</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">42</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
