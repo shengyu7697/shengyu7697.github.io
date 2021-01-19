@@ -90,6 +90,109 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-Hexo-local-disable-google-analytics" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/09/11/Hexo-local-disable-google-analytics/" class="article-date">
+  <time datetime="2019-09-11T14:00:00.000Z" itemprop="datePublished">2019-09-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/09/11/Hexo-local-disable-google-analytics/">Hexo 本機測試時如何關閉 Google Analytics</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>ShengYu 最近在使用 Hexo 進行 <code>hexo s</code> 本機測試的文章時，發現這些瀏覽行為也會被 Google Analytics 給紀錄回傳出去，<br>但是這時候的行為大多數都是點擊測試看看連結有沒有作用, 然後關閉，<br>不然就是瀏覽整個版面有沒有正常文章有無順暢, 然後關閉，<br>這些不太像是正常使用者的行為，我想看的數據是真實使用者的數據阿！！不想紀錄這愚蠢的數據XD  </p>
+<p>如果不想讓以上這些本機開發測試的這些行為被 Google Analytics 給紀錄進去,<br>最好的方式就是在本機測試 <code>hexo s</code> 時, 先把 Google Analytics 拿掉,  </p>
+<p>位置在 <code>themes/landscape/_config.yml</code>，把裡面的 <code>google_analytics: UA-xxxxxxxx-x</code> 拿掉即可，<br>但每次前都要去拿掉，發布前要加回來，這動作一直重複且容易忘記，<br>這時可以寫成一個 script，ShengYu 自己的習慣是寫成 Makefile，  </p>
+<p>Makefile 範例如下：<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server: remove_google_analytics generate</span></span><br><span class="line">    @hexo s -p <span class="variable">$(PORT)</span> --drafts</span><br><span class="line"></span><br><span class="line"><span class="section">server_without_drafts: remove_google_analytics generate</span></span><br><span class="line">    @hexo s -p <span class="variable">$(PORT)</span></span><br><span class="line"></span><br><span class="line"><span class="section">deploy: add_google_analytics generate</span></span><br><span class="line">    @echo <span class="string">"Start deploy ..."</span> &amp;&amp; \</span><br><span class="line">    hexo d</span><br><span class="line"></span><br><span class="line"><span class="section">generate: clean</span></span><br><span class="line">    @echo <span class="string">"Generate ..."</span> &amp;&amp; \</span><br><span class="line">    hexo g</span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    @echo <span class="string">"Clean ..."</span> &amp;&amp; \</span><br><span class="line">    hexo clean</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把 google analytics 移除, 避免用本機測試時上傳不真實數據</span></span><br><span class="line"><span class="section">remove_google_analytics:</span></span><br><span class="line">    sed -i 's/'google_analytics:\ UA-xxxxxxxx-x'/'google_analytics:'/g' themes/landscape/_config.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 發布前把 google analytics 加回來</span></span><br><span class="line"><span class="section">add_google_analytics:</span></span><br><span class="line">    sed -i 's/'google_analytics:'/'google_analytics:\ UA-xxxxxxxx-x'/g' themes/landscape/_config.yml</span><br></pre></td></tr></table></figure></p>
+<p>這腳本包含了7個規則 (rule)，那這個腳本要怎麼使用呢？<br><strong>make server</strong> - 啟動本機網頁伺服器<br>(會先執行它的依賴規則，remove_google_analytics 和 generate)<br>也就是說，輸入make srever，會幫我們先執行 remove_google_analytics 這個規則，<br>再執行 generate 這個規則，最後執行 server 本身這個規則。<br>輸入一個指令就幫我們執行了三個規則了，好膩害！  </p>
+<p><strong>make server_without_drafts</strong> - 啟動本機網頁伺服器，無草稿模式<br><strong>make deploy</strong> - 發布<br>會先去執行它的依賴規則，先執行 add_google_analytics 這個規則，<br>再執行 generate 這個規則，最後執行 deploy 本身的規則。  </p>
+<p><strong>make clean</strong> - 清除<br><strong>make generate</strong> - 產生靜態網頁資料<br><strong>make remove_google_analytics</strong> - 移除 google analytics id<br><strong>make add_google_analytics</strong> - 加入 google analytics id<br>如果對 Makefile 規則不熟悉的話可以 Google 一下。  </p>
+<p>以上就是 ShengYu 目前在使用的腳本，是不是方便多了呢！哈哈！  </p>
+<p><strong>相關文章</strong><br><a href="/blog/2018/02/13/Hexo-google-analytics/" title="Hexo 使用 Google Analytics 進行網站流量分析">Hexo 使用 Google Analytics 進行網站流量分析</a><br><a href="/blog/2019/03/30/Hexo-codeblock/" title="Hexo codeblock 插入程式碼區塊與各種程式語言預覽">Hexo codeblock 插入程式碼區塊與各種程式語言預覽</a><br><a href="/blog/2019/03/30/Hexo-upgrade/" title="升級更新 Hexo upgrade">升級更新 Hexo upgrade</a><br><a href="/blog/2019/04/01/Hexo-theme/" title="Hexo 熱門主題列表">Hexo 熱門主題列表</a><br><a href="/blog/2018/01/24/Hexo-Install-Ubuntu/" title="Ubuntu 安裝 Hexo">Ubuntu 安裝 Hexo</a><br><a href="/blog/2018/09/16/Hexo-Install-Mac-OS/" title="Mac OS 安裝 Hexo">Mac OS 安裝 Hexo</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/11/Hexo-local-disable-google-analytics/" data-id="ckk39495v0043g1s1nw6aqml9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-App-google-analytics" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/09/10/App-google-analytics/" class="article-date">
+  <time datetime="2019-09-10T14:00:00.000Z" itemprop="datePublished">2019-09-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/09/10/App-google-analytics/">Google Analytics Mobile App 隨時掌握網站即時資訊</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Google Analytics Mobile App 是由 Google 官方所提供的工具。</p>
+<p>Android 的使用者可從以 Google Play 下載這個 <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.giant&amp;hl=zh_TW" target="_blank" rel="noopener">Google Analytics Mobile App</a>。</p>
+<p>iOS 的使用者可從以 Apple Store 下載這個 <a href="https://apps.apple.com/tw/app/google-analytics/id881599038" target="_blank" rel="noopener">Google Analytics Mobile App</a>。</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-122950.png">
+<p>有了這個 Google Analytics Mobile App 就可以隨時掌握網站的即時數據。</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-123158.png">
+<p>哇！這各式各樣的圖，看起來好專業呀！</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124908.png">
+<p>第一次進入 App 有簡單的介紹</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124913.png">
+<p>左右滑動可以瀏覽不同維度的資料</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124917.png">
+<p>凡是都要踏出第一步，勇敢地按下踏出第一步吧！</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124932.png">
+<p>如果有好幾個網站的話，可以選擇看哪個網站的數據，之後就開始慢慢摸索這些數據吧～</p>
+<h3 id="看更多文章"><a href="#看更多文章" class="headerlink" title="看更多文章"></a>看更多文章</h3><a href="/blog/2019/09/11/Hexo-local-disable-google-analytics/" title="Hexo 本機測試時如何關閉 Google Analytics">Hexo 本機測試時如何關閉 Google Analytics</a>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/10/App-google-analytics/" data-id="ckk39495v0042g1s1hlybtc3e" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Shell-Script-while" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2019/09/09/Shell-Script-while/" class="article-date">
@@ -121,7 +224,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Shell-Script-while/" data-id="ckk1stdto00422ds18o0yh6uz" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Shell-Script-while/" data-id="ckk39495u0041g1s1doi5y8bz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -175,7 +278,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Python-Bluetooth-L2CAP/" data-id="ckk1stdto00412ds1xr6um5vs" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Python-Bluetooth-L2CAP/" data-id="ckk39495u0040g1s112adrvj6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -223,7 +326,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/30/Qt-View-Model/" data-id="ckk1stdtn00402ds1txvorfro" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/30/Qt-View-Model/" data-id="ckk39495t003zg1s15q25w03j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -269,7 +372,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/29/OpenCV-version/" data-id="ckk1stdtn003z2ds1e5awdjrk" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/29/OpenCV-version/" data-id="ckk39495s003yg1s1lrui42ol" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -320,7 +423,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/17/Cpp-get-current-time-and-date/" data-id="ckk1stdtm003y2ds1iwqedh47" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/17/Cpp-get-current-time-and-date/" data-id="ckk39495s003xg1s1bh7g9lx0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -361,7 +464,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/08/Linux-rsync/" data-id="ckk1stdtm003x2ds1pmza29qe" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/08/Linux-rsync/" data-id="ckk39495r003wg1s1w16jnh6e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -414,7 +517,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/01/Cpp-singleton-pattern/" data-id="ckk1stdtl003w2ds1z3gjteq2" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/01/Cpp-singleton-pattern/" data-id="ckk39495r003vg1s1ipxn2748" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -519,7 +622,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/29/regular-expression/" data-id="ckk1stdtl003v2ds1hu1p6ouz" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/29/regular-expression/" data-id="ckk39495q003ug1s12hb8pylz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -562,7 +665,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/27/Python-Bluetooth-RFCOMM/" data-id="ckk1stdtk003u2ds19zxdc5gx" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/27/Python-Bluetooth-RFCOMM/" data-id="ckk39495p003sg1s1lsvf83r2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -621,7 +724,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/25/std-thread-how/" data-id="ckk1stdtk003t2ds1ynp8gdsz" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/25/std-thread-how/" data-id="ckk39495q003tg1s1rthv13q7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -666,7 +769,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/24/Boost-1-70-0-build-install-in-windows/" data-id="ckk1stdtj003s2ds1rratl86w" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/24/Boost-1-70-0-build-install-in-windows/" data-id="ckk39495p003rg1s1o015c8wx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
@@ -720,7 +823,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/21/Github-ScreenCapture/" data-id="ckk1stdti003r2ds1kw0qv2or" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/21/Github-ScreenCapture/" data-id="ckk39495o003pg1s1zuyzsymk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li></ul>
@@ -768,58 +871,10 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/20/Github-CursorJail/" data-id="ckk1stdti003q2ds15vqk15ac" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/20/Github-CursorJail/" data-id="ckk39495o003qg1s1hitm5aj5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-GitHub-create-project-page" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/19/GitHub-create-project-page/" class="article-date">
-  <time datetime="2019-04-19T14:00:00.000Z" itemprop="datePublished">2019-04-19</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Github/">Github</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/19/GitHub-create-project-page/">GitHub 建立專案首頁 project page</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>使用 Github Pages 功能可以免費地為專案建立首頁。<br>以下介紹直接將專案下 <code>README.md</code> 來作為專案首頁的方法。  </p>
-<p>先到你的專案的 repository 下建立 gh-pages 分支，<br>這個 gh-pages 分支就是擺放靜態網頁相關的分支，<br>我是放 github jekyll 模板支援的主題，所以只要放 README.md 和 _config.yml 就可以了<br>
-        
-          <p class="article-more-link">
-            <a href="/blog/2019/04/19/GitHub-create-project-page/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/19/GitHub-create-project-page/" data-id="ckk1stdth003o2ds1qmcoyxef" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
 
     </footer>
   </div>
@@ -919,10 +974,58 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/19/event-driven-programming/" data-id="ckk1stdth003p2ds1bdtsobss" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/19/event-driven-programming/" data-id="ckk39495n003og1s1c9u374xb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-GitHub-create-project-page" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/04/19/GitHub-create-project-page/" class="article-date">
+  <time datetime="2019-04-19T14:00:00.000Z" itemprop="datePublished">2019-04-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Github/">Github</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/04/19/GitHub-create-project-page/">GitHub 建立專案首頁 project page</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>使用 Github Pages 功能可以免費地為專案建立首頁。<br>以下介紹直接將專案下 <code>README.md</code> 來作為專案首頁的方法。  </p>
+<p>先到你的專案的 repository 下建立 gh-pages 分支，<br>這個 gh-pages 分支就是擺放靜態網頁相關的分支，<br>我是放 github jekyll 模板支援的主題，所以只要放 README.md 和 _config.yml 就可以了<br>
+        
+          <p class="article-more-link">
+            <a href="/blog/2019/04/19/GitHub-create-project-page/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/19/GitHub-create-project-page/" data-id="ckk39495m003ng1s1idy6fytn" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
 
     </footer>
   </div>
@@ -964,10 +1067,55 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/18/boost-asio-epoll-reactor/" data-id="ckk1stdtg003n2ds1yu80u5s0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/18/boost-asio-epoll-reactor/" data-id="ckk39495m003mg1s1lcr1e9l0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Boost-1-70-0-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/" class="article-date">
+  <time datetime="2019-04-18T14:00:00.000Z" itemprop="datePublished">2019-04-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/">在 Ubuntu 下編譯安裝 Boost 1.70.0</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本篇 ShengYu 將介紹如何在 Ubuntu 下編譯安裝 Boost 1.70.0，<br>這版 boost 1.70.0 釋出日期是 2019/04/12，開始動手編譯原始碼安裝吧！  </p>
+<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>GCC：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>G++：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>使用版本：boost 1.70.0 <a href="https://dl.bintray.com/boostorg/release/1.70.0/source/" target="_blank" rel="noopener">下載處</a> / <a href="https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.7z" target="_blank" rel="noopener">7z</a> / <a href="https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz" target="_blank" rel="noopener">tar.gz</a>  </p>
+<p>使用 wget 指令下載原始碼<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz</span><br><span class="line">tar xvf boost_1_70_0.tar.gz</span><br><span class="line">cd boost_1_70_0</span><br></pre></td></tr></table></figure></p>
+        
+          <p class="article-more-link">
+            <a href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/" data-id="ckk39495l003lg1s1adx9m9ko" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -1042,55 +1190,10 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/18/Ubuntu-markdown/" data-id="ckk1stdtg003m2ds1anuhwrl8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/18/Ubuntu-markdown/" data-id="ckk39495l003kg1s1zukbhlsb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Boost-1-70-0-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/" class="article-date">
-  <time datetime="2019-04-18T14:00:00.000Z" itemprop="datePublished">2019-04-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/">在 Ubuntu 下編譯安裝 Boost 1.70.0</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>本篇 ShengYu 將介紹如何在 Ubuntu 下編譯安裝 Boost 1.70.0，<br>這版 boost 1.70.0 釋出日期是 2019/04/12，開始動手編譯原始碼安裝吧！  </p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>GCC：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>G++：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>使用版本：boost 1.70.0 <a href="https://dl.bintray.com/boostorg/release/1.70.0/source/" target="_blank" rel="noopener">下載處</a> / <a href="https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.7z" target="_blank" rel="noopener">7z</a> / <a href="https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz" target="_blank" rel="noopener">tar.gz</a>  </p>
-<p>使用 wget 指令下載原始碼<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz</span><br><span class="line">tar xvf boost_1_70_0.tar.gz</span><br><span class="line">cd boost_1_70_0</span><br></pre></td></tr></table></figure></p>
-        
-          <p class="article-more-link">
-            <a href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/" data-id="ckk1stdtf003l2ds1ateyki5x" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -1132,7 +1235,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/17/Ubuntu-find-package-owning-file/" data-id="ckk1stdtf003k2ds171icz11u" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/17/Ubuntu-find-package-owning-file/" data-id="ckk39495k003jg1s17ag3y7uf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1177,7 +1280,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/13/Eclipse-shortcuts/" data-id="ckk1stdte003j2ds18apl4g4p" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/13/Eclipse-shortcuts/" data-id="ckk39495k003ig1s1bi4hoju8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -1221,7 +1324,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/12/Ubuntu-StarUML/" data-id="ckk1stdte003i2ds1spkteiet" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/12/Ubuntu-StarUML/" data-id="ckk39495j003hg1s1q0h883aq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/UML/">UML</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1264,7 +1367,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/12/Eclipse-go-to-matching-bracket/" data-id="ckk1stdtd003h2ds1ddcdxms1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/12/Eclipse-go-to-matching-bracket/" data-id="ckk39495i003fg1s1g6cla65n" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -1313,7 +1416,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/10/Cpp-measure-execution-time/" data-id="ckk1stdtc003g2ds1qzgnax99" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/10/Cpp-measure-execution-time/" data-id="ckk39495h003eg1s1o1eopqia" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1358,7 +1461,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/10/printf-int64_t-uint64_t/" data-id="ckk1stdtc003f2ds1rapkbm46" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/10/printf-int64_t-uint64_t/" data-id="ckk39495j003gg1s1h5wlxsj1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1401,57 +1504,10 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/09/Hexo-post_link/" data-id="ckk1stdtb003e2ds122bdv6ma" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/09/Hexo-post_link/" data-id="ckk39495h003dg1s163m0xwhj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Cpp-printf-format" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/09/Cpp-printf-format/" class="article-date">
-  <time datetime="2019-04-09T14:00:00.000Z" itemprop="datePublished">2019-04-09</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/09/Cpp-printf-format/">C/C++ printf 格式化輸出參數</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>本篇列出 C/C++ 常用的 printf 格式化輸出參數與說明︰<br>
-        
-          <p class="article-more-link">
-            <a href="/blog/2019/04/09/Cpp-printf-format/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/09/Cpp-printf-format/" data-id="ckk1stdta003c2ds14fsx7uxg" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -1495,7 +1551,54 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/09/Cpp-unused-parameter/" data-id="ckk1stdtb003d2ds14t52kews" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/09/Cpp-unused-parameter/" data-id="ckk39495g003cg1s1o200d5po" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Cpp-printf-format" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/04/09/Cpp-printf-format/" class="article-date">
+  <time datetime="2019-04-09T14:00:00.000Z" itemprop="datePublished">2019-04-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/04/09/Cpp-printf-format/">C/C++ printf 格式化輸出參數</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本篇列出 C/C++ 常用的 printf 格式化輸出參數與說明︰<br>
+        
+          <p class="article-more-link">
+            <a href="/blog/2019/04/09/Cpp-printf-format/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/09/Cpp-printf-format/" data-id="ckk39495g003bg1s109o4vu56" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1543,111 +1646,10 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/04/Cpp-class-template/" data-id="ckk1stdta003b2ds1ll4x2q6g" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/04/04/Cpp-class-template/" data-id="ckk39495f003ag1s1447ulf7p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Hexo-theme" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/01/Hexo-theme/" class="article-date">
-  <time datetime="2019-04-01T14:00:00.000Z" itemprop="datePublished">2019-04-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/01/Hexo-theme/">Hexo 熱門主題列表</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <p>本篇紀錄 Hexo 的熱門主題，以下已熱門程度排名，越後面越熱門，<br>2020/01/10 更新</p>
-<h2 id="hexo-theme-landscape-Hexo-預設主題"><a href="#hexo-theme-landscape-Hexo-預設主題" class="headerlink" title="hexo-theme-landscape (Hexo 預設主題)"></a>hexo-theme-landscape (Hexo 預設主題)</h2><p>A brand new default theme for Hexo.<br>Github：<a href="https://github.com/hexojs/hexo-theme-landscape" target="_blank" rel="noopener">https://github.com/hexojs/hexo-theme-landscape</a><br>星星數：237  </p>
-<p>有誰使用該主題：<br>ShengYu Talk<br><a href="https://shengyu7697.github.io/">https://shengyu7697.github.io/</a>  </p>
-<h2 id="landscape-plus"><a href="#landscape-plus" class="headerlink" title="landscape-plus"></a>landscape-plus</h2><p>针对中国大陆地区对hexo官方主题landscape进行优化。<br>Github：<a href="https://github.com/xiangming/landscape-plus" target="_blank" rel="noopener">https://github.com/xiangming/landscape-plus</a><br>星星數：503  </p>
-<h2 id="Vexo"><a href="#Vexo" class="headerlink" title="Vexo"></a>Vexo</h2><p>Vexo is a Hexo theme inspired by Vue’s official website.<br>Github：<a href="https://github.com/yanm1ng/hexo-theme-vexo" target="_blank" rel="noopener">https://github.com/yanm1ng/hexo-theme-vexo</a><br>預覽：<a href="https://yanm1ng.github.io/" target="_blank" rel="noopener">點我預覽</a><br>星星數：538  </p>
-<h2 id="Minos"><a href="#Minos" class="headerlink" title="Minos"></a>Minos</h2><p>A simple and retro styled Hexo theme, concentrated more on your ideas.<br>Github：<a href="https://github.com/ppoffice/hexo-theme-minos" target="_blank" rel="noopener">https://github.com/ppoffice/hexo-theme-minos</a><br>星星數：623  </p>
-<p>有誰使用該主題：<br>Huli<br><a href="https://blog.huli.tw/" target="_blank" rel="noopener">https://blog.huli.tw/</a><br>Askie Lin<br><a href="https://askie.today/" target="_blank" rel="noopener">https://askie.today/</a>  </p>
-<h2 id="Hueman"><a href="#Hueman" class="headerlink" title="Hueman"></a>Hueman</h2><p>A redesign of Alx’s wordpress theme Hueman, ported to Hexo.<br>Github：<a href="https://github.com/ppoffice/hexo-theme-hueman" target="_blank" rel="noopener">https://github.com/ppoffice/hexo-theme-hueman</a><br>預覽：<a href="https://blog.zhangruipeng.me/hexo-theme-hueman/" target="_blank" rel="noopener">點我預覽</a><br>星星數：1.1k  </p>
-<p>有誰使用該主題：<br>卡斯伯<br><a href="https://wcc723.github.io/" target="_blank" rel="noopener">https://wcc723.github.io/</a>  </p>
-<h2 id="NexT-v6-amp-v7"><a href="#NexT-v6-amp-v7" class="headerlink" title="NexT (v6 &amp; v7)"></a>NexT (v6 &amp; v7)</h2><p>NexT is an elegant and powerful theme<br>Github：<a href="https://github.com/theme-next/hexo-theme-next" target="_blank" rel="noopener">https://github.com/theme-next/hexo-theme-next</a><br>星星數：6.4k  </p>
-<h2 id="NexT-v5"><a href="#NexT-v5" class="headerlink" title="NexT (v5)"></a>NexT (v5)</h2><p>Elegant theme for Hexo.<br>星星數：15.5k<br>Github：<a href="https://github.com/iissnan/hexo-theme-next" target="_blank" rel="noopener">https://github.com/iissnan/hexo-theme-next</a><br>預覽：<a href="https://notes.iissnan.com/" target="_blank" rel="noopener">點我預覽</a>  </p>
-<p><strong>相關文章</strong><br><a href="/blog/2018/02/13/Hexo-google-analytics/" title="Hexo 使用 Google Analytics 進行網站流量分析">Hexo 使用 Google Analytics 進行網站流量分析</a><br><a href="/blog/2019/09/11/Hexo-local-disable-google-analytics/" title="Hexo 本機測試時如何關閉 Google Analytics">Hexo 本機測試時如何關閉 Google Analytics</a><br><a href="/blog/2019/03/30/Hexo-codeblock/" title="Hexo codeblock 插入程式碼區塊與各種程式語言預覽">Hexo codeblock 插入程式碼區塊與各種程式語言預覽</a><br><a href="/blog/2019/03/30/Hexo-upgrade/" title="升級更新 Hexo upgrade">升級更新 Hexo upgrade</a><br><a href="/blog/2018/01/24/Hexo-Install-Ubuntu/" title="Ubuntu 安裝 Hexo">Ubuntu 安裝 Hexo</a><br><a href="/blog/2018/09/16/Hexo-Install-Mac-OS/" title="Mac OS 安裝 Hexo">Mac OS 安裝 Hexo</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/01/Hexo-theme/" data-id="ckk1stdt9003a2ds1inn1xgdj" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-UML-tools" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/01/UML-tools/" class="article-date">
-  <time datetime="2019-04-01T12:23:11.000Z" itemprop="datePublished">2019-04-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/01/UML-tools/">畫流程圖或UML的工具</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <p>我用過得工具有：  </p>
-<ul>
-<li>Microsoft Office Visio  </li>
-<li><a href="http://dia-installer.de/" target="_blank" rel="noopener">Dia</a> - <a href="https://sourceforge.net/projects/dia-installer/" target="_blank" rel="noopener">下載</a>  </li>
-<li><a href="http://staruml.io/" target="_blank" rel="noopener">StarUML</a> - 無限期免費試用，但輸出圖會有未註冊字樣的浮水印，支援 Linux/macOS/Winows  </li>
-</ul>
-<p>有看過但還沒是用過得工具：  </p>
-<ul>
-<li>PlantUML - <a href="https://jonny-huang.github.io/projects/01_plantuml/" target="_blank" rel="noopener">Visual Studio Code + PlantUML 外掛</a> / <a href="https://www.itread01.com/articles/1478599236.html" target="_blank" rel="noopener">Android Studio + PlantUML</a>  </li>
-<li><a href="https://www.draw.io/" target="_blank" rel="noopener">draw.io</a> - <a href="https://github.com/jgraph/drawio" target="_blank" rel="noopener">離線佈署</a> / <a href="https://github.com/jgraph/drawio-desktop/releases" target="_blank" rel="noopener">離線桌面版</a>  </li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/01/UML-tools/" data-id="ckk1stdt800392ds1tbq29f00" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/UML/">UML</a></li></ul>
 
     </footer>
   </div>
@@ -1671,7 +1673,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">54</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">103</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">56</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">103</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
@@ -1681,7 +1683,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">89</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">117</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">50</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">91</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">117</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">50</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -1691,7 +1693,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a><span class="archive-list-count">30</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">32</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">28</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a><span class="archive-list-count">30</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">32</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">28</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1702,6 +1704,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/blog/2021/01/18/std-string-find/">std::string::find 搜尋字串</a>
+          </li>
         
           <li>
             <a href="/blog/2021/01/14/Cpp-integer-to-string/">C/C++ 整數轉字串的方法與範例</a>
@@ -1717,10 +1723,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/blog/2021/01/07/Cpp-find-max-value/">C/C++ 3個求最大值的方法</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/01/04/std-max_element/">std::max_element 用法與範例</a>
           </li>
         
       </ul>
