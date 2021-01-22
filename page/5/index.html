@@ -108,7 +108,7 @@ ga('send', 'pageview');
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2020/02/08/std-async/">std::async 用法與範例</a>
+      <a class="article-title" href="/blog/2020/02/08/std-async/">C++ std::async 用法與範例</a>
     </h1>
   
 
@@ -118,8 +118,14 @@ ga('send', 'pageview');
       
         
         <p>本篇介紹 C++ 的 std::async 非同步函式的用法教學，並提供一些入門常用的範例程式碼。  </p>
-<p><strong>需要引入的標頭檔</strong>: <code>&lt;future&gt;</code>  </p>
-<p>首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：<br>std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。<br>std::launch::deferred：拖延/懶惰模式，別人來跟我要資料時，我才去建立執行緒運算生成這些資料(在呼叫 std::async 時還不會建立新執行緒，而是呼叫 std::future 的函式時才開始建立新執行緒去運算執行）。  </p>
+<p>首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：<br>std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。<br>std::launch::deferred：拖延/懶惰模式，別人來跟我要資料時，我才去建立執行緒運算生成這些資料(在呼叫 std::async 時還不會建立新執行緒，而是呼叫 std::future 的函式時才開始建立新執行緒去運算執行）。<br><strong>需要引入的標頭檔</strong>: <code>&lt;future&gt;</code>  </p>
+<p>本篇內容將分為：  </p>
+<ul>
+<li><strong>範例1. async (async policy)</strong>  </li>
+<li><strong>範例2. async (deferred policy)</strong>  </li>
+<li><strong>範例3. async (default policy)</strong>  </li>
+<li><strong>async 與 thread 的差異之處</strong>  </li>
+</ul>
 <h2 id="範例1-async-async-policy"><a href="#範例1-async-async-policy" class="headerlink" title="範例1. async (async policy)"></a>範例1. async (async policy)</h2><p>以下範例為 async policy 的示範，中譯叫非同步策略，意思是同時進行，main() 主執行緒呼叫 std::async 建構子立即返回後即繼續執行，std::async 會將這個 foo() 丟到另外的執行緒去執行，所以以下的範例輸出將會有兩種情形，一種是主執行緒很快的就印出 <code>--1--</code>，另一種情形是先印出 <code>a3</code> 再印出 <code>--1--</code>。<br><figure class="highlight c++"><figcaption><span>std-async1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async1.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a1 = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::async, foo, <span class="string">"a1"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    a1.get();</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a1--1--</span><br><span class="line"></span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
 <p>or<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">a1</span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
@@ -141,7 +147,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/08/std-async/" data-id="ckk6ys2s900aj6hs1muuyetm4" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/08/std-async/" data-id="ckk7j6j02007csjs15naxd9m8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -194,7 +200,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/06/std-find/" data-id="ckk6ys2s900ai6hs18le4gb6w" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/06/std-find/" data-id="ckk7j6j01007bsjs1kz4hm1h0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -251,7 +257,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckk6ys2s800ag6hs15o1uijga" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckk7j6j01007asjs1rn8khp4w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -314,7 +320,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/04/std-thread/" data-id="ckk6ys2s700af6hs1irgsmae4" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/04/std-thread/" data-id="ckk7j6j000079sjs1dizvr8lp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -365,7 +371,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/30/Python-read-yaml-file/" data-id="ckk6ys2s600ad6hs1ylrey0qk" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/30/Python-read-yaml-file/" data-id="ckk7j6j000078sjs1ftaupd68" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -413,7 +419,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/29/Python-write-csv-file/" data-id="ckk6ys2s500ac6hs10wjxqsur" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/29/Python-write-csv-file/" data-id="ckk7j6j000077sjs1cjtlgjo5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -464,7 +470,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/28/Python-replace/" data-id="ckk6ys2s400aa6hs11nzvvym5" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/28/Python-replace/" data-id="ckk7j6izz0076sjs1tk7ikezn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -513,7 +519,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/26/Python-strip/" data-id="ckk6ys2s300a96hs1g8y2krr1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/26/Python-strip/" data-id="ckk7j6izz0075sjs1z1x3d6uj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -562,7 +568,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/24/Python-join/" data-id="ckk6ys2s300a76hs1qgbya4dq" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/24/Python-join/" data-id="ckk7j6izy0074sjs1gofra1kz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -626,7 +632,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/22/Python-split/" data-id="ckk6ys2s200a66hs13w9hbcuz" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/22/Python-split/" data-id="ckk7j6izy0073sjs15708okw5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -680,7 +686,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/20/Android-is-not-accessible-for-the-namespace/" data-id="ckk6ys2s100a46hs127ajl0zv" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/20/Android-is-not-accessible-for-the-namespace/" data-id="ckk7j6izx0072sjs1t0njhmda" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -725,7 +731,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/16/Linux-nm/" data-id="ckk6ys2s000a36hs1gh2pgpox" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/16/Linux-nm/" data-id="ckk7j6izx0071sjs124vcee4y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -773,7 +779,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/14/Linux-readelf/" data-id="ckk6ys2rz00a06hs1t9h4xc4m" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/14/Linux-readelf/" data-id="ckk7j6izw0070sjs1pklcnntp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -820,7 +826,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/12/Linux-objdump/" data-id="ckk6ys2ry009z6hs1ruflsdso" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/12/Linux-objdump/" data-id="ckk7j6izw006zsjs1i7po6az1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -867,7 +873,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/10/Git-clone-a-single-branch/" data-id="ckk6ys2rx009w6hs1hjzwiuyh" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/10/Git-clone-a-single-branch/" data-id="ckk7j6izv006ysjs1zbjhnkpa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
@@ -910,7 +916,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/08/printf-int32-t-uint32-t/" data-id="ckk6ys2rw009v6hs1ze5syuit" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/08/printf-int32-t-uint32-t/" data-id="ckk7j6izt006wsjs1pd3p18yc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -967,7 +973,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckk6ys2rv009s6hs14229xsz1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckk7j6izu006xsjs1c6fmznf5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1009,7 +1015,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckk6ys2ru009r6hs199201aqs" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckk7j6izs006usjs142btxftn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a></li></ul>
@@ -1061,7 +1067,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckk6ys2rt009o6hs1u95d7j43" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckk7j6izt006vsjs1n52zpsh9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1110,7 +1116,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckk6ys2rs009n6hs1t8g1rdzr" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckk7j6izr006tsjs1i9n1prdy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li></ul>
@@ -1158,7 +1164,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckk6ys2rr009k6hs1kvviyfgs" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckk7j6izq006ssjs1tkrudq1x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1206,7 +1212,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckk6ys2rq009j6hs18opkhcf9" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckk7j6izq006rsjs13mmw1cst" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1255,7 +1261,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckk6ys2rp009g6hs1ansjvupz" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckk7j6izp006qsjs1oadwptv8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1303,7 +1309,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckk6ys2ro009f6hs1m8jk43az" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckk7j6izo006psjs17ohfg0xw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1351,7 +1357,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" data-id="ckk6ys2rn009c6hs1iv4sgfh9" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" data-id="ckk7j6izn006nsjs1zzsz1nfr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1399,7 +1405,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/24/Boost-interprocess-shared-memory/" data-id="ckk6ys2rm009b6hs176at6y28" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/24/Boost-interprocess-shared-memory/" data-id="ckk7j6izo006osjs1l28amw7o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1444,7 +1450,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/23/Boost-filesystem-create-directory/" data-id="ckk6ys2rj00986hs15soejp72" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/23/Boost-filesystem-create-directory/" data-id="ckk7j6izn006msjs1gar3cdwl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1491,7 +1497,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" data-id="ckk6ys2ri00976hs17p61hj7w" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" data-id="ckk7j6izm006lsjs19e8rp143" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1536,7 +1542,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/21/Boost-install-boost-in-windows/" data-id="ckk6ys2rg00946hs1cwbpr9uo" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/21/Boost-install-boost-in-windows/" data-id="ckk7j6izl006ksjs1u9g62xqh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1582,7 +1588,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/20/Boost-install-boost-in-ubuntu/" data-id="ckk6ys2re00906hs1xhufhn9c" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/20/Boost-install-boost-in-ubuntu/" data-id="ckk7j6izk006isjs139bi32tw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
