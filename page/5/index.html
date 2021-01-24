@@ -90,6 +90,60 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-this-thread-sleep-for" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2020/02/10/std-this-thread-sleep-for/" class="article-date">
+  <time datetime="2020-02-10T14:00:00.000Z" itemprop="datePublished">2020-02-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2020/02/10/std-this-thread-sleep-for/">std::this_thread::sleep_for 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>本篇介紹 C++ 的 std::this_thread::sleep_for 暫停/停止/延遲當前執行緒的用法教學，std::this_thread::sleep_for 的作用是阻塞當前執行緒的執行，直到給定的這段延遲時間過去，其他執行緒並不受影響依舊執行，在文章後面會提供一些入門常用的 std::this_thread::sleep_for 範例程式碼。</p>
+<p>自從 C++11 出來後，真是造就跨平台程式的一大福音呀！在這之前 Windows 要用 Sleep，Unix-like 要用 sleep / usleep，跨平台可能使用 define 區隔，哪個平台要用對應的 api，或使用 boost 提供的，現在只要編譯器支援 C++11，就可以輕鬆的用 C++11 的 sleep_for 來完成這件事，且這個程式要換個平台編譯只需要確定該平台編譯器的版本有支援，就免改程式碼就可以無痛移植了。早期 C++11 剛出來時編譯器都未支援，當時還沒這麽普及，不過現在基本上幾乎都支援了。</p>
+<p><strong>需要引入的標頭檔</strong>: <code>&lt;thread&gt;</code></p>
+<h2 id="範例1-各種不同時間單位的-sleep-範例"><a href="#範例1-各種不同時間單位的-sleep-範例" class="headerlink" title="範例1. 各種不同時間單位的 sleep 範例"></a>範例1. 各種不同時間單位的 sleep 範例</h2><p>以下範例展示了各種不同時間單位的 sleep 範例，有秒(seconds)、毫秒(milliseconds)、微秒(microseconds)、納秒(nanoseconds)共四種，根據不同種情形使用不同時間單位。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">5</span>)); <span class="comment">// sleep 5 秒(seconds)</span></span><br><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::milliseconds(<span class="number">5</span>)); <span class="comment">// sleep 5 毫秒(milliseconds)</span></span><br><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::microseconds(<span class="number">5</span>)); <span class="comment">// sleep 5 微秒(microseconds)</span></span><br><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::nanoseconds(<span class="number">5</span>)); <span class="comment">// sleep 5 納秒(nanoseconds)</span></span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="範例2-量測-驗證-sleep-到底-sleep-多久"><a href="#範例2-量測-驗證-sleep-到底-sleep-多久" class="headerlink" title="範例2. 量測/驗證 sleep 到底 sleep 多久"></a>範例2. 量測/驗證 sleep 到底 sleep 多久</h2><p>以下範例使用高精準的 high_resolution_clock 來去量測 sleep 2秒究竟有沒有到2秒，這方法也可以拿去量其他程式所執行的時間。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-this_thread-sleep_for.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">2</span>));</span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Waited "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在我的 Ubuntu 上的結果輸出為：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Waited 2000.07 ms</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>參考<br>[1] std::this_thread::sleep_for - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/thread/sleep_for" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/thread/sleep_for</a><br>[2] sleep_for - C++ Reference<br><a href="http://www.cplusplus.com/reference/thread/this_thread/sleep_for/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/thread/this_thread/sleep_for/</a><br>[3] std::this_thread::sleep_for 与std::this_thread::yield的区别<br><a href="https://blog.csdn.net/Sandy_WYM_/article/details/83538635" target="_blank" rel="noopener">https://blog.csdn.net/Sandy_WYM_/article/details/83538635</a></p>
+<hr>
+<p><strong>相關文章</strong><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2019/11/17/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/blog/2020/02/20/std-condition-variable/" title="std::condition_variable 用法與範例">std::condition_variable 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/10/std-this-thread-sleep-for/" data-id="ckkb9zli3007ghss1zjyd3qk1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-async" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2020/02/08/std-async/" class="article-date">
@@ -147,7 +201,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/08/std-async/" data-id="ckk7j6j02007csjs15naxd9m8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/08/std-async/" data-id="ckkb9zli2007ehss1npjmilir" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -200,7 +254,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/06/std-find/" data-id="ckk7j6j01007bsjs1kz4hm1h0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/06/std-find/" data-id="ckkb9zli1007dhss1bl14slpq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -257,7 +311,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckk7j6j01007asjs1rn8khp4w" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckkb9zli0007bhss1nsa2v725" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -320,7 +374,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/04/std-thread/" data-id="ckk7j6j000079sjs1dizvr8lp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/04/std-thread/" data-id="ckkb9zli1007chss1vcfmfe29" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -371,7 +425,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/30/Python-read-yaml-file/" data-id="ckk7j6j000078sjs1ftaupd68" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/30/Python-read-yaml-file/" data-id="ckkb9zli0007ahss1n2gzujyz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -419,7 +473,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/29/Python-write-csv-file/" data-id="ckk7j6j000077sjs1cjtlgjo5" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/29/Python-write-csv-file/" data-id="ckkb9zlhz0079hss1eoh8pxvi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -470,7 +524,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/28/Python-replace/" data-id="ckk7j6izz0076sjs1tk7ikezn" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/28/Python-replace/" data-id="ckkb9zlhz0078hss1dggj1594" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -519,7 +573,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/26/Python-strip/" data-id="ckk7j6izz0075sjs1z1x3d6uj" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/26/Python-strip/" data-id="ckkb9zlhz0077hss1mszgmcfi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -568,7 +622,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/24/Python-join/" data-id="ckk7j6izy0074sjs1gofra1kz" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/24/Python-join/" data-id="ckkb9zlhy0076hss1vb9dzlyb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -598,7 +652,7 @@ ga('send', 'pageview');
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2020/01/22/Python-split/">Python 字串分割 split 用法與範例</a>
+      <a class="article-title" href="/blog/2020/01/22/Python-split/">Python split 字串分割用法與範例</a>
     </h1>
   
 
@@ -607,7 +661,7 @@ ga('send', 'pageview');
     <div class="article-entry" itemprop="articleBody">
       
         
-        <p>本篇介紹 Python 字串分割 split 的用法與範例，在字串處理中常常會需要將字串根據某個符號來切割，例如：空白，逗號，藉此區分出資料的欄位，常見於讀取 csv 的欄位切割處理，Python split 算是個很常用到的功能，  </p>
+        <p>本篇介紹 Python 字串分割 split 的用法與範例，在字串處理中常常會需要將字串根據某個符號來切割，例如：空白，逗號，藉此區分出資料的欄位，常見於讀取 csv 的欄位切割處理，Python split 字串分割算是字串處理中最常用到的功能，  </p>
 <p>本篇內容將分為：  </p>
 <ul>
 <li><strong>Python split 字串切割使用範例</strong>  </li>
@@ -615,15 +669,15 @@ ga('send', 'pageview');
 <li><strong><code>split()</code> 指定了不存在的分隔符號會怎樣？</strong>  </li>
 </ul>
 <p>以下範例是在 Python 3 環境下測試過。  </p>
-<h2 id="Python-split-字串切割使用範例"><a href="#Python-split-字串切割使用範例" class="headerlink" title="Python split 字串切割使用範例"></a>Python split 字串切割使用範例</h2><p>Python split 的用處在於把字串透過指定的分隔符號對字串進行分割，<br><code>split()</code> 第一個參數為指定的分隔符號，可以是空白,換行(\n)，tab(\t), 逗號(,) 等等。  </p>
-<p>以下示範空白為分隔符號：<br><figure class="highlight python"><figcaption><span>python-split.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line">str1 = <span class="string">'1 2 3'</span></span><br><span class="line">print(str1)</span><br><span class="line">str2 = str1.split(<span class="string">' '</span>)</span><br><span class="line">print(str2)</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 2 3</span><br><span class="line">[&apos;1&apos;, &apos;2&apos;, &apos;3&apos;]</span><br></pre></td></tr></table></figure></p>
+<h2 id="Python-split-字串切割使用範例"><a href="#Python-split-字串切割使用範例" class="headerlink" title="Python split 字串切割使用範例"></a>Python split 字串切割使用範例</h2><p>Python split 的用處在於把字串透過指定的分隔符號對字串進行分割，<br><code>split()</code> 第一個參數為指定的分隔符號，可以是空白,換行(\n)，tab(\t), 逗號(,) 等等，<br><code>split()</code> 不給入參數的話，預設會以空白作為分隔符號做切割，  </p>
+<p>以下示範空白為分隔符號：<br><figure class="highlight python"><figcaption><span>python-split.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line">str1 = <span class="string">'1 2 3'</span></span><br><span class="line">print(str1)</span><br><span class="line">str2 = str1.split(<span class="string">' '</span>)</span><br><span class="line">print(str2)</span><br><span class="line">print(str1.split())</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 2 3</span><br><span class="line">[&apos;1&apos;, &apos;2&apos;, &apos;3&apos;]</span><br><span class="line">[&apos;1&apos;, &apos;2&apos;, &apos;3&apos;]</span><br></pre></td></tr></table></figure></p>
 <h2 id="split-指定-逗號為分隔符號"><a href="#split-指定-逗號為分隔符號" class="headerlink" title="split() 指定 , 逗號為分隔符號"></a><code>split()</code> 指定 <code>,</code> 逗號為分隔符號</h2><p>以下介紹 Python <code>split()</code> 指定 <code>,</code> 逗號為分隔符號的範例，<br>程式碼如下：<br><figure class="highlight python"><figcaption><span>python-split2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line">str1 = <span class="string">'4,5,6'</span></span><br><span class="line">print(str1)</span><br><span class="line">str2 = str1.split(<span class="string">','</span>)</span><br><span class="line">print(str2)</span><br></pre></td></tr></table></figure></p>
 <p>輸出結果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4,5,6</span><br><span class="line">[&apos;4&apos;, &apos;5&apos;, &apos;6&apos;]</span><br></pre></td></tr></table></figure></p>
 <p><code>split()</code> 指定 <code>,</code> 為分隔符號的話，原字串如果有空白的話不會幫你去除空白，<br><figure class="highlight python"><figcaption><span>python-split3.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line">str1 = <span class="string">'4, 5, 6'</span></span><br><span class="line">print(str1)</span><br><span class="line">str2 = str1.split(<span class="string">','</span>)</span><br><span class="line">print(str2)</span><br></pre></td></tr></table></figure></p>
 <p>輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4, 5, 6</span><br><span class="line">[&apos;4&apos;, &apos; 5&apos;, &apos; 6&apos;]</span><br></pre></td></tr></table></figure></p>
-<p>如果想要去除空白的話可使用 <a href="/blog/2020/01/26/Python-strip/" title="strip">strip</a> 來將這些多餘的空白去除。  </p>
-<h2 id="split-指定了不存在的分隔符號會怎樣？"><a href="#split-指定了不存在的分隔符號會怎樣？" class="headerlink" title="split() 指定了不存在的分隔符號會怎樣？"></a><code>split()</code> 指定了不存在的分隔符號會怎樣？</h2><p>如果 <code>split()</code> 指定了不存在的分隔符號的話會回傳長度為1的list，這個list的第一個元素即為原本的字串。  </p>
+<p>從上面輸出看得出來切割的結果有包含空白，如果想要去除空白的話可使用 <a href="/blog/2020/01/26/Python-strip/" title="strip">strip</a> 來將這些多餘的空白去除。  </p>
+<h2 id="split-指定了不存在的分隔符號會怎樣？"><a href="#split-指定了不存在的分隔符號會怎樣？" class="headerlink" title="split() 指定了不存在的分隔符號會怎樣？"></a><code>split()</code> 指定了不存在的分隔符號會怎樣？</h2><p>如果 <code>split()</code> 指定了不存在的分隔符號的話會回傳長度為1的list，回傳的這個list第一個元素即為原本的字串。  </p>
 <figure class="highlight python"><figcaption><span>python-split4.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line">str1 = <span class="string">'7,8,9'</span></span><br><span class="line">print(str1)</span><br><span class="line">str2 = str1.split(<span class="string">' '</span>)</span><br><span class="line">print(str2)</span><br></pre></td></tr></table></figure>
 <p>輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">7,8,9</span><br><span class="line">[&apos;7,8,9&apos;]</span><br></pre></td></tr></table></figure></p>
 <p>其他參考<br>Python String split() Method<br><a href="https://www.w3schools.com/python/ref_string_split.asp" target="_blank" rel="noopener">https://www.w3schools.com/python/ref_string_split.asp</a><br>Python String | split() - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/python-string-split/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/python-string-split/</a>  </p>
@@ -632,7 +686,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/22/Python-split/" data-id="ckk7j6izy0073sjs15708okw5" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/22/Python-split/" data-id="ckkb9zlhy0075hss1wfl08zts" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -686,7 +740,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/20/Android-is-not-accessible-for-the-namespace/" data-id="ckk7j6izx0072sjs1t0njhmda" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/20/Android-is-not-accessible-for-the-namespace/" data-id="ckkb9zlhx0074hss15it07m7z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -731,7 +785,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/16/Linux-nm/" data-id="ckk7j6izx0071sjs124vcee4y" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/16/Linux-nm/" data-id="ckkb9zlhw0073hss1dmq4w9yu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -779,7 +833,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/14/Linux-readelf/" data-id="ckk7j6izw0070sjs1pklcnntp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/14/Linux-readelf/" data-id="ckkb9zlhw0072hss1xrdriwfm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -826,7 +880,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/12/Linux-objdump/" data-id="ckk7j6izw006zsjs1i7po6az1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/12/Linux-objdump/" data-id="ckkb9zlhv0071hss1efrogr6f" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -873,7 +927,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/10/Git-clone-a-single-branch/" data-id="ckk7j6izv006ysjs1zbjhnkpa" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/10/Git-clone-a-single-branch/" data-id="ckkb9zlhv0070hss12pprte00" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
@@ -916,7 +970,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/08/printf-int32-t-uint32-t/" data-id="ckk7j6izt006wsjs1pd3p18yc" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/08/printf-int32-t-uint32-t/" data-id="ckkb9zlhv006zhss109nklexm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -973,7 +1027,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckk7j6izu006xsjs1c6fmznf5" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckkb9zlhu006yhss15kin1xwz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1015,7 +1069,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckk7j6izs006usjs142btxftn" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckkb9zlhu006xhss1k8rmzk4r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a></li></ul>
@@ -1067,7 +1121,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckk7j6izt006vsjs1n52zpsh9" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckkb9zlht006whss15swefc5y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1116,7 +1170,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckk7j6izr006tsjs1i9n1prdy" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckkb9zlht006vhss1wjqnfc96" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li></ul>
@@ -1164,7 +1218,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckk7j6izq006ssjs1tkrudq1x" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckkb9zlhs006uhss1pvwug6w8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1212,7 +1266,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckk7j6izq006rsjs13mmw1cst" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckkb9zlhs006thss12f4pe26c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1261,7 +1315,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckk7j6izp006qsjs1oadwptv8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckkb9zlhr006shss1edtns6fm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1309,7 +1363,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckk7j6izo006psjs17ohfg0xw" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckkb9zlhr006rhss193146u1j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1357,7 +1411,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" data-id="ckk7j6izn006nsjs1zzsz1nfr" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" data-id="ckkb9zlhr006qhss1c874ljrs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1405,7 +1459,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/24/Boost-interprocess-shared-memory/" data-id="ckk7j6izo006osjs1l28amw7o" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/24/Boost-interprocess-shared-memory/" data-id="ckkb9zlhq006ohss1vfe1r10y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1450,7 +1504,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/23/Boost-filesystem-create-directory/" data-id="ckk7j6izn006msjs1gar3cdwl" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/23/Boost-filesystem-create-directory/" data-id="ckkb9zlhq006phss1mciw87r2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1497,7 +1551,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" data-id="ckk7j6izm006lsjs19e8rp143" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" data-id="ckkb9zlhp006nhss1l144i2r8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1542,53 +1596,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/21/Boost-install-boost-in-windows/" data-id="ckk7j6izl006ksjs1u9g62xqh" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Boost-install-boost-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/" class="article-date">
-  <time datetime="2019-12-20T14:00:00.000Z" itemprop="datePublished">2019-12-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/">在 Ubuntu 下安裝 Boost</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <p>Boost C++ Libraries 是 C++ 開發利器，在 Ubuntu 下安裝 Boost 的方式有兩種，第一種是透過 apt 來安裝 Boost，第二種是用原始碼編譯安裝 Boost。  </p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04  </p>
-<h2 id="方法1-使用-apt-套件安裝"><a href="#方法1-使用-apt-套件安裝" class="headerlink" title="方法1. 使用 apt 套件安裝"></a>方法1. 使用 apt 套件安裝</h2><p>Ubuntu 16.04 透過 apt 會安裝 boost 1.58.0，如何知道 apt 安裝會安裝到什麼版本可以用 <code>apt-cache search libboost-all-dev</code> 搜尋到相關資訊。apt 安裝 boost 的指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libboost-all-dev</span><br></pre></td></tr></table></figure></p>
-<h2 id="方法2-下載原始碼編譯與安裝"><a href="#方法2-下載原始碼編譯與安裝" class="headerlink" title="方法2. 下載原始碼編譯與安裝"></a>方法2. 下載原始碼編譯與安裝</h2><p>Ubuntu 請看 <a href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/" title="在 Ubuntu 下編譯安裝 Boost 1.70.0">在 Ubuntu 下編譯安裝 Boost 1.70.0</a> 這篇<br>Windows 請看 <a href="/blog/2019/04/24/Boost-1-70-0-build-install-in-windows/" title="在 Windows 下編譯安裝 Boost 1.70.0">在 Windows 下編譯安裝 Boost 1.70.0</a> 這篇  </p>
-<p>安裝完 Boost 環境後馬上就開始來寫<a href="/blog/2019/10/06/Boost-first-program-in-ubuntu/" title="第一支 Boost 程式">第一支 Boost 程式</a>吧～  </p>
-<p><strong>相關主題</strong><br><a href="/blog/2019/12/21/Boost-install-boost-in-windows/" title="在 Windows 下安裝 Boost">在 Windows 下安裝 Boost</a>  </p>
-<p>參考<br>How to install latest Boost library on Raspberry Pi<br><a href="http://osdevlab.blogspot.tw/2016/02/how-to-install-latest-boost-library-on.html" target="_blank" rel="noopener">http://osdevlab.blogspot.tw/2016/02/how-to-install-latest-boost-library-on.html</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/20/Boost-install-boost-in-ubuntu/" data-id="ckk7j6izk006isjs139bi32tw" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/21/Boost-install-boost-in-windows/" data-id="ckkb9zlho006mhss1vndzpw2c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1625,7 +1633,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">91</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">117</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">50</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">91</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/">JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">117</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">50</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -1635,7 +1643,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a><span class="archive-list-count">30</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">32</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">28</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a><span class="archive-list-count">30</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">32</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">28</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1646,6 +1654,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/blog/2021/01/21/js-audio/">JavaScript audio play 播放音效</a>
+          </li>
         
           <li>
             <a href="/blog/2021/01/18/std-string-find/">std::string::find 搜尋字串</a>
@@ -1661,10 +1673,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/blog/2021/01/08/How-to-power-up-PSU/">電源供應器單獨啟動電源?</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/01/07/Cpp-find-max-value/">C/C++ 3個求最大值的方法</a>
           </li>
         
       </ul>
