@@ -90,6 +90,56 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-Python-chatroom" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2020/10/19/Python-chatroom/" class="article-date">
+  <time datetime="2020-10-19T14:00:00.000Z" itemprop="datePublished">2020-10-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2020/10/19/Python-chatroom/">[Python] chatroom 多人聊天室</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>本篇介紹如何使用 Python 來撰寫 chatroom 多人聊天室的程式，在上一篇介紹了<a href="/blog/2020/06/29/Python-tcp-socket/" title="怎麼撰寫一個基本的 TCP socket 通訊程式">怎麼撰寫一個基本的 TCP socket 通訊程式</a>，本篇開始介紹如何使用先前幾篇學習到的 python tcp socket 基礎來打造一個多人聊天室，  </p>
+<p>在多人聊天室的通訊程式設計上，通常有多執行緒(muti-threading)與多路復用(select)的兩種設計方式，以下將會介紹，  </p>
+<h2 id="server-多人聊天室伺服器端-多執行緒版本"><a href="#server-多人聊天室伺服器端-多執行緒版本" class="headerlink" title="server 多人聊天室伺服器端 (多執行緒版本)"></a>server 多人聊天室伺服器端 (多執行緒版本)</h2><p>使用多執行緒來寫多人聊天室伺服器端，每連上一個客戶端便開一個執行緒服務 <code>clientthread()</code> 這個客戶連線，  </p>
+<figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    conn, addr = server.accept()</span><br><span class="line"></span><br><span class="line">    list_of_clients.append(conn)</span><br><span class="line"></span><br><span class="line">    print(addr[<span class="number">0</span>] + <span class="string">" connected"</span>)</span><br><span class="line"></span><br><span class="line">    threading.Thread(target = clientthread, args = (conn, addr))</span><br><span class="line"></span><br><span class="line">conn.close()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure>
+<p>以下為 <code>clientthread()</code> 函式內容，簡單說就是將收到的訊息廣播給已連線的所有客戶端，<br>如果有人離線的話則處理離線的邏輯，<br><figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clientthread</span><span class="params">(conn, addr)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># sends a message to the client whose user object is conn</span></span><br><span class="line">    conn.send(<span class="string">"Welcome to this chatroom!"</span>.encode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            message = conn.recv(<span class="number">2048</span>)</span><br><span class="line">            <span class="keyword">if</span> len(message) != <span class="number">0</span>:</span><br><span class="line">                print(<span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">                <span class="comment"># Calls broadcast function to send message to all</span></span><br><span class="line">                message_to_send = <span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">                broadcast(message_to_send, conn)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                print(<span class="string">'server closed connection.'</span>)</span><br><span class="line">                remove(conn)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            <span class="keyword">continue</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="client-多人聊天室客戶端-select版本"><a href="#client-多人聊天室客戶端-select版本" class="headerlink" title="client 多人聊天室客戶端 (select版本)"></a>client 多人聊天室客戶端 (select版本)</h2><p>使用 select，不但能同時接收訊息外，也能接收到鍵盤的輸入訊息，並把鍵盤輸入的訊息傳輸出去，<br>這兩個一收一送的動作，透過多路復用 select() 函式可以達到同時運作的功效，<br><figure class="highlight python"><figcaption><span>python-chatroom-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> socks <span class="keyword">in</span> read_sockets:</span><br><span class="line">        <span class="keyword">if</span> socks == server:</span><br><span class="line">            message = socks.recv(<span class="number">2048</span>)</span><br><span class="line">            print(message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            message = sys.stdin.readline()</span><br><span class="line">            server.send(message.encode(<span class="string">"utf-8"</span>))</span><br><span class="line">            sys.stdout.write(<span class="string">"&lt;You&gt;"</span>)</span><br><span class="line">            sys.stdout.write(message)</span><br><span class="line">            sys.stdout.flush()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure></p>
+<p><strong>其他相關文章推薦</strong><br>下一篇會介紹如何打造一個gui圖形介面的多人聊天室<br><a href="/blog/2020/06/29/Python-tcp-socket/" title="[Python] TCP Socket Server/Client 網路通訊程式">[Python] TCP Socket Server/Client 網路通訊程式</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/19/Python-chatroom/" data-id="ckkhj6bln00eesos1wurwsz3w" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Python-check-list-empty" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2020/10/15/Python-check-list-empty/" class="article-date">
@@ -127,7 +177,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/15/Python-check-list-empty/" data-id="ckkgzz9e300dikbs1pl2m4qbr" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/15/Python-check-list-empty/" data-id="ckkhj6blm00edsos10929qb1h" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -177,7 +227,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="ckkgzz9e200dgkbs1xzv4jsj8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="ckkhj6blm00ecsos14w0phxgr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -231,7 +281,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/08/Cpp-integer-multiplication-overflow/" data-id="ckkgzz9e100dekbs1tykx2opx" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/08/Cpp-integer-multiplication-overflow/" data-id="ckkhj6bll00ebsos1zd58ip8i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -280,7 +330,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/05/Linux-vim-ctags-cscope/" data-id="ckkgzz9e100dckbs1n4d8dy4r" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/05/Linux-vim-ctags-cscope/" data-id="ckkhj6bll00easos1fvkwg4oc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -358,7 +408,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/28/Linux-vim-shortcuts/" data-id="ckkgzz9e000dakbs1u8fzbft6" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/28/Linux-vim-shortcuts/" data-id="ckkhj6bll00e9sos1axtlvsxs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -412,7 +462,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/24/Python-multiple-inheritance/" data-id="ckkgzz9dz00d8kbs1wywudrbk" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/24/Python-multiple-inheritance/" data-id="ckkhj6blk00e8sos1rigqr4rq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -455,7 +505,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/21/Eclipse-cpp-reference-another-project/" data-id="ckkgzz9dy00d6kbs1dlg4whnk" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/21/Eclipse-cpp-reference-another-project/" data-id="ckkhj6blk00e7sos15q9gb67m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -509,7 +559,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/17/Python-inheritance/" data-id="ckkgzz9dx00d4kbs1btgld3l8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/17/Python-inheritance/" data-id="ckkhj6blj00e6sos1g4gslehc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -606,7 +656,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/14/Qt-shortcuts/" data-id="ckkgzz9dw00d2kbs1qr9zdx4l" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/14/Qt-shortcuts/" data-id="ckkhj6blj00e5sos10v00hsd0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -650,7 +700,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/10/Linux-kill-by-name/" data-id="ckkgzz9dw00d0kbs1y8co2ks7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/10/Linux-kill-by-name/" data-id="ckkhj6blj00e4sos16ufwmyu1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -711,7 +761,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/07/Github-scrcpy/" data-id="ckkgzz9dv00cykbs1dd80vzhw" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/07/Github-scrcpy/" data-id="ckkhj6bli00e3sos1eow5ge2j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -759,7 +809,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/03/MacOS-git/" data-id="ckkgzz9du00cwkbs161gceaah" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/03/MacOS-git/" data-id="ckkhj6bli00e2sos1f1lwzebt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -814,7 +864,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/02/std-function/" data-id="ckkgzz9ds00cukbs14p1ado9h" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/02/std-function/" data-id="ckkhj6blh00e1sos1hs5lhf10" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -874,7 +924,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/27/Ubuntu-tplink-t4u-driver/" data-id="ckkgzz9ds00cskbs10x9o8ddp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/27/Ubuntu-tplink-t4u-driver/" data-id="ckkhj6blh00e0sos1crpe8pp0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -923,7 +973,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/24/Cpp-glossary/" data-id="ckkgzz9dr00crkbs1j9y4mn1g" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/24/Cpp-glossary/" data-id="ckkhj6blh00dzsos1f1izoqof" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -972,7 +1022,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/20/Ubuntu-apt-update-error/" data-id="ckkgzz9dq00cokbs1bu0sa5b9" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/20/Ubuntu-apt-update-error/" data-id="ckkhj6blg00dysos125h1ekw9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1030,7 +1080,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/17/Python-OpenCV-img2char/" data-id="ckkgzz9dp00cnkbs1loysupwu" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/17/Python-OpenCV-img2char/" data-id="ckkhj6blg00dxsos12y7r0kc1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1076,7 +1126,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/13/Ubuntu-netbootin-live-usb/" data-id="ckkgzz9do00ckkbs131hknmh1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/13/Ubuntu-netbootin-live-usb/" data-id="ckkhj6blf00dwsos1qg3sch65" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1131,7 +1181,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/12/Cpp-execute-command-and-get-output/" data-id="ckkgzz9dn00cjkbs1fcs9ghki" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/12/Cpp-execute-command-and-get-output/" data-id="ckkhj6blf00dvsos1x0thm8ba" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1183,7 +1233,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/05/Cpp-string-reverse/" data-id="ckkgzz9dn00cgkbs17li3sd96" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/05/Cpp-string-reverse/" data-id="ckkhj6blf00dusos1sbf7u01e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1231,7 +1281,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/03/Cpp-virtual/" data-id="ckkgzz9dm00cfkbs1vj1otdd1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/03/Cpp-virtual/" data-id="ckkhj6ble00dssos1mrf19hch" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1330,7 +1380,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/29/vscode-shortcuts/" data-id="ckkgzz9dl00cckbs1j8gvcmuq" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/29/vscode-shortcuts/" data-id="ckkhj6ble00dtsos1f7vrsb4h" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -1372,7 +1422,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/27/vscode-go-to-matching-bracket/" data-id="ckkgzz9dk00cbkbs1ml864r19" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/27/vscode-go-to-matching-bracket/" data-id="ckkhj6bld00drsos18g6tt8po" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -1414,7 +1464,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/23/Linux-tmux/" data-id="ckkgzz9dj00c8kbs1pg9w1k7k" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/23/Linux-tmux/" data-id="ckkhj6bld00dpsos1v2bjhh5u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1466,7 +1516,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/22/Cpp-call-by-value-pointer-reference/" data-id="ckkgzz9dj00c7kbs1uq8kzg01" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/22/Cpp-call-by-value-pointer-reference/" data-id="ckkhj6blc00dosos1upw83ngo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1526,7 +1576,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/15/Android-systrace/" data-id="ckkgzz9dh00c4kbs16rmiw3d6" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/15/Android-systrace/" data-id="ckkhj6blb00dmsos1bqtwpw73" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1574,7 +1624,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/09/Linux-convert/" data-id="ckkgzz9dh00c3kbs1a66tnon7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/09/Linux-convert/" data-id="ckkhj6blb00dlsos1xcvnoiea" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1626,7 +1676,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/08/Cpp-function-return-by-reference/" data-id="ckkgzz9dg00c0kbs1elfyk7z0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/08/Cpp-function-return-by-reference/" data-id="ckkhj6bla00djsos1r2jedu6k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1674,74 +1724,10 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/06/Python-tuple/" data-id="ckkgzz9df00bzkbs1cqjjtx3x" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/06/Python-tuple/" data-id="ckkhj6bla00disos140q6l448" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-vim" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2020/07/02/Linux-vim/" class="article-date">
-  <time datetime="2020-07-02T14:00:00.000Z" itemprop="datePublished">2020-07-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2020/07/02/Linux-vim/">如何使用 Linux 指令，vim 文字編輯器</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <p>本篇介紹 Linux 的 vim 文字編輯器操作使用，在 Linux 下使用 vim 是必要的技能，會使用 vim 將能替你省下不少麻煩，一起來學習如何使用 vim 吧！  </p>
-<h2 id="1-新建檔案與編輯檔案"><a href="#1-新建檔案與編輯檔案" class="headerlink" title="1. 新建檔案與編輯檔案"></a>1. 新建檔案與編輯檔案</h2><p>以下示範新建檔案與開啟檔案編輯，以 tmp.txt 為例，如果目錄下沒有 tmp.txt 則會建立一個空白文件(但要存檔才會產生檔案)，如果該目錄下已經有 tmp.txt 檔案，則會開啟 tmp.txt 來編輯。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ vim tmp.txt</span><br></pre></td></tr></table></figure></p>
-<h2 id="2-編輯模式"><a href="#2-編輯模式" class="headerlink" title="2. 編輯模式"></a>2. 編輯模式</h2><h3 id="進入編輯模式來輸入文字"><a href="#進入編輯模式來輸入文字" class="headerlink" title="進入編輯模式來輸入文字"></a>進入編輯模式來輸入文字</h3><p>輸入<code>i</code>鍵即可開始插入文字，即可開始輸入文字，文字輸入完後按 <code>esc</code> 回到一般模式<br>以下為其他種編輯模式，<br><code>i</code>: insert 插入模式<br><code>a</code>: append 添加模式<br><code>o</code>: 插入新的一行  </p>
-<h2 id="3-命令模式"><a href="#3-命令模式" class="headerlink" title="3. 命令模式"></a>3. 命令模式</h2><p>按下<code>:</code>符號即可進入命令模式，這時可以作存檔、離開、搜尋、取代等操作。  </p>
-<h3 id="存檔與離開"><a href="#存檔與離開" class="headerlink" title="存檔與離開"></a>存檔與離開</h3><p>以下為存檔與離開的範例。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">:wq <span class="comment"># 存檔並離開</span></span><br><span class="line">:w <span class="comment"># 存檔</span></span><br><span class="line">:q <span class="comment"># 離開</span></span><br><span class="line">:q! <span class="comment"># 強制離開</span></span><br></pre></td></tr></table></figure></p>
-<h3 id="行數顯示"><a href="#行數顯示" class="headerlink" title="行數顯示"></a>行數顯示</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">:<span class="built_in">set</span> nu <span class="comment"># 顯示行號</span></span><br><span class="line">:<span class="built_in">set</span> nu! <span class="comment"># 不顯示行號</span></span><br></pre></td></tr></table></figure>
-<h2 id="4-一般模式"><a href="#4-一般模式" class="headerlink" title="4. 一般模式"></a>4. 一般模式</h2><h3 id="多行選擇多行刪除"><a href="#多行選擇多行刪除" class="headerlink" title="多行選擇多行刪除"></a>多行選擇多行刪除</h3><p>d 是刪除。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ctrl+v, 游標上下左右移動選擇範圍, d</span><br></pre></td></tr></table></figure></p>
-<h3 id="多行選擇多行複製"><a href="#多行選擇多行複製" class="headerlink" title="多行選擇多行複製"></a>多行選擇多行複製</h3><p>y 是複製, p 是貼上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ctrl+v, 游標上下左右移動選擇範圍, y</span><br><span class="line">p</span><br></pre></td></tr></table></figure></p>
-<h3 id="多行編輯插入文字"><a href="#多行編輯插入文字" class="headerlink" title="多行編輯插入文字"></a>多行編輯插入文字</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ctrl+v, 游標上下左右移動選擇範圍, I, 輸入文字, esc</span><br></pre></td></tr></table></figure>
-<p>參考<br><a href="https://mropengate.blogspot.com/2015/07/vim-ch1-vim.html" target="_blank" rel="noopener">https://mropengate.blogspot.com/2015/07/vim-ch1-vim.html</a><br><a href="https://gitbook.tw/chapters/command-line/vim-introduction.html" target="_blank" rel="noopener">https://gitbook.tw/chapters/command-line/vim-introduction.html</a><br><a href="https://www.twblogs.net/a/5bbd59502b71776bd30c39c6" target="_blank" rel="noopener">https://www.twblogs.net/a/5bbd59502b71776bd30c39c6</a>  </p>
-<p><a href="https://leizediyi.weebly.com/vim-3034019977311812716924335214502085430456201142099925442.html" target="_blank" rel="noopener">https://leizediyi.weebly.com/vim-3034019977311812716924335214502085430456201142099925442.html</a><br>三種模式切換示意圖畫的不錯。  </p>
-<h2 id="5-實用技巧-Vim-的-Column-Edit-Mode"><a href="#5-實用技巧-Vim-的-Column-Edit-Mode" class="headerlink" title="5. 實用技巧 Vim 的 Column Edit Mode"></a>5. 實用技巧 Vim 的 Column Edit Mode</h2><p>多行插入怎麼做  </p>
-<ul>
-<li>ctrl + v to 進入 column mode  </li>
-<li>選擇行與列…  </li>
-<li>shift + i 進入多行插入模式 insert mode in column mode  </li>
-<li>輸入完想要插入的文字後按 Esc 即可發現瞬間多行一起插入文字  </li>
-</ul>
-<p>多行刪除怎麼做  </p>
-<ul>
-<li>ctrl + v to 進入 column mode  </li>
-<li>選擇行與列…  </li>
-<li>按 d 即進行多行刪除  </li>
-</ul>
-<p>參考<br><a href="https://coderwall.com/p/ouzshq/column-edit-mode-in-vi" target="_blank" rel="noopener">https://coderwall.com/p/ouzshq/column-edit-mode-in-vi</a><br><a href="https://stackoverflow.com/questions/6971903/how-to-do-column-editing-in-vim" target="_blank" rel="noopener">https://stackoverflow.com/questions/6971903/how-to-do-column-editing-in-vim</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/02/Linux-vim/" data-id="ckkgzz9de00bwkbs1znf0apt8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -1765,7 +1751,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">57</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">104</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">58</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">104</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
@@ -1775,7 +1761,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">92</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DIY/">DIY</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/">JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">118</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">50</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Arduino/">Arduino</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bluetooth/">Bluetooth</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Boost/">Boost</a><span class="tag-list-count">14</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-Sharp/">C Sharp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/">C/C++</a><span class="tag-list-count">93</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CMake/">CMake</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Crawler-爬蟲/">Crawler 爬蟲</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DIY/">DIY</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Eclipse/">Eclipse</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GLFW/">GLFW</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Github/">Github</a><span class="tag-list-count">16</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google/">Google</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IMU/">IMU</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/">JavaScript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Json/">Json</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">29</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-Command/">Linux Command</a><span class="tag-list-count">26</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/">Nodejs</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OSVR/">OSVR</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">39</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenGL/">OpenGL</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Projects/">Projects</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PyQt/">PyQt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">118</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/">Qt</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Shell-Script/">Shell Script</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket/">Socket</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Software/">Software</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Survey/">Survey</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UML/">UML</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/">Ubuntu</a><span class="tag-list-count">50</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VR/">VR</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vagrant/">Vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/">Windows</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/macOS/">macOS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/">npm</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/原始碼分析/">原始碼分析</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/設計模型/">設計模型</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/進階指令/">進階指令</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -1785,7 +1771,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a><span class="archive-list-count">30</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">32</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">28</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/08/">August 2011</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">January 2021</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">October 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">August 2020</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a><span class="archive-list-count">29</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a><span class="archive-list-count">30</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">32</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a><span class="archive-list-count">13</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">March 2019</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">28</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/08/">August 2011</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -1796,6 +1782,10 @@ ga('send', 'pageview');
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/blog/2021/01/28/Cpp-write-text-file/">C++ 寫檔，寫入txt文字檔各種範例</a>
+          </li>
         
           <li>
             <a href="/blog/2021/01/25/Cpp-read-text-file/">C++ 讀檔，讀取txt文字檔各種範例</a>
@@ -1811,10 +1801,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/blog/2021/01/14/Cpp-integer-to-string/">C/C++ 整數轉字串的方法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/01/11/online-compiler/">3個好用的線上編譯器</a>
           </li>
         
       </ul>
