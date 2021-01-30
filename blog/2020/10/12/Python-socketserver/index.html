@@ -117,6 +117,18 @@ ga('send', 'pageview');
     <div class="article-entry" itemprop="articleBody">
       
         
+        <!-- 正方形 ads1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 正方形 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
         <p>本篇介紹如何使用 Python 3 提供的 socketserver 類別來撰寫 Server 伺服器端的程式，在上一篇介紹了<a href="/blog/2020/06/29/Python-tcp-socket/" title="怎麼撰寫一個基本的 TCP socket 通訊程式">怎麼撰寫一個基本的 TCP socket 通訊程式</a>，<br>這一篇將專門介紹 server 伺服器端的撰寫，為什麼呢？因為通常伺服器端的程式是比客戶端的程式還要難的，<br>所以 python 提供了 socketserver 這個模組來簡化這個開發的難易度，<br>而 python 的 socketserver 模組提供了 TCPServer，UDPServer，UnixStreamServer，UnixDatagramServer 這4種，<br>接下來的內容將會先以 TCP 解說為優先，本篇學習了 <code>socketserver</code> 基礎概念後下篇會以本篇為基礎撰寫一個簡單的聊天程式，  </p>
 <h2 id="使用-socketserver-TCPServer"><a href="#使用-socketserver-TCPServer" class="headerlink" title="使用 socketserver.TCPServer"></a>使用 socketserver.TCPServer</h2><p>以下使用 <code>socketserver.TCPServer</code> 的範例，client 端可以沿用之前的範例，<br>範例中直接實例化 <code>socketserver.TCPServer</code> 與 <code>MyTCPHandler</code> 繼承 <code>socketserver.BaseRequestHandler</code>，<br><code>socketserver.BaseRequestHandler</code> 是用來處理接收資料時事件處理，不能直接產生實例，需要繼承 <code>socketserver.BaseRequestHandler</code> 後才能實例化，<br>在 <code>handle()</code> 裡撰寫接收後的程式邏輯即可，以這個範例為例，接收到一個 request 後，就開始一個迴圈來交換傳遞資料，  </p>
 <p>另外補充一下python 2與python 3的差異處，<br>python 2 是 <code>SocketServer</code> class 與 <code>import SocketServer</code><br>python 3 是 <code>socketserver</code> class 與 <code>import socketserver</code><br><figure class="highlight python"><figcaption><span>python3-socketserver-echo-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socketserver</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTCPHandler</span><span class="params">(socketserver.BaseRequestHandler)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">'connected by '</span> + str(self.client_address))</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            indata = self.request.recv(<span class="number">1024</span>).strip()</span><br><span class="line">            <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">                self.request.close()</span><br><span class="line">                print(<span class="string">'client closed connection.'</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">            outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">            self.request.sendall(outdata.encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    HOST, PORT = <span class="string">"0.0.0.0"</span>, <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Create the server, binding to localhost on port 7000</span></span><br><span class="line">    socketserver.TCPServer.allow_reuse_address = <span class="literal">True</span></span><br><span class="line">    server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        server.serve_forever()</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        print(<span class="string">"closing the server."</span>)</span><br><span class="line">        server.server_close()</span><br><span class="line">        <span class="keyword">raise</span></span><br></pre></td></tr></table></figure></p>
@@ -125,10 +137,22 @@ ga('send', 'pageview');
 <p>其他相關參考<br>c# - Why does my python TCP server need to bind to 0.0.0.0 and not localhost or it’s IP address? - Stack Overflow<br><a href="https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its" target="_blank" rel="noopener">https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its</a><br>Python 3 TypeError: Can’t convert ‘bytes’ object to str implicitly - Mkyong.com<br><a href="https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/" target="_blank" rel="noopener">https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/</a>  </p>
 <p><strong>其他相關文章推薦</strong><br><a href="/blog/2020/06/29/Python-tcp-socket/" title="[Python] TCP Socket Server/Client 網路通訊程式">[Python] TCP Socket Server/Client 網路通訊程式</a>  </p>
 
+        <!-- 正方形 ads2 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 正方形 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="ckkj6ygiz00dipcs1sk3rky6a" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="ckkj7bvs100di7ls1xn6g3zpp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
