@@ -90,6 +90,77 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-atomic" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2020/04/13/std-atomic/" class="article-date">
+  <time datetime="2020-04-13T14:00:00.000Z" itemprop="datePublished">2020-04-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2020/04/13/std-atomic/">std::atomic 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::atomic 用法，並提供一些範例。  </p>
+<p>atomic<t>用來保證原子操作，但不保證類型T是無鎖(lock_free)的，<br>因為不同平台的實作方式不同，可以用is_lock_free成員函式來判斷是不是無鎖的，<br>另外atomic_flag肯定是無鎖的。  </t></p>
+<p>以下循序漸進地介紹使用 atomic，以及為什麼用 atomic。  </p>
+<h2 id="最簡單的直覺寫法，但是結果錯誤"><a href="#最簡單的直覺寫法，但是結果錯誤" class="headerlink" title="最簡單的直覺寫法，但是結果錯誤"></a>最簡單的直覺寫法，但是結果錯誤</h2><p>以下範例為100個執行緒一起執行，並且同時將全域變數 cnt 取出來 +1 計數，<br>但是由於多個執行緒同時存取 cnt 的關係會造成資料不正確。<br>來看看結果輸出會是怎樣吧！<br><figure class="highlight cpp"><figcaption><span>std-atomic.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">long</span> cnt = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 1866806</span><br><span class="line">duration: 61.7727 ms</span><br></pre></td></tr></table></figure></p>
+<p>結果答案不是我們所預期的 10000000，而且每次跑得結果都不一樣，那考慮加個 mutex 鎖試試看吧！  </p>
+<h2 id="接著最直覺地加上了-mutex-鎖"><a href="#接著最直覺地加上了-mutex-鎖" class="headerlink" title="接著最直覺地加上了 mutex 鎖"></a>接著最直覺地加上了 mutex 鎖</h2><p>加 mutex 鎖來保護臨界區域是最常見的做法，<br>使用 mutex 來確保同一時間內只有一個執行緒可以存取 cnt，如果對 mutex 不熟悉的話可以看之前的 <a href="/blog/2020/02/05/std-mutex/" title="mutex 介紹">mutex 介紹</a><br>這次來看看結果輸出會是怎樣吧！<br><figure class="highlight cpp"><figcaption><span>std-atomic2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">long</span> cnt = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">std</span>::mutex mtx;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(mtx);</span><br><span class="line">        <span class="comment">//std::cout &lt;&lt; std::this_thread::get_id() &lt;&lt; ": " &lt;&lt; cnt &lt;&lt; '\n';</span></span><br><span class="line">        <span class="comment">//mtx.lock();</span></span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">        <span class="comment">//mtx.unlock();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 10000000</span><br><span class="line">duration: 1426.77 ms</span><br></pre></td></tr></table></figure></p>
+<p>這次答案正確了，以我的電腦所花的時間是 1426.77 ms，這個時間會因電腦規格不同而有所不同，<br>正確地使用 mutex 可以保證資料的正確性，但同時犧牲了效能，<br>那接下來我們會好奇想要知道，有沒有時間更快的方式呢？atomic？  </p>
+<h2 id="使用-atomic-達到同樣效果，時間約少了7倍，效能大爆發"><a href="#使用-atomic-達到同樣效果，時間約少了7倍，效能大爆發" class="headerlink" title="使用 atomic 達到同樣效果，時間約少了7倍，效能大爆發"></a>使用 atomic 達到同樣效果，時間約少了7倍，效能大爆發</h2><p>接下來這裡介紹本篇重頭戲 atomic，<br>如果對象是 long 的話，可以用 <code>std::atomic&lt;long&gt;</code>，也可以用 <code>std::atomic_long</code>這個類別，<br>用 atomic 也可以達到同樣的效果，但所花費的時間有減少嗎？<br>來看看結果輸出會是怎樣吧！  </p>
+<figure class="highlight cpp"><figcaption><span>std-atomic3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//std::atomic&lt;long&gt; cnt(0);</span></span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="keyword">atomic_long</span> <span class="title">cnt</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 10000000</span><br><span class="line">duration: 225.587 ms</span><br></pre></td></tr></table></figure></p>
+<p>這次使用 atomic 的答案也是正確的，同時地只花費了 225.587 ms，相對於 mutex 版本時間花費大幅減少了！<br>性能簡直大爆發了！！<br>透過這篇的學習，我們已經認識了 atomic 的威力，接下來的章節介紹更多的 atomic 實用情境。  </p>
+<h2 id="使用-atomic-搭配自定義的型別-類別"><a href="#使用-atomic-搭配自定義的型別-類別" class="headerlink" title="使用 atomic 搭配自定義的型別/類別"></a>使用 atomic 搭配自定義的型別/類別</h2><p>接下來會想試看看如果是使用自定義的結構 struct 或類別 class 是否也能使用 atomic 呢？<br><figure class="highlight cpp"><figcaption><span>std-atomic4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TBD</span><br></pre></td></tr></table></figure></p>
+<p>參考<br><a href="https://en.cppreference.com/w/cpp/atomic/atomic" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/atomic/atomic</a><br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/511579/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/511579/</a><br><a href="https://blog.csdn.net/yockie/article/details/8838686" target="_blank" rel="noopener">https://blog.csdn.net/yockie/article/details/8838686</a>  </p>
+<p><strong>其他相關文章推薦</strong><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2018/10/01/std-deque/" title="std::deque 介紹與用法">std::deque 介紹與用法</a><br><a href="/blog/2020/02/06/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/blog/2020/02/05/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/blog/2019/12/13/std-unordered-map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/blog/2019/11/30/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/blog/2019/12/19/std-random-shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/blog/2019/11/21/std-shared-ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/blog/2020/02/08/std-async/" title="std::async 用法與範例">std::async 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/13/std-atomic/" data-id="ckkmrl9v5008zkns1un5bp65u" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-filesystem-exists" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2020/04/12/std-filesystem-exists/" class="article-date">
@@ -140,7 +211,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/12/std-filesystem-exists/" data-id="ckklthbdy009ds3s1ubxa988g" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/12/std-filesystem-exists/" data-id="ckkmrl9v4008xkns13d5hlip5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -203,7 +274,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/11/std-filesystem-copy/" data-id="ckklthbdx009bs3s1nyik2if4" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/11/std-filesystem-copy/" data-id="ckkmrl9v2008vkns1y6g3p9k0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -264,7 +335,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/10/std-filesystem-create-directory/" data-id="ckklthbdw0099s3s19mztp394" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/10/std-filesystem-create-directory/" data-id="ckkmrl9v0008rkns14hzv8bhk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -325,7 +396,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/09/Python-get-cpu-usage/" data-id="ckklthbdv0097s3s13r3jpsii" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/09/Python-get-cpu-usage/" data-id="ckkmrl9v1008tkns16drykhcu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -412,7 +483,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/08/Python-print/" data-id="ckklthbdu0095s3s14nw68gux" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/08/Python-print/" data-id="ckkmrl9uy008pkns1u1s1r4zq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -477,7 +548,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/07/Python-OpenCV-putText/" data-id="ckklthbdt0093s3s1xb67m2lz" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/07/Python-OpenCV-putText/" data-id="ckkmrl9ux008nkns1qn70nql6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -538,7 +609,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/06/Python-OpenCV-fillPoly/" data-id="ckklthbds0091s3s1nhjonhtr" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/06/Python-OpenCV-fillPoly/" data-id="ckkmrl9ut008mkns1t5xtbw9f" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -599,7 +670,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/05/Python-OpenCV-polylines/" data-id="ckklthbdq008zs3s15v5jx6ra" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/05/Python-OpenCV-polylines/" data-id="ckkmrl9ur008jkns1726j5rm6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -661,7 +732,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/04/Python-OpenCV-rectangle/" data-id="ckklthbdp008xs3s1rwrdn5zs" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/04/Python-OpenCV-rectangle/" data-id="ckkmrl9uq008ikns1n45wmapl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -722,7 +793,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/03/Python-OpenCV-ellipse/" data-id="ckklthbdo008vs3s1tr10idmu" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/03/Python-OpenCV-ellipse/" data-id="ckkmrl9uo008fkns1hr8bcxs6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -784,7 +855,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/02/Python-OpenCV-circle/" data-id="ckklthbdo008us3s1wmf5lr23" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/02/Python-OpenCV-circle/" data-id="ckkmrl9un008ekns1ak2mki5e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -846,7 +917,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/04/01/Python-OpenCV-line/" data-id="ckklthbdn008ss3s1s2ofwm6l" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/04/01/Python-OpenCV-line/" data-id="ckkmrl9uj008bkns1paf4eibf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -908,7 +979,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/30/Python-os-path-dirname/" data-id="ckklthbdl008qs3s1haf0t03q" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/30/Python-os-path-dirname/" data-id="ckkmrl9ui008akns1juay9xzy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -970,7 +1041,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/28/Python-os-path-basename/" data-id="ckklthbdk008os3s1x5nhczj8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/28/Python-os-path-basename/" data-id="ckkmrl9ug0087kns1q7t3blax" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1038,7 +1109,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/26/Python-OpenCV-gray-to-rgb/" data-id="ckklthbdj008ms3s111tmfcwi" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/26/Python-OpenCV-gray-to-rgb/" data-id="ckkmrl9uf0086kns12h7gnp8c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1102,7 +1173,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/24/Python-OpenCV-rgb-to-ycbcr/" data-id="ckklthbdi008ks3s1amxjnqdu" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/24/Python-OpenCV-rgb-to-ycbcr/" data-id="ckkmrl9uc0083kns1y27mbz0o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1170,7 +1241,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/22/Python-OpenCV-rgb-to-hsv/" data-id="ckklthbdh008is3s178kulrtj" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/22/Python-OpenCV-rgb-to-hsv/" data-id="ckkmrl9ub0082kns1zgq13sgu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1234,7 +1305,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/20/Python-OpenCV-rgb-to-gray/" data-id="ckklthbdg008gs3s18arrb56d" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/20/Python-OpenCV-rgb-to-gray/" data-id="ckkmrl9u90081kns1cj7q110m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1303,7 +1374,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/18/Python-OpenCV-canny/" data-id="ckklthbdf008es3s1g68wob10" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/18/Python-OpenCV-canny/" data-id="ckkmrl9xc00dykns1sjc4lqj5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1369,7 +1440,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/16/Python-OpenCV-blur/" data-id="ckklthbdd008cs3s1mieio67f" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/16/Python-OpenCV-blur/" data-id="ckkmrl9bw007wkns1uiwfs4rl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1435,7 +1506,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/14/Python-OpenCV-threshold/" data-id="ckklthbdc008as3s1vc141di0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/14/Python-OpenCV-threshold/" data-id="ckkmrl9bx007xkns1n4vmrn3q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1494,7 +1565,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/06/Linux-tail/" data-id="ckklthbda0088s3s1n8vl9kfc" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/06/Linux-tail/" data-id="ckkmrl9bv007vkns1wifx00iz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1552,7 +1623,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/04/Linux-xargs/" data-id="ckklthbd90086s3s18sybz6gu" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/04/Linux-xargs/" data-id="ckkmrl9bv007ukns1m53ec17c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1612,7 +1683,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/03/02/Linux-tee/" data-id="ckklthbd80084s3s107hxdaeg" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/03/02/Linux-tee/" data-id="ckkmrl9bu007tkns1gma3y20f" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -1674,7 +1745,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/28/Python-os-path-getsize/" data-id="ckklthbd70082s3s1gm0nuza0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/28/Python-os-path-getsize/" data-id="ckkmrl9bu007skns1ktdr9nqc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1737,7 +1808,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/26/Python-os-path-exists/" data-id="ckklthbd50080s3s1glesftdj" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/26/Python-os-path-exists/" data-id="ckkmrl9bt007rkns1tzoabb0v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1801,7 +1872,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/24/Python-os-path-isdir/" data-id="ckklthbd4007ys3s11af6xp2x" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/24/Python-os-path-isdir/" data-id="ckkmrl9bs007pkns1h1ggofwm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1867,7 +1938,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/22/Python-os-path-isfile/" data-id="ckklthbd4007xs3s14dwjhbpe" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/22/Python-os-path-isfile/" data-id="ckkmrl9bs007okns18d94t4yf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1964,77 +2035,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/20/std-condition-variable/" data-id="ckklthbd1007us3s1o4s2u8ai" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-std-queue" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2020/02/18/std-queue/" class="article-date">
-  <time datetime="2020-02-18T14:00:00.000Z" itemprop="datePublished">2020-02-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2020/02/18/std-queue/">C++ std::queue 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹 C++ 的 std::queue 用法，C++ std::queue 教學如下：  </p>
-<p>std::queue 是具有 FIFO 特性的容器配接器, 應用在有先進先出的情形。<br>queue 是一層容器的包裝, 背後是用 deque 實現的, 並且只提供特定的函數接口。  </p>
-<h2 id="必學功能"><a href="#必學功能" class="headerlink" title="必學功能"></a>必學功能</h2><p><code>push</code>: 把值加到尾巴<br><code>pop</code>: 移除頭的值<br><code>back</code>: 回傳尾巴的值<br><code>front</code>: 回傳頭的值<br><code>size</code>: 回傳目前長度<br><code>empty</code>: 回傳是否為空  </p>
-<hr>
-<p>c++ 要使用 queue 容器的話，<strong>需要引入的標頭檔</strong>: <code>&lt;queue&gt;</code>  </p>
-<h2 id="C-queue-範例"><a href="#C-queue-範例" class="headerlink" title="C++ queue 範例"></a>C++ queue 範例</h2><p>以下為 c++ queue 的各種操作用法，把元素加進 queue 的尾部使用 <code>push()</code>，<br>把元素從 queue 頭部取出用 <code>pop()</code>，注意取出會將該元素從 queue 移除，<br>取得 queue 的最尾巴的元素使用 <code>back()</code>，<br>取得 queue 的最頭部的元素使用 <code>front()</code>，注意取得並不會將該元素從 queue 移除，<br>取得 queue 目前裡面有幾個元素使用 <code>size()</code>，<br><figure class="highlight c++"><figcaption><span>std-queue.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-queue.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">queue</span>&lt;<span class="keyword">int</span>&gt; q;</span><br><span class="line">    q.push(<span class="number">1</span>); <span class="comment">// [1]</span></span><br><span class="line">    q.push(<span class="number">2</span>); <span class="comment">// [1, 2]</span></span><br><span class="line">    q.push(<span class="number">3</span>); <span class="comment">// [1, 2, 3]</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; q.front() &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 1</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; q.back() &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 3</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; q.size() &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 3</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> a = q.front(); <span class="comment">// copy</span></span><br><span class="line">    <span class="keyword">int</span> &amp;b = q.front(); <span class="comment">// reference</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; q.front() &lt;&lt; <span class="string">" "</span> &lt;&lt; &amp;q.front() &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 印記體位置</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="string">" "</span> &lt;&lt; &amp;a &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; b &lt;&lt; <span class="string">" "</span> &lt;&lt; &amp;b &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 與 q.front() 記憶體位置相同</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 印出 queue 內所有內容</span></span><br><span class="line">    <span class="keyword">int</span> size = q.size();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; q.front() &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">        q.pop();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 印出 queue 內所有內容</span></span><br><span class="line">    <span class="comment">/*while (!q.empty()) &#123;</span></span><br><span class="line"><span class="comment">        cout &lt;&lt; q.front() &lt;&lt; " ";</span></span><br><span class="line"><span class="comment">        q.pop();</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    cout &lt;&lt; "\n";*/</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>輸出內容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">3</span><br><span class="line">3</span><br><span class="line">1 0xb77c70</span><br><span class="line">1 0x7ffe63ead460</span><br><span class="line">1 0xb77c70</span><br><span class="line">1 2 3</span><br></pre></td></tr></table></figure></p>
-<h2 id="Queue-的優點"><a href="#Queue-的優點" class="headerlink" title="Queue 的優點"></a>Queue 的優點</h2><ul>
-<li>快速的把頭的值拿掉  </li>
-</ul>
-<h2 id="Queue-的缺點"><a href="#Queue-的缺點" class="headerlink" title="Queue 的缺點"></a>Queue 的缺點</h2><ul>
-<li>只能操作頭跟尾, 不能取得中間的值(根據FIFO特性)  </li>
-</ul>
-<p>參考<br>[1] std::queue - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/container/queue" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/container/queue</a><br>[2] queue - C++ Reference<br><a href="http://www.cplusplus.com/reference/queue/queue/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/queue/queue/</a><br>[3] Queue in Standard Template Library (STL) - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/queue-cpp-stl/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/queue-cpp-stl/</a>  </p>
-<h2 id="相關主題"><a href="#相關主題" class="headerlink" title="相關主題"></a>相關主題</h2><p>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/blog/2018/10/01/std-deque/" title="std::deque 介紹與用法">std::deque 介紹與用法</a><br><a href="/blog/2020/02/16/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a><br><a href="/blog/2020/11/05/std-map/" title="std::map 用法與範例">std::map 用法與範例</a><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2020/02/05/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/blog/2020/02/20/std-condition-variable/" title="std::condition_variable 用法與範例">std::condition_variable 用法與範例</a><br><a href="/blog/2019/11/30/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/blog/2020/02/06/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/blog/2019/04/10/Cpp-measure-execution-time/" title="C++ 計算程式執行時間">C++ 計算程式執行時間</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/18/std-queue/" data-id="ckklthbd0007ts3s1nb051xw8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/20/std-condition-variable/" data-id="ckkmrl9bt007qkns1au1z0a36" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -2064,6 +2065,10 @@ ga('send', 'pageview');
       <ul>
         
           <li>
+            <a href="/blog/2021/02/01/Git-revert/">git revert 與 git gui (gitk) 抵銷提交</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/01/28/Cpp-write-text-file/">C++ 寫檔，寫入txt文字檔各種範例</a>
           </li>
         
@@ -2079,10 +2084,6 @@ ga('send', 'pageview');
             <a href="/blog/2021/01/18/std-string-find/">std::string::find 搜尋字串</a>
           </li>
         
-          <li>
-            <a href="/blog/2021/01/14/Cpp-integer-to-string/">C/C++ 整數轉字串的方法與範例</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -2092,7 +2093,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">58</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">104</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">58</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">104</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
