@@ -90,6 +90,103 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-condition-variable" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2020/02/20/std-condition-variable/" class="article-date">
+  <time datetime="2020-02-20T14:00:00.000Z" itemprop="datePublished">2020-02-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2020/02/20/std-condition-variable/">std::condition_variable 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::condition_variable 用法，使用 std::condition_variable 的 wait 會把目前的執行緒 thread 停下來並且等候事件通知，而在另外一個執行緒裡我們可以使用 std::condition_variable 的 notify_one 或 notify_all 去發送通知那些正在等待的事件，這在多執行绪程式裡經常使用到，以下將開始介紹 std::condition_variable 的用法，並展示一些範例，建議閱讀以下文章前需先對<a href="/blog/2020/02/04/std-thread/" title="建立 std::thread 多執行緒">建立 std::thread 多執行緒</a>與<a href="/blog/2020/02/05/std-mutex/" title="std::mutex 鎖">std::mutex 鎖</a>有一定程度的熟悉。</p>
+<p><strong>需要引入的標頭檔</strong>: <code>&lt;condition_variable&gt;</code>  </p>
+<p>以下為 condition_variable 常用的成員函式與說明，<br><code>wait</code>: 阻塞當前執行緒直到條件變量被喚醒<br><code>notify_one</code>: 通知一個正在等待的執行緒<br><code>notify_all</code>: 通知所有正在等待的執行緒  </p>
+<p>使用 std::condition_variable 的 wait 必須要搭配 <code>std::unique_lock&lt;std::mutex&gt;</code> 一起使用。  </p>
+<h2 id="範例1-用-notify-one-通知一個正在-wait-的執行緒"><a href="#範例1-用-notify-one-通知一個正在-wait-的執行緒" class="headerlink" title="範例1. 用 notify_one 通知一個正在 wait 的執行緒"></a>範例1. 用 notify_one 通知一個正在 wait 的執行緒</h2><p>下面的例子是先開一個新的執行緒 worker_thread 然後使用 std::condition_variable 的 wait 事件的通知，<br>此時 worker_thread 會阻塞(block)直到事件通知才會被喚醒，<br>之後 main 主程式延遲個 5 ms 在使用 std::condition_variable 的 notify_one 發送，<br>之後 worker_thread 收到 來自主執行緒的事件通知就離開 wait 繼續往下 cout 完就結束該執行緒，  </p>
+<p>這裡主程式的延遲 5ms 是避免一開始執行緒還沒建立好來不及 wait 等待通知，主程式就先發送 notify_one 事件通知了，  </p>
+<figure class="highlight c++"><figcaption><span>std-condition_variable.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-condition_variable.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::mutex m;</span><br><span class="line"><span class="built_in">std</span>::condition_variable cond_var;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">worker_thread</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"worker_thread() wait\n"</span>;</span><br><span class="line">    cond_var.wait(lock);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// after the wait, we own the lock.</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"worker_thread() is processing data\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">worker</span><span class="params">(worker_thread)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::milliseconds(<span class="number">5</span>));</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main() notify_one\n"</span>;</span><br><span class="line">    cond_var.notify_one();</span><br><span class="line"></span><br><span class="line">    worker.join();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main() end\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">worker_thread() wait</span><br><span class="line">main() notify_one</span><br><span class="line">worker_thread() is processing data</span><br><span class="line">main() end</span><br></pre></td></tr></table></figure></p>
+<p>本範例是學習了用 notify_one 通知單一個等待的執行緒，<br>下個範例要介紹的是 notify_all 用來通知所有正在等待的執行緒，  </p>
+<h2 id="範例2-用-notify-all-通知全部多個-wait-等待的執行緒"><a href="#範例2-用-notify-all-通知全部多個-wait-等待的執行緒" class="headerlink" title="範例2. 用 notify_all 通知全部多個 wait 等待的執行緒"></a>範例2. 用 notify_all 通知全部多個 wait 等待的執行緒</h2><p>以下範例主要目的是建立5個執行緒並等待通知，<br>之後主程式執行go函式裡的<code>cond_var.notify_all()</code>去通知所有正在等待的執行緒，也就是剛剛建立的5個執行緒，<br>這5個執行緒分別收到通知後從wait函式離開，之後檢查ready變數為true就離開迴圈，<br>接著印出thread id然後結束該執行緒。<br><figure class="highlight c++"><figcaption><span>std-condition_variable2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-condition_variable2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::mutex m;</span><br><span class="line"><span class="built_in">std</span>::condition_variable cond_var;</span><br><span class="line"><span class="keyword">bool</span> ready = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_id</span><span class="params">(<span class="keyword">int</span> id)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">    <span class="keyword">while</span> (!ready) &#123;</span><br><span class="line">        cond_var.wait(lock);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"thread "</span> &lt;&lt; id &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">go</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">    ready = <span class="literal">true</span>;</span><br><span class="line">    cond_var.notify_all();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">5</span>];</span><br><span class="line">    <span class="comment">// spawn 5 threads:</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;<span class="number">5</span>; ++i)</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(print_id,i);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"5 threads ready to race...\n"</span>;</span><br><span class="line">    go();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，可以看見這5個執行緒不按順序地收到通知並且各別印出thread id，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">5 threads ready to race...</span><br><span class="line">thread 4</span><br><span class="line">thread 1</span><br><span class="line">thread 2</span><br><span class="line">thread 3</span><br><span class="line">thread 0</span><br></pre></td></tr></table></figure></p>
+<p>這個範例多使用了一個額外的 ready 變數來輔助判斷，也間接介紹了<code>cond_var.wait</code>的另一種用法，<br>使用一個 while 迴圈來不斷的檢查 ready 變數，條件不成立的話就<code>cond_var.wait</code>繼續等待，<br>等到下次<code>cond_var.wait</code>被喚醒又會再度檢查這個 ready 值，一直迴圈檢查下去，<br>這技巧在某些情形下可以避免假喚醒這個問題，<br>簡單說就是「<code>cond_var.wait</code>被喚醒後還要多判斷一個 bool 變數，一定要條件成立才會結束等待，否則繼續等待」。  </p>
+<p>而這邊的 while 寫法<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (!ready) &#123;</span><br><span class="line">    cond_var.wait(lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以簡化寫成下面這個樣子，也就是 wait 的另一種用法，<br>多帶一個謂詞在第二個參數，關於這個寫法不熟悉可以看看這篇，<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cond_var.wait(lock, []&#123;<span class="keyword">return</span> ready;&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>因為 wait 內部的實作方法如下，等價於上面這種寫法，<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> _Predicate&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wait</span><span class="params">(unique_lock&lt;mutex&gt;&amp; __lock, _Predicate __p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (!__p())</span><br><span class="line">        wait(__lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="範例3-wait-等待通知且有條件式地結束等待"><a href="#範例3-wait-等待通知且有條件式地結束等待" class="headerlink" title="範例3. wait 等待通知且有條件式地結束等待"></a>範例3. wait 等待通知且有條件式地結束等待</h2><p>上個範例簡單介紹了<code>cond_var.wait</code>帶入第二個參數的用法了，所以本範例來實際演練這個用法，  </p>
+<p>worker_thread裡的<code>cond_var.wait</code>第一參數傳入一個 unique_lock 鎖，<br>第二個參數傳入一個可(被)呼叫的物件，來判斷是否要停止等待；這個可(被)呼叫的物件的需要回傳一個 bool 變數，<br>如果回傳 true 的話，condition_variable 就會停止等待、繼續往下執行，<br>如果回傳 false 的話，則會重新開始等待下一個通知。<br>因此等價於 <code>while (!pred()) { wait(lock); }</code>  </p>
+<p>這邊要注意 main 裡是有一個 lock_guard 與 unique_lock，worker_thread 裡有一個 unique_lock。</p>
+<figure class="highlight c++"><figcaption><span>std-condition_variable3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-condition_variable3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::mutex m;</span><br><span class="line"><span class="built_in">std</span>::condition_variable cond_var;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">string</span> data;</span><br><span class="line"><span class="keyword">bool</span> ready = <span class="literal">false</span>;</span><br><span class="line"><span class="keyword">bool</span> processed = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">worker_thread</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// Wait until main() sends data</span></span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"worker_thread() wait\n"</span>;</span><br><span class="line">    cond_var.wait(lock, []&#123;<span class="keyword">return</span> ready;&#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// after the wait, we own the lock.</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"worker_thread() is processing data\n"</span>;</span><br><span class="line">    data += <span class="string">" after processing"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Send data back to main()</span></span><br><span class="line">    processed = <span class="literal">true</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"worker_thread() signals data processing completed\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Manual unlocking is done before notifying, to avoid waking up</span></span><br><span class="line">    <span class="comment">// the waiting thread only to block again (see notify_one for details)</span></span><br><span class="line">    lock.unlock();</span><br><span class="line">    cond_var.notify_one();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">worker</span><span class="params">(worker_thread)</span></span>;</span><br><span class="line"></span><br><span class="line">    data = <span class="string">"Example data"</span>;</span><br><span class="line">    <span class="comment">// send data to the worker thread</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">        ready = <span class="literal">true</span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main() signals data ready for processing\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    cond_var.notify_one();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// wait for the worker</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">        cond_var.wait(lock, []&#123;<span class="keyword">return</span> processed;&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Back in main(), data = "</span> &lt;&lt; data &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    worker.join();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程式輸出結果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">main() signals data ready for processing</span><br><span class="line">worker_thread() wait</span><br><span class="line">worker_thread() is processing data</span><br><span class="line">worker_thread() signals data processing completed</span><br><span class="line">Back in main(), data = Example data after processing</span><br></pre></td></tr></table></figure></p>
+<h2 id="範例4-典型的生產者與消費者的範例"><a href="#範例4-典型的生產者與消費者的範例" class="headerlink" title="範例4. 典型的生產者與消費者的範例"></a>範例4. 典型的生產者與消費者的範例</h2><p>在設計模式(design pattern)中，這是一個典型的生產者與消費者(producer-consumer)的例子，<br>範例裡有一位生產者每1秒生產了1個東西放到 condvarQueue 裡，<br>這個 condvarQueue 會在去通知消費者，消費者收到通知後從 queue 裡拿出這個東西來作事情。  </p>
+<figure class="highlight c++"><figcaption><span>std-condition_variable4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-condition_variable4.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">condvarQueue</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">queue</span>&lt;<span class="keyword">int</span>&gt; produced_nums;</span><br><span class="line">    <span class="built_in">std</span>::mutex m;</span><br><span class="line">    <span class="built_in">std</span>::condition_variable cond_var;</span><br><span class="line">    <span class="keyword">bool</span> done = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">bool</span> notified = <span class="literal">false</span>;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">push</span><span class="params">(<span class="keyword">int</span> i)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">        produced_nums.push(i);</span><br><span class="line">        notified = <span class="literal">true</span>;</span><br><span class="line">        cond_var.notify_one();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> Consumer&gt;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">consume</span><span class="params">(Consumer consumer)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">        <span class="keyword">while</span> (!done) &#123;</span><br><span class="line">            <span class="keyword">while</span> (!notified) &#123;  <span class="comment">// loop to avoid spurious wakeups</span></span><br><span class="line">                cond_var.wait(lock);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (!produced_nums.empty()) &#123;</span><br><span class="line">                consumer(produced_nums.front());</span><br><span class="line">                produced_nums.pop();</span><br><span class="line">            &#125;</span><br><span class="line">            notified = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(m);</span><br><span class="line">            done = <span class="literal">true</span>;</span><br><span class="line">            notified = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        cond_var.notify_one();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    condvarQueue <span class="built_in">queue</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">producer</span><span class="params">([&amp;]() &#123;</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i) &#123;</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"producing "</span> &lt;&lt; i &lt;&lt; <span class="string">'\n'</span>;</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="built_in">queue</span>.push(i);</span></span></span><br><span class="line"><span class="function"><span class="params">        &#125;</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="built_in">queue</span>.close();</span></span></span><br><span class="line"><span class="function"><span class="params">    &#125;)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">consumer</span><span class="params">([&amp;]() &#123;</span></span></span><br><span class="line"><span class="function"><span class="params">         <span class="built_in">queue</span>.consume([](<span class="keyword">int</span> input)&#123;</span></span></span><br><span class="line"><span class="function"><span class="params">             <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"consuming "</span> &lt;&lt; input &lt;&lt; <span class="string">'\n'</span>;</span></span></span><br><span class="line"><span class="function"><span class="params">         &#125;);</span></span></span><br><span class="line"><span class="function"><span class="params">    &#125;)</span></span>;</span><br><span class="line"></span><br><span class="line">    producer.join();</span><br><span class="line">    consumer.join();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程式輸出結果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">producing 0</span><br><span class="line">consuming 0</span><br><span class="line">producing 1</span><br><span class="line">consuming 1</span><br><span class="line">producing 2</span><br><span class="line">consuming 2</span><br><span class="line">producing 3</span><br><span class="line">consuming 3</span><br><span class="line">producing 4</span><br><span class="line">consuming 4</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用上的小細節"><a href="#使用上的小細節" class="headerlink" title="使用上的小細節"></a>使用上的小細節</h2><p>看了很多範例，通知端執行緒 notify_one 通知前到底要不要加鎖？<br>如果要加鎖要加 unique_lock 還 lock_guard 呢？  </p>
+<p>我的經驗是<br>如果不需要修改共享變數，則 notify_one/notify_all 通知前不用加鎖，<br>示意如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Thread A                Thread B</span><br><span class="line">                        unique_lock lock(m)</span><br><span class="line">                        cond.wait()</span><br><span class="line">cond.notify_one()</span><br></pre></td></tr></table></figure></p>
+<p>如果有需要修改共享變數，則 notify_one/notify_all 通知前要加鎖，<br>加鎖的範圍不用包含到 cond.notify_one/cond.notify_all，<br>注意這邊的鎖是要保護共享資料，而不是 cond.notify_one/cond.notify_all，<br>示意如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Thread A                Thread B</span><br><span class="line">                        unique_lock lock(m)</span><br><span class="line">                        cond.wait(lock, []&#123;return ready;&#125;)</span><br><span class="line">&#123;</span><br><span class="line">lock_guard lock(m)</span><br><span class="line">ready = true</span><br><span class="line">&#125;</span><br><span class="line">cond.notify_one()</span><br></pre></td></tr></table></figure></p>
+<p>這兩者有效能上的差異，這部分我們以後有機會來細說談談。  </p>
+<h2 id="重點歸納"><a href="#重點歸納" class="headerlink" title="重點歸納"></a>重點歸納</h2><p>簡單歸納一下幾個重點，<br>等待的執行緒應有下列幾個步驟：  </p>
+<ol>
+<li>獲得 std::unique_lock<std::mutex> 鎖，並用該鎖來保護共享變數。  </std::mutex></li>
+<li>下面三步驟或使用 predicated 的 wait 多載版本，<br>2-1. 檢查有沒有滿足結束等待的條件，以預防資料早已經被更新與被通知了。<br>2-2. 執行 wait 等待，wait 操作會自動地釋放該 mutex 並且暫停該執行緒。<br>2-3. 當 condition variable 通知時，該執行緒被喚醒，且該mutex自動地被重新獲得，該執行緒應該檢查一些條件決定要不要繼續等待。  </li>
+</ol>
+<p>通知的執行緒應有下列幾個步驟：  </p>
+<ol>
+<li>獲取一個 std::mutex (通常透過std::lock_guard來取得)。  </li>
+<li>在上鎖的範圍內完成變數的修改。  </li>
+<li>執行 std::condition_variable 的notify_one/notify_all (不需被該鎖包覆)。  </li>
+</ol>
+<p>參考<br>[1] std::condition_variable - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/thread/condition_variable" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/thread/condition_variable</a><br>[2] condition_variable - C++ Reference - cplusplus.com<br><a href="http://www.cplusplus.com/reference/condition_variable/condition_variable/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/condition_variable/condition_variable/</a><br>[3] 邁向王者的旅途: [C++] Use std::condition_variable for Parallellism<br><a href="https://shininglionking.blogspot.com/2018/08/c-use-stdconditionvariable-for.html" target="_blank" rel="noopener">https://shininglionking.blogspot.com/2018/08/c-use-stdconditionvariable-for.html</a><br>[4] C++11 Thread 的 condition variable – Heresy’s Space<br><a href="https://kheresy.wordpress.com/2014/01/09/c11-condition-variable/" target="_blank" rel="noopener">https://kheresy.wordpress.com/2014/01/09/c11-condition-variable/</a><br>[5] C++/STL/ConditionVariable - 維基教科書，自由的教學讀本<br><a href="https://zh.wikibooks.org/zh-tw/C%2B%2B/STL/ConditionVariable" target="_blank" rel="noopener">https://zh.wikibooks.org/zh-tw/C%2B%2B/STL/ConditionVariable</a><br>[6] Is this use of condition variable safe (taken from cppreference.com)<br><a href="https://stackoverflow.com/questions/61104388/is-this-use-of-condition-variable-safe-taken-from-cppreference-com" target="_blank" rel="noopener">https://stackoverflow.com/questions/61104388/is-this-use-of-condition-variable-safe-taken-from-cppreference-com</a>  </p>
+<p>謂詞函數predicate相關文章<br>[1] 謂詞函數_百度百科<br><a href="https://baike.baidu.com/item/%E8%B0%93%E8%AF%8D%E5%87%BD%E6%95%B0/7501851" target="_blank" rel="noopener">https://baike.baidu.com/item/%E8%B0%93%E8%AF%8D%E5%87%BD%E6%95%B0/7501851</a><br>謂詞函數是一個判斷式，一個返回bool值的函數或者仿函數。<br>[2] C++ 具名要求： 謂詞 (Predicate) - cppreference.com<br><a href="https://zh.cppreference.com/w/cpp/named_req/Predicate" target="_blank" rel="noopener">https://zh.cppreference.com/w/cpp/named_req/Predicate</a><br>[3]函數對象 - 維基百科，自由的百科全書<br><a href="https://zh.wikipedia.org/wiki/%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1</a><br>[4] C++ 標準程式庫的函式物件 | Microsoft Docs<br><a href="https://docs.microsoft.com/zh-tw/cpp/standard-library/function-objects-in-the-stl?view=vs-2019" target="_blank" rel="noopener">https://docs.microsoft.com/zh-tw/cpp/standard-library/function-objects-in-the-stl?view=vs-2019</a><br>這裡翻譯為述詞Predicate，是個傳回布林值的函式物件。  </p>
+<p>pthread 相關文章<br>[1] pthread_cond_wait 为什么需要传递mutex 参数？ - 知乎<br><a href="https://www.zhihu.com/question/24116967" target="_blank" rel="noopener">https://www.zhihu.com/question/24116967</a><br>其中以黃兢成網友回覆的最正確與明瞭<br>[2] c++ - Calling pthread_cond_signal without locking mutex - Stack Overflow<br><a href="https://stackoverflow.com/questions/4544234/calling-pthread-cond-signal-without-locking-mutex" target="_blank" rel="noopener">https://stackoverflow.com/questions/4544234/calling-pthread-cond-signal-without-locking-mutex</a><br>討論pthread_cond_signal是否要加鎖，但最佳解答似乎不是很正確<br>[3] pthread_cond_wait.c source code [glibc/nptl/pthread_cond_wait.c] - Woboq Code Browser<br><a href="https://code.woboq.org/userspace/glibc/nptl/pthread_cond_wait.c.html" target="_blank" rel="noopener">https://code.woboq.org/userspace/glibc/nptl/pthread_cond_wait.c.html</a><br>在 trace pthread_cond_wait 後發現在內部確實會釋放該 mutex 鎖 <code>__pthread_mutex_unlock_usercnt</code>，並在喚醒時獲得該 mutex 鎖 <code>__pthread_mutex_cond_lock</code>  </p>
+<p>相關文章<br><a href="/blog/2019/11/16/std-condition-variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2020/02/05/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/blog/2020/02/16/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a><br><a href="/blog/2018/10/01/std-deque/" title="std::deque 介紹與用法">std::deque 介紹與用法</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/20/std-condition-variable/" data-id="ckkoont93007jbus140584ddx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-queue" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2020/02/18/std-queue/" class="article-date">
@@ -148,7 +245,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/18/std-queue/" data-id="ckko6k18e008rdds118afltm1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/18/std-queue/" data-id="ckkoont92007ibus17odxmg2r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -231,7 +328,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/16/std-vector/" data-id="ckko6k18e008pdds162tby4oy" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/16/std-vector/" data-id="ckkoont91007fbus1svuvx13k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -289,7 +386,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/14/printf-std-thread-id/" data-id="ckko6k18c008ndds1lpvhlc8e" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/14/printf-std-thread-id/" data-id="ckkoont91007ebus180s4t0cp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -347,7 +444,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/12/how-to-get-std-thread-id/" data-id="ckko6k18b008ldds1yv55kniq" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/12/how-to-get-std-thread-id/" data-id="ckkoont90007dbus1bwgmr2tr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -413,7 +510,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/10/std-this-thread-sleep-for/" data-id="ckko6k18a008jdds17v58i2zn" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/10/std-this-thread-sleep-for/" data-id="ckkoont8z007bbus1xl0e7m6r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -494,7 +591,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/08/std-async/" data-id="ckko6k18a008hdds17rskgy2c" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/08/std-async/" data-id="ckkoont90007cbus1lh9602b9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -559,7 +656,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/06/std-find/" data-id="ckko6k189008fdds1qi80bttr" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/06/std-find/" data-id="ckkoont91007gbus11xnd36yh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -628,7 +725,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckko6k188008ddds18tf4nzqr" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckkoont8x0079bus1f73jgah6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -703,7 +800,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/04/std-thread/" data-id="ckko6k187008bdds1ru6zdmgf" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/04/std-thread/" data-id="ckkoont8w0077bus1zwdem9rs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -766,7 +863,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/30/Python-read-yaml-file/" data-id="ckko6k1860089dds1ptcdgvpc" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/30/Python-read-yaml-file/" data-id="ckkoont8w0076bus1p3et06aj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -826,7 +923,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/29/Python-write-csv-file/" data-id="ckko6k1850087dds1jf6ezy25" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/29/Python-write-csv-file/" data-id="ckkoont8v0074bus1jswbi7a3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -889,7 +986,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/28/Python-replace/" data-id="ckko6k1840085dds17wt381z6" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/28/Python-replace/" data-id="ckkoont8v0075bus1h1siz5h4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -950,7 +1047,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/26/Python-strip/" data-id="ckko6k1830083dds1d029u4h8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/26/Python-strip/" data-id="ckkoont8u0073bus1sxvd8xt0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1011,7 +1108,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/24/Python-join/" data-id="ckko6k1830081dds1qveblay8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/24/Python-join/" data-id="ckkoont8u0072bus18npe5npg" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1087,7 +1184,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/22/Python-split/" data-id="ckko6k182007zdds1e5qt2vxg" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/22/Python-split/" data-id="ckkoont8t0071bus1das95m22" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1153,7 +1250,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/20/Android-is-not-accessible-for-the-namespace/" data-id="ckko6k181007ydds1c7xuggon" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/20/Android-is-not-accessible-for-the-namespace/" data-id="ckkoont8t0070bus1t01kl0uw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1210,7 +1307,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/16/Linux-nm/" data-id="ckko6k180007wdds1guhuynff" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/16/Linux-nm/" data-id="ckkoont92007hbus19dmdcgmb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -1270,7 +1367,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/14/Linux-readelf/" data-id="ckko6k17z007udds1pkxf4asw" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/14/Linux-readelf/" data-id="ckkoont8y007abus13fr4j8ji" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -1329,7 +1426,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/12/Linux-objdump/" data-id="ckko6k17y007sdds1fsej1jj0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/12/Linux-objdump/" data-id="ckkoont8s006zbus169r5kj61" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -1388,7 +1485,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/10/Git-clone-a-single-branch/" data-id="ckko6k17x007qdds1qzuiv56k" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/10/Git-clone-a-single-branch/" data-id="ckkoont8x0078bus11l5yx62f" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
@@ -1443,7 +1540,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/08/printf-int32-t-uint32-t/" data-id="ckko6k17w007odds1nimsbpyd" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/08/printf-int32-t-uint32-t/" data-id="ckkoont8r006xbus1ylbbpx1c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1512,7 +1609,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckko6k17v007mdds1k9f9g2yc" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckkoont8s006ybus1x0r7i038" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1566,7 +1663,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckko6k17t007kdds1t7buvxgt" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckkoont8q006wbus17z1j3fo0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a></li></ul>
@@ -1630,7 +1727,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckko6k17s007idds1cgnyiqo3" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckkoont8p006vbus18za3dxid" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1691,7 +1788,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckko6k17q007edds1s0i9a5kr" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckkoont8p006ubus1mrpgy21z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li></ul>
@@ -1751,7 +1848,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckko6k17p007cdds1ctcoydeq" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckkoont8o006tbus1z45srs6z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1811,7 +1908,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckko6k17m0078dds1qsl12n1o" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckkoont8o006sbus16iczujnh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -1872,7 +1969,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckko6k17r007gdds1w19021ya" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckkoont8n006rbus1fmcl00kq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1932,67 +2029,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckko6k17o007adds1los764ql" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Boost-use-cmake-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" class="article-date">
-  <time datetime="2019-12-25T14:00:00.000Z" itemprop="datePublished">2019-12-25</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/25/Boost-use-cmake-in-ubuntu/">在 Ubuntu 用 cmake 專案寫 Boost 程式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹在 Ubuntu 下使用 cmake 來寫 boost C++ 的程式。</p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>編譯器：G++ 5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>cmake 3.5.1<br>使用版本：boost 1.71.0</p>
-<h2 id="安裝-boost"><a href="#安裝-boost" class="headerlink" title="安裝 boost"></a>安裝 boost</h2><p>還沒安裝 boost 的話請參考 <a href="/blog/2019/12/21/Boost-install-boost-in-windows/" title="windows 安裝方式">windows 安裝方式</a> / <a href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/" title="ubuntu 安裝方式">ubuntu 安裝方式</a>。</p>
-<h2 id="使用範例"><a href="#使用範例" class="headerlink" title="使用範例"></a>使用範例</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/filesystem.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> boost::filesystem;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    create_directories(<span class="string">"image/out"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>cmake 專案怎麼寫如下所示，<br><code>add_executable</code>：來定義執行檔名稱，<br><code>include_directories</code>：<br><code>target_link_libraries</code>：</p>
-<figure class="highlight cmake"><figcaption><span>CMakeLists.txt</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(BOOST_ROOT /usr/local/<span class="keyword">include</span>/boost)</span><br><span class="line"><span class="comment">#set(BOOST_INCLUDEDIR /usr/local/include/boost)</span></span><br><span class="line"><span class="comment">#set(BOOST_LIBRARYDIR /usr/local/xxx)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">find_package</span>(Boost REQUIRED COMPONENTS system)</span><br><span class="line"><span class="keyword">if</span>(Boost_FOUND)</span><br><span class="line">    <span class="keyword">MESSAGE</span>(STATUS <span class="string">"Boost_INCLUDE_DIRS = $&#123;Boost_INCLUDE_DIRS&#125;"</span>)</span><br><span class="line">    <span class="keyword">MESSAGE</span>(STATUS <span class="string">"Boost_LIBRARIES = $&#123;Boost_LIBRARIES&#125;"</span>)</span><br><span class="line">    <span class="keyword">MESSAGE</span>(STATUS <span class="string">"Boost_VERSION = $&#123;Boost_VERSION&#125;"</span>)</span><br><span class="line">    <span class="keyword">MESSAGE</span>(STATUS <span class="string">"Boost_LIB_VERSION = $&#123;Boost_LIB_VERSION&#125;"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">include_directories</span>(<span class="variable">$&#123;Boost_INCLUDE_DIRS&#125;</span>)</span><br><span class="line">    <span class="keyword">add_executable</span>(a.out boost-filesystem-create-directory.cpp)</span><br><span class="line">    <span class="keyword">target_link_libraries</span>(a.out <span class="variable">$&#123;Boost_LIBRARIES&#125;</span>)</span><br><span class="line"><span class="keyword">endif</span>()</span><br></pre></td></tr></table></figure>
-<h2 id="編譯"><a href="#編譯" class="headerlink" title="編譯"></a>編譯</h2><p>在 linux 使用 cmake 來編譯的指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir build &amp;&amp; cd build</span><br><span class="line">$ cmake ..</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure></p>
-<h2 id="查看-boost-版本號"><a href="#查看-boost-版本號" class="headerlink" title="查看 boost 版本號"></a>查看 boost 版本號</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /usr/<span class="built_in">local</span>/include/boost/version.hpp | grep BOOST_VERSION</span><br><span class="line"><span class="comment">#define BOOST_VERSION 107100</span></span><br></pre></td></tr></table></figure>
-<p>參考<br>[1] FindBoost — CMake 3.16.2 Documentation<br><a href="https://cmake.org/cmake/help/v3.16/module/FindBoost.html" target="_blank" rel="noopener">https://cmake.org/cmake/help/v3.16/module/FindBoost.html</a><br>[2] Linux下使用CMake进行编译的时候寻找Boost库 - 简书<br><a href="https://www.jianshu.com/p/1827cd86d576" target="_blank" rel="noopener">https://www.jianshu.com/p/1827cd86d576</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" data-id="ckko6k17l0076dds1o7fa285w" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckkoont8m006qbus11gyu9axm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -2030,6 +2067,10 @@ ga('send', 'pageview');
           </li>
         
           <li>
+            <a href="/blog/2021/01/26/vscode-go-to-line/">Visual Studio Code (VSCode) 跳至某幾行</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/01/25/Cpp-read-text-file/">C++ 讀檔，讀取txt文字檔各種範例</a>
           </li>
         
@@ -2055,10 +2096,6 @@ ga('send', 'pageview');
         
           <li>
             <a href="/blog/2021/01/07/Cpp-find-max-value/">C/C++ 3個求最大值的方法</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/01/04/std-max_element/">std::max_element 用法與範例</a>
           </li>
         
       </ul>
