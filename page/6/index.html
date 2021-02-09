@@ -88,6 +88,75 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-segmentation-fault-core-dumped-dmesg-addr2line" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" class="article-date">
+  <time datetime="2020-01-06T14:00:00.000Z" itemprop="datePublished">2020-01-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/">程式segmentation fault後, 用dmesg和addr2line來除錯</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇紀錄如何從程式的 segmentation fault，配合 dmesg 和 addr2line 來除錯，<br>查出程式是掛(死)在哪個原始碼的第幾行。  </p>
+<p>首先先來寫一個會讓程式崩潰的程式，<br>再來配合使用 dmesg 查 kernel log 看是掛在哪個記憶體位置，<br>再來配合使用 addr2line 查出該記憶體位置是在程式碼的那一行<br>開始吧！  </p>
+<h2 id="寫一個會讓程式崩潰的程式"><a href="#寫一個會讓程式崩潰的程式" class="headerlink" title="寫一個會讓程式崩潰的程式"></a>寫一個會讓程式崩潰的程式</h2><p>讓一個 ptr 指標指向 NULL, 使用 printf 印出 ptr 指向的位置，<br>使用 <code>g++ cpp-crash.cpp -o a.out</code> 進行編譯，<br>之後再執行 <code>a.out</code> 就會發現程式執行到一半發生segmentation fault (core dumped) 了！<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-crash.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myprint</span><span class="params">(<span class="keyword">int</span>* ptr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, *ptr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> *ptr = <span class="literal">NULL</span>;</span><br><span class="line">    myprint(ptr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Segmentation fault (core dumped)</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用-dmesg-查-kernel-log-看是掛在哪個記憶體位置"><a href="#使用-dmesg-查-kernel-log-看是掛在哪個記憶體位置" class="headerlink" title="使用 dmesg 查 kernel log 看是掛在哪個記憶體位置"></a>使用 dmesg 查 kernel log 看是掛在哪個記憶體位置</h2><p>接著 dmesg 指令可以查看發生段錯誤的程式名稱、造成錯誤發生的記憶體地址、指令指標地址、堆疊指標地址、錯誤程式碼、錯誤原因等，<br>接著使用 dmesg 看看記憶體位置，找到顯示的 ip 為 0000000000400536<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a.out[14306]: segfault at 0 ip 0000000000400536 sp 00007ffce9c58050 error 4 in a.out[400000+1000]</span><br></pre></td></tr></table></figure></p>
+<p>也可用 Android logcat 上 backtrace 的 pc 記憶體位置來去查。  </p>
+<h2 id="配合使用-addr2line-查出該記憶體位置是在程式碼的那一行"><a href="#配合使用-addr2line-查出該記憶體位置是在程式碼的那一行" class="headerlink" title="配合使用 addr2line 查出該記憶體位置是在程式碼的那一行"></a>配合使用 addr2line 查出該記憶體位置是在程式碼的那一行</h2><p>最後使用 addr2line 找出 ip 0000000000400536 在程式碼第幾行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ addr2line -Cfie ./a.out 0000000000400536</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myprint(int*)</span><br><span class="line">??:?</span><br></pre></td></tr></table></figure></p>
+<p>上列資訊顯示程式死在 myprint 這個函式裡，但是看不到行數，<br>原因是因為使用 g++ 時沒用 <code>-g</code> 參數讓它編譯出有除錯的資訊<br>使用 <code>g++ cpp-crash.cpp -o a.out -g</code> 再編譯一次吧！<br>之後在執行一次，將 ip 拿去用 addr2line 查出的結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myprint(int*)</span><br><span class="line">/home/xxx/cpp-crash.cpp:6</span><br></pre></td></tr></table></figure></p>
+<p>這次就可以很清楚看到原始檔名稱與行數了！<br>這樣就可以回去程式碼裡好好看看是哪裡寫錯了。  </p>
+<h2 id="使用-nm-查詢"><a href="#使用-nm-查詢" class="headerlink" title="使用 nm 查詢"></a>使用 nm 查詢</h2><p>使用 nm 指令 <code>nm -gC a.out</code> 可以導出 symbol，<br>如下所示，發現 myprint 的位置是 0000000000400526 跟上面的 ip 很接近  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">0000000000601038 B __bss_start</span><br><span class="line">0000000000601028 D __data_start</span><br><span class="line">0000000000601028 W data_start</span><br><span class="line">0000000000601030 D __dso_handle</span><br><span class="line">0000000000601038 D _edata</span><br><span class="line">0000000000601040 B _end</span><br><span class="line">00000000004005e4 T _fini</span><br><span class="line">                 w __gmon_start__</span><br><span class="line">00000000004003c8 T _init</span><br><span class="line">00000000004005f0 R _IO_stdin_used</span><br><span class="line">                 w _ITM_deregisterTMCloneTable</span><br><span class="line">                 w _ITM_registerTMCloneTable</span><br><span class="line">                 w _Jv_RegisterClasses</span><br><span class="line">00000000004005e0 T __libc_csu_fini</span><br><span class="line">0000000000400570 T __libc_csu_init</span><br><span class="line">                 U __libc_start_main@@GLIBC_2.2.5</span><br><span class="line">000000000040054c T main</span><br><span class="line">                 U printf@@GLIBC_2.2.5</span><br><span class="line">0000000000400430 T _start</span><br><span class="line">0000000000601038 D __TMC_END__</span><br><span class="line">0000000000400526 T myprint(int*)</span><br></pre></td></tr></table></figure>
+<p>參考<br>[1] 使用dmesg和addr2line查找程序崩潰後的現場報告 | cpper<br><a href="http://www.cpper.cn/2016/09/09/develop/dmesg-addr2line/" target="_blank" rel="noopener">http://www.cpper.cn/2016/09/09/develop/dmesg-addr2line/</a>  </p>
+<p>[2] gdb調試core dump入門實踐（順便複習一下之前介紹過的addr2line命令調試） - stpeace的專欄<br><a href="https://blog.csdn.net/stpeace/article/details/49806473" target="_blank" rel="noopener">https://blog.csdn.net/stpeace/article/details/49806473</a>  </p>
+<p>[3] 關於Segmentation fault (core dumped)幾個簡單問題的整理<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/560380/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/560380/</a><br>什麼是Core Dump，可以看看這篇的介紹  </p>
+<p>[4]【已解決】Linux下出現Segmentation Fault（core dump）錯誤 - YSBJ123的博客<br><a href="https://blog.csdn.net/YSBJ123/article/details/50035169" target="_blank" rel="noopener">https://blog.csdn.net/YSBJ123/article/details/50035169</a><br>其他也不錯的文章，這篇有好幾種讓你產生 Segmentation Fault 的程式<br>從 <a href="https://www.cnblogs.com/panfeng412/archive/2011/11/06/segmentation-fault-in-linux.html" target="_blank" rel="noopener">https://www.cnblogs.com/panfeng412/archive/2011/11/06/segmentation-fault-in-linux.html</a> 轉載  </p>
+<p>[5] 内核 segfault 报错分析 - Jamin Zhang<br><a href="https://jaminzhang.github.io/linux/Kernel-Segfault-Analysis/" target="_blank" rel="noopener">https://jaminzhang.github.io/linux/Kernel-Segfault-Analysis/</a><br>解釋 error 4 代表什麼意思  </p>
+<p><strong>其他相關文章推薦</strong><br><a href="/blog/2019/10/25/addr2line/" title="addr2line 用法">addr2line 用法</a><br><a href="/blog/2020/01/16/Linux-nm/" title="nm 用法與範例">nm 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/06/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckkxu0k82007toos13nl880nj" data-title="程式segmentation fault後, 用dmesg和addr2line來除錯" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-use-breakpoint-in-visual-studio-release-mode" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" class="article-date">
@@ -130,7 +199,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckkx8p8co009aefs1srzu2ngn" data-title="在 Visual Studio 的 Release 模式下使用中斷點" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/04/use-breakpoint-in-visual-studio-release-mode/" data-id="ckkxu0k82007soos1wwbfoqtl" data-title="在 Visual Studio 的 Release 模式下使用中斷點" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a></li></ul>
@@ -194,7 +263,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckkx8p8cl0094efs1mpjo9zew" data-title="std::string 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/02/std-string/" data-id="ckkxu0k81007qoos12nb2kxib" data-title="std::string 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -255,7 +324,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckkx8p8cn0098efs1mhqybfg8" data-title="撰寫 cmake 的 CMakeLists.txt" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/01/01/cmake-cmakelists/" data-id="ckkxu0k80007ooos1rfzzlhdr" data-title="撰寫 cmake 的 CMakeLists.txt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li></ul>
@@ -315,7 +384,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckkx8p8cm0096efs1oenke481" data-title="[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/29/Python-media-play-and-control-webpage/" data-id="ckkxu0k7z007moos15w53iis9" data-title="[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -375,7 +444,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckkx8p8cl0092efs1gl185hbz" data-title="[Python] sys.argv 用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/28/Python-sys-argv/" data-id="ckkxu0k7y007koos16j6ng2w8" data-title="[Python] sys.argv 用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -437,7 +506,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckkx8p8ce008wefs16yuzhy6v" data-title="C/C++ 三元運算子" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/27/Cpp-ternary-operator/" data-id="ckkxu0k7x007ioos1lym4997j" data-title="C/C++ 三元運算子" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -497,7 +566,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckkx8p8cp009cefs1p5mye8qq" data-title="在 Mac OSX 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/26/Boost-use-cmake-in-macosx/" data-id="ckkxu0k7w007goos1h727j2ha" data-title="在 Mac OSX 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -557,7 +626,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" data-id="ckkx8p8cc008sefs1hujoifyr" data-title="在 Ubuntu 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/25/Boost-use-cmake-in-ubuntu/" data-id="ckkxu0k7v007eoos1iczkjwa7" data-title="在 Ubuntu 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -617,7 +686,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/24/Boost-interprocess-shared-memory/" data-id="ckkx8p8ck0090efs1de2z2zmo" data-title="boost::interprocess 共享記憶體 shared memory" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/24/Boost-interprocess-shared-memory/" data-id="ckkxu0k7u007coos1k11ml57o" data-title="boost::interprocess 共享記憶體 shared memory" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -674,7 +743,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/23/Boost-filesystem-create-directory/" data-id="ckkx8p8cc008uefs1ugq0il3i" data-title="boost::filesystem 建立資料夾" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/23/Boost-filesystem-create-directory/" data-id="ckkxu0k7t007aoos1fzy839hg" data-title="boost::filesystem 建立資料夾" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -733,7 +802,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" data-id="ckkx8p8cf008yefs135632nui" data-title="在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" data-id="ckkxu0k7s0078oos1tsg3e09e" data-title="在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -790,7 +859,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/21/Boost-install-boost-in-windows/" data-id="ckkx8p8ca008qefs17iolvu0p" data-title="在 Windows 下安裝 Boost" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/21/Boost-install-boost-in-windows/" data-id="ckkxu0k7r0076oos1ym36j4af" data-title="在 Windows 下安裝 Boost" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -848,7 +917,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/20/Boost-install-boost-in-ubuntu/" data-id="ckkx8p8c9008oefs1f9j5n33e" data-title="在 Ubuntu 下安裝 Boost" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/20/Boost-install-boost-in-ubuntu/" data-id="ckkxu0k7p0074oos1v9f11g11" data-title="在 Ubuntu 下安裝 Boost" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -910,7 +979,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/19/std-random-shuffle/" data-id="ckkx8p8c6008gefs17s01nhlv" data-title="std::random_shuffle 產生不重複的隨機亂數" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/19/std-random-shuffle/" data-id="ckkxu0k7o0072oos1npc2igye" data-title="std::random_shuffle 產生不重複的隨機亂數" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -970,7 +1039,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/18/Cpp-printf-size-t/" data-id="ckkx8p8c5008eefs1zgxj1ux5" data-title="C/C++ printf 列印 size_t 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/18/Cpp-printf-size-t/" data-id="ckkxu0k7n0070oos1r9kelj1y" data-title="C/C++ printf 列印 size_t 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1027,7 +1096,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/17/Android-tutorial/" data-id="ckkx8p8c8008mefs1g73sfj8n" data-title="Android 系列文章" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/17/Android-tutorial/" data-id="ckkxu0k7l006xoos1tux9esm3" data-title="Android 系列文章" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1085,7 +1154,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/16/Android-write-a-android-bp/" data-id="ckkx8p8c7008kefs16cdpzrxb" data-title="如何寫 Android.bp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/16/Android-write-a-android-bp/" data-id="ckkxu0k7m006yoos1mqlzg1xo" data-title="如何寫 Android.bp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1152,7 +1221,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/15/OpenCV-FileStorage/" data-id="ckkx8p8c6008iefs17rqixz6b" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/15/OpenCV-FileStorage/" data-id="ckkxu0k7j006uoos113682e7e" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -1208,7 +1277,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/14/Android-usb-tethering/" data-id="ckkx8p8c3008aefs1n6060wly" data-title="Android USB Tethering 透過 USB 分享行動數據" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/14/Android-usb-tethering/" data-id="ckkxu0k7i006toos17j5jjmrp" data-title="Android USB Tethering 透過 USB 分享行動數據" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1275,7 +1344,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/13/std-unordered-map/" data-id="ckkx8p8c00084efs1ye7iobku" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/13/std-unordered-map/" data-id="ckkxu0k7e006qoos1ino8ag8m" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -1439,7 +1508,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/12/Android-build-aosp/" data-id="ckkx8p8c4008cefs1xapxmu6v" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/12/Android-build-aosp/" data-id="ckkxu0k7c006poos16bcm4hsa" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1502,7 +1571,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/11/Android-fastboot/" data-id="ckkx8p8c20088efs1tfu3vtlq" data-title="Android fastboot 基本用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/11/Android-fastboot/" data-id="ckkxu0k79006loos1tyhw7syt" data-title="Android fastboot 基本用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1557,7 +1626,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/10/Android-fastboot-get-current-active-slot/" data-id="ckkx8p8fl00g4efs1cmfp9opz" data-title="Android fastboot 查詢當前使用的a/b槽" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/10/Android-fastboot-get-current-active-slot/" data-id="ckkxu0k77006ioos1og7jx49u" data-title="Android fastboot 查詢當前使用的a/b槽" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1611,7 +1680,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/09/Android-get-battery-level-via-adb/" data-id="ckkx8p8c10086efs1n7zv4pex" data-title="Android adb 取得電池 battery 電量資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/09/Android-get-battery-level-via-adb/" data-id="ckkxu0k74006foos10ytyl1do" data-title="Android adb 取得電池 battery 電量資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1668,7 +1737,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/08/Android-android-mk-to-android-bp/" data-id="ckkx8p8bz0080efs1ul9r63u6" data-title="從 Android.mk 到 Android.bp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/08/Android-android-mk-to-android-bp/" data-id="ckkxu0k76006hoos1t6j0lhqb" data-title="從 Android.mk 到 Android.bp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1723,7 +1792,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/07/Android-how-android-mk-work/" data-id="ckkx8p8by007zefs1k5neo4r0" data-title="Android.mk 的運作原理" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/07/Android-how-android-mk-work/" data-id="ckkxu0k7a006moos1r6mccej6" data-title="Android.mk 的運作原理" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1824,7 +1893,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/06/Android-write-a-android-mk/" data-id="ckkx8p8bx007wefs1gu3j5y62" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/06/Android-write-a-android-mk/" data-id="ckkxu0jqa006boos1u1gzy9jl" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1885,7 +1954,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/05/Android-platform-source-code-version/" data-id="ckkx8p8bw007vefs1nr0ecfec" data-title="如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/05/Android-platform-source-code-version/" data-id="ckkxu0jqa006aoos1v6yg2mku" data-title="如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -1945,67 +2014,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/04/OpenCV-4-1-2-build-install-in-ubuntu/" data-id="ckkx8p8bs007nefs1gpxkfyfe" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.2" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-OpenCV-3-4-8-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/03/OpenCV-3-4-8-build-install-in-ubuntu/" class="article-date">
-  <time datetime="2019-12-03T14:00:00.000Z" itemprop="datePublished">2019-12-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/03/OpenCV-3-4-8-build-install-in-ubuntu/">在 Ubuntu 下編譯安裝 OpenCV 3.4.8</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何在 Ubuntu 下編譯安裝 OpenCV 3.4.8，<br>這版 OpenCV 3.4.8 釋出日期是 2019/10/09，開始動手編譯原始碼安裝吧！  </p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>GCC：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>G++：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>使用版本：OpenCV 3.4.8 <a href="https://github.com/opencv/opencv/releases/tag/3.4.8" target="_blank" rel="noopener">下載處</a> / <a href="https://github.com/opencv/opencv/archive/3.4.8.zip" target="_blank" rel="noopener">zip</a>  </p>
-<h2 id="安裝編譯所需的套件"><a href="#安裝編譯所需的套件" class="headerlink" title="安裝編譯所需的套件"></a>安裝編譯所需的套件</h2><p>安裝編譯 opencv 所需要的套件，gcc / g++ / make / libc6-dev 都已包含在 build-essential 裡了，<br>所以不計較空間的話安裝 build-essential 算是相當的簡單省事。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake</span><br></pre></td></tr></table></figure></p>
-<h2 id="下載原始碼"><a href="#下載原始碼" class="headerlink" title="下載原始碼"></a>下載原始碼</h2><p>使用 wget 指令下載原始碼，並且解壓縮。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/opencv/opencv/archive/3.4.8.zip</span><br><span class="line">unzip 3.4.8.zip</span><br></pre></td></tr></table></figure></p>
-<h2 id="編譯安裝"><a href="#編譯安裝" class="headerlink" title="編譯安裝"></a>編譯安裝</h2><p>切換到剛剛解壓縮出來的目錄開始進行編譯，<br>最後 make 時，就看你電腦 CPU 有幾個核心，帶不同的參數，有助於加快整個編譯時間。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd opencv-3.4.8</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure></p>
-<h2 id="查詢已安裝的-opencv-版本"><a href="#查詢已安裝的-opencv-版本" class="headerlink" title="查詢已安裝的 opencv 版本"></a>查詢已安裝的 opencv 版本</h2><p>使用 <code>opencv_version</code> 指令查詢已安裝 opencv 的版本。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ opencv_version</span><br><span class="line">3.4.8</span><br></pre></td></tr></table></figure></p>
-<p>或者使用 <code>pkg-config</code> 查詢已安裝的 opencv 版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pkg-config --modversion opencv</span><br><span class="line">3.4.8</span><br></pre></td></tr></table></figure></p>
-<p>到這裡就完成 opencv 的安裝了，下篇將會介紹 <a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="如何寫第一支 OpenCV 程式">如何寫第一支 OpenCV 程式</a>。  </p>
-<p><strong>相關主題</strong><br><a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a><br><a href="/blog/2019/05/29/OpenCV-version/" title="怎麼查詢 OpenCV 的版本">怎麼查詢 OpenCV 的版本</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/03/OpenCV-3-4-8-build-install-in-ubuntu/" data-id="ckkx8p8bv007sefs1glooefjr" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/04/OpenCV-4-1-2-build-install-in-ubuntu/" data-id="ckkxu0jq90069oos189pw8085" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -2056,6 +2065,10 @@
           </li>
         
           <li>
+            <a href="/blog/2021/02/06/kanban/">使用 Kanban 方法追蹤進度與提升工作效率</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/02/05/Cpp-nullptr/">C++ nullptr 與 NULL 的差異</a>
           </li>
         
@@ -2085,10 +2098,6 @@
         
           <li>
             <a href="/blog/2021/01/25/Cpp-read-text-file/">C++ 讀檔，讀取txt文字檔各種範例</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/01/21/js-audio/">JavaScript audio play 播放音效</a>
           </li>
         
       </ul>
