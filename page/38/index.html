@@ -88,6 +88,320 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Conversion-Euler-To-Matrix" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/30/Conversion-Euler-To-Matrix/" class="article-date">
+  <time datetime="2018-03-30T14:00:00.000Z" itemprop="datePublished">2018-03-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/30/Conversion-Euler-To-Matrix/">旋轉矩陣 轉 尤拉角 (Conversion Euler To Matrix)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>我寫出了屬於我自己的兩種版本, 如下</p>
+<h2 id="版本一"><a href="#版本一" class="headerlink" title="版本一"></a>版本一</h2><p><a href="http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToEuler/index.htm" target="_blank" rel="noopener">參考來源</a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** this conversion uses conventions as described on page:</span></span><br><span class="line"><span class="comment">*   https://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm</span></span><br><span class="line"><span class="comment">*   Coordinate System: right hand</span></span><br><span class="line"><span class="comment">*   Positive angle: right hand</span></span><br><span class="line"><span class="comment">*   Order of euler angles: heading first, then attitude, then bank</span></span><br><span class="line"><span class="comment">*   matrix row column ordering:</span></span><br><span class="line"><span class="comment">*   [m00 m01 m02]</span></span><br><span class="line"><span class="comment">*   [m10 m11 m12]</span></span><br><span class="line"><span class="comment">*   [m20 m21 m22]*/</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">rotate</span><span class="params">(matrix  m)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Assuming the angles are in radians.</span></span><br><span class="line">	<span class="keyword">if</span> (m.m10 &gt; <span class="number">0.998</span>) &#123; <span class="comment">// singularity at north pole</span></span><br><span class="line">		heading = Math.atan2(m.m02,m.m22);</span><br><span class="line">		attitude = Math.PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (m.m10 &lt; -<span class="number">0.998</span>) &#123; <span class="comment">// singularity at south pole</span></span><br><span class="line">		heading = Math.atan2(m.m02,m.m22);</span><br><span class="line">		attitude = -Math.PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	heading = Math.atan2(-m.m20,m.m00);</span><br><span class="line">	bank = Math.atan2(-m.m12,m.m11);</span><br><span class="line">	attitude = Math.asin(m.m10);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>轉成 opencv 的版本, 且對應到我的座標系 (x, z 對調), 最後 x y 軸還加上負號.<br>bank(x) -&gt; attitude(x)<br>heading(y) -&gt; heading(y)<br>attitude(z) -&gt; bank(z)<br>euclideanspace -&gt; 我的座標系(OpennGL)</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Assuming the angles are in radians.</span></span><br><span class="line">	<span class="keyword">float</span> heading, attitude, bank;</span><br><span class="line">	<span class="keyword">if</span> (R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) &gt; <span class="number">0.998</span>) &#123; <span class="comment">// singularity at north pole</span></span><br><span class="line">		heading = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">		attitude = M_PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span> Vec3f(bank, heading, attitude);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) &lt; <span class="number">-0.998</span>) &#123; <span class="comment">// singularity at south pole</span></span><br><span class="line">		heading = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">		attitude = -M_PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span> Vec3f(bank, heading, attitude);</span><br><span class="line">	&#125;</span><br><span class="line">	heading = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">	bank = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">	attitude = <span class="built_in">asin</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> Vec3f(-bank, -heading, attitude);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="版本二"><a href="#版本二" class="headerlink" title="版本二"></a>版本二</h2><p><a href="https://www.learnopencv.com/rotation-matrix-to-euler-angles/" target="_blank" rel="noopener">參考來源</a><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Checks if a matrix is a valid rotation matrix.</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">isRotationMatrix</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Mat Rt;</span><br><span class="line">    transpose(R, Rt);</span><br><span class="line">    Mat shouldBeIdentity = Rt * R;</span><br><span class="line">    Mat I = Mat::eye(<span class="number">3</span>,<span class="number">3</span>, shouldBeIdentity.type());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> norm(I, shouldBeIdentity) &lt; <span class="number">1e-6</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** rotation matrix to euler angles</span></span><br><span class="line"><span class="comment">*   Coordinate System: right hand</span></span><br><span class="line"><span class="comment">*   Positive angle: right hand</span></span><br><span class="line"><span class="comment">*   Order of euler angles: heading first, then attitude, then bank</span></span><br><span class="line"><span class="comment">*   matrix row column ordering:</span></span><br><span class="line"><span class="comment">*   [m00 m01 m02]</span></span><br><span class="line"><span class="comment">*   [m10 m11 m12]</span></span><br><span class="line"><span class="comment">*   [m20 m21 m22]*/</span></span><br><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(isRotationMatrix(R));</span><br><span class="line">    <span class="keyword">float</span> sy = <span class="built_in">sqrt</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) +  R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) );</span><br><span class="line">    <span class="keyword">bool</span> singular = sy &lt; <span class="number">1e-6</span>; <span class="comment">// If</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> x, y, z;</span><br><span class="line">    <span class="keyword">if</span> (!singular)</span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">1</span>) , R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Vec3f(x, y, z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>轉成 我的座標系 (z 軸加上負號).<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(isRotationMatrix(R));</span><br><span class="line">    <span class="keyword">float</span> sy = <span class="built_in">sqrt</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) +  R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) );</span><br><span class="line">    <span class="keyword">bool</span> singular = sy &lt; <span class="number">1e-6</span>; <span class="comment">// If</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> x, y, z;</span><br><span class="line">    <span class="keyword">if</span> (!singular)</span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">1</span>) , R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Vec3f(x, y, -z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/30/Conversion-Euler-To-Matrix/" data-id="cklfxhyaq003co0s15co6uzev" data-title="旋轉矩陣 轉 尤拉角 (Conversion Euler To Matrix)" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Git-submodule" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/29/Git-submodule/" class="article-date">
+  <time datetime="2018-03-29T14:00:00.000Z" itemprop="datePublished">2018-03-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/29/Git-submodule/">Git submodule 子模組</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇將介紹怎麼使用 Git 的 submodule 的功能，<br>通常在開發時有使用到外部第三方的函式庫時(例如：sub.git)，<br>就可以使用 Git submodule 這個功能，<br>將外部的 Git (sub.git)加入進來，<br>此時我們自己的 Git (mainrepo.git) 會去記住目前是使用 sub.git 的哪一筆 commit，<br>而不是去追蹤紀錄整包 sub.git 的程式碼。<br>這樣 mainrepo.git 就會省很多硬碟空間。</p>
+<h2 id="新增-submodule"><a href="#新增-submodule" class="headerlink" title="新增 submodule"></a>新增 submodule</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd mainrepo</span><br><span class="line">git submodule add git@github.com:aaa/sub.git sub</span><br></pre></td></tr></table></figure>
+<p>再推上 server  </p>
+<h2 id="抓子模組-submodule"><a href="#抓子模組-submodule" class="headerlink" title="抓子模組 submodule"></a>抓子模組 submodule</h2><p>方法1. 一次抓下來<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone --recursive git@github.com:aaa/mainrepo.git</span><br></pre></td></tr></table></figure></p>
+<p>方法二. 先抓完, 再抓submodule<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone git@github.com:aaa/mainrepo.git</span><br><span class="line">cd mainrepo</span><br><span class="line">git submodule init</span><br><span class="line">git submodule update --recursive</span><br></pre></td></tr></table></figure></p>
+<h2 id="移除抓下來的-submodule-清空而已"><a href="#移除抓下來的-submodule-清空而已" class="headerlink" title="移除抓下來的 submodule (清空而已)"></a>移除抓下來的 submodule (清空而已)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule deinit .</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/29/Git-submodule/" data-id="cklfxhyao003ao0s13kv5anto" data-title="Git submodule 子模組" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-browser-extensions" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/27/browser-extensions/" class="article-date">
+  <time datetime="2018-03-27T14:00:00.000Z" itemprop="datePublished">2018-03-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/27/browser-extensions/">常用的瀏覽器外掛</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <table>
+<thead>
+<tr>
+<th>瀏覽器外掛</th>
+<th>description</th>
+<th style="text-align:center">Firefox</th>
+<th>Chrome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>新同文堂</td>
+<td></td>
+<td style="text-align:center">支援</td>
+<td>支援</td>
+</tr>
+<tr>
+<td>OneTab</td>
+<td></td>
+<td style="text-align:center">支援</td>
+<td>支援</td>
+</tr>
+<tr>
+<td>Mobile View Switcher</td>
+<td>在電腦瀏覽【手機版】網頁</td>
+<td style="text-align:center"><a href="https://addons.mozilla.org/en-US/firefox/addon/mobile-view-switcher/?src=search" target="_blank" rel="noopener">支援</a></td>
+<td>支援</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/27/browser-extensions/" data-id="cklfxhyam0039o0s1kst5vsae" data-title="常用的瀏覽器外掛" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Ubuntu-screen-recorder" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/21/Ubuntu-screen-recorder/" class="article-date">
+  <time datetime="2018-03-21T14:00:00.000Z" itemprop="datePublished">2018-03-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/21/Ubuntu-screen-recorder/">Ubuntu 桌面錄影軟體</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹在 Ubuntu 上有哪些桌面錄影軟體。</p>
+<h2 id="kazam"><a href="#kazam" class="headerlink" title="kazam"></a>kazam</h2><p>錄製桌面, 輸出mp4影片<br>平台：Ubuntu<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install kazam</span><br></pre></td></tr></table></figure></p>
+<h2 id="peek-推薦"><a href="#peek-推薦" class="headerlink" title="peek (推薦)"></a>peek (推薦)</h2><p>錄製桌面, 輸出gif<br>平台：Ubuntu<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:peek-developers/stable</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install peek</span><br></pre></td></tr></table></figure></p>
+<p>參考<br><a href="https://magiclen.org/kazam/" target="_blank" rel="noopener">https://magiclen.org/kazam/</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/21/Ubuntu-screen-recorder/" data-id="cklfxhyal0038o0s120yu6mh2" data-title="Ubuntu 桌面錄影軟體" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Git-tag" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/03/21/Git-tag/" class="article-date">
+  <time datetime="2018-03-21T14:00:00.000Z" itemprop="datePublished">2018-03-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/03/21/Git-tag/">Git tag 標籤使用</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>新增 tag<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git tag -a v0.9.0 -m <span class="string">'0.9.0'</span></span><br><span class="line">git tag -a v1.0.0 -m <span class="string">'1.0.0'</span></span><br></pre></td></tr></table></figure></p>
+<p>針對很久以前 commit 的進行 tag<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -a v0.9.0 -m <span class="string">'0.9.0'</span> a1b2c3456</span><br></pre></td></tr></table></figure></p>
+<p>上傳指定的 tag 到遠端<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin v0.9.0</span><br></pre></td></tr></table></figure></p>
+<p>一次上傳多個 tag 到遠端<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin --tags</span><br></pre></td></tr></table></figure></p>
+<p>刪除遠端 tag<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin :refs/tags/v1.1.0</span><br></pre></td></tr></table></figure></p>
+<p>刪除本地 tag<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -d v1.0.0</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/21/Git-tag/" data-id="cklfxhyal0037o0s11tftb9wz" data-title="Git tag 標籤使用" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Cpp-cross-platform" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2018/03/20/Cpp-cross-platform/" class="article-date">
@@ -137,7 +451,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/20/Cpp-cross-platform/" data-id="cklfscuim003e9ds1wubhleug" data-title="C語言跨平台寫法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/20/Cpp-cross-platform/" data-id="cklfxhyaj0035o0s13zh3g0zj" data-title="C語言跨平台寫法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -208,125 +522,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/18/Github-TinyTcp/" data-id="cklfscuim003d9ds1uilat0e8" data-title="開源專案TinyTcp-輕巧的網路程式框架" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/18/Github-TinyTcp/" data-id="cklfxhyak0036o0s1do34o9rt" data-title="開源專案TinyTcp-輕巧的網路程式框架" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Socket/">Socket</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Cpp-debug-print" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/16/Cpp-debug-print/" class="article-date">
-  <time datetime="2018-03-16T14:00:00.000Z" itemprop="datePublished">2018-03-16</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/16/Cpp-debug-print/">慣C除錯</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹在 C/C++ 下使用 printf 來 debug 的一些技巧，  </p>
-<p><a href="https://gist.github.com/shengyu7697/a3c7d65dcfb1f1d8ceca87cf8e7dabc5" target="_blank" rel="noopener">Gist</a>  </p>
-<p><a href="https://stackoverflow.com/questions/1941307/c-debug-print-macros" target="_blank" rel="noopener">https://stackoverflow.com/questions/1941307/c-debug-print-macros</a>  </p>
-<p>最簡單的<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...)  printf(<span class="meta-string">"[DEBUG] %s, %s(), line:%d, msg:"</span> fmt, __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span></span><br></pre></td></tr></table></figure></p>
-<p>Tom Kuschel 的版本<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 3</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG) &amp;&amp; DEBUG &gt; 0</span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d:%s(): "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
-<p>以下為我的版本, DEBUG 可以定義不同數字等級, 決定輸出的訊息種類.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 4</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> DEBUG &gt;= 4 <span class="comment">// filename:function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s():%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 3 <span class="comment">// filename:function</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s() "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 2 <span class="comment">// filename:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 1 <span class="comment">// function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s():%d "</span> fmt, \</span></span><br><span class="line">    __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
-<p>使用<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DEBUG_PRINT(<span class="string">"Debugging is enabled.\n"</span>);</span><br><span class="line">DEBUG_PRINT(<span class="string">"Debug level: %d"</span>, (<span class="keyword">int</span>) DEBUG);</span><br></pre></td></tr></table></figure></p>
-<hr>
-<p>20180220 updated: <a href="https://github.com/libimobiledevice/libusbmuxd/blob/c724e70fb52ba45291dc73a2e369c0c5bae0ec2e/src/libusbmuxd.c#L88" target="_blank" rel="noopener">libusbmuxd 另一種用法</a></p>
-<hr>
-<p>20190409 updated: 新增顯示檔名<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="comment">// 提醒：For Windows use '\\' instead of '/'.</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __FILENAME__ (strrchr(__FILE__, <span class="meta-string">'/'</span>) ? strrchr(__FILE__, <span class="meta-string">'/'</span>) + 1 : __FILE__)</span></span><br><span class="line"><span class="comment">// function() filename:line</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DRBUG_PRINT(fmt, ...) do &#123; fprintf(stderr, <span class="meta-string">"[DEBUG] %s() %s:%d "</span> fmt, __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__); &#125; while(0)</span></span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Cpp-debug-print/" data-id="cklfscuii00379ds18rr5bf6h" data-title="慣C除錯" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Cpp-snippets" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/16/Cpp-snippets/" class="article-date">
-  <time datetime="2018-03-16T14:00:00.000Z" itemprop="datePublished">2018-03-16</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/16/Cpp-snippets/">C/C++ snippets 程式碼片段</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>以下紀錄我常用的程式碼片段</p>
-<h2 id="除錯類"><a href="#除錯類" class="headerlink" title="除錯類"></a>除錯類</h2><p>請看<a href="/blog/2018/03/16/Cpp-debug-print/" title="這篇文章">這篇文章</a><br>
-        
-          <p class="article-more-link">
-            <a href="/blog/2018/03/16/Cpp-snippets/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Cpp-snippets/" data-id="cklfscuil003c9ds183uuhxai" data-title="C/C++ snippets 程式碼片段" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -386,7 +585,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Ubuntu-protobuf/" data-id="cklfscuih00359ds1myqfvwdp" data-title="Ubuntu 2 種安裝 protobuf 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Ubuntu-protobuf/" data-id="cklfxhyaj0034o0s1q9b9u6sd" data-title="Ubuntu 2 種安裝 protobuf 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -444,7 +643,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Ubuntu-libevent/" data-id="cklfscuih00349ds1h9wambef" data-title="Ubuntu 2 種安裝 libevent 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Ubuntu-libevent/" data-id="cklfxhyai0033o0s1xj0f7syh" data-title="Ubuntu 2 種安裝 libevent 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -456,12 +655,16 @@
 
 
   
-    <article id="post-Ubuntu-glog" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Cpp-snippets" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/blog/2018/03/16/Ubuntu-glog/" class="article-date">
+    <a href="/blog/2018/03/16/Cpp-snippets/" class="article-date">
   <time datetime="2018-03-16T14:00:00.000Z" itemprop="datePublished">2018-03-16</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -470,7 +673,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/16/Ubuntu-glog/">Ubuntu 2 種安裝 glog 的方法</a>
+      <a class="article-title" href="/blog/2018/03/16/Cpp-snippets/">C/C++ snippets 程式碼片段</a>
     </h1>
   
 
@@ -478,212 +681,21 @@
     
     <div class="article-entry" itemprop="articleBody">
       
+        <p>以下紀錄我常用的程式碼片段</p>
+<h2 id="除錯類"><a href="#除錯類" class="headerlink" title="除錯類"></a>除錯類</h2><p>請看<a href="/blog/2018/03/16/Cpp-debug-print/" title="這篇文章">這篇文章</a><br>
         
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇紀錄 Ubuntu 下 2種安裝 glog 的方法，第一種為使用 apt 安裝，第二種為下載原始碼編譯安裝，<br>glog 全名為 Google Logging Library，<br>Github: <a href="https://github.com/google/glog" target="_blank" rel="noopener">https://github.com/google/glog</a> - library that implements application-level logging.  </p>
-<p>使用環境：<br>Ubuntu 16.04  </p>
-<h2 id="方法1-使用-distribution-package-安裝"><a href="#方法1-使用-distribution-package-安裝" class="headerlink" title="方法1. 使用 distribution package 安裝"></a>方法1. 使用 distribution package 安裝</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libgoogle-glog-dev</span><br></pre></td></tr></table></figure>
-<p>可以用 <code>apt-cache search glog</code> 搜尋到</p>
-<h2 id="方法2-下載原始碼編譯與安裝"><a href="#方法2-下載原始碼編譯與安裝" class="headerlink" title="方法2. 下載原始碼編譯與安裝"></a>方法2. 下載原始碼編譯與安裝</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/google/glog</span><br><span class="line">cd glog</span><br><span class="line">./autogen.sh &amp;&amp; ./configure &amp;&amp; make &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure>
-<p>先泡杯咖啡, 再開啟 <code>glog/doc/glog.html</code> 慢慢享用～</p>
-<p><strong>相關文章</strong><br><a href="/blog/2018/03/16/Ubuntu-protobuf/" title="Ubuntu 安裝 protobuf">Ubuntu 安裝 protobuf</a><br><a href="/blog/2018/03/16/Ubuntu-gflags/" title="Ubuntu 安裝 gflags">Ubuntu 安裝 gflags</a><br><a href="/blog/2018/03/16/Ubuntu-libevent/" title="Ubuntu 安裝 libevent">Ubuntu 安裝 libevent</a><br><a href="/blog/2018/03/12/Ubuntu-GLFW/" title="Ubuntu 編譯安裝 GLFW">Ubuntu 編譯安裝 GLFW</a>  </p>
-
+          <p class="article-more-link">
+            <a href="/blog/2018/03/16/Cpp-snippets/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Ubuntu-glog/" data-id="cklfscuig00339ds1ljv8eo1n" data-title="Ubuntu 2 種安裝 glog 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Cpp-snippets/" data-id="cklfxhyah0032o0s18vgca9h7" data-title="C/C++ snippets 程式碼片段" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Ubuntu-gflags" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/16/Ubuntu-gflags/" class="article-date">
-  <time datetime="2018-03-16T14:00:00.000Z" itemprop="datePublished">2018-03-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/16/Ubuntu-gflags/">Ubuntu 2 種安裝 Google gflags 的方法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇紀錄在 Ubuntu 下 2 種安裝 Google gflags 的方法，一種為 apt 安裝，第二種為下載原始碼編譯安裝  </p>
-<p>使用環境：<br>Ubuntu 16.04  </p>
-<p><a href="https://github.com/gflags/gflags" target="_blank" rel="noopener">https://github.com/gflags/gflags</a> - commandline flags module for C++  </p>
-<h2 id="方法1-使用-distribution-package-套件安裝"><a href="#方法1-使用-distribution-package-套件安裝" class="headerlink" title="方法1. 使用 distribution package 套件安裝"></a>方法1. 使用 distribution package 套件安裝</h2><p>Ubuntu 16.04 的 apt 會安裝 gflags 2.1.2<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libgflags-dev</span><br></pre></td></tr></table></figure></p>
-<p>可以用 <code>apt-cache search gflags</code> 搜尋到  </p>
-<h2 id="方法2-下載原始碼編譯與安裝"><a href="#方法2-下載原始碼編譯與安裝" class="headerlink" title="方法2. 下載原始碼編譯與安裝"></a>方法2. 下載原始碼編譯與安裝</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/gflags/gflags</span><br><span class="line">cd gflags</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-<p><strong>相關文章</strong><br><a href="/blog/2018/03/16/Ubuntu-protobuf/" title="Ubuntu 安裝 protobuf">Ubuntu 安裝 protobuf</a><br><a href="/blog/2018/03/16/Ubuntu-glog/" title="Ubuntu 安裝 glog">Ubuntu 安裝 glog</a><br><a href="/blog/2018/03/16/Ubuntu-libevent/" title="Ubuntu 安裝 libevent">Ubuntu 安裝 libevent</a><br><a href="/blog/2018/03/12/Ubuntu-GLFW/" title="Ubuntu 編譯安裝 GLFW">Ubuntu 編譯安裝 GLFW</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/16/Ubuntu-gflags/" data-id="cklfscuig00329ds1w5bc054b" data-title="Ubuntu 2 種安裝 Google gflags 的方法" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-multiple-platforms-socket-cplusplus" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/14/multiple-platforms-socket-cplusplus/" class="article-date">
-  <time datetime="2018-03-14T14:00:00.000Z" itemprop="datePublished">2018-03-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/14/multiple-platforms-socket-cplusplus/">multiple platforms socket c++</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p><a href="https://github.com/shengyu7697/TinyTcp" target="_blank" rel="noopener">TinyTcp</a>: This is a C++ socket library designed to fast development of socket related functionality.  </p>
-<p>參考<br><a href="https://www.codeproject.com/Articles/2477/Multi-threaded-Client-Server-Socket-Class" target="_blank" rel="noopener">codeproject Multi-threaded-Client-Server-Socket-Class</a>  </p>
-<hr>
-<p><a href="https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.h" target="_blank" rel="noopener">https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.h</a><br><a href="https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.c" target="_blank" rel="noopener">https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.c</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">struct socket_callback_t &#123;</span><br><span class="line">    void (*client_connected_callback)(int);</span><br><span class="line">    void (*client_disconnected_callback)(int);</span><br><span class="line">    void (*client_data_callback)(int, char*);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">int start_server(unsigned short port);</span><br><span class="line">int connect_to_server(char *address, unsigned short port);</span><br><span class="line">void socket_close(int i);</span><br><span class="line">void socket_write(int sockfd, const char *msg, ...);</span><br><span class="line">void socket_write_big(int sockfd, const char *msg, ...);</span><br><span class="line">char *socket_read(int sockfd);</span><br><span class="line">char *socket_read_big(int sockfd);</span><br></pre></td></tr></table></figure></p>
-<p>socket_read_big 可以看看<br>socket_write_big 可以看看  </p>
-<hr>
-<p><a href="http://netlinksockets.sourceforge.net/chat_client_8cc-example.html" target="_blank" rel="noopener">NetLink Sockets C++: chatClient.cc</a><br><a href="http://netlinksockets.sourceforge.net/chat_server_8cc-example.html" target="_blank" rel="noopener">NetLink Sockets C++: chatServer.cc</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">OnAccept onAccept;</span><br><span class="line">OnRead onRead;</span><br><span class="line">OnDisconnect onDisconnect;</span><br></pre></td></tr></table></figure></p>
-<hr>
-<p>The C++ Network Library Project<br>(A collection of open-source libraries for high level network programming.)<br><a href="https://github.com/cpp-netlib/cpp-netlib" target="_blank" rel="noopener">https://github.com/cpp-netlib/cpp-netlib</a></p>
-<hr>
-<h3 id="libusbmuxd-C-版本"><a href="#libusbmuxd-C-版本" class="headerlink" title="libusbmuxd (C 版本)"></a><a href="https://github.com/libimobiledevice/libusbmuxd" target="_blank" rel="noopener">libusbmuxd</a> (C 版本)</h3><p><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.h" target="_blank" rel="noopener">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.h</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.c" target="_blank" rel="noopener">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.c</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.h" target="_blank" rel="noopener">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.h</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.c" target="_blank" rel="noopener">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.c</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/src/libusbmuxd.c" target="_blank" rel="noopener">https://github.com/libimobiledevice/libusbmuxd/blob/master/src/libusbmuxd.c</a><br><a href="https://github.com/libimobiledevice/usbmuxd/blob/master/src/main.c" target="_blank" rel="noopener">https://github.com/libimobiledevice/usbmuxd/blob/master/src/main.c</a>  </p>
-<hr>
-<p><a href="http://beej-zhtw.netdpi.net/06-client-server-background" target="_blank" rel="noopener">Beej’s Guide to Network Programming 正體中文版: 06-Client-Server 基礎</a><br><a href="http://www.boost.org/doc/libs/1_39_0/doc/html/boost_asio/examples.html" target="_blank" rel="noopener">boost asio examples</a><br><a href="https://github.com/socketio/socket.io-client-cpp" target="_blank" rel="noopener">C++11 implementation of Socket.IO client</a><br><a href="https://stackoverflow.com/questions/28027937/cross-platform-sockets" target="_blank" rel="noopener">關閉Sockets不一樣 stackoverflow cross-platform-sockets</a><br><a href="https://github.com/ia/connect" target="_blank" rel="noopener">tiny cross-platform socket API library</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/14/multiple-platforms-socket-cplusplus/" data-id="cklfscuii00369ds14g5fc2zb" data-title="multiple platforms socket c++" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Socket/">Socket</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Survey/">Survey</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-openmediavault-forgot-password" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2018/03/13/openmediavault-forgot-password/" class="article-date">
-  <time datetime="2018-03-13T14:00:00.000Z" itemprop="datePublished">2018-03-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2018/03/13/openmediavault-forgot-password/">OpenMediaVault 忘記密碼</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇紀錄 OpenMediaVault (omv) 忘記密碼時怎麼辦？如果想不起來的話要怎麼重置密碼  </p>
-<h2 id="WebGUI-預設密碼"><a href="#WebGUI-預設密碼" class="headerlink" title="WebGUI 預設密碼"></a>WebGUI 預設密碼</h2><p>這是 omv (OpenMediaVault) 網頁的預設密碼 default password<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User: admin</span><br><span class="line">Password: openmediavault</span><br></pre></td></tr></table></figure></p>
-<h2 id="Client-SSH-console"><a href="#Client-SSH-console" class="headerlink" title="Client (SSH, console)"></a>Client (SSH, console)</h2><p>這是 OpenMediaVault ssh 的預設登入密碼<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User: root</span><br><span class="line">Password: &lt;set during installation&gt;</span><br></pre></td></tr></table></figure></p>
-<h2 id="Q-忘記-OpenMediaVault-Web-管理介面密碼"><a href="#Q-忘記-OpenMediaVault-Web-管理介面密碼" class="headerlink" title="Q. 忘記 OpenMediaVault Web 管理介面密碼"></a>Q. 忘記 OpenMediaVault Web 管理介面密碼</h2><p>使用 OpenMediaVault 一陣子後發現忘記密碼，有沒有方式可以重置密碼呢？  </p>
-<p>以 root 身份登入 SSH Server，並執行 <code>omv-firstaid</code><br>選擇 <code>3 Change WebGUI administrator password</code>  </p>
-<p>參考<br><a href="https://forum.openmediavault.org/index.php/Thread/7784-Default-Login/" target="_blank" rel="noopener">https://forum.openmediavault.org/index.php/Thread/7784-Default-Login/</a><br><a href="http://blog.ilc.edu.tw/blog/index.php?op=printView&amp;articleId=648180&amp;blogId=25793" target="_blank" rel="noopener">忘了 OpenMediaVault Web 管理介面密碼</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/03/13/openmediavault-forgot-password/" data-id="cklfscuie002y9ds1xn2vef5b" data-title="OpenMediaVault 忘記密碼" class="article-share-link">Share</a>
-      
-      
     </footer>
   </div>
   
@@ -695,7 +707,7 @@
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/37/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/36/">36</a><a class="page-number" href="/page/37/">37</a><span class="page-number current">38</span><a class="page-number" href="/page/39/">39</a><a class="page-number" href="/page/40/">40</a><span class="space">&hellip;</span><a class="page-number" href="/page/43/">43</a><a class="extend next" rel="next" href="/page/39/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/37/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/36/">36</a><a class="page-number" href="/page/37/">37</a><span class="page-number current">38</span><a class="page-number" href="/page/39/">39</a><a class="page-number" href="/page/40/">40</a><span class="space">&hellip;</span><a class="page-number" href="/page/44/">44</a><a class="extend next" rel="next" href="/page/39/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -742,6 +754,10 @@
           </li>
         
           <li>
+            <a href="/blog/2021/02/12/Python-round/">Python 四捨五入 round</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/02/11/Git-clone-https-ask-for-password/">Git clone https 提示輸入帳號密碼</a>
           </li>
         
@@ -761,10 +777,6 @@
             <a href="/blog/2021/02/07/Python-class/">Python class 類別用法與教學</a>
           </li>
         
-          <li>
-            <a href="/blog/2021/02/06/kanban/">使用 Kanban 方法追蹤進度與提升工作效率</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -774,7 +786,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">67</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">118</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">67</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">120</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
