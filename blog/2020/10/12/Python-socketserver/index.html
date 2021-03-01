@@ -16,19 +16,19 @@
 <!-- End Google Analytics -->
 
   
-  <title>[Python] socketserver 伺服器端網路通訊程式 | ShengYu Talk</title>
+  <title>Python socketserver 伺服器端網路通訊程式 | ShengYu Talk</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="本篇介紹如何使用 Python 3 提供的 socketserver 類別來撰寫 Server 伺服器端的程式，在上一篇介紹了怎麼撰寫一個基本的 TCP socket 通訊程式，這一篇將專門介紹 server 伺服器端的撰寫，為什麼呢？因為通常伺服器端的程式是比客戶端的程式還要難的，所以 python 提供了 socketserver 這個模組來簡化這個開發的難易度，而 python 的 sock">
 <meta name="keywords" content="Python">
 <meta property="og:type" content="article">
-<meta property="og:title" content="[Python] socketserver 伺服器端網路通訊程式">
+<meta property="og:title" content="Python socketserver 伺服器端網路通訊程式">
 <meta property="og:url" content="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/index.html">
 <meta property="og:site_name" content="ShengYu Talk">
 <meta property="og:description" content="本篇介紹如何使用 Python 3 提供的 socketserver 類別來撰寫 Server 伺服器端的程式，在上一篇介紹了怎麼撰寫一個基本的 TCP socket 通訊程式，這一篇將專門介紹 server 伺服器端的撰寫，為什麼呢？因為通常伺服器端的程式是比客戶端的程式還要難的，所以 python 提供了 socketserver 這個模組來簡化這個開發的難易度，而 python 的 sock">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2021-02-20T02:45:35.356Z">
+<meta property="og:updated_time" content="2021-03-01T04:32:59.035Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="[Python] socketserver 伺服器端網路通訊程式">
+<meta name="twitter:title" content="Python socketserver 伺服器端網路通訊程式">
 <meta name="twitter:description" content="本篇介紹如何使用 Python 3 提供的 socketserver 類別來撰寫 Server 伺服器端的程式，在上一篇介紹了怎麼撰寫一個基本的 TCP socket 通訊程式，這一篇將專門介紹 server 伺服器端的撰寫，為什麼呢？因為通常伺服器端的程式是比客戶端的程式還要難的，所以 python 提供了 socketserver 這個模組來簡化這個開發的難易度，而 python 的 sock">
   
     <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
@@ -106,7 +106,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      [Python] socketserver 伺服器端網路通訊程式
+      Python socketserver 伺服器端網路通訊程式
     </h1>
   
 
@@ -133,12 +133,12 @@
 <h2 id="多執行緒的伺服器端程式"><a href="#多執行緒的伺服器端程式" class="headerlink" title="多執行緒的伺服器端程式"></a>多執行緒的伺服器端程式</h2><p>上述的例子一次最多只能服務一個客戶端，這篇介紹用 <code>socketserver.ThreadingMixIn</code> 的方式達成每個連線都建立一個新的執行緒來服務，<br>進而達成多客戶端連線溝通的例子，<br>在範例中的 <code>ThreadedTCPServer</code> 是多重繼承 <code>socketserver.ThreadingMixIn</code> 與 <code>socketserver.TCPServer</code><br><figure class="highlight python"><figcaption><span>python3-socketserver-asynchronous-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socketserver, sys, threading</span><br><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> ctime</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadedTCPRequestHandler</span><span class="params">(socketserver.BaseRequestHandler)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle</span><span class="params">(self)</span>:</span></span><br><span class="line">        cur = threading.current_thread()</span><br><span class="line">        print(<span class="string">'[%s] Client connected from %s and [%s] is handling with him.'</span> % (ctime(), self.request.getpeername(), cur.name))</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            indata = self.request.recv(<span class="number">1024</span>).strip()</span><br><span class="line">            <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">                self.request.close()</span><br><span class="line">                print(<span class="string">'client closed connection.'</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">            outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">            self.request.send(outdata.encode())</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadedTCPServer</span><span class="params">(socketserver.ThreadingMixIn, socketserver.TCPServer)</span>:</span></span><br><span class="line">    daemon_threads = <span class="literal">True</span></span><br><span class="line">    allow_reuse_address = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    HOST, PORT = <span class="string">'0.0.0.0'</span>, <span class="number">7000</span></span><br><span class="line">    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)</span><br><span class="line">    ip, port = server.server_address</span><br><span class="line">    print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        server.serve_forever()</span><br><span class="line">    <span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">        sys.exit(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
 <p>參考<br>21.21. socketserver — A framework for network servers — Python 3.5.10 documentation<br><a href="https://docs.python.org/3.5/library/socketserver.html#examples" target="_blank" rel="noopener">https://docs.python.org/3.5/library/socketserver.html#examples</a><br>例項講解Python中SocketServer模組處理網路請求的用法 | 程式前沿<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368565/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368565/</a><br>Python使用SocketServer模組編寫基本伺服器程式的教程 | 程式前沿<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368387/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368387/</a><br>Python socketserver — A framework for network servers | My.APOLLO<br><a href="https://myapollo.com.tw/zh-tw/python-socketserver/" target="_blank" rel="noopener">https://myapollo.com.tw/zh-tw/python-socketserver/</a><br>20.17. SocketServer — A framework for network servers — Python 2 documentation<br><a href="https://docs.python.org/2/library/socketserver.html" target="_blank" rel="noopener">https://docs.python.org/2/library/socketserver.html</a><br>socketserver — A framework for network servers — Python 3 documentation<br><a href="https://docs.python.org/3/library/socketserver.html" target="_blank" rel="noopener">https://docs.python.org/3/library/socketserver.html</a>  </p>
 <p>其他相關參考<br>c# - Why does my python TCP server need to bind to 0.0.0.0 and not localhost or it’s IP address? - Stack Overflow<br><a href="https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its" target="_blank" rel="noopener">https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its</a><br>Python 3 TypeError: Can’t convert ‘bytes’ object to str implicitly - Mkyong.com<br><a href="https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/" target="_blank" rel="noopener">https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2020/06/29/Python-tcp-socket/" title="[Python] TCP Socket Server/Client 網路通訊程式">[Python] TCP Socket Server/Client 網路通訊程式</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/blog/2020/06/29/Python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊程式">Python TCP Socket Server/Client 網路通訊程式</a>  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="cklljd8t800bzpbs1fbmpvegd" data-title="[Python] socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="cklq38bwj00hyi7s113y4a0yv" data-title="Python socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -165,7 +165,7 @@
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          [Python] 檢查 list 列表是否為空
+          Python 檢查 list 列表是否為空
         
       </div>
     </a>
@@ -209,6 +209,18 @@
       <ul>
         
           <li>
+            <a href="/blog/2021/02/27/Ubuntu-cmake/">Ubuntu cmake 編譯安裝</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2021/02/26/googletest/">GoogleTest 寫 C++ 單元測試的用法與教學</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2021/02/25/Android-adb-set-date/">Android adb 同步時間/設定時間</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/02/22/Python-str-slice/">Python 字串切片</a>
           </li>
         
@@ -236,18 +248,6 @@
             <a href="/blog/2021/02/14/Python-write-json-file/">Python 寫入 json 檔案</a>
           </li>
         
-          <li>
-            <a href="/blog/2021/02/13/Git-gui-chinese-encoding/">git gui / gitk 解決中文亂碼問題</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/02/12/Python-round/">Python 四捨五入 round</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/02/11/Git-clone-https-ask-for-password/">Git clone https 提示輸入帳號密碼</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -257,7 +257,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">67</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">68</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
