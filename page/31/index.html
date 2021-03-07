@@ -88,6 +88,133 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Hexo-local-disable-google-analytics" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/09/11/Hexo-local-disable-google-analytics/" class="article-date">
+  <time datetime="2019-09-11T14:00:00.000Z" itemprop="datePublished">2019-09-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/09/11/Hexo-local-disable-google-analytics/">Hexo 本機測試時如何關閉 Google Analytics</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>ShengYu 最近在使用 Hexo 進行 <code>hexo s</code> 本機測試的文章時，發現這些瀏覽行為也會被 Google Analytics 給紀錄回傳出去，<br>但是這時候的行為大多數都是點擊測試看看連結有沒有作用, 然後關閉，<br>不然就是瀏覽整個版面有沒有正常文章有無順暢, 然後關閉，<br>這些不太像是正常使用者的行為，我想看的數據是真實使用者的數據阿！！不想紀錄這愚蠢的數據XD  </p>
+<p>如果不想讓以上這些本機開發測試的這些行為被 Google Analytics 給紀錄進去,<br>最好的方式就是在本機測試 <code>hexo s</code> 時, 先把 Google Analytics 拿掉,  </p>
+<p>位置在 <code>themes/landscape/_config.yml</code>，把裡面的 <code>google_analytics: UA-xxxxxxxx-x</code> 拿掉即可，<br>但每次前都要去拿掉，發布前要加回來，這動作一直重複且容易忘記，<br>這時可以寫成一個 script，ShengYu 自己的習慣是寫成 Makefile，  </p>
+<p>Makefile 範例如下：<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server: remove_google_analytics generate</span></span><br><span class="line">    @hexo s -p <span class="variable">$(PORT)</span> --drafts</span><br><span class="line"></span><br><span class="line"><span class="section">server_without_drafts: remove_google_analytics generate</span></span><br><span class="line">    @hexo s -p <span class="variable">$(PORT)</span></span><br><span class="line"></span><br><span class="line"><span class="section">deploy: add_google_analytics generate</span></span><br><span class="line">    @echo <span class="string">"Start deploy ..."</span> &amp;&amp; \</span><br><span class="line">    hexo d</span><br><span class="line"></span><br><span class="line"><span class="section">generate: clean</span></span><br><span class="line">    @echo <span class="string">"Generate ..."</span> &amp;&amp; \</span><br><span class="line">    hexo g</span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    @echo <span class="string">"Clean ..."</span> &amp;&amp; \</span><br><span class="line">    hexo clean</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把 google analytics 移除, 避免用本機測試時上傳不真實數據</span></span><br><span class="line"><span class="section">remove_google_analytics:</span></span><br><span class="line">    sed -i 's/'google_analytics:\ UA-xxxxxxxx-x'/'google_analytics:'/g' themes/landscape/_config.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 發布前把 google analytics 加回來</span></span><br><span class="line"><span class="section">add_google_analytics:</span></span><br><span class="line">    sed -i 's/'google_analytics:'/'google_analytics:\ UA-xxxxxxxx-x'/g' themes/landscape/_config.yml</span><br></pre></td></tr></table></figure></p>
+<p>這腳本包含了7個規則 (rule)，那這個腳本要怎麼使用呢？<br><strong>make server</strong> - 啟動本機網頁伺服器<br>(會先執行它的依賴規則，remove_google_analytics 和 generate)<br>也就是說，輸入make srever，會幫我們先執行 remove_google_analytics 這個規則，<br>再執行 generate 這個規則，最後執行 server 本身這個規則。<br>輸入一個指令就幫我們執行了三個規則了，好膩害！  </p>
+<p><strong>make server_without_drafts</strong> - 啟動本機網頁伺服器，無草稿模式<br><strong>make deploy</strong> - 發布<br>會先去執行它的依賴規則，先執行 add_google_analytics 這個規則，<br>再執行 generate 這個規則，最後執行 deploy 本身的規則。  </p>
+<p><strong>make clean</strong> - 清除<br><strong>make generate</strong> - 產生靜態網頁資料<br><strong>make remove_google_analytics</strong> - 移除 google analytics id<br><strong>make add_google_analytics</strong> - 加入 google analytics id<br>如果對 Makefile 規則不熟悉的話可以 Google 一下。  </p>
+<p>以上就是 ShengYu 目前在使用的腳本，是不是方便多了呢！哈哈！  </p>
+<p><strong>相關文章</strong><br><a href="/blog/2018/02/13/Hexo-google-analytics/" title="Hexo 使用 Google Analytics 進行網站流量分析">Hexo 使用 Google Analytics 進行網站流量分析</a><br><a href="/blog/2019/03/30/Hexo-codeblock/" title="Hexo codeblock 插入程式碼區塊與各種程式語言預覽">Hexo codeblock 插入程式碼區塊與各種程式語言預覽</a><br><a href="/blog/2019/03/30/Hexo-upgrade/" title="升級更新 Hexo upgrade">升級更新 Hexo upgrade</a><br><a href="/blog/2019/04/01/Hexo-theme/" title="Hexo 熱門主題列表">Hexo 熱門主題列表</a><br><a href="/blog/2018/01/24/Hexo-Install-Ubuntu/" title="Ubuntu 安裝 Hexo">Ubuntu 安裝 Hexo</a><br><a href="/blog/2018/09/16/Hexo-Install-Mac-OS/" title="Mac OS 安裝 Hexo">Mac OS 安裝 Hexo</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/11/Hexo-local-disable-google-analytics/" data-id="cklyk05we005x69s181euun3f" data-title="Hexo 本機測試時如何關閉 Google Analytics" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-App-google-analytics" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/09/10/App-google-analytics/" class="article-date">
+  <time datetime="2019-09-10T14:00:00.000Z" itemprop="datePublished">2019-09-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/09/10/App-google-analytics/">Google Analytics Mobile App 隨時掌握網站即時資訊</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>Google Analytics Mobile App 是由 Google 官方所提供的工具。</p>
+<p>Android 的使用者可從以 Google Play 下載這個 <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.giant&amp;hl=zh_TW" target="_blank" rel="noopener">Google Analytics Mobile App</a>。</p>
+<p>iOS 的使用者可從以 Apple Store 下載這個 <a href="https://apps.apple.com/tw/app/google-analytics/id881599038" target="_blank" rel="noopener">Google Analytics Mobile App</a>。</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-122950.png">
+<p>有了這個 Google Analytics Mobile App 就可以隨時掌握網站的即時數據。</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-123158.png">
+<p>哇！這各式各樣的圖，看起來好專業呀！</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124908.png">
+<p>第一次進入 App 有簡單的介紹</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124913.png">
+<p>左右滑動可以瀏覽不同維度的資料</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124917.png">
+<p>凡是都要踏出第一步，勇敢地按下踏出第一步吧！</p>
+<img src="/blog/2019/09/10/App-google-analytics/Screenshot_20190904-124932.png">
+<p>如果有好幾個網站的話，可以選擇看哪個網站的數據，之後就開始慢慢摸索這些數據吧～</p>
+<h3 id="看更多文章"><a href="#看更多文章" class="headerlink" title="看更多文章"></a>看更多文章</h3><a href="/blog/2019/09/11/Hexo-local-disable-google-analytics/" title="Hexo 本機測試時如何關閉 Google Analytics">Hexo 本機測試時如何關閉 Google Analytics</a>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/10/App-google-analytics/" data-id="cklyk05we005w69s1bogijqk6" data-title="Google Analytics Mobile App 隨時掌握網站即時資訊" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Shell-Script-while" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2019/09/09/Shell-Script-while/" class="article-date">
@@ -119,10 +246,80 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Shell-Script-while/" data-id="cklsok83g005twus14f4dwxjr" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Shell-Script-while/" data-id="cklyk05wd005v69s1zpp7asof" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Python-Bluetooth-L2CAP" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/09/09/Python-Bluetooth-L2CAP/" class="article-date">
+  <time datetime="2019-09-09T14:00:00.000Z" itemprop="datePublished">2019-09-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/09/09/Python-Bluetooth-L2CAP/">Python 寫藍芽 L2CAP 通訊程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>以下範例 ShengYu 將會介紹如何使用 Python 來寫 L2CAP 藍芽通訊程式，內容包含使用 bluetooth socket 建立一個連線，傳輸資料與斷線。</p>
+<p>範例 l2cap-server.py 和 l2cap-client.py 簡單演示了如何使用 L2CAP 傳輸協定。</p>
+<p>使用 L2CAP socket 幾乎與 RFCOMM socket 相同。</p>
+<p>唯一不一樣的地方是在 BluetoothSocket 建構時傳入 L2CAP 這個參數, 並且 port number 為 0x1001 到 0x8FFF 之間的奇數, 而不是原本的 1 到 30。</p>
+<p>預設的最大傳輸單元 MTU 為 672 bytes.</p>
+<h2 id="server-端程式"><a href="#server-端程式" class="headerlink" title="server 端程式"></a>server 端程式</h2><figure class="highlight python"><figcaption><span>l2cap-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">server_sock=bluetooth.BluetoothSocket( bluetooth.L2CAP )</span><br><span class="line"></span><br><span class="line">port = <span class="number">0x1001</span></span><br><span class="line">server_sock.bind((<span class="string">""</span>,port))</span><br><span class="line">server_sock.listen(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">client_sock,address = server_sock.accept()</span><br><span class="line"><span class="keyword">print</span> <span class="string">"Accepted connection from "</span>,address</span><br><span class="line"></span><br><span class="line">data = client_sock.recv(<span class="number">1024</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"received [%s]"</span> % data</span><br><span class="line"></span><br><span class="line">client_sock.close()</span><br><span class="line">server_sock.close()</span><br></pre></td></tr></table></figure>
+<h2 id="client-端程式"><a href="#client-端程式" class="headerlink" title="client 端程式"></a>client 端程式</h2><figure class="highlight python"><figcaption><span>l2cap-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">sock=bluetooth.BluetoothSocket( bluetooth.L2CAP )</span><br><span class="line"></span><br><span class="line">bd_addr = <span class="string">"01:23:45:67:89:AB"</span> <span class="comment"># server 端的 addr</span></span><br><span class="line">port = <span class="number">0x1001</span></span><br><span class="line"></span><br><span class="line">sock.connect((bd_addr, port))</span><br><span class="line"></span><br><span class="line">sock.send(<span class="string">"hello!!"</span>)</span><br><span class="line"></span><br><span class="line">sock.close()</span><br></pre></td></tr></table></figure>
+<p>L2CAP 發送封包有最大限制，兩個裝置都各自維護了一個 MTU 來指定收到封包的最大大小，如果兩者調整各自的MTU，那麼它們有可能增加整個連線的MTU，從預設的 672 bytes 可以調整到 65535 bytes。但通常兩裝置的MTU值是設定相同的數值。在 PyBluez 裡，可以透過 set_l2cap_mtu 函式來調整這個值。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">l2cap_sock = bluetooth.BluetoothSocket( bluetooth.L2CAP )</span><br><span class="line">    .</span><br><span class="line">    . <span class="comment"># connect the socket</span></span><br><span class="line">    .</span><br><span class="line">bluetooth.set_l2cap_mtu( l2cap_sock, <span class="number">65535</span> )</span><br></pre></td></tr></table></figure>
+<p>set_l2cap_mtu 這函式使用方式相當地直觀，第一個參數為 L2CAP BluetoothSocket，第二個參數為欲設定的 MTU 數值。指定 Socket 的 incoming MTU 將會被調整，其它的 Socket 不受影響。set_l2cap_mtu 與其它 PyBluez 函式一樣，返回錯誤的話會拋出 BluetoothException 例外。</p>
+<p>雖然我們先前提到使用 L2CAP 連線是不可靠，許多情況下有可能會用到，調整一個連線的可靠性在 PyBluez 也是很簡單呼叫個 set_packet_timeout 函式就完成了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bluetooth.set_packet_timeout( bdaddr, timeout )</span><br></pre></td></tr></table></figure>
+<p>set_packet_timeout 帶入參數為 Bluetooth address 和一個 timeout 時間(單位為milliseconds)，它將嘗試去調整封包的 timeout 時間(對任何 L2CAP 和 RFCOMM 的裝置連線)。 這個程序必須要使用管理員權限執行，且必須是一個主動連線。 只要有任何主動連線是打開的，這調整效果將一直持續，包含 Python 以外的程式。</p>
+<p>參考<br><a href="https://people.csail.mit.edu/albert/bluez-intro/x264.html" target="_blank" rel="noopener">https://people.csail.mit.edu/albert/bluez-intro/x264.html</a></p>
+<p>相關主題<br><a href="/blog/2019/09/11/Python-Bluetooth-first-program/" title="Python 的第一支藍芽程式">Python 的第一支藍芽程式</a><br><a href="/blog/2019/04/27/Python-Bluetooth-RFCOMM/" title="Python 寫藍芽 RFCOMM 通訊程式">Python 寫藍芽 RFCOMM 通訊程式</a><br><a href="/blog/2019/09/19/Python-Bluetooth-SDP/" title="Python 寫藍芽 Service Discovery Protocol 通訊程式">Python 寫藍芽 Service Discovery Protocol 通訊程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Python-Bluetooth-L2CAP/" data-id="cklyk05wd005u69s1iaqzeyuk" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
 
     </footer>
   </div>
@@ -179,7 +376,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/06/03/Python-2to3/" data-id="cklsok83f005rwus13j31ickv" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/06/03/Python-2to3/" data-id="cklyk05wc005t69s16eldbr0x" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -239,7 +436,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/30/Qt-View-Model/" data-id="cklsok83f005qwus1nqjjtr2w" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/30/Qt-View-Model/" data-id="cklyk05wc005s69s1hv4sfcht" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -297,7 +494,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/29/OpenCV-version/" data-id="cklsok83e005pwus1izysjf6o" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/29/OpenCV-version/" data-id="cklyk05wb005r69s1qeklboqi" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -360,7 +557,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/17/Cpp-get-current-time-and-date/" data-id="cklsok83e005owus1u5uck331" data-title="C++ 取得系統當前時間" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/17/Cpp-get-current-time-and-date/" data-id="cklyk05wb005q69s1b0jen3sy" data-title="C++ 取得系統當前時間" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -414,7 +611,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/08/Linux-rsync/" data-id="cklsok83e005nwus10cww5u3e" data-title="使用 Linux rsync 同步最近修改的檔案/遠端同步資料檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/08/Linux-rsync/" data-id="cklyk05wa005p69s1qy9cbx1t" data-title="使用 Linux rsync 同步最近修改的檔案/遠端同步資料檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -480,257 +677,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/01/Cpp-singleton-pattern/" data-id="cklsok83d005mwus1dyrhs5t5" data-title="C++ 設計模式 - 單例模式 Singleton Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/01/Cpp-singleton-pattern/" data-id="cklyk05wa005o69s146iqp4x7" data-title="C++ 設計模式 - 單例模式 Singleton Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-regular-expression" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/29/regular-expression/" class="article-date">
-  <time datetime="2019-04-29T14:00:00.000Z" itemprop="datePublished">2019-04-29</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/29/regular-expression/">正規表示式 Regular Expression</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹正規表示式 Regular Expression，  </p>
-<table>
-<thead>
-<tr>
-<th>表達式</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>^</td>
-<td>行首</td>
-</tr>
-<tr>
-<td>$</td>
-<td>行尾</td>
-</tr>
-<tr>
-<td>\s</td>
-<td>空白</td>
-</tr>
-<tr>
-<td>.</td>
-<td>匹配任何單個字元</td>
-</tr>
-<tr>
-<td>[0-9]+</td>
-<td>整數</td>
-</tr>
-<tr>
-<td>+</td>
-<td>配運算式一次或多次</td>
-</tr>
-<tr>
-<td>[A-Za-z]+</td>
-<td>英文單字</td>
-</tr>
-</tbody>
-</table>
-<h2 id="實戰範例"><a href="#實戰範例" class="headerlink" title="實戰範例"></a>實戰範例</h2><table>
-<thead>
-<tr>
-<th>範例</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>^\s</td>
-<td>匹配行首的空格</td>
-</tr>
-<tr>
-<td>\s$</td>
-<td>匹配行末的空格</td>
-</tr>
-<tr>
-<td>^cat</td>
-<td>行首以cat開頭</td>
-</tr>
-<tr>
-<td>^\s[0-9]+\sfiles…+</td>
-<td>行首 空格 數字多個以上 空格 files</td>
-</tr>
-</tbody>
-</table>
-<p>參考<br><a href="http://ccckmit.wikidot.com/regularexpression" target="_blank" rel="noopener">http://ccckmit.wikidot.com/regularexpression</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/29/regular-expression/" data-id="cklsok83d005lwus12nss23kc" data-title="正規表示式 Regular Expression" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Python-Bluetooth-RFCOMM" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/27/Python-Bluetooth-RFCOMM/" class="article-date">
-  <time datetime="2019-04-27T14:00:00.000Z" itemprop="datePublished">2019-04-27</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/27/Python-Bluetooth-RFCOMM/">Python 寫藍芽 RFCOMM 通訊程式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>以下範例 ShengYu 將會介紹如何使用 Python 來寫 RFCOMM 藍芽通訊程式，內容包含使用 bluetooth socket 建立一個連線，傳輸資料與斷線。</p>
-<h2 id="server-端程式"><a href="#server-端程式" class="headerlink" title="server 端程式"></a>server 端程式</h2><p>server 端的程式一開始 bind 在 port 1，<br>listen 指的是最多可以接受多少連線，<br>接下來 accept，這裡 accept 會 block 不會立即返回，<br>直到 client 連上才返回，之後接收 client 的資訊並印出來，然後關閉連線。<br><figure class="highlight python"><figcaption><span>rfcomm-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )</span><br><span class="line"></span><br><span class="line">port = <span class="number">1</span></span><br><span class="line">server_sock.bind((<span class="string">""</span>, port))</span><br><span class="line">server_sock.listen(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">client_sock,address = server_sock.accept()</span><br><span class="line"><span class="keyword">print</span> <span class="string">"Accepted connection from "</span>,address</span><br><span class="line"></span><br><span class="line">data = client_sock.recv(<span class="number">1024</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"received [%s]"</span> % data</span><br><span class="line"></span><br><span class="line">client_sock.close()</span><br><span class="line">server_sock.close()</span><br></pre></td></tr></table></figure></p>
-<h2 id="client-端程式"><a href="#client-端程式" class="headerlink" title="client 端程式"></a>client 端程式</h2><p>client 端的程式需將 server 端的 addr 填入 bd_addr 內，才能成功連上，<br>怎麼查詢藍芽 addr 請看<a href="/blog/2018/02/06/Bluetooth-Programming/" title="這篇">這篇</a>，<br>如下範例, connect 嘗試連上 addr 為 “01:23:45:67:89:AB”, port 為 1 的裝置，<br>connect 連上 server 後，送出一個 <code>hello!!</code> 就斷線。<br><figure class="highlight python"><figcaption><span>rfcomm-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">bd_addr = <span class="string">"01:23:45:67:89:AB"</span> <span class="comment"># server 端的 addr</span></span><br><span class="line"></span><br><span class="line">port = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )</span><br><span class="line">sock.connect((bd_addr, port))</span><br><span class="line"></span><br><span class="line">sock.send(<span class="string">"hello!!"</span>)</span><br><span class="line"></span><br><span class="line">sock.close()</span><br></pre></td></tr></table></figure></p>
-<p>以上的兩個基本範例就能夠使兩個藍芽裝置進行溝通了！</p>
-<p>ShengYu 將會在下一篇介紹 <a href="/blog/2019/09/09/Python-Bluetooth-L2CAP/" title="如何用Python的藍芽 L2CAP 協定來通訊">如何用Python的藍芽 L2CAP 協定來通訊</a></p>
-<p>參考<br><a href="https://people.csail.mit.edu/albert/bluez-intro/x232.html" target="_blank" rel="noopener">https://people.csail.mit.edu/albert/bluez-intro/x232.html</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/27/Python-Bluetooth-RFCOMM/" data-id="cklsok83c005jwus1p4t6zjw5" data-title="Python 寫藍芽 RFCOMM 通訊程式" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-std-thread-how" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/04/25/std-thread-how/" class="article-date">
-  <time datetime="2019-04-25T14:00:00.000Z" itemprop="datePublished">2019-04-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/04/25/std-thread-how/">std::thread 怎麼實作的？</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::thread 的，<br>在一番 trace code 的結果後，llvm 的 libc++ 實作是這樣的，<br>在 unix 平台下開 thread 就是轉換到 pthread 的 pthread_create。<br>在 windows 平台下開 thread 就是轉換到 win32 的 _beginthreadex。<br>gcc 的 libstdc++ 實作也是如此。  </p>
-<p>簡單介紹這兩種 c++ 庫差異：  </p>
-<ul>
-<li>libc++ (LLVM C++ standard library with C++ 11 support)  </li>
-<li>libstdc++ (GNU C++ standard library)  </li>
-</ul>
-<p>以下是 llvm 下 libc++ 怎麼實作的 code snippet，  </p>
-<h2 id="1-std-thread-thread-的實作"><a href="#1-std-thread-thread-的實作" class="headerlink" title="1. std::thread::thread 的實作"></a>1. std::thread::thread 的實作</h2><p>建構子 <code>thread</code> 轉換成內部的 <code>__libcpp_thread_create</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/thread</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/thread" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> _<span class="title">Fp</span>, <span class="title">class</span> ..._<span class="title">Args</span>,</span></span><br><span class="line"><span class="class">          <span class="title">class</span></span></span><br><span class="line"><span class="class">         &gt;</span></span><br><span class="line"><span class="class"><span class="title">thread</span>:</span>:thread(_Fp&amp;&amp; __f, _Args&amp;&amp;... __args)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="built_in">unique_ptr</span>&lt;__thread_struct&gt; _TSPtr;</span><br><span class="line">    _TSPtr __tsp(<span class="keyword">new</span> __thread_struct);</span><br><span class="line">    <span class="keyword">typedef</span> tuple&lt;_TSPtr, <span class="keyword">typename</span> decay&lt;_Fp&gt;::type, <span class="keyword">typename</span> decay&lt;_Args&gt;::type...&gt; _Gp;</span><br><span class="line">    _VSTD::<span class="built_in">unique_ptr</span>&lt;_Gp&gt; __p(</span><br><span class="line">            <span class="keyword">new</span> _Gp(<span class="built_in">std</span>::move(__tsp),</span><br><span class="line">                    __decay_copy(_VSTD::forward&lt;_Fp&gt;(__f)),</span><br><span class="line">                    __decay_copy(_VSTD::forward&lt;_Args&gt;(__args))...));</span><br><span class="line">    <span class="keyword">int</span> __ec = __libcpp_thread_create(&amp;__t_, &amp;__thread_proxy&lt;_Gp&gt;, __p.get());</span><br><span class="line">    <span class="keyword">if</span> (__ec == <span class="number">0</span>)</span><br><span class="line">        __p.release();</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        __throw_system_error(__ec, <span class="string">"thread constructor failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="1-1-std-thread-thread-在-unix-平台的實作內容"><a href="#1-1-std-thread-thread-在-unix-平台的實作內容" class="headerlink" title="1-1. std::thread::thread 在 unix 平台的實作內容"></a>1-1. std::thread::thread 在 unix 平台的實作內容</h3><p><code>__libcpp_thread_create</code> 在 unix 平台是呼叫 <code>pthread_create</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">pthread_t</span> <span class="keyword">__libcpp_thread_t</span>;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">int</span> __libcpp_thread_create(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>, <span class="keyword">void</span> *(*__func)(<span class="keyword">void</span> *),</span><br><span class="line">                           <span class="keyword">void</span> *__arg)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_create(<span class="keyword">__t</span>, <span class="number">0</span>, __func, __arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="1-2-std-thread-thread-在-windows-平台的實作內容"><a href="#1-2-std-thread-thread-在-windows-平台的實作內容" class="headerlink" title="1-2. std::thread::thread 在 windows 平台的實作內容"></a>1-2. std::thread::thread 在 windows 平台的實作內容</h3><p><code>__libcpp_thread_create</code> 在 windows 平台是呼叫 <code>_beginthreadex</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_thread_create(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>, <span class="keyword">void</span> *(*__func)(<span class="keyword">void</span> *),</span><br><span class="line">                           <span class="keyword">void</span> *__arg)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">auto</span> *__data = <span class="keyword">new</span> __libcpp_beginthreadex_thunk_data;</span><br><span class="line">  __data-&gt;__func = __func;</span><br><span class="line">  __data-&gt;__arg = __arg;</span><br><span class="line"></span><br><span class="line">  *<span class="keyword">__t</span> = <span class="keyword">reinterpret_cast</span>&lt;HANDLE&gt;(_beginthreadex(<span class="literal">nullptr</span>, <span class="number">0</span>,</span><br><span class="line">                                                 __libcpp_beginthreadex_thunk,</span><br><span class="line">                                                 __data, <span class="number">0</span>, <span class="literal">nullptr</span>));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (*<span class="keyword">__t</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> GetLastError();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="2-std-thread-join-的實作"><a href="#2-std-thread-join-的實作" class="headerlink" title="2. std::thread::join 的實作"></a>2. std::thread::join 的實作</h2><p><code>join</code> 轉換成內部的 <code>__libcpp_thread_join</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/thread.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/thread.cpp" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">thread::join()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = EINVAL;</span><br><span class="line">    <span class="keyword">if</span> (!__libcpp_thread_isnull(&amp;__t_))</span><br><span class="line">    &#123;</span><br><span class="line">        ec = __libcpp_thread_join(&amp;__t_);</span><br><span class="line">        <span class="keyword">if</span> (ec == <span class="number">0</span>)</span><br><span class="line">            __t_ = _LIBCPP_NULL_THREAD;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"thread::join failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="2-1-std-thread-join-在-unix-平台的實作內容"><a href="#2-1-std-thread-join-在-unix-平台的實作內容" class="headerlink" title="2-1. std::thread::join 在 unix 平台的實作內容"></a>2-1. std::thread::join 在 unix 平台的實作內容</h3><p><code>__libcpp_thread_join</code> 在 unix 平台是呼叫 <code>pthread_join</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_thread_join(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_join(*<span class="keyword">__t</span>, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="2-2-std-thread-join-在-windows-平台的實作內容"><a href="#2-2-std-thread-join-在-windows-平台的實作內容" class="headerlink" title="2-2. std::thread::join 在 windows 平台的實作內容"></a>2-2. std::thread::join 在 windows 平台的實作內容</h3><p><code>__libcpp_thread_join</code> 在 windows 平台是呼叫 <code>WaitForSingleObjectEx</code> 和 <code>CloseHandle</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_thread_join(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (WaitForSingleObjectEx(*<span class="keyword">__t</span>, INFINITE, FALSE) == WAIT_FAILED)</span><br><span class="line">    <span class="keyword">return</span> GetLastError();</span><br><span class="line">  <span class="keyword">if</span> (!CloseHandle(*<span class="keyword">__t</span>))</span><br><span class="line">    <span class="keyword">return</span> GetLastError();</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p>在一番 trace code 的結果後，std::thread 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::thread::thread</code> 轉換成 <code>pthread_create</code><br><code>std::thread::join</code> 轉換成 <code>pthread_join</code><br>在 windows 下<br><code>std::thread::thread</code> 轉換成 <code>_beginthreadex</code><br><code>std::thread::join</code> 轉換成 <code>WaitForSingleObjectEx</code> 和 <code>CloseHandle</code>  </p>
-<h2 id="線上-trace-code-工具"><a href="#線上-trace-code-工具" class="headerlink" title="線上 trace code 工具"></a>線上 trace code 工具</h2><p>介紹一下 <a href="https://code.woboq.org/" target="_blank" rel="noopener">Woboq</a> 這個線上 trace code 網頁，可以點擊關鍵字跳至定義處，trace code 起來很方便，減少很多搜尋的時間。<br><a href="https://code.woboq.org/llvm/libcxx/include/thread.html#_ZNSt3__16threadC1EOT_DpOT0_" target="_blank" rel="noopener">thread::thread()</a><br><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html#_ZNSt3__122__libcpp_thread_createEPmPFPvS1_ES1_" target="_blank" rel="noopener">__libcpp_thread_create()</a>  </p>
-<p><strong>相關主題</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/blog/2019/11/16/std-condition-variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/blog/2019/11/17/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/blog/2019/11/18/Cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/04/25/std-thread-how/" data-id="cklsok83c005kwus15spbih82" data-title="std::thread 怎麼實作的？" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
 
     </footer>
   </div>
@@ -743,7 +693,7 @@
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/30/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/45/">45</a><a class="extend next" rel="next" href="/page/32/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/30/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/46/">46</a><a class="extend next" rel="next" href="/page/32/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -774,6 +724,14 @@
       <ul>
         
           <li>
+            <a href="/blog/2021/03/04/Cpp-explicit/">C++ explicit 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2021/03/01/Cpp-new-delete/">C++ new 動態記憶體配置用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/02/28/Linux-wc/">使用 Linux wc 計算數量</a>
           </li>
         
@@ -794,23 +752,15 @@
           </li>
         
           <li>
+            <a href="/blog/2021/02/20/Cpp-range-sum-query-immutable/">C++ 區域和檢索 Range Sum Query - Immutable</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/02/19/Python-pow/">Python 平方、次方用法與範例</a>
           </li>
         
           <li>
             <a href="/blog/2021/02/18/Python-mod/">Python mod 取餘數用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/02/17/vscode-cpp/">Visual Studio Code 安裝 C/C++11 環境教學</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/02/16/Python-tuple-slice/">Python 元組切片</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/02/15/Python-set/">Python set 用法與範例</a>
           </li>
         
       </ul>
@@ -822,7 +772,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">68</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">71</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
