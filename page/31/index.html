@@ -88,6 +88,72 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Python-Bluetooth-SDP" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/09/19/Python-Bluetooth-SDP/" class="article-date">
+  <time datetime="2019-09-19T14:00:00.000Z" itemprop="datePublished">2019-09-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/09/19/Python-Bluetooth-SDP/">Python 寫藍芽 Service Discovery Protocol 通訊程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>到目前為止介紹了如何偵測鄰近的藍芽裝置，且建立兩種傳輸類型的連線，都是用固定的 Bluetooth address 和 port numbers，在實務上我們不推薦這麼做。</p>
+<p>在 PyBluez 裡, 使用 服務發現協定 Service Discovery Protocol (SDP) 來動態地配置 port number 進行尋找是很簡單的。get_available_port 函式用來查找可用的 L2CAP 或 RFCOMM 的 port。advertise_service 函式用來廣播這個本地端 SDP 伺服器的服務，find_service 函式用來搜尋指定名稱的藍芽裝置。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bluetooth.get_available_port( protocol )</span><br></pre></td></tr></table></figure>
+<p>get_available_port 回傳指定 protocol 第一個可用的 port number。目前只有支援 RFCOMM 和 L2CAP protocols。get_available_port 只是回傳一個 port number，並沒有實際預定使用任何資源，所以有可能當你要 bind 時，這 port 已經被別人 bind 走了，如果發生的話 bind 會拋出一個BluetoothException 例外。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bluetooth.advertise_service( sock, name, uuid )</span><br><span class="line">bluetooth.stop_advertising( sock )</span><br><span class="line">bluetooth.find_service( name = <span class="literal">None</span>, uuid = <span class="literal">None</span>, bdaddr = <span class="literal">None</span> )</span><br></pre></td></tr></table></figure>
+<p>以上這三種函式用來廣撥服務，advertise_service 函式參數分別為 socket, service name 服務名稱, UUID，<br>這廣撥服務直到呼叫 stop_advertising 函式來關閉該 socket。</p>
+<p>find_service可以搜尋單個或者所有附近特定裝置。透過匹配 name 和 UUID 進行 service 尋找(必須至少指定其中一個)。如果 bdaddr 是 None，那麼所有附近的設備都會進行尋找。如果提供了 localhost 作為 bdaddr 參數，那麼會對本地的 SDP 進行尋找。否則，就會指定的 bdaddr 藍芽裝置進行尋找。</p>
+<h2 id="server-端程式"><a href="#server-端程式" class="headerlink" title="server 端程式"></a>server 端程式</h2><figure class="highlight python"><figcaption><span>rfcomm-server-sdp.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )</span><br><span class="line"></span><br><span class="line">port = bluetooth.get_available_port( bluetooth.RFCOMM )</span><br><span class="line">server_sock.bind((<span class="string">""</span>,port))</span><br><span class="line">server_sock.listen(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"listening on port %d"</span> % port</span><br><span class="line"></span><br><span class="line">uuid = <span class="string">"1e0ca4ea-299d-4335-93eb-27fcfe7fa848"</span></span><br><span class="line">bluetooth.advertise_service( server_sock, <span class="string">"FooBar Service"</span>, uuid )</span><br><span class="line"></span><br><span class="line">client_sock,address = server_sock.accept()</span><br><span class="line"><span class="keyword">print</span> <span class="string">"Accepted connection from "</span>,address</span><br><span class="line"></span><br><span class="line">data = client_sock.recv(<span class="number">1024</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"received [%s]"</span> % data</span><br><span class="line"></span><br><span class="line">client_sock.close()</span><br><span class="line">server_sock.close()</span><br></pre></td></tr></table></figure>
+<h2 id="client-端程式"><a href="#client-端程式" class="headerlink" title="client 端程式"></a>client 端程式</h2><figure class="highlight python"><figcaption><span>rfcomm-client-sdp.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">uuid = <span class="string">"1e0ca4ea-299d-4335-93eb-27fcfe7fa848"</span></span><br><span class="line">service_matches = bluetooth.find_service( uuid = uuid )</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> len(service_matches) == <span class="number">0</span>:</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"couldn't find the FooBar service"</span></span><br><span class="line">    sys.exit(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">first_match = service_matches[<span class="number">0</span>]</span><br><span class="line">port = first_match[<span class="string">"port"</span>]</span><br><span class="line">name = first_match[<span class="string">"name"</span>]</span><br><span class="line">host = first_match[<span class="string">"host"</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"connecting to \"%s\" on %s"</span> % (name, host)</span><br><span class="line"></span><br><span class="line">sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )</span><br><span class="line">sock.connect((host, port))</span><br><span class="line">sock.send(<span class="string">"hello!!"</span>)</span><br><span class="line">sock.close()</span><br></pre></td></tr></table></figure>
+<p>參考<br><a href="https://people.csail.mit.edu/albert/bluez-intro/x290.html" target="_blank" rel="noopener">https://people.csail.mit.edu/albert/bluez-intro/x290.html</a></p>
+<p>相關主題<br><a href="/blog/2019/09/11/Python-Bluetooth-first-program/" title="Python 的第一支藍芽程式">Python 的第一支藍芽程式</a><br><a href="/blog/2019/04/27/Python-Bluetooth-RFCOMM/" title="Python 寫藍芽 RFCOMM 通訊程式">Python 寫藍芽 RFCOMM 通訊程式</a><br><a href="/blog/2019/09/09/Python-Bluetooth-L2CAP/" title="Python 寫藍芽 L2CAP 通訊程式">Python 寫藍芽 L2CAP 通訊程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/19/Python-Bluetooth-SDP/" data-id="ckm2o7gg2006052s1kt84a5g5" data-title="Python 寫藍芽 Service Discovery Protocol 通訊程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Python-Bluetooth-first-program" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2019/09/11/Python-Bluetooth-first-program/" class="article-date">
@@ -142,7 +208,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/11/Python-Bluetooth-first-program/" data-id="ckm19jqn8005wens1srxx2qts" data-title="Python 的第一支藍芽程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/11/Python-Bluetooth-first-program/" data-id="ckm2o7gg2005z52s1zq2z9hfn" data-title="Python 的第一支藍芽程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -202,7 +268,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/11/Hexo-local-disable-google-analytics/" data-id="ckm19jqn7005vens1imb1a4c9" data-title="Hexo 本機測試時如何關閉 Google Analytics" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/11/Hexo-local-disable-google-analytics/" data-id="ckm2o7gg1005y52s1xjs2agiv" data-title="Hexo 本機測試時如何關閉 Google Analytics" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -269,7 +335,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/10/App-google-analytics/" data-id="ckm19jqn6005tens1jcvx6krl" data-title="Google Analytics Mobile App 隨時掌握網站即時資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/10/App-google-analytics/" data-id="ckm2o7gg1005x52s1c7td5qqu" data-title="Google Analytics Mobile App 隨時掌握網站即時資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li></ul>
@@ -312,7 +378,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Shell-Script-while/" data-id="ckm19jqn7005uens1egtqs9pp" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Shell-Script-while/" data-id="ckm2o7gg0005w52s17h4eieh5" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -382,7 +448,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Python-Bluetooth-L2CAP/" data-id="ckm19jqn6005sens1vri8k71c" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/09/09/Python-Bluetooth-L2CAP/" data-id="ckm2o7gg0005v52s1mwrh84ep" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -442,7 +508,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/06/03/Python-2to3/" data-id="ckm19jqn5005rens18bm0qqp7" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/06/03/Python-2to3/" data-id="ckm2o7gfz005u52s16bcexwa9" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -502,7 +568,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/30/Qt-View-Model/" data-id="ckm19jqn5005qens1b997ece3" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/30/Qt-View-Model/" data-id="ckm2o7gfz005t52s1x0n03rx8" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -560,7 +626,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/29/OpenCV-version/" data-id="ckm19jqn3005pens1ijjlchy9" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/29/OpenCV-version/" data-id="ckm2o7gfz005s52s1dtqw2z7k" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -623,64 +689,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/17/Cpp-get-current-time-and-date/" data-id="ckm19jqn2005oens1n9hxda0h" data-title="C++ 取得系統當前時間" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/05/17/Cpp-get-current-time-and-date/" data-id="ckm2o7gfy005r52s1v0hw15to" data-title="C++ 取得系統當前時間" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-rsync" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/05/08/Linux-rsync/" class="article-date">
-  <time datetime="2019-05-08T14:00:00.000Z" itemprop="datePublished">2019-05-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/05/08/Linux-rsync/">使用 Linux rsync 同步最近修改的檔案/遠端同步資料檔案</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹 Linux rsync 指令來同步最近修改的檔案到遠端機器去，<br>以下指令會先找出最近60天修改的檔案並同步到遠端機器上，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync `find . -name &quot;*.pdf&quot; -mtime -60` username@hostname:/tmp/</span><br></pre></td></tr></table></figure></p>
-<p>參考<br><a href="https://www.linuxquestions.org/questions/linux-server-73/rsync-by-date-785692/" target="_blank" rel="noopener">https://www.linuxquestions.org/questions/linux-server-73/rsync-by-date-785692/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/18/Linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/blog/2019/10/04/Linux-sed/" title="使用 Linux sed 字串取代">使用 Linux sed 字串取代</a><br><a href="/blog/2019/12/01/Linux-find/" title="使用 Linux find 尋找檔案/目錄">使用 Linux find 尋找檔案/目錄</a><br><a href="/blog/2019/10/03/Linux-cut/" title="使用 Linux cut 字串處理">使用 Linux cut 字串處理</a><br><a href="/blog/2020/03/06/Linux-tail/" title="使用 Linux tail 持續監看檔案輸出">使用 Linux tail 持續監看檔案輸出</a><br><a href="/blog/2019/12/02/Linux-grep-ack-ag/" title="使用 Linux grep/ack/ag 搜尋字串">使用 Linux grep/ack/ag 搜尋字串</a><br><a href="/blog/2020/03/02/Linux-tee/" title="使用 Linux tee 同時螢幕標準輸出和輸出到檔案">使用 Linux tee 同時螢幕標準輸出和輸出到檔案</a><br><a href="/blog/2020/03/04/Linux-xargs/" title="使用 Linux xargs 參數列表轉換">使用 Linux xargs 參數列表轉換</a><br><a href="/blog/2019/09/26/Linux-du/" title="使用 Linux du 查詢硬碟剩餘空間/資料夾容量">使用 Linux du 查詢硬碟剩餘空間/資料夾容量</a><br><a href="/blog/2019/09/27/Linux-wget/" title="使用 Linux wget 下載檔案">使用 Linux wget 下載檔案</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/05/08/Linux-rsync/" data-id="ckm19jqn1005mens10xacozvb" data-title="使用 Linux rsync 同步最近修改的檔案/遠端同步資料檔案" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -724,6 +736,10 @@
       <ul>
         
           <li>
+            <a href="/blog/2021/03/09/Cpp-cout-myclass/">C++ cout 自定義類別</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/03/08/std-ref/">std::ref 用法與範例</a>
           </li>
         
@@ -759,10 +775,6 @@
             <a href="/blog/2021/02/20/Cpp-range-sum-query-immutable/">C++ 區域和檢索 Range Sum Query - Immutable</a>
           </li>
         
-          <li>
-            <a href="/blog/2021/02/19/Python-pow/">Python 平方、次方用法與範例</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -772,7 +784,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">72</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">73</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
