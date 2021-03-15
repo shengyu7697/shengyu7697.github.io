@@ -88,6 +88,68 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Python-chatroom" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2020/10/19/Python-chatroom/" class="article-date">
+  <time datetime="2020-10-19T14:00:00.000Z" itemprop="datePublished">2020-10-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2020/10/19/Python-chatroom/">Python chatroom 多人聊天室</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- ads-1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹如何使用 Python 來撰寫 chatroom 多人聊天室的程式，在上一篇介紹了<a href="/blog/2020/06/29/Python-tcp-socket/" title="怎麼撰寫一個基本的 TCP socket 通訊程式">怎麼撰寫一個基本的 TCP socket 通訊程式</a>，本篇開始介紹如何使用先前幾篇學習到的 python tcp socket 基礎來打造一個多人聊天室，  </p>
+<p>在多人聊天室的通訊程式設計上，通常有多執行緒(muti-threading)與多路復用(select)的兩種設計方式，以下將會介紹，  </p>
+<h2 id="server-多人聊天室伺服器端-多執行緒版本"><a href="#server-多人聊天室伺服器端-多執行緒版本" class="headerlink" title="server 多人聊天室伺服器端 (多執行緒版本)"></a>server 多人聊天室伺服器端 (多執行緒版本)</h2><p>使用多執行緒來寫多人聊天室伺服器端，每連上一個客戶端便開一個執行緒服務 <code>clientthread()</code> 這個客戶連線，  </p>
+<figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    conn, addr = server.accept()</span><br><span class="line"></span><br><span class="line">    list_of_clients.append(conn)</span><br><span class="line"></span><br><span class="line">    print(addr[<span class="number">0</span>] + <span class="string">" connected"</span>)</span><br><span class="line"></span><br><span class="line">    threading.Thread(target = clientthread, args = (conn, addr))</span><br><span class="line"></span><br><span class="line">conn.close()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure>
+<p>以下為 <code>clientthread()</code> 函式內容，簡單說就是將收到的訊息廣播給已連線的所有客戶端，<br>如果有人離線的話則處理離線的邏輯，<br><figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clientthread</span><span class="params">(conn, addr)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># sends a message to the client whose user object is conn</span></span><br><span class="line">    conn.send(<span class="string">"Welcome to this chatroom!"</span>.encode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            message = conn.recv(<span class="number">2048</span>)</span><br><span class="line">            <span class="keyword">if</span> len(message) != <span class="number">0</span>:</span><br><span class="line">                print(<span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">                <span class="comment"># Calls broadcast function to send message to all</span></span><br><span class="line">                message_to_send = <span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">                broadcast(message_to_send, conn)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                print(<span class="string">'server closed connection.'</span>)</span><br><span class="line">                remove(conn)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            <span class="keyword">continue</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="client-多人聊天室客戶端-select版本"><a href="#client-多人聊天室客戶端-select版本" class="headerlink" title="client 多人聊天室客戶端 (select版本)"></a>client 多人聊天室客戶端 (select版本)</h2><p>使用 select，不但能同時接收訊息外，也能接收到鍵盤的輸入訊息，並把鍵盤輸入的訊息傳輸出去，<br>這兩個一收一送的動作，透過多路復用 select() 函式可以達到同時運作的功效，<br><figure class="highlight python"><figcaption><span>python-chatroom-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> socks <span class="keyword">in</span> read_sockets:</span><br><span class="line">        <span class="keyword">if</span> socks == server:</span><br><span class="line">            message = socks.recv(<span class="number">2048</span>)</span><br><span class="line">            print(message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            message = sys.stdin.readline()</span><br><span class="line">            server.send(message.encode(<span class="string">"utf-8"</span>))</span><br><span class="line">            sys.stdout.write(<span class="string">"&lt;You&gt;"</span>)</span><br><span class="line">            sys.stdout.write(message)</span><br><span class="line">            sys.stdout.flush()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure></p>
+<p><strong>其它相關文章推薦</strong><br>下一篇會介紹如何打造一個gui圖形介面的多人聊天室<br><a href="/blog/2020/06/29/Python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊程式">Python TCP Socket Server/Client 網路通訊程式</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/19/Python-chatroom/" data-id="ckm9tx8jd00c59qs12docmicv" data-title="Python chatroom 多人聊天室" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Python-check-list-empty" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2020/10/15/Python-check-list-empty/" class="article-date">
@@ -138,7 +200,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/15/Python-check-list-empty/" data-id="ckm8xp6j900c5mus1hmijbyg5" data-title="Python 檢查 list 列表是否為空" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/15/Python-check-list-empty/" data-id="ckm9tx8jd00c49qs1wi3yvqjm" data-title="Python 檢查 list 列表是否為空" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -200,7 +262,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="ckm8xp6j900c6mus1z3rpt86f" data-title="Python socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/12/Python-socketserver/" data-id="ckm9tx8jd00c39qs1m5af33lz" data-title="Python socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -266,7 +328,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/08/Cpp-integer-multiplication-overflow/" data-id="ckm8xp6j900c4mus1qedw3197" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/08/Cpp-integer-multiplication-overflow/" data-id="ckm9tx8jc00c29qs11xyvmiwt" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -327,7 +389,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/05/Linux-vim-ctags-cscope/" data-id="ckm8xp6j800c3mus1rvtwuuvf" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/05/Linux-vim-ctags-cscope/" data-id="ckm9tx8jc00c19qs11i6ciqfc" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -417,7 +479,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/28/Linux-vim-shortcuts/" data-id="ckm8xp6j800c2mus1le4i2lj8" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/28/Linux-vim-shortcuts/" data-id="ckm9tx8jb00c09qs1iy28p8hj" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -483,7 +545,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/24/Python-multiple-inheritance/" data-id="ckm8xp6j700c0mus18aweglqr" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/24/Python-multiple-inheritance/" data-id="ckm9tx8jb00bz9qs1zv7yn86i" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -538,7 +600,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/21/Eclipse-cpp-reference-another-project/" data-id="ckm8xp6j600bymus1f692egvt" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/21/Eclipse-cpp-reference-another-project/" data-id="ckm9tx8jb00by9qs155mm8k1t" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -605,7 +667,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/17/Python-inheritance/" data-id="ckm8xp6j700bzmus1h3uugzck" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/17/Python-inheritance/" data-id="ckm9tx8ja00bx9qs1vh0ld3eh" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -714,66 +776,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/14/Qt-shortcuts/" data-id="ckm8xp6j600bxmus1zsooh3oy" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/14/Qt-shortcuts/" data-id="ckm9tx8ja00bw9qs1737n0kkd" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-kill-by-name" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2020/09/10/Linux-kill-by-name/" class="article-date">
-  <time datetime="2020-09-10T14:00:00.000Z" itemprop="datePublished">2020-09-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2020/09/10/Linux-kill-by-name/">Linux kill 指令砍掉指定的 process name</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- ads-1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹如何使用 kill 指令來砍掉特定的應用程式名稱 process name，<br>kill 指令用法是後面是接 process id，例如：<code>kill &lt;pid&gt;</code>，或者<code>kill -9 &lt;pid&gt;</code>，<br>但通常我們都只知道應用程式的名稱，所以通常一般直接使用<code>killall &lt;process_name&gt;</code>或<code>pkill -f &lt;process_name&gt;</code>就可砍掉 process，  </p>
-<h2 id="但假設今天有個情況非得要用-kill-來砍-process-name-要怎麼做？"><a href="#但假設今天有個情況非得要用-kill-來砍-process-name-要怎麼做？" class="headerlink" title="但假設今天有個情況非得要用 kill 來砍 process name 要怎麼做？"></a>但假設今天有個情況非得要用 kill 來砍 process name 要怎麼做？</h2><p>所以通常會用先用 ps 列出所有 process 再 grep 該 process name 才知道 pid 是多少，<br>今天來個組合技搭配 awk 讓這件事在一行指令就完成，假設我們要砍的應用程式名稱為 a.out，<br>最後要串接<code>kill &lt;pid&gt;</code>指令如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps -A | grep a.out | awk &apos;&#123;print $2&#125;&apos; | xargs kill</span><br></pre></td></tr></table></figure></p>
-<p>或者使用<code>kill -9 &lt;pid&gt;</code>的形式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps -A | grep a.out | awk &apos;&#123;print $2&#125;&apos; | xargs kill -9</span><br></pre></td></tr></table></figure></p>
-<p>其他參考<br>Linux 使用 應用程式名稱 來砍掉 Process | Tsung’s Blog<br><a href="https://blog.longwin.com.tw/2012/06/linux-kill-process-by-name-2012/" target="_blank" rel="noopener">https://blog.longwin.com.tw/2012/06/linux-kill-process-by-name-2012/</a><br>linux - How can I kill a process by name instead of PID? - Stack Overflow<br><a href="https://stackoverflow.com/questions/160924/how-can-i-kill-a-process-by-name-instead-of-pid" target="_blank" rel="noopener">https://stackoverflow.com/questions/160924/how-can-i-kill-a-process-by-name-instead-of-pid</a><br>在 Linux 中使用 kill、killall 與 xkill 等指令強迫關閉程式 - G. T. Wang<br><a href="https://blog.gtwang.org/linux/linux-kill-killall-xkill/" target="_blank" rel="noopener">https://blog.gtwang.org/linux/linux-kill-killall-xkill/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/18/Linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/blog/2019/12/01/Linux-find/" title="使用 Linux find 尋找檔案/目錄">使用 Linux find 尋找檔案/目錄</a><br><a href="/blog/2019/10/04/Linux-sed/" title="使用 Linux sed 字串取代">使用 Linux sed 字串取代</a><br><a href="/blog/2019/10/03/Linux-cut/" title="使用 Linux cut 字串處理">使用 Linux cut 字串處理</a><br><a href="/blog/2020/03/06/Linux-tail/" title="使用 Linux tail 持續監看檔案輸出">使用 Linux tail 持續監看檔案輸出</a><br><a href="/blog/2019/03/26/Linux-ag/" title="Linux 比 grep 還快的 ag 搜尋指令">Linux 比 grep 還快的 ag 搜尋指令</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/09/10/Linux-kill-by-name/" data-id="ckm8xp6j500bwmus13h8tjmkz" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -821,6 +827,10 @@
           </li>
         
           <li>
+            <a href="/blog/2021/03/12/online-html-pretty/">2 種 HTML 格式化工具</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/03/09/Cpp-cout-myclass/">C++ cout 自定義類別</a>
           </li>
         
@@ -852,10 +862,6 @@
             <a href="/blog/2021/02/25/Android-adb-set-date/">Android adb 同步時間/設定時間</a>
           </li>
         
-          <li>
-            <a href="/blog/2021/02/22/Python-str-slice/">Python 字串切片</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -865,7 +871,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">73</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">74</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
