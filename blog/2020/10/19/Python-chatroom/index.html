@@ -60,13 +60,15 @@
       <nav id="main-nav">
         <a id="main-nav-toggle" class="nav-icon"></a>
         
-          <a class="main-nav-link" href="/">Home</a>
+          <a class="main-nav-link" href="/">首頁</a>
         
           <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
         
           <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
         
-          <a class="main-nav-link" href="/archives">Archives</a>
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
         
           <a class="main-nav-link" href="/projects">Projects</a>
         
@@ -131,16 +133,16 @@
         <!-- ads-1 -->
         <p>本篇介紹如何使用 Python 來撰寫 chatroom 多人聊天室的程式，在上一篇介紹了<a href="/blog/2020/06/29/Python-tcp-socket/" title="怎麼撰寫一個基本的 TCP socket 通訊程式">怎麼撰寫一個基本的 TCP socket 通訊程式</a>，本篇開始介紹如何使用先前幾篇學習到的 python tcp socket 基礎來打造一個多人聊天室，  </p>
 <p>在多人聊天室的通訊程式設計上，通常有多執行緒(muti-threading)與多路復用(select)的兩種設計方式，以下將會介紹，  </p>
-<h2 id="server-多人聊天室伺服器端-多執行緒版本"><a href="#server-多人聊天室伺服器端-多執行緒版本" class="headerlink" title="server 多人聊天室伺服器端 (多執行緒版本)"></a>server 多人聊天室伺服器端 (多執行緒版本)</h2><p>使用多執行緒來寫多人聊天室伺服器端，每連上一個客戶端便開一個執行緒服務 <code>clientthread()</code> 這個客戶連線，  </p>
+<h2><span id="server-多人聊天室伺服器端-多執行緒版本">server 多人聊天室伺服器端 (多執行緒版本)</span></h2><p>使用多執行緒來寫多人聊天室伺服器端，每連上一個客戶端便開一個執行緒服務 <code>clientthread()</code> 這個客戶連線，  </p>
 <figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    conn, addr = server.accept()</span><br><span class="line"></span><br><span class="line">    list_of_clients.append(conn)</span><br><span class="line"></span><br><span class="line">    print(addr[<span class="number">0</span>] + <span class="string">" connected"</span>)</span><br><span class="line"></span><br><span class="line">    threading.Thread(target = clientthread, args = (conn, addr))</span><br><span class="line"></span><br><span class="line">conn.close()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure>
 <p>以下為 <code>clientthread()</code> 函式內容，簡單說就是將收到的訊息廣播給已連線的所有客戶端，<br>如果有人離線的話則處理離線的邏輯，<br><figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clientthread</span><span class="params">(conn, addr)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># sends a message to the client whose user object is conn</span></span><br><span class="line">    conn.send(<span class="string">"Welcome to this chatroom!"</span>.encode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            message = conn.recv(<span class="number">2048</span>)</span><br><span class="line">            <span class="keyword">if</span> len(message) != <span class="number">0</span>:</span><br><span class="line">                print(<span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">                <span class="comment"># Calls broadcast function to send message to all</span></span><br><span class="line">                message_to_send = <span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">                broadcast(message_to_send, conn)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                print(<span class="string">'server closed connection.'</span>)</span><br><span class="line">                remove(conn)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            <span class="keyword">continue</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="client-多人聊天室客戶端-select版本"><a href="#client-多人聊天室客戶端-select版本" class="headerlink" title="client 多人聊天室客戶端 (select版本)"></a>client 多人聊天室客戶端 (select版本)</h2><p>使用 select，不但能同時接收訊息外，也能接收到鍵盤的輸入訊息，並把鍵盤輸入的訊息傳輸出去，<br>這兩個一收一送的動作，透過多路復用 select() 函式可以達到同時運作的功效，<br><figure class="highlight python"><figcaption><span>python-chatroom-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> socks <span class="keyword">in</span> read_sockets:</span><br><span class="line">        <span class="keyword">if</span> socks == server:</span><br><span class="line">            message = socks.recv(<span class="number">2048</span>)</span><br><span class="line">            print(message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            message = sys.stdin.readline()</span><br><span class="line">            server.send(message.encode(<span class="string">"utf-8"</span>))</span><br><span class="line">            sys.stdout.write(<span class="string">"&lt;You&gt;"</span>)</span><br><span class="line">            sys.stdout.write(message)</span><br><span class="line">            sys.stdout.flush()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br>下一篇會介紹如何打造一個gui圖形介面的多人聊天室<br><a href="/blog/2020/06/29/Python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊程式">Python TCP Socket Server/Client 網路通訊程式</a>  </p>
+<h2><span id="client-多人聊天室客戶端-select版本">client 多人聊天室客戶端 (select版本)</span></h2><p>使用 select，不但能同時接收訊息外，也能接收到鍵盤的輸入訊息，並把鍵盤輸入的訊息傳輸出去，<br>這兩個一收一送的動作，透過多路復用 select() 函式可以達到同時運作的功效，<br><figure class="highlight python"><figcaption><span>python-chatroom-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> socks <span class="keyword">in</span> read_sockets:</span><br><span class="line">        <span class="keyword">if</span> socks == server:</span><br><span class="line">            message = socks.recv(<span class="number">2048</span>)</span><br><span class="line">            print(message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            message = sys.stdin.readline()</span><br><span class="line">            server.send(message.encode(<span class="string">"utf-8"</span>))</span><br><span class="line">            sys.stdout.write(<span class="string">"&lt;You&gt;"</span>)</span><br><span class="line">            sys.stdout.write(message)</span><br><span class="line">            sys.stdout.flush()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure></p>
+<p><strong>其它相關文章推薦</strong><br>下一篇會介紹如何打造一個gui圖形介面的多人聊天室<br><a href="/blog/2020/06/29/Python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊程式">Python TCP Socket Server/Client 網路通訊程式</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/10/19/Python-chatroom/" data-id="ckmiw97zv00c5ays1cr275a18" data-title="Python chatroom 多人聊天室" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/10/19/Python-chatroom/" data-id="ckmj5phzp00c5dus1h3k16tkm" data-title="Python chatroom 多人聊天室" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -293,13 +295,15 @@
     </div>
     <nav id="mobile-nav">
   
-    <a href="/" class="mobile-nav-link">Home</a>
+    <a href="/" class="mobile-nav-link">首頁</a>
   
     <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
   
     <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
   
-    <a href="/archives" class="mobile-nav-link">Archives</a>
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
   
     <a href="/projects" class="mobile-nav-link">Projects</a>
   
