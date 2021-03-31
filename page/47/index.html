@@ -92,6 +92,186 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Trace-OSVR" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/01/30/Trace-OSVR/" class="article-date">
+  <time datetime="2018-01-30T14:00:00.000Z" itemprop="datePublished">2018-01-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/01/30/Trace-OSVR/">Trace OSVR 演算法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <h2><span id="trace-osvr-演算法-videobasedtracker">Trace OSVR 演算法 (VideoBasedTracker)</span></h2><p>原始程式碼如下：<br><a href="https://github.com/OSVR/OSVR-Core/blob/master/plugins/videobasedtracker/VideoBasedTracker.cpp" target="_blank" rel="noopener">videobasedtracker/VideoBasedTracker.cpp</a>  </p>
+<p>以下為簡化過程式碼的流程：<br><a href="/blog/2018/01/30/Trace-OSVR/VideoBasedTracker.cpp" title="VideoBasedTracker.cpp">VideoBasedTracker.cpp</a><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> VideoBasedTracker::processImage(cv::Mat frame, cv::Mat grayImage,</span><br><span class="line">                                     OSVR_TimeValue <span class="keyword">const</span> &amp;tv,</span><br><span class="line">                                     PoseHandler handler) &#123;</span><br><span class="line"></span><br><span class="line">    m_frame = frame;</span><br><span class="line">    m_imageGray = grayImage;</span><br><span class="line">    <span class="keyword">auto</span> foundLeds = m_blobExtractor.extractBlobs(grayImage); <span class="comment">// blob 偵測</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> undistortedLeds = undistortLeds(foundLeds, m_camParams);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">size_t</span> sensor = <span class="number">0</span>; sensor &lt; m_identifiers.size(); sensor++) &#123;</span><br><span class="line"></span><br><span class="line">        osvrPose3SetIdentity(&amp;m_pose);</span><br><span class="line">        <span class="keyword">auto</span> ledsMeasurements = undistortedLeds;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">auto</span> &amp;myLeds = m_led_groups[sensor];</span><br><span class="line">            <span class="keyword">auto</span> led = begin(myLeds);</span><br><span class="line">            <span class="keyword">auto</span> e = end(myLeds);</span><br><span class="line">            <span class="keyword">while</span> (led != end(myLeds)) &#123;</span><br><span class="line">                led-&gt;resetUsed();</span><br><span class="line">                <span class="keyword">auto</span> threshold = m_params.blobMoveThreshold *</span><br><span class="line">                                 led-&gt;getMeasurement().diameter;</span><br><span class="line">                <span class="keyword">auto</span> nearest = led-&gt;nearest(ledsMeasurements, threshold); <span class="comment">// 找最近的</span></span><br><span class="line">                <span class="keyword">if</span> (nearest == end(ledsMeasurements)) &#123;</span><br><span class="line">                    <span class="comment">// We have no blob corresponding to this LED, so we need</span></span><br><span class="line">                    <span class="comment">// to delete this LED.</span></span><br><span class="line">                    led = myLeds.erase(led);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// Update the values in this LED and then go on to the</span></span><br><span class="line">                    <span class="comment">// next one. Remove this blob from the list of potential matches.</span></span><br><span class="line">                    <span class="comment">// 因為已經這個 blob 是哪個 LED, 所以從 ledsMeasurements 裡移除這個 LED</span></span><br><span class="line">                    led-&gt;addMeasurement(*nearest, m_params.blobsKeepIdentity);</span><br><span class="line">                    ledsMeasurements.erase(nearest);</span><br><span class="line">                    ++led;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="comment">// while</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;remainingLed : ledsMeasurements) &#123;</span><br><span class="line">                myLeds.emplace_back(m_identifiers[sensor].get(), remainingLed);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">bool</span> gotPose = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (m_estimators[sensor]) &#123;</span><br><span class="line">            OSVR_PoseState pose;</span><br><span class="line">            <span class="keyword">if</span> (m_estimators[sensor]-&gt;EstimatePoseFromLeds( <span class="comment">// 估算 Pose</span></span><br><span class="line">                    m_led_groups[sensor], tv, pose)) &#123;</span><br><span class="line">                m_pose = pose;</span><br><span class="line">                handler(<span class="keyword">static_cast</span>&lt;<span class="keyword">unsigned</span>&gt;(sensor), pose); <span class="comment">// 送 Pose 出去</span></span><br><span class="line">                gotPose = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="comment">// for</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> done;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ledsMeasurements 是偵測到的 LED blobs  </p>
+<p>重點流程如下：  </p>
+<ul>
+<li>m_blobExtractor.extractBlobs(grayImage); // blob 偵測</li>
+<li>m_estimators[sensor]-&gt;EstimatePoseFromLeds() // 估算 Pose</li>
+<li>handler(static_cast<unsigned>(sensor), pose); // 送 Pose 出去</unsigned></li>
+</ul>
+<p>相關程式碼：<br><a href="https://github.com/OSVR/OSVR-Core/blob/master/plugins/videobasedtracker/LED.h" target="_blank" rel="noopener">videobasedtracker/LED.h</a><br><a href="https://github.com/OSVR/OSVR-Core/blob/master/plugins/videobasedtracker/LED.cpp" target="_blank" rel="noopener">videobasedtracker/LED.cpp</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/01/30/Trace-OSVR/" data-id="ckmwotny4001um8s15h8hbo3m" data-title="Trace OSVR 演算法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OSVR/">OSVR</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Trace-OSVR-videobasedtracker-plugin" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/01/30/Trace-OSVR-videobasedtracker-plugin/" class="article-date">
+  <time datetime="2018-01-30T14:00:00.000Z" itemprop="datePublished">2018-01-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/01/30/Trace-OSVR-videobasedtracker-plugin/">Trace OSVR videobasedtracker plugin</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>紀錄一下 VideoBasedTracker plugin 的啟動流程，流程如下，  </p>
+<p>com_osvr_VideoBasedHMDTracker.cpp<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VideoBasedHMDTracker</span> :</span> boost::noncopyable &#123;</span><br><span class="line">    VideoBasedHMDTracker() &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// TODO_TRACE: 誰 call update()?</span></span><br><span class="line">    OSVR_ReturnCode VideoBasedHMDTracker::update() &#123;</span><br><span class="line">        m_vbtracker.processImage()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    osvr::vbtracker::VideoBasedTracker m_vbtracker;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HardwareDetection</span> &#123;</span></span><br><span class="line">    <span class="keyword">operator</span>() &#123;</span><br><span class="line">        <span class="keyword">auto</span> newTracker = osvr::pluginkit::registerObjectForDeletion(</span><br><span class="line">            ctx, <span class="keyword">new</span> VideoBasedHMDTracker(...));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Plugin 進入點</span></span><br><span class="line">OSVR_PLUGIN(com_osvr_VideoBasedHMDTracker) &#123;</span><br><span class="line">    <span class="comment">/// 告訴 core 建立一個 device object.</span></span><br><span class="line">    osvr::pluginkit::registerDriverInstantiationCallback(</span><br><span class="line">        ctx, <span class="string">"VideoBasedHMDTracker"</span>, <span class="keyword">new</span> ConfiguredDeviceConstructor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>VideoBasedTracker.cpp<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> VideoBasedTracker::processImage(...) &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/01/30/Trace-OSVR-videobasedtracker-plugin/" data-id="ckmwotny4001tm8s1y32njsul" data-title="Trace OSVR videobasedtracker plugin" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OSVR/">OSVR</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Build-OpenCV-3-on-Ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2018/01/29/Build-OpenCV-3-on-Ubuntu/" class="article-date">
+  <time datetime="2018-01-29T14:00:00.000Z" itemprop="datePublished">2018-01-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/OpenCV教學/">OpenCV教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2018/01/29/Build-OpenCV-3-on-Ubuntu/">Build OpenCV 3 on Ubuntu</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <h2><span id="系統環境">系統環境</span></h2><ul>
+<li>Ubuntu 16.04  </li>
+<li>OpenCV 3.3.1  </li>
+<li>Cmake  </li>
+</ul>
+<h2><span id="目錄放置結構">目錄放置結構</span></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">|- opencv-3.3.1</span><br><span class="line">|- opencv_contrib-3.3.1</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/opencv/opencv/archive/3.3.1.zip" target="_blank" rel="noopener">opencv-3.3.1 原始碼下載</a><br><a href="https://github.com/opencv/opencv_contrib/archive/3.3.1.zip" target="_blank" rel="noopener">opencv_contrib-3.3.1 原始碼下載</a>  </p>
+<h2><span id="編譯時所需要的套件">編譯時所需要的套件</span></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake git</span><br></pre></td></tr></table></figure>
+<p>可以參考這些(待確認)<br><a href="https://docs.opencv.org/3.3.0/d7/d9f/tutorial_linux_install.html" target="_blank" rel="noopener">https://docs.opencv.org/3.3.0/d7/d9f/tutorial_linux_install.html</a><br><a href="https://docs.opencv.org/3.4.1/d2/de6/tutorial_py_setup_in_ubuntu.html" target="_blank" rel="noopener">https://docs.opencv.org/3.4.1/d2/de6/tutorial_py_setup_in_ubuntu.html</a> (套件有錯誤)<br><a href="https://www.learnopencv.com/install-opencv-3-4-4-on-ubuntu-16-04/" target="_blank" rel="noopener">https://www.learnopencv.com/install-opencv-3-4-4-on-ubuntu-16-04/</a></p>
+<h2><span id="編譯-opencv">編譯 OpenCV</span></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">cd opencv-3.3.1</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake \</span><br><span class="line">    -DCMAKE_BUILD_TYPE:STRING=RELEASE \</span><br><span class="line">    -DCMAKE_INSTALL_PREFIX:PATH=/usr/local \</span><br><span class="line">    -DWITH_TBB:BOOL=ON \</span><br><span class="line">    -DWITH_V4L:BOOL=ON \</span><br><span class="line">    -DBUILD_EXAMPLES:BOOL=ON \</span><br><span class="line">    -DWITH_QT:BOOL=ON \</span><br><span class="line">    -DWITH_OPENGL:BOOL=ON \</span><br><span class="line">    ..</span><br><span class="line">make -j8</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure>
+<h2><span id="編譯-opencv-with-opencv_contrib">編譯 OpenCV (with opencv_contrib)</span></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">cd opencv-3.3.1</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake \</span><br><span class="line">    -DCMAKE_BUILD_TYPE:STRING=RELEASE \</span><br><span class="line">    -DCMAKE_INSTALL_PREFIX:PATH=/usr/local \</span><br><span class="line">    -DWITH_TBB:BOOL=ON \</span><br><span class="line">    -DWITH_V4L:BOOL=ON \</span><br><span class="line">    -DBUILD_EXAMPLES:BOOL=ON \</span><br><span class="line">    -DWITH_QT:BOOL=ON \</span><br><span class="line">    -DWITH_OPENGL:BOOL=ON \</span><br><span class="line">    -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-3.3.1/modules \</span><br><span class="line">    -DBUILD_opencv_legacy=OFF \</span><br><span class="line">    ..</span><br><span class="line">make -j8</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2018/01/29/Build-OpenCV-3-on-Ubuntu/" data-id="ckmwotny3001sm8s155htnu06" data-title="Build OpenCV 3 on Ubuntu" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Qt-add-Git-version-or-SHA1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2018/01/26/Qt-add-Git-version-or-SHA1/" class="article-date">
@@ -141,7 +321,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/01/26/Qt-add-Git-version-or-SHA1/" data-id="ckmv9tgop001yjxs11191cc9a" data-title="Qt add Git version or SHA1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/01/26/Qt-add-Git-version-or-SHA1/" data-id="ckmwotny3001rm8s1z45opyo5" data-title="Qt add Git version or SHA1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -215,7 +395,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/01/26/Qt-OpenCV-3-on-Windows-Use-MinGW/" data-id="ckmv9tgop001xjxs13btw0nue" data-title="Qt and OpenCV 3 on Windows (使用 MinGW)" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/01/26/Qt-OpenCV-3-on-Windows-Use-MinGW/" data-id="ckmwotny2001qm8s1a241had4" data-title="Qt and OpenCV 3 on Windows (使用 MinGW)" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -267,7 +447,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/01/24/Hexo-Shortcuts/" data-id="ckmv9tgoo001wjxs1rvlisaly" data-title="Hexo 快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/01/24/Hexo-Shortcuts/" data-id="ckmwotny2001pm8s1kznxf9bh" data-title="Hexo 快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li></ul>
@@ -333,7 +513,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2018/01/24/Hexo-Install-Ubuntu/" data-id="ckmv9tgoo001vjxs1z92niamx" data-title="Ubuntu 安裝 Hexo" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2018/01/24/Hexo-Install-Ubuntu/" data-id="ckmwotny1001om8s19tujdacj" data-title="Ubuntu 安裝 Hexo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nodejs/">Nodejs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -389,7 +569,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2016/03/16/Ubuntu-chewing/" data-id="ckmv9tgon001tjxs1largy1g9" data-title="Ubuntu 安裝中文輸入法 (注音)" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2016/03/16/Ubuntu-chewing/" data-id="ckmwotny1001nm8s1am4ezuz7" data-title="Ubuntu 安裝中文輸入法 (注音)" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -471,7 +651,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2011/08/08/diy-buggy-car/" data-id="ckmv9tgon001ujxs18bxr5lji" data-title="DIY 自製 Arduino 遙控車" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2011/08/08/diy-buggy-car/" data-id="ckmwotny0001mm8s1rdxvmy9o" data-title="DIY 自製 Arduino 遙控車" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Arduino/">Arduino</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DIY/">DIY</a></li></ul>
@@ -522,6 +702,10 @@
           </li>
         
           <li>
+            <a href="/blog/2021/03/26/Python-check-str-empty/">Python 檢查 str 字串是否為空</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/03/25/std-map-erase/">C++ map 刪除元素的 3 種方式</a>
           </li>
         
@@ -546,15 +730,11 @@
           </li>
         
           <li>
+            <a href="/blog/2021/03/17/Python-check-set-empty/">Python 檢查 set 集合是否為空</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/03/15/the-goal-a-process-of-ongoing-improvement/">讀書心得-目標：簡單有效的常識管理</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/03/14/Ubuntu-18-upgrade-nodejs-10/">Ubuntu 18.04 如何安裝升級 Node.js 10.x</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/03/12/online-html-pretty/">2 種 HTML 格式化工具</a>
           </li>
         
       </ul>
@@ -566,7 +746,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">78</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">78</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">142</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
