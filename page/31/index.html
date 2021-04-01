@@ -92,6 +92,184 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-OpenCV-build-program-by-gcc" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/10/11/OpenCV-build-program-by-gcc/" class="article-date">
+  <time datetime="2019-10-11T14:00:00.000Z" itemprop="datePublished">2019-10-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/10/11/OpenCV-build-program-by-gcc/">使用 gcc / g++ 編譯 opencv 程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹如何使用 gcc / g++ 指令來編譯 opencv 程式，並且透過 pkg-config 指令來取得 opencv 編譯所需的參數。</p>
+<p>以下範例為簡單的讀取 lena 圖片，詳細的介紹說明請看 <a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="這篇">這篇</a>。<br><figure class="highlight c++"><figcaption><span>readPicture.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Mat image;</span><br><span class="line">    image = imread(<span class="string">"lena.jpg"</span>, IMREAD_COLOR);</span><br><span class="line"></span><br><span class="line">    imshow(<span class="string">"view"</span>, image);</span><br><span class="line">    waitKey(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="使用-g-編譯-opencv-程式">使用 g++ 編譯 opencv 程式</span></h2><p>正常編譯的話通常是使用 <code>g++ readPicture.cpp -o readPicture</code> 就完成了，但是這邊還需要帶入 opencv 的標頭檔目錄與連結函式庫，<br>這邊使用 pkg-config 這個工具來輔助完成這件事，最後透過結合這兩個指令就可以編譯出執行檔，</p>
+<p>g++ readPicture.cpp -o readPicture <code>pkg-config --cflags --libs opencv</code></p>
+<h2><span id="pkg-config-原理">pkg-config 原理</span></h2><p>使用 <code>pkg-config --cflags opencv</code> 指令會輸出 opencv 所需要的標頭檔目錄，<br>輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-I/usr/local/include/opencv -I/usr/local/include</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>pkg-config --libs opencv</code> 指令會輸出 opencv 所需要連結的函式庫，<br>輸出如下(本篇使用opencv 3.4.7，使用其他版本或許輸出有些不同)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-L/usr/local/lib -lopencv_ml -lopencv_dnn -lopencv_highgui -lopencv_superres -lopencv_objdetect -lopencv_stitching -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_photo -lopencv_flann -lopencv_shape -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core</span><br></pre></td></tr></table></figure></p>
+<p>如果結合–cflags 和 –libs 兩個一起使用的話 <code>pkg-config --cflags --libs opencv</code> 則會一起輸出標頭檔目錄與連結的函式庫，輸出如下(本篇使用opencv 3.4.7，使用其他版本或許輸出有些不同)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_ml -lopencv_dnn -lopencv_highgui -lopencv_superres -lopencv_objdetect -lopencv_stitching -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_photo -lopencv_flann -lopencv_shape -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core</span><br></pre></td></tr></table></figure></p>
+<p><strong>相關主題</strong><br><a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/11/OpenCV-build-program-by-gcc/" data-id="ckmy4d0la006hwqs1zhx0d2l9" data-title="使用 gcc / g++ 編譯 opencv 程式" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-OpenCV-4-1-1-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/10/10/OpenCV-4-1-1-build-install-in-ubuntu/" class="article-date">
+  <time datetime="2019-10-10T14:00:00.000Z" itemprop="datePublished">2019-10-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/10/10/OpenCV-4-1-1-build-install-in-ubuntu/">在 Ubuntu 下編譯安裝 OpenCV 4.1.1</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹如何在 Ubuntu 下編譯安裝 OpenCV 4.1.1，<br>這版 OpenCV 4.1.1 釋出日期是 2019/07/26，開始動手編譯原始碼安裝吧！  </p>
+<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>GCC：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>G++：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>使用版本：OpenCV 4.1.1 <a href="https://github.com/opencv/opencv/releases/tag/4.1.1" target="_blank" rel="noopener">下載處</a> / <a href="https://github.com/opencv/opencv/archive/4.1.1.zip" target="_blank" rel="noopener">zip</a>  </p>
+<h2><span id="安裝編譯所需的套件">安裝編譯所需的套件</span></h2><p>安裝編譯 opencv 所需要的套件，gcc / g++ / make / libc6-dev 都已包含在 build-essential 裡了，<br>所以不計較空間的話安裝 build-essential 算是相當的簡單省事。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake</span><br></pre></td></tr></table></figure></p>
+<h2><span id="下載原始碼">下載原始碼</span></h2><p>使用 wget 指令下載原始碼，並且解壓縮。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/opencv/opencv/archive/4.1.1.zip</span><br><span class="line">unzip 4.1.1.zip</span><br></pre></td></tr></table></figure></p>
+<h2><span id="編譯安裝">編譯安裝</span></h2><p>切換到剛剛解壓縮出來的目錄開始進行編譯，<br>最後 make 時，就看你電腦 CPU 有幾個核心，帶不同的參數，有助於加快整個編譯時間。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd opencv-4.1.1</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure></p>
+<h2><span id="查詢已安裝的-opencv-版本">查詢已安裝的 opencv 版本</span></h2><p>使用 <code>opencv_version</code> 指令查詢已安裝 opencv 的版本。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ opencv_version</span><br><span class="line">4.1.1</span><br></pre></td></tr></table></figure></p>
+<p>或者使用 <code>pkg-config</code> 查詢已安裝的 opencv 版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pkg-config --modversion opencv</span><br><span class="line">4.1.1</span><br></pre></td></tr></table></figure></p>
+<p>到這裡就完成 opencv 的安裝了，下篇將會介紹 <a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="如何寫第一支 OpenCV 程式">如何寫第一支 OpenCV 程式</a>。  </p>
+<p><strong>相關主題</strong><br><a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a><br><a href="/blog/2019/05/29/OpenCV-version/" title="怎麼查詢 OpenCV 的版本">怎麼查詢 OpenCV 的版本</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/10/OpenCV-4-1-1-build-install-in-ubuntu/" data-id="ckmy4d0la006gwqs1v61se5vj" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-OpenCV-first-program-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" class="article-date">
+  <time datetime="2019-10-09T14:00:00.000Z" itemprop="datePublished">2019-10-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/">在 Ubuntu 下寫第一支 OpenCV 程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 來介紹如何在 Ubuntu 下用 C/C++ 寫第一支 OpenCV 的程式，並且最後透過 g++ 指令編譯與執行起來。</p>
+<h2><span id="第一支-opencv-程式範例說明">第一支 OpenCV 程式範例說明</span></h2><p>第一支 OpenCV 程式就示範如何讀取圖片，並且把圖片顯示出來吧！<br>範例如下：<br><figure class="highlight c++"><figcaption><span>readPicture.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Mat image;</span><br><span class="line">    image = imread(<span class="string">"lena.jpg"</span>, IMREAD_COLOR);</span><br><span class="line"></span><br><span class="line">    namedWindow(<span class="string">"view"</span>, WINDOW_AUTOSIZE);</span><br><span class="line">    imshow(<span class="string">"view"</span>, image);</span><br><span class="line"></span><br><span class="line">    waitKey(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在這個範例裡，我們要使用的圖片就是大名鼎鼎的 lena 小姐，<br>透過 <code>cv::imread</code> 函式將圖片讀取到一個 <code>cv::Mat</code> 裡存放，<br>再使用 <code>cv::imshow</code> 把這張圖片給顯示出來，最後加上 <code>cv::waitKey</code> 讓程式等待鍵盤輸入才結束程式。</p>
+<p>補充說明：<br><code>cv::namedWindow</code> 是宣告一個視窗，視窗名稱叫做”view”。<br><code>cv::waitKey</code> 帶入的參數表示程式需要等待 n 毫秒，如果過了 n 毫秒什麼按鍵也沒發生，就會繼續往下執行，帶入 0 表示無限等待。</p>
+<h2><span id="使用-g-指令編譯">使用 g++ 指令編譯</span></h2><p>使用 g++ 編譯 OpenCV 程式時，還需要帶入 OpenCV header 檔的位置以及最後要連結哪些函式庫，<br>這邊使用 pkg-config 來方便地取得這些參數，詳細的說明請看這篇。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ readPicture.cpp -o readPicture `pkg-config --cflags --libs opencv`</span><br></pre></td></tr></table></figure></p>
+<h2><span id="執行程式與顯示圖片">執行程式與顯示圖片</span></h2><p>執行下列指令就可以將 readPicture 執行檔執行起來，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./readPicture</span><br></pre></td></tr></table></figure></p>
+<p>另外還需要 lena.jpg 這張圖片，lena.jpg 這張圖片可以在 opencv/samples/data/lena.jpg下目錄找到，<br>或者可以從這裡下載，<br>下圖為最後看到的畫面。</p>
+<img src="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/opecv-readPicture.png">
+<p>以上就是第一支 OpenCV 程式的示範，往後會在陸續介紹其他常用範例。</p>
+<p><strong>相關主題</strong><br><a href="/blog/2019/10/10/OpenCV-4-1-1-build-install-in-ubuntu/" title="在 Ubuntu 下編譯安裝 OpenCV 4.1.1">在 Ubuntu 下編譯安裝 OpenCV 4.1.1</a><br><a href="/blog/2019/10/08/OpenCV-3-4-7-build-install-in-ubuntu/" title="在 Ubuntu 下編譯安裝 OpenCV 3.4.7">在 Ubuntu 下編譯安裝 OpenCV 3.4.7</a><br><a href="/blog/2019/10/11/OpenCV-build-program-by-gcc/" title="使用 gcc / g++ 編譯 opencv 程式">使用 gcc / g++ 編譯 opencv 程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" data-id="ckmy4d0la006fwqs1ptz8q2og" data-title="在 Ubuntu 下寫第一支 OpenCV 程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-OpenCV-3-4-7-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2019/10/08/OpenCV-3-4-7-build-install-in-ubuntu/" class="article-date">
@@ -140,7 +318,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/08/OpenCV-3-4-7-build-install-in-ubuntu/" data-id="ckmwoto0q006bm8s1xypumysf" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/08/OpenCV-3-4-7-build-install-in-ubuntu/" data-id="ckmy4d0l9006ewqs1sf0nl27l" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -204,7 +382,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/07/Github-update-forked-repository/" data-id="ckmwoto0q006am8s1y3zwqkbf" data-title="Github 如何更新已經 fork 的專案與原專案紀錄同步" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/07/Github-update-forked-repository/" data-id="ckmy4d0l9006dwqs19or5fg5o" data-title="Github 如何更新已經 fork 的專案與原專案紀錄同步" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -261,7 +439,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/06/Boost-first-program-in-ubuntu/" data-id="ckmwoto0p0069m8s1mhohm86a" data-title="在 Ubuntu 下寫第一支 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/06/Boost-first-program-in-ubuntu/" data-id="ckmy4d0l8006cwqs1bj3vqxrv" data-title="在 Ubuntu 下寫第一支 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -306,7 +484,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/05/Boost-1-71-0-build-install-in-ubuntu/" data-id="ckmwoto0o0068m8s1dkvxmkm8" data-title="在 Ubuntu 下編譯安裝 Boost 1.71.0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/05/Boost-1-71-0-build-install-in-ubuntu/" data-id="ckmy4d0l8006bwqs1vbypnfbs" data-title="在 Ubuntu 下編譯安裝 Boost 1.71.0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -368,7 +546,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/04/Linux-sed/" data-id="ckmwoto0o0067m8s1thncpro7" data-title="使用 Linux sed 字串取代" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/04/Linux-sed/" data-id="ckmy4d0l7006awqs19tl0o74c" data-title="使用 Linux sed 字串取代" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -428,7 +606,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/03/Linux-cut/" data-id="ckmwoto0n0066m8s1zrreign0" data-title="使用 Linux cut 字串處理" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/03/Linux-cut/" data-id="ckmy4d0l70069wqs1icqzvjeu" data-title="使用 Linux cut 字串處理" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -486,175 +664,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/02/Git-view-repository-history/" data-id="ckmwoto0m0065m8s1n0dkw0qe" data-title="Git 顯示整個repository的歷史修改記錄" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/02/Git-view-repository-history/" data-id="ckmy4d0l60068wqs1jnkx8kho" data-title="Git 顯示整個repository的歷史修改記錄" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-7z" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/10/01/Linux-7z/" class="article-date">
-  <time datetime="2019-10-01T14:00:00.000Z" itemprop="datePublished">2019-10-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/10/01/Linux-7z/">使用 Linux 7z 壓縮/解壓縮</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>Ubuntu 找不到指令的話可以安裝下列套件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install p7zip-full</span><br></pre></td></tr></table></figure></p>
-<p>壓縮指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z a &lt;filename.7z&gt; &lt;file_to_be_compressed/directory_to_be_compressed&gt;</span><br></pre></td></tr></table></figure></p>
-<p>解壓縮指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z x &lt;filename.7z&gt;</span><br></pre></td></tr></table></figure></p>
-<p>選項說明<br>a: 將檔名列中的檔案加入壓縮檔<br>x: 以完整路徑的格式解出檔案  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/18/Linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/blog/2019/10/04/Linux-sed/" title="使用 Linux sed 字串取代">使用 Linux sed 字串取代</a><br><a href="/blog/2019/12/01/Linux-find/" title="使用 Linux find 尋找檔案/目錄">使用 Linux find 尋找檔案/目錄</a><br><a href="/blog/2019/10/03/Linux-cut/" title="使用 Linux cut 字串處理">使用 Linux cut 字串處理</a><br><a href="/blog/2020/03/06/Linux-tail/" title="使用 Linux tail 持續監看檔案輸出">使用 Linux tail 持續監看檔案輸出</a><br><a href="/blog/2019/12/02/Linux-grep-ack-ag/" title="使用 Linux grep/ack/ag 搜尋字串">使用 Linux grep/ack/ag 搜尋字串</a><br><a href="/blog/2020/03/02/Linux-tee/" title="使用 Linux tee 同時螢幕標準輸出和輸出到檔案">使用 Linux tee 同時螢幕標準輸出和輸出到檔案</a><br><a href="/blog/2020/03/04/Linux-xargs/" title="使用 Linux xargs 參數列表轉換">使用 Linux xargs 參數列表轉換</a><br><a href="/blog/2019/09/26/Linux-du/" title="使用 Linux du 查詢硬碟剩餘空間/資料夾容量">使用 Linux du 查詢硬碟剩餘空間/資料夾容量</a><br><a href="/blog/2019/09/27/Linux-wget/" title="使用 Linux wget 下載檔案">使用 Linux wget 下載檔案</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/01/Linux-7z/" data-id="ckmwoto0l0063m8s1o16gu6jm" data-title="使用 Linux 7z 壓縮/解壓縮" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Boost-install-prebuilt-boost-1-66-0-in-windows" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/09/30/Boost-install-prebuilt-boost-1-66-0-in-windows/" class="article-date">
-  <time datetime="2019-09-30T14:00:00.000Z" itemprop="datePublished">2019-09-30</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/09/30/Boost-install-prebuilt-boost-1-66-0-in-windows/">在 Windows 下安裝官方預編譯 Boost 1.66.0</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何在 Windows 下安裝 Boost 1.66.0，<br>這版 boost 1.66.0 釋出日期是 2017/12/18，開始動手安裝 Boost 吧！</p>
-<p>以下為我的系統環境：<br>作業系統：Windows 10<br>Visual Studio 2017 (msvc-14.1)<br>Visual Studio 2015 (msvc-14.0)<br>使用版本：boost 1.66.0</p>
-<p>為了方便，這邊使用<a href="https://sourceforge.net/projects/boost/files/boost-binaries/" target="_blank" rel="noopener">Prebuilt windows binaries</a>，<br>Visual Studio 2017 下載 <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.1-32.exe/download" target="_blank" rel="noopener">boost_1_66_0-msvc-14.1-32.exe</a> / <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.1-64.exe/download" target="_blank" rel="noopener">boost_1_66_0-msvc-14.1-64.exe</a><br>Visual Studio 2015 下載 <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.0-32.exe/download" target="_blank" rel="noopener">boost_1_66_0-msvc-14.0-32.exe</a> / <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.0-64.exe/download" target="_blank" rel="noopener">boost_1_66_0-msvc-14.0-64.exe</a><br>所有的版本下載<a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-bin-msvc-all-32-64.7z/download" target="_blank" rel="noopener">boost_1_66_0-bin-msvc-all-32-64.7z</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/30/Boost-install-prebuilt-boost-1-66-0-in-windows/" data-id="ckmwoto0l0062m8s193d9t4nj" data-title="在 Windows 下安裝官方預編譯 Boost 1.66.0" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-glm-install" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/09/29/glm-install/" class="article-date">
-  <time datetime="2019-09-29T14:00:00.000Z" itemprop="datePublished">2019-09-29</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/09/29/glm-install/">glm 安裝</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>OpenGL Mathematics (GLM) 是由C++寫成的標頭檔數學函式庫，是基於 OpenGL Shading Language（GLSL）規範的圖形軟體。</p>
-<h2><span id="安裝">安裝</span></h2><p>從<a href="https://glm.g-truc.net/" target="_blank" rel="noopener">官網這裡</a>下載，<br>直接 include 即可，不須編譯。</p>
-<h2><span id="查看-glm-version-版本號">查看 glm version 版本號</span></h2><p>GLM_VERSION 定義在 <a href="https://github.com/g-truc/glm/blob/8828c3f1fd05e173d94417ca4565aa634dabb1c1/glm/detail/setup.hpp#L10" target="_blank" rel="noopener">glm/detail/setup.hpp</a></p>
-<p>參考<br>[1] How to check the version of GLM I am using? · Issue #742 · g-truc/glm<br><a href="https://github.com/g-truc/glm/issues/742" target="_blank" rel="noopener">https://github.com/g-truc/glm/issues/742</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/09/29/glm-install/" data-id="ckmwoto0k0061m8s1j6hwg08i" data-title="glm 安裝" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -667,7 +680,7 @@
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/30/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/47/">47</a><a class="extend next" rel="next" href="/page/32/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/30/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/48/">48</a><a class="extend next" rel="next" href="/page/32/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -696,6 +709,14 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/blog/2021/03/31/vscode-add-cpp-include-path/">VSCode 新增 C++ 標頭檔路徑</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2021/03/30/Cpp-how-to-use-libcxx/">clang++ 如何使用 libc++</a>
+          </li>
         
           <li>
             <a href="/blog/2021/03/29/Cpp-typeid/">C++ 印出變數類型</a>
@@ -729,14 +750,6 @@
             <a href="/blog/2021/03/18/Git-clone-specific-branch/">git clone 指定分支</a>
           </li>
         
-          <li>
-            <a href="/blog/2021/03/17/Python-check-set-empty/">Python 檢查 set 集合是否為空</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/03/15/the-goal-a-process-of-ongoing-improvement/">讀書心得-目標：簡單有效的常識管理</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -746,7 +759,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">78</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">142</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">79</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">142</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
