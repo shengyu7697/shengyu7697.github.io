@@ -76,9 +76,9 @@
         
       </nav>
       <nav id="sub-nav">
-        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin"></a>
-        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook"></a>
-        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub"></a>
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin" rel="external nofollow noopener noreferrer" target="_blank"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook" rel="external nofollow noopener noreferrer" target="_blank"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub" rel="external nofollow noopener noreferrer" target="_blank"></a>
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
@@ -121,12 +121,7 @@
         
         <!-- ads-1 -->
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="4194519399" data-ad-format="auto" data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -143,13 +138,13 @@
 <h2><span id="範例-使用-lock_guard-來上鎖與解鎖">範例. 使用 lock_guard 來上鎖與解鎖</span></h2><p>直接使用 std::mutex 的成員函式 lock/unlock 來上鎖是可以的，只是要注意 lock 要有對應的 unlock ，一旦沒有解鎖到程式很可能就會發生死鎖，<br>那有沒有比較智慧的寫法來避免這種忘記解鎖而照成死鎖的問題發生呢？<br>有的！答案就是配合 std::lock_guard 使用，學會用 std::lock_guard 就可以避免手動上鎖解鎖，進而減少在寫程式上出現死鎖的機會，<br>以下就來介紹 mutex 配合 lock_guard 來上鎖與解鎖，<br>根據前一個範例進行修改，將原本使用 g_mutex 上鎖與解鎖的動作，換成了 lock_guard，如下範例所示，<br>在 lock_guard 建構時帶入一個 mutex，就會自動將其 mutex 上鎖，而在 lock_guard 解構時會對其 mutex 解鎖，<br>簡單說就是「lock_guard 建構時對 mutex 上鎖，解構時對 mutex 解鎖」，<br>lock_guard 利用生命週期這概念來進行上鎖與解鎖，lock_guard 本身並不管理 mutex 的生命週期，也就是 lock_guard 生命週期結束不代表 mutex 生命週期也結束，<br>以下面這個例子為例，在進入 print 後將 g_mutex 帶入 lock_guard 建構時上鎖，之後離開 print 函式時，lock_guard 生命週期也隨之結束，lock_guard 進行解構時對 g_mutex 解鎖<br>lock_guard 詳細介紹與實作原理請看這篇。<br><figure class="highlight c++"><figcaption><span>std-mutex2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-mutex2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::mutex g_mutex;</span><br><span class="line"><span class="keyword">int</span> g_count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">print</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// critical section (exclusive access to std::cout signaled by locking mtx):</span></span><br><span class="line">    <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(g_mutex);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; c;</span><br><span class="line">        g_count++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"count="</span> &lt;&lt; g_count &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(print, <span class="number">10</span>, <span class="string">'A'</span>)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(print, <span class="number">5</span>, <span class="string">'B'</span>)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>輸出結果如下，效果跟前一個範例一樣<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AAAAAAAAAA</span><br><span class="line">count=10</span><br><span class="line">BBBBB</span><br><span class="line">count=15</span><br></pre></td></tr></table></figure></p>
 <p>下一篇介紹 <a href="/blog/2020/02/20/std-condition-variable/" title="std::condition_variable 的用法">std::condition_variable 的用法</a>，以及 std::unique_lock 怎麼跟 condition_variable 搭配使用<br>同時也介紹怎麼跟 queue 的結合應用，也是設計模式中常見的生產者消費者模式。  </p>
-<p>參考<br>[1] std::mutex - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/thread/mutex" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/thread/mutex</a><br>[2] mutex - C++ Reference<br><a href="http://www.cplusplus.com/reference/mutex/mutex/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/mutex/mutex/</a><br>[3] C++11 併發指南三(std::mutex 詳解) - IT閱讀<br><a href="https://www.itread01.com/content/1546128929.html" target="_blank" rel="noopener">https://www.itread01.com/content/1546128929.html</a><br>完整且複雜的一篇  </p>
+<p>參考<br>[1] std::mutex - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/thread/mutex" rel="external nofollow noopener noreferrer" target="_blank">https://en.cppreference.com/w/cpp/thread/mutex</a><br>[2] mutex - C++ Reference<br><a href="http://www.cplusplus.com/reference/mutex/mutex/" rel="external nofollow noopener noreferrer" target="_blank">http://www.cplusplus.com/reference/mutex/mutex/</a><br>[3] C++11 併發指南三(std::mutex 詳解) - IT閱讀<br><a href="https://www.itread01.com/content/1546128929.html" rel="external nofollow noopener noreferrer" target="_blank">https://www.itread01.com/content/1546128929.html</a><br>完整且複雜的一篇  </p>
 <p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/blog/2019/11/17/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2020/02/20/std-condition-variable/" title="std::condition_variable 用法與範例">std::condition_variable 用法與範例</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckmy4d0mn0097wqs1z6kwx8kj" data-title="std::mutex 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/02/05/std-mutex/" data-id="ckmywzbu00098tvs15wlgdh3i" data-title="std::mutex 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -159,12 +154,7 @@
   
     <!-- ads-2 -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="1792535573"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="1792535573" data-ad-format="auto" data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -276,12 +266,7 @@
   
     <!-- ads-3 -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="8896181732"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="8896181732" data-ad-format="auto" data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -295,7 +280,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2021 ShengYu<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank" rel="external nofollow noopener noreferrer">Hexo</a>
     </div>
   </div>
 </footer>
