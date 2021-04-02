@@ -76,9 +76,9 @@
         
       </nav>
       <nav id="sub-nav">
-        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin" rel="external nofollow noopener noreferrer" target="_blank"></a>
-        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook" rel="external nofollow noopener noreferrer" target="_blank"></a>
-        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub" rel="external nofollow noopener noreferrer" target="_blank"></a>
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
@@ -121,26 +121,31 @@
         
         <!-- ads-1 -->
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="4194519399" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
         <!-- ads-1 -->
         <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::mutex 的。  </p>
 <p>接下來我們來 trace llvm 的 libc++ 是怎麼實作 std::mutex 的。  </p>
-<h2><span id="1-stdmutexlock-的實作">1. std::mutex::lock 的實作</span></h2><p><code>lock</code> 轉換成內部的 <code>__libcpp_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/mutex.cpp.html" rel="external nofollow noopener noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::lock()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_lock(&amp;__m_);</span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"mutex lock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3><span id="1-1-stdmutexlock-在-unix-平台的實作內容">1-1. std::mutex::lock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 unix 平台是呼叫 <code>pthread_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html" rel="external nofollow noopener noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_lock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3><span id="1-2-stdmutexlock-在-windows-平台的實作內容">1-2. std::mutex::lock 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 windows 平台是呼叫 <code>AcquireSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/support/win32/thread_win32.cpp.html" rel="external nofollow noopener noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  AcquireSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="2-stdmutexunlock-的實作">2. std::mutex::unlock 的實作</span></h2><p><code>unlock</code> 轉換成內部的 <code>__libcpp_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/mutex.cpp" rel="external nofollow noopener noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::unlock() _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_unlock(&amp;__m_);</span><br><span class="line">    (<span class="keyword">void</span>)ec;</span><br><span class="line">    _LIBCPP_ASSERT(ec == <span class="number">0</span>, <span class="string">"call to mutex::unlock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3><span id="2-1-stdmutexunlock-在-unix-平台的實作內容">2-1. std::mutex::unlock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 unix 平台是呼叫 <code>pthread_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="external nofollow noopener noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_unlock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3><span id="2-2-stdmutexunlock-在-在-windows-平台的實作內容">2-2. std::mutex::unlock 在 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 windows 平台是呼叫 <code>ReleaseSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="external nofollow noopener noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  ReleaseSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="1-stdmutexlock-的實作">1. std::mutex::lock 的實作</span></h2><p><code>lock</code> 轉換成內部的 <code>__libcpp_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/mutex.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::lock()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_lock(&amp;__m_);</span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"mutex lock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-1-stdmutexlock-在-unix-平台的實作內容">1-1. std::mutex::lock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 unix 平台是呼叫 <code>pthread_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_lock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-2-stdmutexlock-在-windows-平台的實作內容">1-2. std::mutex::lock 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 windows 平台是呼叫 <code>AcquireSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/support/win32/thread_win32.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  AcquireSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="2-stdmutexunlock-的實作">2. std::mutex::unlock 的實作</span></h2><p><code>unlock</code> 轉換成內部的 <code>__libcpp_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/mutex.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::unlock() _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_unlock(&amp;__m_);</span><br><span class="line">    (<span class="keyword">void</span>)ec;</span><br><span class="line">    _LIBCPP_ASSERT(ec == <span class="number">0</span>, <span class="string">"call to mutex::unlock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-1-stdmutexunlock-在-unix-平台的實作內容">2-1. std::mutex::unlock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 unix 平台是呼叫 <code>pthread_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_unlock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-2-stdmutexunlock-在-在-windows-平台的實作內容">2-2. std::mutex::unlock 在 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 windows 平台是呼叫 <code>ReleaseSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  ReleaseSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h2><span id="總結">總結</span></h2><p>在一番 trace code 的結果後，std::mutex 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::mutex::lock</code> 轉換成 <code>pthread_mutex_lock</code><br><code>std::mutex::unlock</code> 轉換成 <code>pthread_mutex_unlock</code><br>在 windows 下<br><code>std::mutex::lock</code> 轉換成 <code>AcquireSRWLockExclusive</code><br><code>std::mutex::unlock</code> 轉換成 <code>ReleaseSRWLockExclusive</code>  </p>
 <p><strong>相關主題</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/blog/2019/04/25/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/blog/2019/11/16/std-condition-variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/blog/2019/11/18/Cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/11/17/std-mutex-how/" data-id="ckmywzbta007ktvs1rowtutpg" data-title="std::mutex 怎麼實作的？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/11/17/std-mutex-how/" data-id="ckmzkd0rv007il7s1w68acder" data-title="std::mutex 怎麼實作的？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -150,7 +155,12 @@
   
     <!-- ads-2 -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="1792535573" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -210,7 +220,7 @@
           </li>
         
           <li>
-            <a href="/blog/2021/03/30/Cpp-how-to-use-libcxx/">clang++ 如何使用 libc++</a>
+            <a href="/blog/2021/03/30/Cpp-how-to-use-libcxx/">C++ 如何使用 libc++</a>
           </li>
         
           <li>
@@ -262,7 +272,12 @@
   
     <!-- ads-3 -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="8896181732" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -276,7 +291,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2021 ShengYu<br>
-      Powered by <a href="http://hexo.io/" target="_blank" rel="external nofollow noopener noreferrer">Hexo</a>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>

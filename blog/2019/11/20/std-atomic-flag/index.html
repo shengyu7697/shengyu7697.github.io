@@ -76,9 +76,9 @@
         
       </nav>
       <nav id="sub-nav">
-        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin" rel="external nofollow noopener noreferrer" target="_blank"></a>
-        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook" rel="external nofollow noopener noreferrer" target="_blank"></a>
-        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub" rel="external nofollow noopener noreferrer" target="_blank"></a>
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
@@ -121,7 +121,12 @@
         
         <!-- ads-1 -->
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="4194519399" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -133,13 +138,13 @@
 <h2><span id="stdatomic_flagclear-介紹">std::atomic_flag::clear() 介紹</span></h2><p>std::atomic_flag::clear() 會原子地清除 flag 旗標，設定旗標為 false，這樣會使得下一次呼叫 std::atomic_flag::test_and_set 回傳 false。  </p>
 <h2><span id="使用範例">使用範例</span></h2><p>以下範例是開3個執行緒，內部迴圈各跑15次，每次都試圖去索取 lock（atomic_flag），如果索取到的話印出該執行緒號碼與cnt第幾次，<br>如果沒有索取到的話，進入自旋狀態，一直 while 迴圈嘗試索取到 lock 成功為止，<br>test_and_set 上鎖成功會回傳 false<br>test_and_set 上鎖失敗會回傳 true<br><figure class="highlight c++"><figcaption><span>std-atomic_flag.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic_flag.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::atomic_flag lock = ATOMIC_FLAG_INIT;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> cnt = <span class="number">0</span>; cnt &lt; <span class="number">15</span>; ++cnt) &#123;</span><br><span class="line">        <span class="keyword">while</span> (lock.test_and_set(<span class="built_in">std</span>::memory_order_acquire))  <span class="comment">// acquire lock</span></span><br><span class="line">             ; <span class="comment">// spin 自旋</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Output from thread "</span> &lt;&lt; n &lt;&lt; <span class="string">", cnt = "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        lock.clear(<span class="built_in">std</span>::memory_order_release);               <span class="comment">// release lock</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::thread&gt; v;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> n = <span class="number">0</span>; n &lt; <span class="number">3</span>; ++n) &#123;</span><br><span class="line">        v.emplace_back(f, n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; t : v) &#123;</span><br><span class="line">        t.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>輸出如下，每次執行結果不同：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">Output from thread 0, cnt = 0</span><br><span class="line">Output from thread 2, cnt = 0</span><br><span class="line">Output from thread 0, cnt = 1</span><br><span class="line">Output from thread 1, cnt = 0</span><br><span class="line">Output from thread 2, cnt = 1</span><br><span class="line">Output from thread 1, cnt = 1</span><br><span class="line">Output from thread 2, cnt = 2</span><br><span class="line">Output from thread 1, cnt = 2</span><br><span class="line">Output from thread 2, cnt = 3</span><br><span class="line">Output from thread 1, cnt = 3</span><br><span class="line">Output from thread 2, cnt = 4</span><br><span class="line">Output from thread 0, cnt = 2</span><br><span class="line">Output from thread 1, cnt = 4</span><br><span class="line">Output from thread 2, cnt = 5</span><br><span class="line">Output from thread 0, cnt = 3</span><br><span class="line">Output from thread 1, cnt = 5</span><br><span class="line">Output from thread 2, cnt = 6</span><br><span class="line">Output from thread 0, cnt = 4</span><br><span class="line">Output from thread 2, cnt = 7</span><br><span class="line">Output from thread 1, cnt = 6</span><br><span class="line">Output from thread 0, cnt = 5</span><br><span class="line">Output from thread 2, cnt = 8</span><br><span class="line">Output from thread 0, cnt = 6</span><br><span class="line">Output from thread 1, cnt = 7</span><br><span class="line">Output from thread 2, cnt = 9</span><br><span class="line">Output from thread 0, cnt = 7</span><br><span class="line">Output from thread 2, cnt = 10</span><br><span class="line">Output from thread 1, cnt = 8</span><br><span class="line">Output from thread 2, cnt = 11</span><br><span class="line">Output from thread 0, cnt = 8</span><br><span class="line">Output from thread 2, cnt = 12</span><br><span class="line">Output from thread 1, cnt = 9</span><br><span class="line">Output from thread 2, cnt = 13</span><br><span class="line">Output from thread 1, cnt = 10</span><br><span class="line">Output from thread 2, cnt = 14</span><br><span class="line">Output from thread 0, cnt = 9</span><br><span class="line">Output from thread 1, cnt = 11</span><br><span class="line">Output from thread 0, cnt = 10</span><br><span class="line">Output from thread 1, cnt = 12</span><br><span class="line">Output from thread 0, cnt = 11</span><br><span class="line">Output from thread 1, cnt = 13</span><br><span class="line">Output from thread 0, cnt = 12</span><br><span class="line">Output from thread 1, cnt = 14</span><br><span class="line">Output from thread 0, cnt = 13</span><br><span class="line">Output from thread 0, cnt = 14</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>std::atomic_flag - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/atomic/atomic_flag" rel="external nofollow noopener noreferrer" target="_blank">https://en.cppreference.com/w/cpp/atomic/atomic_flag</a><br>C++11 並發指南六(atomic 類型詳解一 atomic_flag 介紹) - Haippy - 博客園<br><a href="https://www.cnblogs.com/haippy/p/3252056.html" rel="external nofollow noopener noreferrer" target="_blank">https://www.cnblogs.com/haippy/p/3252056.html</a><br>C++11中的atomic | YuanguoBlog<br><a href="http://www.yuanguohuo.com/2019/07/08/cpp11-atomic/" rel="external nofollow noopener noreferrer" target="_blank">http://www.yuanguohuo.com/2019/07/08/cpp11-atomic/</a><br>並行編程中的lock free技術<br><a href="https://blog.csdn.net/pmt123456/article/details/72844029" rel="external nofollow noopener noreferrer" target="_blank">https://blog.csdn.net/pmt123456/article/details/72844029</a>  </p>
+<p>參考<br>std::atomic_flag - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/atomic/atomic_flag" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/atomic/atomic_flag</a><br>C++11 並發指南六(atomic 類型詳解一 atomic_flag 介紹) - Haippy - 博客園<br><a href="https://www.cnblogs.com/haippy/p/3252056.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/haippy/p/3252056.html</a><br>C++11中的atomic | YuanguoBlog<br><a href="http://www.yuanguohuo.com/2019/07/08/cpp11-atomic/" rel="noopener external nofollow noreferrer" target="_blank">http://www.yuanguohuo.com/2019/07/08/cpp11-atomic/</a><br>並行編程中的lock free技術<br><a href="https://blog.csdn.net/pmt123456/article/details/72844029" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/pmt123456/article/details/72844029</a>  </p>
 <p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2018/10/01/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/blog/2020/02/06/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/blog/2020/02/05/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/blog/2019/12/13/std-unordered-map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/blog/2019/11/30/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/blog/2019/12/19/std-random-shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/blog/2019/11/21/std-shared-ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/blog/2020/02/08/std-async/" title="std::async 用法與範例">std::async 用法與範例</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/11/20/std-atomic-flag/" data-id="ckmywzbtb007ntvs11m6a7g0y" data-title="std::atomic_flag 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/11/20/std-atomic-flag/" data-id="ckmzkd0rw007kl7s143avvryv" data-title="std::atomic_flag 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -149,7 +154,12 @@
   
     <!-- ads-2 -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="1792535573" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -209,7 +219,7 @@
           </li>
         
           <li>
-            <a href="/blog/2021/03/30/Cpp-how-to-use-libcxx/">clang++ 如何使用 libc++</a>
+            <a href="/blog/2021/03/30/Cpp-how-to-use-libcxx/">C++ 如何使用 libc++</a>
           </li>
         
           <li>
@@ -261,7 +271,12 @@
   
     <!-- ads-3 -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8106207149031244" data-ad-slot="8896181732" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
@@ -275,7 +290,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2021 ShengYu<br>
-      Powered by <a href="http://hexo.io/" target="_blank" rel="external nofollow noopener noreferrer">Hexo</a>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
