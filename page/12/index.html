@@ -92,6 +92,73 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-function" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2020/09/02/std-function/" class="article-date">
+  <time datetime="2020-09-02T14:00:00.000Z" itemprop="datePublished">2020-09-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2020/09/02/std-function/">C++ std::function 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::function 的用法教學，並提供一些入門常用的範例程式碼。  </p>
+<p><strong>需要引入的標頭檔</strong>: <code>&lt;functional&gt;</code>  </p>
+<p>在實務上最常用到 std::function 的情形就是使用 callback 回調函式的時候，  </p>
+<h2><span id="使用-stdfunction-取代傳統的-function-pointer">使用 std::function 取代傳統的 function pointer</span></h2><p>使用 std::function 取代傳統的 function pointer 優點有幾個，  </p>
+<ul>
+<li>可讀性佳</li>
+<li>可接受 lambda 函式</li>
+</ul>
+<p>讓我們先來看看一段使用 function pointer 的範例，<br><figure class="highlight c++"><figcaption><span>function-pointer-callback.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ function-pointer-callback.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">keyevent</span><span class="params">(<span class="keyword">int</span> keycode, <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"keycode = "</span> &lt;&lt; keycode &lt;&lt; <span class="string">" status = "</span> &lt;&lt; status &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span> (*callback_keyevent)(<span class="keyword">int</span>, <span class="keyword">int</span>) = <span class="literal">NULL</span>;</span><br><span class="line">    callback_keyevent = keyevent;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback_keyevent)</span><br><span class="line">        callback_keyevent(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>改成 std::function 後變成這樣<br><figure class="highlight c++"><figcaption><span>std-function-callback.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-function-callback.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">keyevent</span><span class="params">(<span class="keyword">int</span> keycode, <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"keycode = "</span> &lt;&lt; keycode &lt;&lt; <span class="string">" status = "</span> &lt;&lt; status &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(<span class="keyword">int</span>, <span class="keyword">int</span>)&gt; callback_keyevent = <span class="literal">nullptr</span>;</span><br><span class="line">    callback_keyevent = keyevent;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback_keyevent)</span><br><span class="line">        callback_keyevent(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] std::function - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/utility/functional/function" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/utility/functional/function</a><br>[2] function::function - C++ Reference<br><a href="http://www.cplusplus.com/reference/functional/function/function/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/reference/functional/function/function/</a><br>[3] C++11 std::function的用法 - 滴酱的个人空间 - OSCHINA<br><a href="https://my.oschina.net/u/2274890/blog/499159" rel="noopener external nofollow noreferrer" target="_blank">https://my.oschina.net/u/2274890/blog/499159</a><br>[4] C++11 std::function用法-码农场<br><a href="https://www.hankcs.com/program/cpp/c11-std-function-usage.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.hankcs.com/program/cpp/c11-std-function-usage.html</a><br>[5] Cocos2d-x 的 onKeyPressed 與 onKeyReleased<br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.h" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.h</a><br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.cpp" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.cpp</a><br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/tests/performance-tests/Classes/tests/PerformanceEventDispatcherTest.cpp" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/tests/performance-tests/Classes/tests/PerformanceEventDispatcherTest.cpp</a><br>cocos2d-x 在 PerformanceEventDispatcherTest.cpp 的 KeyboardEventDispatchingPerfTest::generateTestFunctions 使用 onKeyPressed 接收一個 lambda 函式<br>[6] 邁向王者的旅途: 簡介 std::function (C++11 後的新功能)<br><a href="https://shininglionking.blogspot.com/2017/01/stdfunction-c11.html" rel="noopener external nofollow noreferrer" target="_blank">https://shininglionking.blogspot.com/2017/01/stdfunction-c11.html</a><br>[7] Should I use std::function or a function pointer in C++? - Stack Overflow<br><a href="https://stackoverflow.com/questions/25848690/should-i-use-stdfunction-or-a-function-pointer-in-c" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/25848690/should-i-use-stdfunction-or-a-function-pointer-in-c</a><br>這篇討論提到應該盡量使用 std::function 來取代 function pointer，除非有什麼其他特殊原因<br>[8] 在 C++ 裡傳遞、儲存函式 Part 3：Function Object in TR1 – Heresy’s Space<br><a href="https://kheresy.wordpress.com/2010/11/12/function_object_tr1/" rel="noopener external nofollow noreferrer" target="_blank">https://kheresy.wordpress.com/2010/11/12/function_object_tr1/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2019/11/30/std-sort/" title="C++ std::sort 排序用法與範例完整介紹">C++ std::sort 排序用法與範例完整介紹</a><br><a href="/blog/2020/02/18/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/blog/2020/08/03/Cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/blog/2020/04/27/Cpp-check-if-file-exists/" title="C/C++ 判斷檔案是否存在">C/C++ 判斷檔案是否存在</a><br><a href="/blog/2019/05/01/Cpp-singleton-pattern/" title="C++ 設計模式 - 單例模式 Singleton Pattern">C++ 設計模式 - 單例模式 Singleton Pattern</a><br><a href="/blog/2020/07/22/Cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2020/09/02/std-function/" data-id="ckn12hjb100bs76s14zez42n2" data-title="C++ std::function 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Ubuntu-tplink-t4u-driver" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2020/08/27/Ubuntu-tplink-t4u-driver/" class="article-date">
@@ -152,7 +219,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/27/Ubuntu-tplink-t4u-driver/" data-id="ckmzkd0to00bql7s1jlhj0hg1" data-title="Ubuntu 安裝 TP-Link Archer T4U Driver 筆記" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/27/Ubuntu-tplink-t4u-driver/" data-id="ckn12hjb100br76s1vmd2dzla" data-title="Ubuntu 安裝 TP-Link Archer T4U Driver 筆記" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -213,7 +280,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/24/Cpp-glossary/" data-id="ckmzkd0tn00bpl7s1zaedqd17" data-title="C/C++ 一堆名詞解釋" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/24/Cpp-glossary/" data-id="ckn12hjb000bq76s12x8m39yo" data-title="C/C++ 一堆名詞解釋" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -274,7 +341,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/20/Ubuntu-apt-update-error/" data-id="ckmzkd0tm00bol7s19ak1comg" data-title="Ubuntu apt update 的一堆 error 問題與解決方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/20/Ubuntu-apt-update-error/" data-id="ckn12hjb000bp76s1gauu8xzb" data-title="Ubuntu apt update 的一堆 error 問題與解決方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -344,7 +411,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/17/Python-OpenCV-img2char/" data-id="ckmzkd0tm00bnl7s1dte47yj1" data-title="[Python+OpenCV] 圖片轉字元圖畫" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/17/Python-OpenCV-img2char/" data-id="ckn12hjb000bo76s1vl8zyi93" data-title="[Python+OpenCV] 圖片轉字元圖畫" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -402,7 +469,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/13/Ubuntu-netbootin-live-usb/" data-id="ckmzkd0tl00bml7s1l8qfuyl9" data-title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/13/Ubuntu-netbootin-live-usb/" data-id="ckn12hjaz00bn76s1vl2ohrnh" data-title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -469,7 +536,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/12/Cpp-execute-command-and-get-output/" data-id="ckmzkd0tl00bll7s1n9brmvzv" data-title="C/C++ 取得 shell 指令的螢幕輸出字串" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/12/Cpp-execute-command-and-get-output/" data-id="ckn12hjaz00bm76s19p21acch" data-title="C/C++ 取得 shell 指令的螢幕輸出字串" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -533,7 +600,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/05/Cpp-string-reverse/" data-id="ckmzkd0tk00bkl7s19eznzcjh" data-title="C/C++ 字串反轉 reverse" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/05/Cpp-string-reverse/" data-id="ckn12hjay00bl76s19ay76sdi" data-title="C/C++ 字串反轉 reverse" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -597,7 +664,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/08/03/Cpp-virtual/" data-id="ckmzkd0tk00bjl7s101euask9" data-title="C++ virtual 的兩種用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/08/03/Cpp-virtual/" data-id="ckn12hjay00bk76s1kiepzpt5" data-title="C++ virtual 的兩種用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -708,61 +775,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/29/vscode-shortcuts/" data-id="ckmzkd0tk00bil7s1b1dliuq5" data-title="Visual Studio Code 常用快捷鍵" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-vscode-go-to-matching-bracket" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2020/07/27/vscode-go-to-matching-bracket/" class="article-date">
-  <time datetime="2020-07-27T14:00:00.000Z" itemprop="datePublished">2020-07-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2020/07/27/vscode-go-to-matching-bracket/">Visual Studio Code 找對應大括號的快捷鍵</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>先把游標移到大括號右邊，再按 <code>Ctrl + Shift + \</code> 就可以跳到另一個大括號了。</p>
-<p>參考<br>How do I jump to a closing bracket in Visual Studio Code? - Stack Overflow<br><a href="https://stackoverflow.com/questions/30097634/how-do-i-jump-to-a-closing-bracket-in-visual-studio-code" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/30097634/how-do-i-jump-to-a-closing-bracket-in-visual-studio-code</a>  </p>
-<p><strong>相關主題</strong><br><a href="/blog/2020/07/29/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/blog/2019/04/13/Eclipse-shortcuts/" title="Eclipse 常用快捷鍵">Eclipse 常用快捷鍵</a><br><a href="/blog/2019/04/12/Eclipse-go-to-matching-bracket/" title="Eclipse 找對應大括號的快捷鍵">Eclipse 找對應大括號的快捷鍵</a><br><a href="/blog/2020/09/14/Qt-shortcuts/" title="Qt Creator 常用快捷鍵">Qt Creator 常用快捷鍵</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2020/07/27/vscode-go-to-matching-bracket/" data-id="ckmzkd0tj00bhl7s16zyvxepf" data-title="Visual Studio Code 找對應大括號的快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2020/07/29/vscode-shortcuts/" data-id="ckn12hjay00bj76s1qwo9d92c" data-title="Visual Studio Code 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>

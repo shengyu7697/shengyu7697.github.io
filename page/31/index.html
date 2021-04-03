@@ -92,6 +92,63 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-OpenCV-build-program-by-gcc" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/10/11/OpenCV-build-program-by-gcc/" class="article-date">
+  <time datetime="2019-10-11T14:00:00.000Z" itemprop="datePublished">2019-10-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/10/11/OpenCV-build-program-by-gcc/">使用 gcc / g++ 編譯 opencv 程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹如何使用 gcc / g++ 指令來編譯 opencv 程式，並且透過 pkg-config 指令來取得 opencv 編譯所需的參數。</p>
+<p>以下範例為簡單的讀取 lena 圖片，詳細的介紹說明請看 <a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="這篇">這篇</a>。<br><figure class="highlight c++"><figcaption><span>readPicture.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Mat image;</span><br><span class="line">    image = imread(<span class="string">"lena.jpg"</span>, IMREAD_COLOR);</span><br><span class="line"></span><br><span class="line">    imshow(<span class="string">"view"</span>, image);</span><br><span class="line">    waitKey(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="使用-g-編譯-opencv-程式">使用 g++ 編譯 opencv 程式</span></h2><p>正常編譯的話通常是使用 <code>g++ readPicture.cpp -o readPicture</code> 就完成了，但是這邊還需要帶入 opencv 的標頭檔目錄與連結函式庫，<br>這邊使用 pkg-config 這個工具來輔助完成這件事，最後透過結合這兩個指令就可以編譯出執行檔，</p>
+<p>g++ readPicture.cpp -o readPicture <code>pkg-config --cflags --libs opencv</code></p>
+<h2><span id="pkg-config-原理">pkg-config 原理</span></h2><p>使用 <code>pkg-config --cflags opencv</code> 指令會輸出 opencv 所需要的標頭檔目錄，<br>輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-I/usr/local/include/opencv -I/usr/local/include</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>pkg-config --libs opencv</code> 指令會輸出 opencv 所需要連結的函式庫，<br>輸出如下(本篇使用opencv 3.4.7，使用其他版本或許輸出有些不同)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-L/usr/local/lib -lopencv_ml -lopencv_dnn -lopencv_highgui -lopencv_superres -lopencv_objdetect -lopencv_stitching -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_photo -lopencv_flann -lopencv_shape -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core</span><br></pre></td></tr></table></figure></p>
+<p>如果結合–cflags 和 –libs 兩個一起使用的話 <code>pkg-config --cflags --libs opencv</code> 則會一起輸出標頭檔目錄與連結的函式庫，輸出如下(本篇使用opencv 3.4.7，使用其他版本或許輸出有些不同)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_ml -lopencv_dnn -lopencv_highgui -lopencv_superres -lopencv_objdetect -lopencv_stitching -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_photo -lopencv_flann -lopencv_shape -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core</span><br></pre></td></tr></table></figure></p>
+<p><strong>相關主題</strong><br><a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/11/OpenCV-build-program-by-gcc/" data-id="ckn12hj8n006h76s1xix8lw9y" data-title="使用 gcc / g++ 編譯 opencv 程式" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Python-get-current-time-and-date" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/blog/2019/10/11/Python-get-current-time-and-date/" class="article-date">
@@ -189,7 +246,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/11/Python-get-current-time-and-date/" data-id="ckmzkd0rb006hl7s1oai0pq18" data-title="Python 取得系統當前時間" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/11/Python-get-current-time-and-date/" data-id="ckn12hj8o006i76s1tuogz2fi" data-title="Python 取得系統當前時間" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -249,7 +306,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/10/OpenCV-4-1-1-build-install-in-ubuntu/" data-id="ckmzkd0ra006fl7s19hgu1tk5" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/10/OpenCV-4-1-1-build-install-in-ubuntu/" data-id="ckn12hj8n006g76s1jvxb7lyh" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -310,7 +367,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" data-id="ckmzkd0ra006el7s1oq3i8rrc" data-title="在 Ubuntu 下寫第一支 OpenCV 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" data-id="ckn12hj8m006f76s1v7xjm4iw" data-title="在 Ubuntu 下寫第一支 OpenCV 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -370,7 +427,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/08/OpenCV-3-4-7-build-install-in-ubuntu/" data-id="ckmzkd0r9006dl7s1soi6up0i" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/08/OpenCV-3-4-7-build-install-in-ubuntu/" data-id="ckn12hj8m006e76s1y7c1f6lu" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -434,7 +491,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/07/Github-update-forked-repository/" data-id="ckmzkd0r9006cl7s1qagk699o" data-title="Github 如何更新已經 fork 的專案與原專案紀錄同步" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/07/Github-update-forked-repository/" data-id="ckn12hj8m006d76s1ztc5hxp5" data-title="Github 如何更新已經 fork 的專案與原專案紀錄同步" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -491,7 +548,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/06/Boost-first-program-in-ubuntu/" data-id="ckmzkd0r9006bl7s1456adns6" data-title="在 Ubuntu 下寫第一支 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/06/Boost-first-program-in-ubuntu/" data-id="ckn12hj8l006c76s1m42u4irf" data-title="在 Ubuntu 下寫第一支 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -536,7 +593,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/05/Boost-1-71-0-build-install-in-ubuntu/" data-id="ckmzkd0r8006al7s13g35wstc" data-title="在 Ubuntu 下編譯安裝 Boost 1.71.0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/05/Boost-1-71-0-build-install-in-ubuntu/" data-id="ckn12hj8l006b76s1nz4tk3aa" data-title="在 Ubuntu 下編譯安裝 Boost 1.71.0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -598,7 +655,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/04/Linux-sed/" data-id="ckmzkd0r70069l7s1p20mjzkb" data-title="使用 Linux sed 字串取代" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/04/Linux-sed/" data-id="ckn12hj8k006a76s1mwbylp97" data-title="使用 Linux sed 字串取代" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -658,68 +715,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/03/Linux-cut/" data-id="ckmzkd0r70068l7s1ykk3lju5" data-title="使用 Linux cut 字串處理" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/10/03/Linux-cut/" data-id="ckn12hj8k006976s194e461h3" data-title="使用 Linux cut 字串處理" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Git-view-repository-history" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/10/02/Git-view-repository-history/" class="article-date">
-  <time datetime="2019-10-02T14:00:00.000Z" itemprop="datePublished">2019-10-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/10/02/Git-view-repository-history/">Git 顯示整個repository的歷史修改記錄</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Git 查看整個 repository 的歷史記錄，歷史補丁patch (就是顯示修改內容+++—的那些啦！)。</p>
-<p>針對單檔看歷史修改已經會了，<code>git log -p &lt;filename&gt;</code><br>如果是想看整個 repository 的歷史記錄的話使用下列指令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git log --patch-with-raw</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2018/09/16/Git-view-file-history/" title="Git 顯示某個檔案的歷史修改記錄">Git 顯示某個檔案的歷史修改記錄</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/10/02/Git-view-repository-history/" data-id="ckmzkd0r60067l7s12osanjfx" data-title="Git 顯示整個repository的歷史修改記錄" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
 
     </footer>
   </div>
