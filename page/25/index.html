@@ -92,10 +92,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-Android-fastboot-get-current-active-slot" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Boost-interprocess-shared-memory" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/blog/2019/12/10/Android-fastboot-get-current-active-slot/" class="article-date">
-  <time datetime="2019-12-10T14:00:00.000Z" itemprop="datePublished">2019-12-10</time>
+    <a href="/blog/2019/12/24/Boost-interprocess-shared-memory/" class="article-date">
+  <time datetime="2019-12-24T14:00:00.000Z" itemprop="datePublished">2019-12-24</time>
 </a>
     
   </div>
@@ -106,7 +106,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/10/Android-fastboot-get-current-active-slot/">Android fastboot 查詢當前使用的a/b槽</a>
+      <a class="article-title" href="/blog/2019/12/24/Boost-interprocess-shared-memory/">boost::interprocess 共享記憶體 shared memory</a>
     </h1>
   
 
@@ -127,15 +127,430 @@
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
         <!-- ads-1 -->
-        <p>紀錄一下如何使用 Android 的 fastboot 指令查詢 android 裝置目前使用那個槽(a/b)，知道是哪個槽後，比較能確定之後要燒錄哪個槽。  </p>
-<p>查詢目前使用那個槽(a/b)， 看目前的slot是a還是b，一般都是a。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo fastboot getvar current-slot</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] adb - fastboot set_active command does not exist - Android Enthusiasts Stack Exchange<br><a href="https://android.stackexchange.com/questions/203124/fastboot-set-active-command-does-not-exist" rel="noopener external nofollow noreferrer" target="_blank">https://android.stackexchange.com/questions/203124/fastboot-set-active-command-does-not-exist</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>基本的Android fastboot指令用法教學與安裝可以看<a href="/blog/2019/12/11/Android-fastboot/" title="這篇">這篇</a></p>
+        <p>本篇介紹使用 boost C++ 的 interprocess 模組來做IPC行程通訊，內容包含了 boost::interprocess::managed_shared_memory 的用法。</p>
+<h2><span id="安裝-boost">安裝 boost</span></h2><p>還沒安裝 boost 的話請參考 <a href="/blog/2019/12/21/Boost-install-boost-in-windows/" title="windows 安裝方式">windows 安裝方式</a> / <a href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/" title="ubuntu 安裝方式">ubuntu 安裝方式</a>。</p>
+<h2><span id="使用範例">使用範例</span></h2><figure class="highlight cpp"><figcaption><span>boost-interprocess-shared-memory.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ boost-interprocess-shared-memory.cpp -o a.out -pthread -lrt</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/interprocess/managed_shared_memory.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> boost::interprocess;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 先刪除</span></span><br><span class="line">    <span class="keyword">bool</span> ret = shared_memory_object::remove(<span class="string">"Boost_shm"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; ret &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="comment">// 建立 managed shared memory</span></span><br><span class="line">    <span class="function">managed_shared_memory <span class="title">managed_shm</span><span class="params">(open_or_create, <span class="string">"Boost_shm"</span>, <span class="number">1024</span>)</span></span>;</span><br><span class="line">    <span class="keyword">int</span> *i = managed_shm.construct&lt;<span class="keyword">int</span>&gt;(<span class="string">"Integer"</span>)(<span class="number">100</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; *i &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="comment">// 按名字讀取</span></span><br><span class="line">    <span class="built_in">std</span>::pair&lt;<span class="keyword">int</span> *, <span class="built_in">std</span>::<span class="keyword">size_t</span>&gt; p = managed_shm.find&lt;<span class="keyword">int</span>&gt;(<span class="string">"Integer"</span>);</span><br><span class="line">    <span class="keyword">if</span> (p.first)</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; *p.first &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="編譯">編譯</span></h2><p><strong>linux</strong><br>在 linux 下用 g++ 編譯需要連結 pthread 與 rt。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ g++ boost-interprocess-shared-memory.cpp -o a.out -pthread -lrt</span><br></pre></td></tr></table></figure></p>
+<p>連結 pthread 是因為 boost 內部實作時使用到了 pthread_mutexattr_init、pthread_mutexattr_setpshared、pthread_mutexattr_settype、pthread_mutexattr_destroy 等函式。<br>連結 rt 是因為 boost 內部實作時使用到了 shm_open、shm_unlink 等函式。<br>Boost.Interprocess 不用編譯，它是 header only library，只要將你的 Boost header 的目錄加入編譯器的 include path 即可。<br>Boost.Interprocess 是依賴於 Boost.DateTime</p>
+<p><strong>windows</strong><br>在 windows 下用 visual studio 編譯不連結 DateTime 的函式庫的話記得加 BOOST_DATE_TIME_NO_LIB，要加在 boost/interprocess/*.hpp 前才有意義。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define BOOST_DATE_TIME_NO_LIB</span><br><span class="line">#include &lt;boost/interprocess/managed_shared_memory.hpp&gt;</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>Chapter 33. Boost.Interprocess - Managed Shared Memory<br><a href="https://theboostcpplibraries.com/boost.interprocess-managed-shared-memory" rel="noopener external nofollow noreferrer" target="_blank">https://theboostcpplibraries.com/boost.interprocess-managed-shared-memory</a><br>boost::interprocess 共享内存 - 作业部落 Cmd Markdown 编辑阅读器<br><a href="https://www.zybuluo.com/Pigmon/note/1376783" rel="noopener external nofollow noreferrer" target="_blank">https://www.zybuluo.com/Pigmon/note/1376783</a></p>
+<hr>
+<p>Chapter 17. Boost.Interprocess - 1.66.0<br><a href="https://www.boost.org/doc/libs/1_66_0/doc/html/interprocess.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.boost.org/doc/libs/1_66_0/doc/html/interprocess.html</a><br>c++ - Is boost::managed_shared_memory using a file on my hard drive? - Stack Overflow<br><a href="https://stackoverflow.com/questions/58487479/is-boostmanaged-shared-memory-using-a-file-on-my-hard-drive" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/58487479/is-boostmanaged-shared-memory-using-a-file-on-my-hard-drive</a><br>Highscore - Boost C++ 库 - 进程间通讯<br><a href="http://zh.highscore.de/cpp/boost/interprocesscommunication.html" rel="noopener external nofollow noreferrer" target="_blank">http://zh.highscore.de/cpp/boost/interprocesscommunication.html</a><br>Boost IPC共享内存的使用总结 - lday的个人页面 - OSCHINA<br><a href="https://my.oschina.net/lday/blog/724458" rel="noopener external nofollow noreferrer" target="_blank">https://my.oschina.net/lday/blog/724458</a><br>Boost.Interprocess使用手册翻译之二：快速指南 （Quick Guide for the Impatient）_great3779的专栏-CSDN博客<br><a href="https://blog.csdn.net/great3779/article/details/7222202" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/great3779/article/details/7222202</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/10/Android-fastboot-get-current-active-slot/" data-id="ckn12hj9j008676s198x6hqbs" data-title="Android fastboot 查詢當前使用的a/b槽" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/24/Boost-interprocess-shared-memory/" data-id="ckn59g5ji00b5wes16sw9tlsw" data-title="boost::interprocess 共享記憶體 shared memory" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Boost-filesystem-create-directory" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/12/23/Boost-filesystem-create-directory/" class="article-date">
+  <time datetime="2019-12-23T14:00:00.000Z" itemprop="datePublished">2019-12-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/12/23/Boost-filesystem-create-directory/">boost::filesystem 建立資料夾</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹使用 boost C++ 的 filesystem 模組來建立資料夾。</p>
+<p>幾年前為了寫 C++ 跨平台程式，研究了一下怎麼用 boost 的 filesystem 模組來完成這個功能，最近在整理 boost 的筆記就順便記錄下來吧！<br>這個功能最新的 C++17 也已經加入這個功能了，相信再過幾年就很普及了。</p>
+<h2><span id="安裝-boost">安裝 boost</span></h2><p>還沒安裝 boost 的話請參考 <a href="/blog/2019/12/21/Boost-install-boost-in-windows/" title="windows 安裝方式">windows 安裝方式</a> / <a href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/" title="ubuntu 安裝方式">ubuntu 安裝方式</a>。</p>
+<h2><span id="使用範例">使用範例</span></h2><p>可以一次建立多層資料夾目錄<br><figure class="highlight cpp"><figcaption><span>boost-filesystem-create-directory.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ boost-filesystem-create-directory.cpp -o a.out -lboost_filesystem</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/filesystem.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> boost::filesystem;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    create_directories(<span class="string">"image/out"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="編譯">編譯</span></h2><p>在 linux 下使用 g++ 編譯需要連結 boost_filesystem 函式庫<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ g++ boost-filesystem-create-directory.cpp -o a.out -lboost_filesystem</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] Filesystem Tutorial 1.47.0<br><a href="http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/doc/tutorial.html" rel="noopener external nofollow noreferrer" target="_blank">http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/doc/tutorial.html</a><br>[2] Filesystem Tutorial 1.66.0<br><a href="https://www.boost.org/doc/libs/1_66_0/libs/filesystem/doc/tutorial.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.boost.org/doc/libs/1_66_0/libs/filesystem/doc/tutorial.html</a><br>[3] C++ 檔案、資料夾、路徑處理函式庫：boost::filesystem<br><a href="https://kheresy.wordpress.com/2010/10/25/boost_filesystem/" rel="noopener external nofollow noreferrer" target="_blank">https://kheresy.wordpress.com/2010/10/25/boost_filesystem/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/23/Boost-filesystem-create-directory/" data-id="ckn59g5ii008twes1h7bcodzt" data-title="boost::filesystem 建立資料夾" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Boost-use-cmake-visual-studio-in-windows" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" class="article-date">
+  <time datetime="2019-12-22T14:00:00.000Z" itemprop="datePublished">2019-12-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/">在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹如何在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式，Windows 怎麼安裝 boost 請看這篇，確定系統有安裝 boost 後，就開始動手寫程式吧！</p>
+<h2><span id="用-cmake-來建立-visual-studio-專案">用 cmake 來建立 Visual Studio 專案</span></h2><p>要讓 cmake 能夠使用 boost，要先設定 BOOST_ROOT、BOOST_INCLUDEDIR、BOOST_LIBRARYDIR 三個變數才能順利找到 boost 的路徑與 cmake 相關變數<br>可以在下 cmake 時後面帶參數，也可以在CMakeList.txt裡用 set 設定。<br>這邊會用到的變數為 BOOST_ROOT、BOOST_INCLUDEDIR、BOOST_LIBRARYDIR，最後可在 CMakeList.txt 裡 確認Boost_FOUND 這個變數看看有沒有找到 Boost。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cmake .. \</span><br><span class="line">-G <span class="string">"Visual Studio 14 2015 Win64"</span> \</span><br><span class="line">-DBOOST_ROOT:PATH=C:/osvr/boost_1_66_0 \</span><br><span class="line">-DBOOST_INCLUDEDIR:PATH=C:/osvr/boost_1_66_0 \</span><br><span class="line">-DBOOST_LIBRARYDIR:PATH=C:/osvr/boost_1_66_0/libs</span><br></pre></td></tr></table></figure></p>
+<p>補充︰我使用到 cmake 版本是3.xx，按照它內部的 FindBoost.cmake 來看只能找到1.70以下</p>
+<h2><span id="寫專案的-cmakelisttxt">寫專案的 CMakeList.txt</span></h2><p>CMakeList.txt project 使用 Boost_INCLUDE_DIRS、Boost_LIBRARIES變數。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">find_package(Boost 1.66.0 COMPONENTS date_time filesystem system ...)</span><br><span class="line">if(Boost_FOUND)</span><br><span class="line">     include_directories($&#123;Boost_INCLUDE_DIRS&#125;)</span><br><span class="line">     add_executable(foo foo.cc)</span><br><span class="line">     target_link_libraries(foo $&#123;Boost_LIBRARIES&#125;)</span><br><span class="line">endif()</span><br></pre></td></tr></table></figure></p>
+<h2><span id="寫一個簡單的-boost-程式">寫一個簡單的 Boost 程式</span></h2><figure class="highlight cpp"><figcaption><span>boost_example.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/lambda/lambda.hpp&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iterator&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">using</span> <span class="keyword">namespace</span> boost::lambda;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="built_in">std</span>::istream_iterator&lt;<span class="keyword">int</span>&gt; in;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::for_each(</span><br><span class="line">        in(<span class="built_in">std</span>::<span class="built_in">cin</span>), in(), <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (_1 * <span class="number">3</span>) &lt;&lt; <span class="string">" "</span> );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>執行程式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 1 2 3 | ./boost_example</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3 6 9</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] FindBoost — CMake 3.16.2 Documentation<br><a href="https://cmake.org/cmake/help/v3.16/module/FindBoost.html" rel="noopener external nofollow noreferrer" target="_blank">https://cmake.org/cmake/help/v3.16/module/FindBoost.html</a><br>[2] CMake/FindBoost.cmake at master · Kitware/CMake · GitHub<br><a href="https://github.com/Kitware/CMake/blob/master/Modules/FindBoost.cmake" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/Kitware/CMake/blob/master/Modules/FindBoost.cmake</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/22/Boost-use-cmake-visual-studio-in-windows/" data-id="ckn59g5ii008swes1v54bq920" data-title="在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Boost-install-boost-in-windows" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/12/21/Boost-install-boost-in-windows/" class="article-date">
+  <time datetime="2019-12-21T14:00:00.000Z" itemprop="datePublished">2019-12-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/12/21/Boost-install-boost-in-windows/">在 Windows 下安裝 Boost</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>Boost C++ Libraries 是 C++ 開發利器，在 Windows 下安裝 Boost 的方式有兩種，第一種是下載使用官方預編譯好的 Boost 函式庫，第二種是使用原始碼編譯安裝 Boost。  </p>
+<p>以下為我的系統環境：<br>作業系統：Windows 10<br>Visual Studio 2017 (msvc-14.1)<br>Visual Studio 2015 (msvc-14.0)<br>cmake 3.16.2 以後的版本才比較能順利的找到 boost 1.70.0<br>使用版本：boost 1.66.0  </p>
+<h2><span id="方法1-下載使用官方預編譯好的-boost-函式庫來安裝">方法1. 下載使用官方預編譯好的 Boost 函式庫來安裝</span></h2><p>官方預編譯好的 Boost 函式庫請到<a href="https://sourceforge.net/projects/boost/files/boost-binaries/" rel="noopener external nofollow noreferrer" target="_blank">這裏</a>下載，<br>Visual Studio 2017 下載 <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.1-32.exe/download" rel="noopener external nofollow noreferrer" target="_blank">boost_1_66_0-msvc-14.1-32.exe</a> / <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.1-64.exe/download" rel="noopener external nofollow noreferrer" target="_blank">boost_1_66_0-msvc-14.1-64.exe</a><br>Visual Studio 2015 下載 <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.0-32.exe/download" rel="noopener external nofollow noreferrer" target="_blank">boost_1_66_0-msvc-14.0-32.exe</a> / <a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-msvc-14.0-64.exe/download" rel="noopener external nofollow noreferrer" target="_blank">boost_1_66_0-msvc-14.0-64.exe</a><br>所有的版本下載<a href="https://sourceforge.net/projects/boost/files/boost-binaries/1.66.0/boost_1_66_0-bin-msvc-all-32-64.7z/download" rel="noopener external nofollow noreferrer" target="_blank">boost_1_66_0-bin-msvc-all-32-64.7z</a>  </p>
+<h2><span id="方法2-下載原始碼編譯與安裝">方法2. 下載原始碼編譯與安裝</span></h2><p>Windows 請看 <a href="/blog/2019/04/24/Boost-1-70-0-build-install-in-windows/" title="在 Windows 下編譯安裝 Boost 1.70.0">在 Windows 下編譯安裝 Boost 1.70.0</a> 這篇<br>Ubuntu 請看 <a href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/" title="在 Ubuntu 下編譯安裝 Boost 1.70.0">在 Ubuntu 下編譯安裝 Boost 1.70.0</a> 這篇  </p>
+<p>安裝完 Boost 環境後馬上就開始來寫<a href="/blog/2019/10/06/Boost-first-program-in-ubuntu/" title="第一支 Boost 程式">第一支 Boost 程式</a>吧～  </p>
+<p><strong>相關主題</strong><br><a href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/" title="在 Ubuntu 下安裝 Boost">在 Ubuntu 下安裝 Boost</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/21/Boost-install-boost-in-windows/" data-id="ckn59g5ih008rwes140wdrte4" data-title="在 Windows 下安裝 Boost" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Boost-install-boost-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/" class="article-date">
+  <time datetime="2019-12-20T14:00:00.000Z" itemprop="datePublished">2019-12-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/12/20/Boost-install-boost-in-ubuntu/">在 Ubuntu 下安裝 Boost</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>Boost C++ Libraries 是 C++ 開發利器，在 Ubuntu 下安裝 Boost 的方式有兩種，第一種是透過 apt 來安裝 Boost，第二種是用原始碼編譯安裝 Boost。  </p>
+<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04  </p>
+<h2><span id="方法1-使用-apt-套件安裝">方法1. 使用 apt 套件安裝</span></h2><p>Ubuntu 16.04 透過 apt 會安裝 boost 1.58.0，如何知道 apt 安裝會安裝到什麼版本可以用 <code>apt-cache search libboost-all-dev</code> 搜尋到相關資訊。apt 安裝 boost 的指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libboost-all-dev</span><br></pre></td></tr></table></figure></p>
+<h2><span id="方法2-下載原始碼編譯與安裝">方法2. 下載原始碼編譯與安裝</span></h2><p>Ubuntu 請看 <a href="/blog/2019/04/18/Boost-1-70-0-build-install-in-ubuntu/" title="在 Ubuntu 下編譯安裝 Boost 1.70.0">在 Ubuntu 下編譯安裝 Boost 1.70.0</a> 這篇<br>Windows 請看 <a href="/blog/2019/04/24/Boost-1-70-0-build-install-in-windows/" title="在 Windows 下編譯安裝 Boost 1.70.0">在 Windows 下編譯安裝 Boost 1.70.0</a> 這篇  </p>
+<p>安裝完 Boost 環境後馬上就開始來寫<a href="/blog/2019/10/06/Boost-first-program-in-ubuntu/" title="第一支 Boost 程式">第一支 Boost 程式</a>吧～  </p>
+<p><strong>相關主題</strong><br><a href="/blog/2019/12/21/Boost-install-boost-in-windows/" title="在 Windows 下安裝 Boost">在 Windows 下安裝 Boost</a>  </p>
+<p>參考<br>How to install latest Boost library on Raspberry Pi<br><a href="http://osdevlab.blogspot.tw/2016/02/how-to-install-latest-boost-library-on.html" rel="noopener external nofollow noreferrer" target="_blank">http://osdevlab.blogspot.tw/2016/02/how-to-install-latest-boost-library-on.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/20/Boost-install-boost-in-ubuntu/" data-id="ckn59g5ih008qwes17gf23j5x" data-title="在 Ubuntu 下安裝 Boost" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-std-random-shuffle" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/12/19/std-random-shuffle/" class="article-date">
+  <time datetime="2019-12-19T14:00:00.000Z" itemprop="datePublished">2019-12-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/12/19/std-random-shuffle/">std::random_shuffle 產生不重複的隨機亂數</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::random_shuffle 用法，並使用 std::random_shuffle 來產生不重複的隨機亂數，在一些情形下很需要使用到不重複的隨機亂數，趕快來學習吧。  </p>
+<h2><span id="實際應用案例">實際應用案例</span></h2><p>之前用 Qt 寫音樂播放器時，要實現隨機播下一首的功能，<br>就需用產生不重複的隨機亂數，這樣每次下一首個才會不重複到，就順便記錄下來吧。  </p>
+<p><strong>需要引入的標頭檔</strong>: <code>&lt;algorithm&gt;</code></p>
+<h2><span id="使用範例">使用範例</span></h2><figure class="highlight cpp"><figcaption><span>std-random_shuffle.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-random_shuffle.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;random&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myrandom</span> <span class="params">(<span class="keyword">int</span> i)</span> </span>&#123; <span class="keyword">return</span> <span class="built_in">std</span>::rand() % i; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; vec = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"list  : "</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; vec.size(); i++) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; vec[i] &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//std::srand(unsigned(std::time(0)));</span></span><br><span class="line">    <span class="keyword">unsigned</span> seed = <span class="built_in">std</span>::chrono::system_clock::now().time_since_epoch().count();</span><br><span class="line">    <span class="built_in">std</span>::srand(seed);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 方法1 沒使用std::srand的話每次亂數結果都一樣</span></span><br><span class="line">    <span class="built_in">std</span>::random_shuffle(vec.begin(), vec.end()); <span class="comment">// using built-in random generator</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 方法2 沒使用std::srand的話每次亂數結果都一樣</span></span><br><span class="line">    <span class="comment">//std::random_shuffle(vec.begin(), vec.end(), myrandom);</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//default_random_engine defaultEngine; // 沒帶入種子的話每次亂數結果都一樣</span></span><br><span class="line">    <span class="comment">//std::shuffle(vec.begin(), vec.end(), defaultEngine);</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 方法3, 使用系統時鐘作為種子</span></span><br><span class="line">    <span class="comment">//unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();</span></span><br><span class="line">    <span class="comment">//std::shuffle(vec.begin(), vec.end(), std::default_random_engine(seed));</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 方法4</span></span><br><span class="line">    <span class="comment">//std::random_device rd;</span></span><br><span class="line">    <span class="comment">//std::shuffle(vec.begin(), vec.end(), std::default_random_engine(rd()));</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 方法5</span></span><br><span class="line">    <span class="comment">//std::random_device rd;</span></span><br><span class="line">    <span class="comment">//std::mt19937 g(rd());</span></span><br><span class="line">    <span class="comment">//std::shuffle(vec.begin(), vec.end(), g);</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; vec.size(); i++) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; vec[i] &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">list  : 1 2 3 4 5 6 7 8 9 10 </span><br><span class="line">result: 6 4 1 3 2 7 10 8 5 9</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] std::random_shuffle, std::shuffle - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/algorithm/random_shuffle" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/algorithm/random_shuffle</a><br>[2] random_shuffle - C++ Reference<br><a href="http://www.cplusplus.com/reference/algorithm/random_shuffle/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/reference/algorithm/random_shuffle/</a><br>[3]【C++ STL应用与实现】64: 如何使用shuffle和random_shuffle : 洗牌 (since C++11)<br><a href="https://elloop.github.io/c++/2015-12-24/learning-using-stl-5-std-shuffle" rel="noopener external nofollow noreferrer" target="_blank">https://elloop.github.io/c++/2015-12-24/learning-using-stl-5-std-shuffle</a><br>[4] C++11 的 Random library, 你還在用rand()嗎? | Chino’s<br><a href="http://chino.taipei/note-2016-1020C-11-%E7%9A%84-Random-library-%E4%BD%A0%E9%82%84%E5%9C%A8%E7%94%A8rand-%E5%97%8E/" rel="noopener external nofollow noreferrer" target="_blank">http://chino.taipei/note-2016-1020C-11-%E7%9A%84-Random-library-%E4%BD%A0%E9%82%84%E5%9C%A8%E7%94%A8rand-%E5%97%8E/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/blog/2020/02/04/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/blog/2018/10/01/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/blog/2020/02/06/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/blog/2020/02/05/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/blog/2019/12/13/std-unordered-map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/blog/2019/11/30/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/blog/2019/11/21/std-shared-ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/blog/2020/02/08/std-async/" title="std::async 用法與範例">std::async 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/19/std-random-shuffle/" data-id="ckn59g5ih008pwes169wsm70g" data-title="std::random_shuffle 產生不重複的隨機亂數" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Cpp-printf-size-t" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/12/18/Cpp-printf-size-t/" class="article-date">
+  <time datetime="2019-12-18T14:00:00.000Z" itemprop="datePublished">2019-12-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/12/18/Cpp-printf-size-t/">C/C++ printf 列印 size_t 的方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇將介紹在 C/C++ 程式裡如何 printf 印出 size_t 這個變數類型，最常用到就是 vector::size()。  </p>
+<p>size_t 在 printf 要用 <code>%zu</code>  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span> v;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"size: %zu\n"</span>, v.size());</span><br></pre></td></tr></table></figure>
+<p>參考<br>c - How can one print a size_t variable portably using the printf family? - Stack Overflow<br><a href="https://stackoverflow.com/questions/2524611/how-can-one-print-a-size-t-variable-portably-using-the-printf-family" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/2524611/how-can-one-print-a-size-t-variable-portably-using-the-printf-family</a><br>What is the correct way to use printf to print a size_t in C/C++?<br><a href="https://www.tutorialspoint.com/what-is-the-correct-way-to-use-printf-to-print-a-size-t-in-c-cplusplus" rel="noopener external nofollow noreferrer" target="_blank">https://www.tutorialspoint.com/what-is-the-correct-way-to-use-printf-to-print-a-size-t-in-c-cplusplus</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/21/Cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/blog/2019/04/10/printf-int64_t-uint64_t/" title="32/64bit 作業系統 printf 列印 int64_t / uint64_t 的方法">32/64bit 作業系統 printf 列印 int64_t / uint64_t 的方法</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/18/Cpp-printf-size-t/" data-id="ckn59g5ig008owes135u77ihc" data-title="C/C++ printf 列印 size_t 的方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Android-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/blog/2019/12/17/Android-tutorial/" class="article-date">
+  <time datetime="2019-12-17T14:00:00.000Z" itemprop="datePublished">2019-12-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/blog/2019/12/17/Android-tutorial/">Android 系列文章</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>這邊整理一下 Android 系列文章，目前本人大多關注於 Android Platform 的開發，Android App 琢磨較少。  </p>
+<p>以下為 ShengYu 的 Android 系列教學 (陸續更新中…)：  </p>
+<p><strong>基礎</strong><br>Android 架構 - 了解整個 Android 架構<br><a href="/blog/2019/12/12/Android-build-aosp/" title="如何編譯 Build Android">如何編譯 Build Android</a> - 從下載 AOSP(Android Open Source Project) 到編譯 Android<br><a href="/blog/2019/12/06/Android-write-a-android-mk/" title="如何寫 Android.mk">如何寫 Android.mk</a> - 如何寫 Android.mk，編譯出執行檔、靜態函式庫、動態函式庫，以及如何連結至靜態函式庫/動態函式庫<br><a href="/blog/2019/12/16/Android-write-a-android-bp/" title="如何寫 Android.bp">如何寫 Android.bp</a>  - 如何寫 Android.bp  </p>
+<p><strong>深入進階文章</strong><br><a href="/blog/2019/12/07/Android-how-android-mk-work/" title="Android.mk 的運作原理">Android.mk 的運作原理</a> - 介紹 Android.mk 的編譯流程與運作原理<br><a href="/blog/2019/12/05/Android-platform-source-code-version/" title="如何看 Android Platform 的 PLATFORM_VERSION 版本?">如何看 Android Platform 的 PLATFORM_VERSION 版本?</a><br><a href="/blog/2019/12/08/Android-android-mk-to-android-bp/" title="從 Android.mk 到 Android.bp">從 Android.mk 到 Android.bp</a>  </p>
+<p><strong>工具</strong><br><a href="/blog/2018/11/05/Android-install-busybox/" title="Android 安裝 Busybox (adb shell 使用 vi)">Android 安裝 Busybox (adb shell 使用 vi)</a><br><a href="/blog/2019/10/26/Android-adb/" title="Android adb 基本用法教學">Android adb 基本用法教學</a><br><a href="/blog/2020/06/24/Android-adb-logcat/" title="Android adb logcat 基本用法教學">Android adb logcat 基本用法教學</a><br><a href="/blog/2021/02/25/Android-adb-set-date/" title="Android adb 同步時間/設定時間">Android adb 同步時間/設定時間</a><br><a href="/blog/2019/12/09/Android-get-battery-level-via-adb/" title="Android adb 取得電池 battery 電量資訊">Android adb 取得電池 battery 電量資訊</a><br><a href="/blog/2019/12/11/Android-fastboot/" title="Android fastboot 基本用法教學">Android fastboot 基本用法教學</a><br><a href="/blog/2019/12/10/Android-fastboot-get-current-active-slot/" title="Android fastboot 查詢當前使用的a/b槽">Android fastboot 查詢當前使用的a/b槽</a><br><a href="/blog/2020/07/15/Android-systrace/" title="Android systrace 基本用法教學">Android systrace 基本用法教學</a>  </p>
+<p><strong>其他</strong><br><a href="/blog/2019/12/14/Android-usb-tethering/" title="Android USB Tethering 透過 USB 分享行動數據">Android USB Tethering 透過 USB 分享行動數據</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/17/Android-tutorial/" data-id="ckn59g5ig008nwes1kcj02cj7" data-title="Android 系列文章" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -147,10 +562,10 @@
 
 
   
-    <article id="post-Android-get-battery-level-via-adb" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Android-write-a-android-bp" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/blog/2019/12/09/Android-get-battery-level-via-adb/" class="article-date">
-  <time datetime="2019-12-09T14:00:00.000Z" itemprop="datePublished">2019-12-09</time>
+    <a href="/blog/2019/12/16/Android-write-a-android-bp/" class="article-date">
+  <time datetime="2019-12-16T14:00:00.000Z" itemprop="datePublished">2019-12-16</time>
 </a>
     
   </div>
@@ -161,7 +576,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/09/Android-get-battery-level-via-adb/">Android adb 取得電池 battery 電量資訊</a>
+      <a class="article-title" href="/blog/2019/12/16/Android-write-a-android-bp/">如何寫 Android.bp</a>
     </h1>
   
 
@@ -182,14 +597,18 @@
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
         <!-- ads-1 -->
-        <p>本篇紀錄一下怎麼用 Android 查詢取得電池 battery 電量狀態，透過 adb 指令來取得電池電量資訊。</p>
-<p>查詢 andoid 裝置電池 battery 剩餘電量資訊<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ adb shell dumpsys battery | grep level</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] android - Is it possible to query device state (ie. battery charge remaining) via ADB shell command? - Stack Overflow<br><a href="https://stackoverflow.com/questions/42274720/is-it-possible-to-query-device-state-ie-battery-charge-remaining-via-adb-shel" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/42274720/is-it-possible-to-query-device-state-ie-battery-charge-remaining-via-adb-shel</a><br>[2] Android adb shell dumpsys battery 電池電量狀態 @ 不專業。工程師 :: 痞客邦 ::<br><a href="http://blog.stepbystep.tw/blog/post/118831503" rel="noopener external nofollow noreferrer" target="_blank">http://blog.stepbystep.tw/blog/post/118831503</a></p>
+        <p>本篇記錄一下如何寫 Android.bp，並附上基本範例與原本的 Android.mk 對照。</p>
+<h2><span id="基本範例">基本範例</span></h2><p>以下就以AOSP上的sdcard模組來做作為範例，完整路徑在<code>system/core/sdcard/Android.bp</code>下。</p>
+<figure class="highlight"><figcaption><span>system/core/sdcard/Android.bp</span><a href="https://github.com/aosp-mirror/platform_system_core/blob/68e1093028185cde31dcacf34a59f6c08848d3d4/sdcard/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    srcs: ["sdcard.cpp"],</span><br><span class="line">    name: "sdcard",</span><br><span class="line">    cflags: [</span><br><span class="line">        "-Wall",</span><br><span class="line">        "-Wno-unused-parameter",</span><br><span class="line">        "-Werror",</span><br><span class="line">    ],</span><br><span class="line">    shared_libs: [</span><br><span class="line">        "libbase",</span><br><span class="line">        "libcutils",</span><br><span class="line">        "libminijail",</span><br><span class="line">    ],</span><br><span class="line">    sanitize: &#123;</span><br><span class="line">        misc_undefined: ["integer"],</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>cc_binary</code>：表示編譯成執行檔<br><code>srcs</code>：原始檔<br><code>name</code>：模組名稱，也是執行檔名稱<br><code>cflags</code>：編譯參數<br><code>shared_libs</code>：連結的動態函式庫</p>
+<p>可以跟原先的 Android.mk 對照看就大概了解了，原本的 Android.mk 如下：<br><figure class="highlight makefile"><figcaption><span>system/core/sdcard/Android.mk</span><a href="https://github.com/aosp-mirror/platform_system_core/blob/178ede377a9b458cf3fa1aba29618ab9881f8449/sdcard/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := sdcard.cpp fuse.cpp</span><br><span class="line">LOCAL_MODULE := sdcard</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line">LOCAL_SHARED_LIBRARIES := libbase libcutils libminijail libpackagelistparser</span><br><span class="line"></span><br><span class="line">LOCAL_SANITIZE := integer</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure></p>
+<p><code>LOCAL_SRC_FILES</code> 對應到 <code>srcs</code><br><code>LOCAL_MODULE</code> 對應到 <code>cc_binary</code><br><code>LOCAL_CFLAGS</code> 對應到 <code>cflags</code><br><code>LOCAL_SHARED_LIBRARIES</code> 對應到 <code>shared_libs</code><br><code>BUILD_EXECUTABLE</code> 對應到 <code>cc_binary</code></p>
+<p>參考<br>[1] Android编译系统中的Android.bp、Blueprint与Soong · 零壹軒·笔记<br><a href="https://note.qidong.name/2017/08/android-blueprint/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-blueprint/</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/09/Android-get-battery-level-via-adb/" data-id="ckn12hj9i008576s139q6n8k3" data-title="Android adb 取得電池 battery 電量資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/16/Android-write-a-android-bp/" data-id="ckn59g5if008mwes1wv0aafzu" data-title="如何寫 Android.bp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -201,12 +620,16 @@
 
 
   
-    <article id="post-Android-android-mk-to-android-bp" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-OpenCV-FileStorage" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/blog/2019/12/08/Android-android-mk-to-android-bp/" class="article-date">
-  <time datetime="2019-12-08T14:00:00.000Z" itemprop="datePublished">2019-12-08</time>
+    <a href="/blog/2019/12/15/OpenCV-FileStorage/" class="article-date">
+  <time datetime="2019-12-15T14:00:00.000Z" itemprop="datePublished">2019-12-15</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/OpenCV教學/">OpenCV教學</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -215,7 +638,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/08/Android-android-mk-to-android-bp/">從 Android.mk 到 Android.bp</a>
+      <a class="article-title" href="/blog/2019/12/15/OpenCV-FileStorage/">OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例</a>
     </h1>
   
 
@@ -236,494 +659,26 @@
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
         <!-- ads-1 -->
-        <p>本篇介紹一下 Android 的編譯工具發展歷史，從 Android.mk 至 Android.bp，以及對應的 Android 版本各發生了什麼事，最後介紹一下要如何從 Android.mk 轉換成 Android.bp。</p>
-<h2><span id="工具發展歷史">工具發展歷史</span></h2><p>早期的 Android 系統都是使用 Android.mk 的來編譯原始碼，由於 Google 發現原始碼越來越大，編譯越來越慢，從 Android 7 Nougat 開始導入 Android.bp。所以 Android.bp 是準備取代 Android.mk 的。</p>
-<p>Android 版本編譯工具的發展歷史:<br>從 platform/system/core/ 目錄以及 sdcard、base、liblog 模組裡的變化，可以看出 Google 是在逐漸地把 Android.mk 替換成 Android.bp<br><strong>Android 6 Marshmallow</strong><br>使用 Android.mk<br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/marshmallow-mr3-release" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/marshmallow-mr3-release/sdcard/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/sdcard/Android.mk</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/marshmallow-mr3-release/base/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/base/Android.mk</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/marshmallow-mr3-release/liblog/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/liblog/Android.mk</a><br><strong>Android 7 Nougat</strong><br>導入 ninja 和 kati<br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/nougat-mr2.3-release" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/nougat-mr2.3-release/sdcard/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/sdcard/Android.mk</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/nougat-mr2.3-release/base/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/base/Android.mk</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/nougat-mr2.3-release/liblog/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/liblog/Android.bp</a><br><strong>Android 8 Oreo</strong><br>使用 Android.bp 來替換 Android.mk，導入 Soong<br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/oreo-mr1-release" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/oreo-mr1-release/sdcard/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/sdcard/Android.mk</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/oreo-mr1-release/base/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/base/Android.bp</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/oreo-mr1-release/liblog/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/liblog/Android.bp</a><br><strong>Android 9 Pie</strong><br>強制使用 Android.bp （有強制嗎？）<br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/pie-release" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/pie-release/sdcard/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/sdcard/Android.bp</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/pie-release/base/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/base/Android.bp</a><br><a href="https://android.googlesource.com/platform/system/core/+/refs/heads/pie-release/liblog/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">platform/system/core/liblog/Android.bp</a><br><strong>Android 10</strong><br>？</p>
-<p>一些常見模組的路徑都在 platform/system/core/ 下：<br>adb<br>base<br>fastboot<br>libcutils<br>liblog<br>logcat<br>logd</p>
-<h2><span id="androidbp-to-androidbp-轉換工具">Android.bp to Android.bp 轉換工具</span></h2><p>使用 Google 提供的 androidmk 這個轉換小工具可以將 Android.mk 轉換成 Android.bp。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ androidmk Android.mk &gt; Android.bp</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] 理解Android.bp - Gityuan博客 | 袁輝輝的技術博客<br><a href="http://gityuan.com/2018/06/02/android-bp/" rel="noopener external nofollow noreferrer" target="_blank">http://gityuan.com/2018/06/02/android-bp/</a><br>[2] Android編譯系統中的Android.bp、Blueprint與Soong ‧ 零壹軒‧筆記<br><a href="https://note.qidong.name/2017/08/android-blueprint/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-blueprint/</a><br>[3] 【Bash百宝箱】从Android.mk到Android.bp - evo<br><a href="https://blog.csdn.net/ieearth/article/details/54707416" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/ieearth/article/details/54707416</a><br>[4] aosp-mirror/platform_system_core - github<br><a href="https://github.com/aosp-mirror/platform_system_core" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/aosp-mirror/platform_system_core</a></p>
+        <p>本篇介紹如何使用 OpenCV 的 FileStorage 來做 YAML 檔案格式的寫入與讀取，在 OpenCV 許多應用都需要使用資料的儲存於讀取，例如相機的3D校正需要儲存校正後的結果矩陣，以利下次使用；在機器學習的應用上需要將訓練學習得到的參數保存等。OpenCV 提供了 XML/YAML 檔案格式作儲存與讀取，以下將介紹如何使用 FileStorage 來讀取與寫入 YAML。  </p>
+<h2><span id="filestorage-使用介紹">FileStorage 使用介紹</span></h2><p>FileStorage 的使用流程如下：  </p>
+<ol>
+<li>初始化一個 <a href="https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html#a587b4f5793a894fbe245e95cb30d6bc7" rel="noopener external nofollow noreferrer" target="_blank">FileStorage</a> 的變數並且開檔  </li>
+<li>使用 &lt;&lt; 進行資料的寫入，&gt;&gt; 進行資料讀取，類似 C++ 中的檔案操作  </li>
+<li>使用 <a href="https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html#ad23d5415a06fb4bc97bfa034589b376e" rel="noopener external nofollow noreferrer" target="_blank">FileStorage::release()</a> 函數釋放記憶體與關檔  </li>
+</ol>
+<h2><span id="使用-filestorage-寫入資料">使用 FileStorage 寫入資料</span></h2><p>以下範例示範開檔、寫入int數值、寫入矩陣、寫入系統時間，最後關檔。<br><figure class="highlight cpp"><figcaption><span>opencv-FileStorage-write.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ opencv-FileStorage-write.cpp `pkg-config --cflags --libs opencv`</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">writeYaml</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename = <span class="string">"output.yaml"</span>;</span><br><span class="line">    cv::<span class="function">FileStorage <span class="title">fs</span><span class="params">(filename, FileStorage::WRITE)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!fs.isOpened()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"failed to open file "</span> &lt;&lt; filename &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// write int</span></span><br><span class="line">    <span class="keyword">int</span> imageWidth= <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">int</span> imageHeight= <span class="number">10</span>;</span><br><span class="line">    fs &lt;&lt; <span class="string">"imageWidth"</span> &lt;&lt; imageWidth;</span><br><span class="line">    fs &lt;&lt; <span class="string">"imageHeight"</span> &lt;&lt; imageHeight;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// write a Mat</span></span><br><span class="line">    cv::Mat m1= Mat::eye(<span class="number">3</span>, <span class="number">3</span>, CV_8U);</span><br><span class="line">    cv::Mat m2= Mat::ones(<span class="number">3</span>, <span class="number">3</span>, CV_8U);</span><br><span class="line">    cv::Mat resultMat= (m1+<span class="number">1</span>).mul(m1+<span class="number">2</span>);</span><br><span class="line">    fs &lt;&lt; <span class="string">"resultMat"</span> &lt;&lt; resultMat;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// write multi-variables </span></span><br><span class="line">    cv::Mat cameraMatrix = (Mat_&lt;<span class="keyword">double</span>&gt;(<span class="number">3</span>,<span class="number">3</span>) &lt;&lt; <span class="number">700</span>, <span class="number">0</span>, <span class="number">320</span>, <span class="number">0</span>, <span class="number">700</span>, <span class="number">240</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line">    cv::Mat distCoeffs = (Mat_&lt;<span class="keyword">double</span>&gt;(<span class="number">5</span>,<span class="number">1</span>) &lt;&lt; <span class="number">0.1</span>, <span class="number">0.01</span>, <span class="number">-0.001</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    fs &lt;&lt; <span class="string">"cameraMatrix"</span> &lt;&lt; cameraMatrix &lt;&lt; <span class="string">"distCoeffs"</span> &lt;&lt; distCoeffs;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// write local time</span></span><br><span class="line">    <span class="keyword">time_t</span> rawtime;</span><br><span class="line">    time(&amp;rawtime); <span class="comment">// #include &lt;time.h&gt;</span></span><br><span class="line">    fs &lt;&lt; <span class="string">"calibrationDate"</span> &lt;&lt; asctime(localtime(&amp;rawtime));</span><br><span class="line"></span><br><span class="line">    fs.release();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    writeYaml();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="使用-filestorage-讀取資料">使用 FileStorage 讀取資料</span></h2><figure class="highlight cpp"><figcaption><span>opencv-FileStorage-read.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ opencv-FileStorage-read.cpp `pkg-config --cflags --libs opencv`</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">readYaml</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename = <span class="string">"output.yaml"</span>;</span><br><span class="line">    cv::<span class="function">FileStorage <span class="title">fs</span><span class="params">(filename, FileStorage::READ)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!fs.isOpened()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"failed to open file "</span> &lt;&lt; filename &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> width;</span><br><span class="line">    <span class="keyword">int</span> height;</span><br><span class="line">    fs[<span class="string">"imageWidth"</span>] &gt;&gt; width;</span><br><span class="line">    fs[<span class="string">"imageHeight"</span>] &gt;&gt; height;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"width = "</span> &lt;&lt; width &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"height = "</span> &lt;&lt;height &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// read Mat</span></span><br><span class="line">    cv::Mat resultMatRead;</span><br><span class="line">    fs[<span class="string">"resultMat"</span>] &gt;&gt; resultMatRead;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"resultMat = \n"</span> &lt;&lt; resultMatRead &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    cv::Mat cameraMatrix, distCoeffs;</span><br><span class="line">    fs[<span class="string">"cameraMatrix"</span>] &gt;&gt; cameraMatrix;</span><br><span class="line">    fs[<span class="string">"distCoeffs"</span>] &gt;&gt; distCoeffs;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"cameraMatrix = \n"</span> &lt;&lt; cameraMatrix &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"distCoeffs = \n"</span> &lt;&lt; distCoeffs &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// read string</span></span><br><span class="line">    <span class="built_in">string</span> timeRead;</span><br><span class="line">    fs[<span class="string">"calibrationDate"</span>] &gt;&gt; timeRead;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"calibrationDate = "</span> &lt;&lt; timeRead &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"> </span><br><span class="line">    fs.release();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    readYaml();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">width = 5</span><br><span class="line">height = 10</span><br><span class="line">resultMat = </span><br><span class="line">[  6,   2,   2;</span><br><span class="line">   2,   6,   2;</span><br><span class="line">   2,   2,   6]</span><br><span class="line">cameraMatrix = </span><br><span class="line">[700, 0, 320;</span><br><span class="line"> 0, 700, 240;</span><br><span class="line"> 0, 0, 1]</span><br><span class="line">distCoeffs = </span><br><span class="line">[0.1;</span><br><span class="line"> 0.01;</span><br><span class="line"> -0.001;</span><br><span class="line"> 0;</span><br><span class="line"> 0]</span><br><span class="line">calibrationDate = Wed Dec 18 23:04:36 2019</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] OpenCV: cv::FileStorage Class Reference<br><a href="https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html</a><br>[2] OpenCV —數據持久化: FileStorage類的數據存取操作與示例 - iracer的博客<br><a href="https://blog.csdn.net/iracer/article/details/51339377" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/iracer/article/details/51339377</a><br>[3] 使用OpenCV的FileStorage模塊持久化存取數據(Python)<br><a href="http://zhaoxuhui.top/blog/2018/06/29/PythonOpenCVFileStorage.html" rel="noopener external nofollow noreferrer" target="_blank">http://zhaoxuhui.top/blog/2018/06/29/PythonOpenCVFileStorage.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/05/29/OpenCV-version/" title="怎麼查詢 OpenCV 的版本">怎麼查詢 OpenCV 的版本</a><br><a href="/blog/2019/11/23/OpenCV-build-information/" title="如何看OpenCV當初編譯的編譯參設定">如何看OpenCV當初編譯的編譯參設定</a><br><a href="/blog/2019/11/24/OpenCV-trace-VideoCapture/" title="OpenCV trace VideoCapture 流程">OpenCV trace VideoCapture 流程</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/08/Android-android-mk-to-android-bp/" data-id="ckn12hj9i008476s1135ohs6g" data-title="從 Android.mk 到 Android.bp" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Android-how-android-mk-work" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/07/Android-how-android-mk-work/" class="article-date">
-  <time datetime="2019-12-07T14:00:00.000Z" itemprop="datePublished">2019-12-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/07/Android-how-android-mk-work/">Android.mk 的運作原理</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇記錄一下 Android.mk 的運作原理與編譯流程。</p>
-<h2><span id="androidmk-的編譯原理">Android.mk 的編譯原理</span></h2><p>在Android平台項目任意一個合適的目錄下，創建一個Android.mk文件，都可以新增一個模塊（Module）。</p>
-<p>滿足上述邏輯的Android.mk，都會被include到Android的Makefile中。 但是，其中定義的模塊是否參與編譯，則未必會被編譯。</p>
-<p>參考<br>[1] Android.mk的深入介绍<br><a href="https://note.qidong.name/2017/08/android-mk/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-mk/</a><br>[2] 理解 Android Build 系統<br><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/" rel="noopener external nofollow noreferrer" target="_blank">https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/07/Android-how-android-mk-work/" data-id="ckn12hj9h008376s11f7ee5zr" data-title="Android.mk 的運作原理" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Android-write-a-android-mk" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/06/Android-write-a-android-mk/" class="article-date">
-  <time datetime="2019-12-06T14:00:00.000Z" itemprop="datePublished">2019-12-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/06/Android-write-a-android-mk/">如何寫 Android.mk</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇記錄一下如何寫 Android.mk，雖然 Google 已經開始全面地改用 Android.bp，但這段過渡期可能還需幾年的時間，Android.mk 的了解以及如何撰寫還是值得學習的。</p>
-<p>從 Android 7 Nougat 開始逐漸地改用 Android.bp</p>
-<h2><span id="如何寫-androidmk">如何寫 Android.mk</span></h2><p>首先先清理變數<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH:= <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="指定模組名與模組變數">指定模組名與模組變數</span></h2><p><code>LOCAL_MODULE</code>︰模組名稱，這名稱必須是唯一，不能和既有模組相同。 如果 LOCAL_MODULE 未設定，則使用LOCAL_PACKAGE_NAME。 如果再沒有，就會編譯失敗。例如模組名叫做hello，那麼就可以透過 make hello 指令直接編譯hello這個模組。<br><code>LOCAL_SRC_FILES</code>︰原始碼檔案列表</p>
-<h2><span id="引用編譯規則">引用編譯規則</span></h2><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure>
-<p>以下這些用來給Android.mk引用的文件及其變數，定義在<code>build/core/config.mk</code>中。</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">BUILD_COMBOS:= <span class="variable">$(BUILD_SYSTEM)</span>/combo</span><br><span class="line"></span><br><span class="line">CLEAR_VARS:= <span class="variable">$(BUILD_SYSTEM)</span>/clear_vars.mk</span><br><span class="line">BUILD_HOST_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_static_library.mk</span><br><span class="line">BUILD_HOST_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_library.mk</span><br><span class="line">BUILD_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_library.mk</span><br><span class="line">BUILD_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/shared_library.mk</span><br><span class="line">BUILD_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/executable.mk</span><br><span class="line">BUILD_HOST_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/host_executable.mk</span><br><span class="line">BUILD_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/package.mk</span><br><span class="line">BUILD_PHONY_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/phony_package.mk</span><br><span class="line">BUILD_HOST_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/host_prebuilt.mk</span><br><span class="line">BUILD_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/prebuilt.mk</span><br><span class="line">BUILD_MULTI_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/multi_prebuilt.mk</span><br><span class="line">BUILD_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/java_library.mk</span><br><span class="line">BUILD_STATIC_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_java_library.mk</span><br><span class="line">BUILD_HOST_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_java_library.mk</span><br><span class="line">BUILD_DROIDDOC:= <span class="variable">$(BUILD_SYSTEM)</span>/droiddoc.mk</span><br><span class="line">BUILD_COPY_HEADERS := <span class="variable">$(BUILD_SYSTEM)</span>/copy_headers.mk</span><br><span class="line">BUILD_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/native_test.mk</span><br><span class="line">BUILD_NATIVE_BENCHMARK := <span class="variable">$(BUILD_SYSTEM)</span>/native_benchmark.mk</span><br><span class="line">BUILD_HOST_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/host_native_test.mk</span><br><span class="line"></span><br><span class="line">BUILD_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/shared_test_lib.mk</span><br><span class="line">BUILD_HOST_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_test_lib.mk</span><br><span class="line">BUILD_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/static_test_lib.mk</span><br><span class="line">BUILD_HOST_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_static_test_lib.mk</span><br><span class="line"></span><br><span class="line">BUILD_NOTICE_FILE := <span class="variable">$(BUILD_SYSTEM)</span>/notice_files.mk</span><br><span class="line">BUILD_HOST_DALVIK_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_java_library.mk</span><br><span class="line">BUILD_HOST_DALVIK_STATIC_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_static_java_library.mk</span><br></pre></td></tr></table></figure>
-<h3><span id="範例編譯一個可執行檔">範例：編譯一個可執行檔</span></h3><p>模組名稱為 hellowrold，編譯出一個 hellowrold 的執行檔。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := main.cpp</span><br><span class="line">LOCAL_MODULE := hellowrold</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line">LOCAL_SHARED_LIBRARIES :=</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure></p>
-<h3><span id="範例編譯一個靜態函式庫">範例：編譯一個靜態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.a 的靜態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
-<h3><span id="範例編譯一個動態函式庫">範例：編譯一個動態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.so 的動態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_SHARED_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
-<h3><span id="範例編譯一個-apk-文件">範例：編譯一個 APK 文件</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES := static-library <span class="comment"># 當前模塊依賴的靜態 Java 庫，如果有多個以空格分隔</span></span><br><span class="line">LOCAL_PACKAGE_NAME := LocalPackage <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_PACKAGE)</span> <span class="comment"># 編譯 APK 文件</span></span><br></pre></td></tr></table></figure>
-<h3><span id="範例編譯一個-java-的靜態函式庫">範例：編譯一個 Java 的靜態函式庫</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_JAVA_LIBRARIES := android.test.runner <span class="comment"># 當前模塊依賴的動態 Java 庫名稱</span></span><br><span class="line">LOCAL_MODULE := sample <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_JAVA_LIBRARY)</span> <span class="comment"># 將當前模塊編譯成一個靜態的 Java 庫</span></span><br></pre></td></tr></table></figure>
-<p>下表格為常用與常見的編譯規則</p>
-<table>
-<thead>
-<tr>
-<th>引用編譯規則變數</th>
-<th>檔名</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>BUILD_EXECUTABLE</td>
-<td>executable.mk</td>
-<td>編譯成裝置上的可執行檔</td>
-</tr>
-<tr>
-<td>BUILD_STATIC_LIBRARY</td>
-<td>static_library.mk</td>
-<td>編譯成裝置上的靜態函式庫</td>
-</tr>
-<tr>
-<td>BUILD_SHARED_LIBRARY</td>
-<td>shared_library.mk</td>
-<td>編譯成裝置上的動態函式庫</td>
-</tr>
-<tr>
-<td>BUILD_PREBUILT</td>
-<td>prebuilt.mk</td>
-<td>處理一個預編譯好的檔案 (例如.a, .so, .jar)</td>
-</tr>
-<tr>
-<td>BUILD_PACKAGE</td>
-<td>package.mk</td>
-<td>編譯成apk</td>
-</tr>
-</tbody>
-</table>
-<p>參考<br>[1] Android.mk的深入介绍<br><a href="https://note.qidong.name/2017/08/android-mk/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-mk/</a><br>[2] 理解 Android Build 系統<br><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/" rel="noopener external nofollow noreferrer" target="_blank">https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/06/Android-write-a-android-mk/" data-id="ckn12hj9h008276s18mag341v" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Android-platform-source-code-version" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/05/Android-platform-source-code-version/" class="article-date">
-  <time datetime="2019-12-05T14:00:00.000Z" itemprop="datePublished">2019-12-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/05/Android-platform-source-code-version/">如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇紀錄一下如何看 Android Platform (BSP) 的 <code>PLATFORM_VERSION</code> 版本號碼。<br><code>PLATFORM_VERSION</code> 位在 <code>platform/build/core/version_defaults.mk</code> 裡。</p>
-<p>Master<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/master/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/master/core/version_defaults.mk</a></p>
-<p>Android 10<br><a href="https://android.googlesource.com/platform/build/+/refs/tags/android-10.0.0_r17/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/tags/android-10.0.0_r17/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/android10-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/android10-release/core/version_defaults.mk</a><br>PLATFORM_VERSION.QP1A := 10</p>
-<p>Android 9 Pie<br><a href="https://android.googlesource.com/platform/build/+/refs/tags/android-9.0.0_r51/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/tags/android-9.0.0_r51/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/pie-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/pie-release/core/version_defaults.mk</a><br>PLATFORM_VERSION.PPR1 := 9</p>
-<p>Android 8 Oreo<br><a href="https://android.googlesource.com/platform/build/+/refs/tags/android-8.0.0_r41/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/tags/android-8.0.0_r41/core/version_defaults.mk</a><br>PLATFORM_VERSION.OPR1 := 8.0.0<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/oreo-mr1-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/oreo-mr1-release/core/version_defaults.mk</a><br>PLATFORM_VERSION.OPM1 := 8.1.0</p>
-<p>Android 7 Nougat<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/nougat-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/nougat-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 7.0<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/nougat-mr2.3-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/nougat-mr2.3-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 7.1.2</p>
-<p>Android 6 Marshmallow<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 6.0<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-mr3-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-mr3-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 6.0.1</p>
-<p>Android 5 Lollipop<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 5.0.2<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-cts-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-cts-release/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-fi-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-fi-release/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 5.1.1</p>
-<p>Android 4 KitKat<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/kitkat-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/kitkat-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 4.4<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/kitkat-mr2.2-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/kitkat-mr2.2-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 4.4.4</p>
-<p>參考<br>[1] Where to find the version information in source code on Android platform - Stack Overflow<br><a href="https://stackoverflow.com/questions/2377225/where-to-find-the-version-information-in-source-code-on-android-platform" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/2377225/where-to-find-the-version-information-in-source-code-on-android-platform</a><br>[2] Android版本列表 - 維基百科，自由的百科全書<br><a href="https://zh.wikipedia.org/wiki/Android%E7%89%88%E6%9C%AC%E5%88%97%E8%A1%A8" rel="noopener external nofollow noreferrer" target="_blank">https://zh.wikipedia.org/wiki/Android%E7%89%88%E6%9C%AC%E5%88%97%E8%A1%A8</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/05/Android-platform-source-code-version/" data-id="ckn12hj9g008176s1hzqfgfmb" data-title="如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-OpenCV-4-1-2-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/04/OpenCV-4-1-2-build-install-in-ubuntu/" class="article-date">
-  <time datetime="2019-12-04T14:00:00.000Z" itemprop="datePublished">2019-12-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/04/OpenCV-4-1-2-build-install-in-ubuntu/">在 Ubuntu 下編譯安裝 OpenCV 4.1.2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何在 Ubuntu 下編譯安裝 OpenCV 4.1.2，<br>這版 OpenCV 4.1.2 釋出日期是 2019/10/10，開始動手編譯原始碼安裝吧！  </p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>GCC：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>G++：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>使用版本：OpenCV 4.1.2 <a href="https://github.com/opencv/opencv/releases/tag/4.1.2" rel="noopener external nofollow noreferrer" target="_blank">下載處</a> / <a href="https://github.com/opencv/opencv/archive/4.1.2.zip" rel="noopener external nofollow noreferrer" target="_blank">zip</a>  </p>
-<h2><span id="安裝編譯所需的套件">安裝編譯所需的套件</span></h2><p>安裝編譯 opencv 所需要的套件，gcc / g++ / make / libc6-dev 都已包含在 build-essential 裡了，<br>所以不計較空間的話安裝 build-essential 算是相當的簡單省事。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake</span><br></pre></td></tr></table></figure></p>
-<h2><span id="下載原始碼">下載原始碼</span></h2><p>使用 wget 指令下載原始碼，並且解壓縮。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/opencv/opencv/archive/4.1.2.zip</span><br><span class="line">unzip 4.1.2.zip</span><br></pre></td></tr></table></figure></p>
-<h2><span id="編譯安裝">編譯安裝</span></h2><p>切換到剛剛解壓縮出來的目錄開始進行編譯，<br>最後 make 時，就看你電腦 CPU 有幾個核心，帶不同的參數，有助於加快整個編譯時間。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd opencv-4.1.2</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure></p>
-<h2><span id="查詢已安裝的-opencv-版本">查詢已安裝的 opencv 版本</span></h2><p>使用 <code>opencv_version</code> 指令查詢已安裝 opencv 的版本。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ opencv_version</span><br><span class="line">4.1.2</span><br></pre></td></tr></table></figure></p>
-<p>或者使用 <code>pkg-config</code> 查詢已安裝的 opencv 版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pkg-config --modversion opencv</span><br><span class="line">4.1.2</span><br></pre></td></tr></table></figure></p>
-<p>到這裡就完成 opencv 的安裝了，下篇將會介紹 <a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="如何寫第一支 OpenCV 程式">如何寫第一支 OpenCV 程式</a>。  </p>
-<p><strong>相關主題</strong><br><a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a><br><a href="/blog/2019/05/29/OpenCV-version/" title="怎麼查詢 OpenCV 的版本">怎麼查詢 OpenCV 的版本</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/04/OpenCV-4-1-2-build-install-in-ubuntu/" data-id="ckn12hj9g008076s1gajgu0ri" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.2" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/blog/2019/12/15/OpenCV-FileStorage/" data-id="ckn59g5ie008lwes12acbfc5a" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-OpenCV-3-4-8-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/03/OpenCV-3-4-8-build-install-in-ubuntu/" class="article-date">
-  <time datetime="2019-12-03T14:00:00.000Z" itemprop="datePublished">2019-12-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/03/OpenCV-3-4-8-build-install-in-ubuntu/">在 Ubuntu 下編譯安裝 OpenCV 3.4.8</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何在 Ubuntu 下編譯安裝 OpenCV 3.4.8，<br>這版 OpenCV 3.4.8 釋出日期是 2019/10/09，開始動手編譯原始碼安裝吧！  </p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>GCC：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>G++：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>使用版本：OpenCV 3.4.8 <a href="https://github.com/opencv/opencv/releases/tag/3.4.8" rel="noopener external nofollow noreferrer" target="_blank">下載處</a> / <a href="https://github.com/opencv/opencv/archive/3.4.8.zip" rel="noopener external nofollow noreferrer" target="_blank">zip</a>  </p>
-<h2><span id="安裝編譯所需的套件">安裝編譯所需的套件</span></h2><p>安裝編譯 opencv 所需要的套件，gcc / g++ / make / libc6-dev 都已包含在 build-essential 裡了，<br>所以不計較空間的話安裝 build-essential 算是相當的簡單省事。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake</span><br></pre></td></tr></table></figure></p>
-<h2><span id="下載原始碼">下載原始碼</span></h2><p>使用 wget 指令下載原始碼，並且解壓縮。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/opencv/opencv/archive/3.4.8.zip</span><br><span class="line">unzip 3.4.8.zip</span><br></pre></td></tr></table></figure></p>
-<h2><span id="編譯安裝">編譯安裝</span></h2><p>切換到剛剛解壓縮出來的目錄開始進行編譯，<br>最後 make 時，就看你電腦 CPU 有幾個核心，帶不同的參數，有助於加快整個編譯時間。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd opencv-3.4.8</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br><span class="line">sudo make install</span><br><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure></p>
-<h2><span id="查詢已安裝的-opencv-版本">查詢已安裝的 opencv 版本</span></h2><p>使用 <code>opencv_version</code> 指令查詢已安裝 opencv 的版本。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ opencv_version</span><br><span class="line">3.4.8</span><br></pre></td></tr></table></figure></p>
-<p>或者使用 <code>pkg-config</code> 查詢已安裝的 opencv 版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pkg-config --modversion opencv</span><br><span class="line">3.4.8</span><br></pre></td></tr></table></figure></p>
-<p>到這裡就完成 opencv 的安裝了，下篇將會介紹 <a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="如何寫第一支 OpenCV 程式">如何寫第一支 OpenCV 程式</a>。  </p>
-<p><strong>相關主題</strong><br><a href="/blog/2019/10/09/OpenCV-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a><br><a href="/blog/2019/05/29/OpenCV-version/" title="怎麼查詢 OpenCV 的版本">怎麼查詢 OpenCV 的版本</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/03/OpenCV-3-4-8-build-install-in-ubuntu/" data-id="ckn12hj9g007z76s1hk045gc8" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-grep-ack-ag" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/02/Linux-grep-ack-ag/" class="article-date">
-  <time datetime="2019-12-02T14:00:00.000Z" itemprop="datePublished">2019-12-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/02/Linux-grep-ack-ag/">使用 Linux grep/ack/ag 搜尋字串</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Linux 下的 grep/ack/ag 指令來搜尋字串，並且將搜尋結果的檔案同時進行移動/複製/刪除。</p>
-<h2><span id="搜尋目錄下特定樣式的字串">搜尋目錄下特定樣式的字串</span></h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用 grep</span></span><br><span class="line">grep -rI <span class="string">"foo"</span> *</span><br><span class="line"><span class="comment"># 使用 ack (Ack-Grep)</span></span><br><span class="line">ack <span class="string">"foo"</span></span><br><span class="line"><span class="comment"># 使用 ag (The Silver Srarcher)</span></span><br><span class="line">ag <span class="string">"foo"</span></span><br></pre></td></tr></table></figure>
-<h2><span id="搜尋目錄下檔案內有特定樣式的字串並且將這些檔案移動mv複製cp刪除rm">搜尋目錄下檔案內有特定樣式的字串，並且將這些檔案移動mv/複製cp/刪除rm</span></h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 搜尋包含hello關鍵字的檔案，並且將這些檔案移動到tmp資料夾</span></span><br><span class="line">$ ack <span class="string">"hello"</span> ./ -l --print0  | xargs -0 -i mv &#123;&#125; tmp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 刪除包含 hello 關鍵字的檔案</span></span><br><span class="line">$ ack <span class="string">"hello"</span> ./ -l --print0 | xargs -0 rm</span><br></pre></td></tr></table></figure>
-<h2><span id="搜尋目錄下檔案內有特定樣式的字串並且將這些檔案進行取代">搜尋目錄下檔案內有特定樣式的字串，並且將這些檔案進行取代</span></h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把目錄下所有檔案文字中包含 "oldtext" 的 取代成 "newtext"  </span></span><br><span class="line">$ ag oldtext -l0 | xargs -0 sed -i <span class="string">'s/oldtext/newtext/g'</span></span><br><span class="line">$ grep -rl oldtext . | xargs sed -i <span class="string">'s/oldtext/newtext/g'</span></span><br></pre></td></tr></table></figure>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/18/Linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/blog/2019/10/03/Linux-cut/" title="使用 Linux cut 字串處理">使用 Linux cut 字串處理</a><br><a href="/blog/2019/10/04/Linux-sed/" title="使用 Linux sed 字串取代">使用 Linux sed 字串取代</a><br><a href="/blog/2019/12/01/Linux-find/" title="使用 Linux find 尋找檔案/目錄">使用 Linux find 尋找檔案/目錄</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/02/Linux-grep-ack-ag/" data-id="ckn12hj9f007y76s1ov1rwt2j" data-title="使用 Linux grep/ack/ag 搜尋字串" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-find" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/blog/2019/12/01/Linux-find/" class="article-date">
-  <time datetime="2019-12-01T14:00:00.000Z" itemprop="datePublished">2019-12-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/blog/2019/12/01/Linux-find/">使用 Linux find 尋找檔案/尋找資料夾</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Linux find 指令來尋找檔案或尋找資料夾，並且將找到的檔案同時進行移動/複製/刪除。  </p>
-<p>以下內容將分為這幾部份，  </p>
-<ul>
-<li>基本用法. Linux 用 find 尋找檔案或尋找資料夾  </li>
-<li>範例1. 找到特定檔案後，並且移動mv/複製cp/刪除rm這些檔案  </li>
-<li>範例2. 找到特定檔案後，並且搜尋grep這些檔案內的文字  </li>
-<li>範例3. 根據檔案大小來找  </li>
-<li>範例4. 根據檔案修改日期來找  </li>
-<li>範例5. 計算找到的檔案數量  </li>
-</ul>
-<h2><span id="基本用法-linux-用-find-尋找檔案或尋找資料夾">基本用法. Linux 用 find 尋找檔案或尋找資料夾</span></h2><p>在 Linux 或 macOS 下用 find 指令尋找檔案指令如下，<code>-type f</code>是找檔案，<code>-type d</code>是找資料夾，<br>都不加的話，就是就是兩種結果都會列出來。  </p>
-<p>這邊示範用 find 指令找當下目錄有 “foo” 關鍵字的 “檔案”，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -name <span class="string">"*foo*"</span> -<span class="built_in">type</span> f</span><br><span class="line"></span><br><span class="line"><span class="comment"># -type f 找檔案</span></span><br><span class="line"><span class="comment"># -type d 找目錄</span></span><br><span class="line"><span class="comment"># 不加 -type 就是兩種結果都會列出來</span></span><br></pre></td></tr></table></figure></p>
-<p>find 指令找當下目錄有 “foo” 關鍵字的 “目錄”，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -name <span class="string">"*foo*"</span> -<span class="built_in">type</span> d</span><br></pre></td></tr></table></figure></p>
-<h2><span id="範例1-找到特定檔案後並且移動mv複製cp刪除rm這些檔案">範例1. 找到特定檔案後，並且移動mv/複製cp/刪除rm這些檔案</span></h2><p><strong>範例1-1. 找到特定檔案後，並且移動mv這些檔案</strong><br>這邊示範用 find 指令找到特定檔案後，並且移動mv這些檔案，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把當下目錄有 "foo" 關鍵字檔名移動到 bar 資料夾</span></span><br><span class="line">$ find ./ -name <span class="string">"*foo*"</span> -<span class="built_in">type</span> f | xargs -i mv &#123;&#125; bar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果檔名包含空白可加上 -print0</span></span><br><span class="line">$ find ./ -name <span class="string">"*foo*"</span> -<span class="built_in">type</span> f -print0 | xargs -0 -i mv &#123;&#125; bar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 找到C程式檔類型的 並移動到C資料夾</span></span><br><span class="line">$ file * | grep <span class="string">"C source"</span> | awk <span class="string">'&#123;print $1&#125;'</span> | cut -d<span class="string">':'</span> -f1 | xargs ls | xargs -i mv &#123;&#125; C/</span><br></pre></td></tr></table></figure></p>
-<p><strong>範例1-2. 找到特定檔案後，並且複製cp這些檔案</strong><br>這邊示範用 find 指令找到特定檔案後，並且複製cp這些檔案，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把當下目錄有 "foo" 關鍵字檔名複製到 bar 資料夾</span></span><br><span class="line">$ find ./ -name <span class="string">"*foo*"</span> -<span class="built_in">type</span> f | xargs -i cp &#123;&#125; bar</span><br></pre></td></tr></table></figure></p>
-<p><strong>範例1-3. 找到特定檔案後，並且刪除rm這些檔案</strong><br>這邊示範用 find 指令找到特定檔案後，並且刪除rm這些檔案，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把當下目錄有 "foo" 關鍵字檔名給刪除</span></span><br><span class="line">$ find ./ -name <span class="string">"*foo*"</span> -<span class="built_in">type</span> f | xargs rm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 找到 *.mht 檔案 並刪掉(檔名有空白或太長)</span></span><br><span class="line">$ find ./ -name <span class="string">"*.mht"</span> -<span class="built_in">type</span> f -print0 | xargs -0 rm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 找到執行檔類型的 並刪掉</span></span><br><span class="line">$ file * | grep <span class="string">"executable"</span> | awk <span class="string">'&#123;print $1&#125;'</span> | cut -d<span class="string">':'</span> -f1 | xargs rm</span><br></pre></td></tr></table></figure></p>
-<h2><span id="範例2-找到特定檔案後並且搜尋grep這些檔案內的文字">範例2. 找到特定檔案後，並且搜尋grep這些檔案內的文字</span></h2><p><strong>範例2-1. 找到特定檔案後，並且搜尋grep這些檔案內的文字</strong><br>有時會需要找到檔案後接著針對這些檔案去作grep檔案內的文字搜尋，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把當下目錄 cpp 檔中的 "main" 關鍵字找出來</span></span><br><span class="line">$ find ./ -name <span class="string">"*.cpp"</span> -print0 | xargs -0 grep -r <span class="string">"main"</span> --color</span><br><span class="line">$ find ./ -name <span class="string">"*.cpp"</span> -print0 | xargs -0 ag <span class="string">"main"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 找多個 (*.cpp 和 *.h)</span></span><br><span class="line">$ find ./ \( -name <span class="string">"*.cpp"</span> -o -name <span class="string">"*.h"</span> \) -print0 | xargs -0 ag <span class="string">"stdio"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># find the binary files</span></span><br><span class="line">$ find -<span class="built_in">type</span> f -executable -<span class="built_in">exec</span> file -i <span class="string">'&#123;&#125;'</span> \; | grep <span class="string">'x-executable; charset=binary'</span></span><br></pre></td></tr></table></figure></p>
-<p><strong>範例2-2. 找到特定檔案後，並且搜尋grep這些檔案內的文字，假如有搜尋到特定文字的話在作移動mv/複製cp/刪除rm這些檔案</strong><br>這是進階中的進階技巧了！<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把當下目錄 cpp 檔中包含 "main" 關鍵字的檔案找出來後移動檔案到 out</span></span><br><span class="line">$ find ./ -name <span class="string">"*.cpp"</span> -print0 | xargs -0 grep -rIl <span class="string">"main"</span> | xargs -i mv &#123;&#125; out</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把當下目錄 cpp 檔中包含 "main" 關鍵字的檔案找出來後複製檔案到 out</span></span><br><span class="line">$ find ./ -name <span class="string">"*.cpp"</span> -print0 | xargs -0 grep -rIl <span class="string">"main"</span> | xargs -i cp &#123;&#125; out</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把當下目錄 cpp 檔中包含 "main" 關鍵字的檔案找出來後刪除</span></span><br><span class="line">$ find ./ -name <span class="string">"*.cpp"</span> -print0 | xargs -0 grep -rIl <span class="string">"main"</span> | xargs rm</span><br></pre></td></tr></table></figure></p>
-<h2><span id="範例3-根據檔案大小來找">範例3. 根據檔案大小來找</span></h2><p>這邊示範根據檔案大小來找，尤其是在硬碟空間不足時要清理垃圾時特別容易使用到XD<br>找出單檔大於500M的檔案，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -size +500M</span><br></pre></td></tr></table></figure></p>
-<p>找出單檔大於2G的檔案，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -size +2G</span><br><span class="line">or</span><br><span class="line">$ find ./ -size +2048M</span><br></pre></td></tr></table></figure></p>
-<p>找出單檔小於160k的照片並且刪除，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -name <span class="string">"*.jpg"</span> -size -160k -delete</span><br></pre></td></tr></table></figure></p>
-<p>找出單檔大於160k的照片並且刪除.<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -name <span class="string">"*.jpg"</span> -size +160k -delete</span><br></pre></td></tr></table></figure></p>
-<p>這邊整理一下其他單位使用，<br><code>c</code>：for bytes<br><code>k</code>：for Kilobytes (units of 1024 bytes)<br><code>M</code>：for Megabytes (units of 1048576 bytes)<br><code>G</code>：for Gigabytes (units of 1073741824 bytes)  </p>
-<h2><span id="範例4-根據檔案修改日期來找">範例4. 根據檔案修改日期來找</span></h2><p>用 find 指令尋找當前目錄下在 5 分鐘以內變動過的所有檔案，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -<span class="built_in">type</span> f -mmin -5</span><br></pre></td></tr></table></figure></p>
-<p>用 find 指令尋找當前目錄下超過 5 分鐘以上變動過的所有檔案，同時也是 5 分鐘內沒有變動過的所有檔案，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -type f -mmin +5</span><br></pre></td></tr></table></figure></p>
-<p>用 find 指令尋找當前目錄下最後 5 分鐘到 10 分鐘內變動過的所有檔案，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -type f -mmin +5 -mmin -10</span><br></pre></td></tr></table></figure></p>
-<p>用 find 指令尋找當前目錄下 3 天內變動過的所有檔案，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./ -<span class="built_in">type</span> f -mtime -3</span><br></pre></td></tr></table></figure></p>
-<p>這邊整理一下這幾個選項的差異，<br><code>amin</code>：檔案的最後存取時間(last access)，時間單位為分鐘<br><code>atime</code>：檔案的最後存取時間(last access)，時間單位為天<br><code>cmin</code>：檔案的狀態資訊最後修改的時間(last change)，時間單位為分鐘<br><code>ctime</code>：檔案的狀態資訊最後修改的時間(last change)，時間單位為天<br><code>mmin</code>：檔案的最後修改時間(last modify)，時間單位為分鐘<br><code>mtime</code>：檔案的最後修改時間(last modify)，時間單位為天  </p>
-<h2><span id="範例5-計算找到的檔案數量">範例5. 計算找到的檔案數量</span></h2><p>如果想要計算 find 找到檔案結果的數量的話可以配合 wc 這個指令，這邊示範找當前目錄下副檔名為 jpg 的檔案數量，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ find ./ -name <span class="string">"*.jpg"</span> | wc -l</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/blog/2019/02/18/Linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/blog/2019/10/03/Linux-cut/" title="使用 Linux cut 字串處理">使用 Linux cut 字串處理</a><br><a href="/blog/2019/10/04/Linux-sed/" title="使用 Linux sed 字串取代">使用 Linux sed 字串取代</a><br><a href="/blog/2019/12/02/Linux-grep-ack-ag/" title="使用 Linux grep/ack/ag 搜尋字串">使用 Linux grep/ack/ag 搜尋字串</a><br><a href="/blog/2019/09/26/Linux-du/" title="使用 Linux du 查詢硬碟剩餘空間/資料夾容量">使用 Linux du 查詢硬碟剩餘空間/資料夾容量</a><br><a href="/blog/2019/09/27/Linux-wget/" title="使用 Linux wget 下載檔案">使用 Linux wget 下載檔案</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/blog/2019/12/01/Linux-find/" data-id="ckn12hj9f007x76s1x1cotda8" data-title="使用 Linux find 尋找檔案/尋找資料夾" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -736,7 +691,7 @@
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/24/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/23/">23</a><a class="page-number" href="/page/24/">24</a><span class="page-number current">25</span><a class="page-number" href="/page/26/">26</a><a class="page-number" href="/page/27/">27</a><span class="space">&hellip;</span><a class="page-number" href="/page/48/">48</a><a class="extend next" rel="next" href="/page/26/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/24/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/23/">23</a><a class="page-number" href="/page/24/">24</a><span class="page-number current">25</span><a class="page-number" href="/page/26/">26</a><a class="page-number" href="/page/27/">27</a><span class="space">&hellip;</span><a class="page-number" href="/page/49/">49</a><a class="extend next" rel="next" href="/page/26/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -767,6 +722,14 @@
       <ul>
         
           <li>
+            <a href="/blog/2021/04/02/Python-argparse/">Python argparse 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2021/04/01/Python-tkinter-button/">Python tkinter 按鈕用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/03/31/vscode-add-cpp-include-path/">VSCode 新增 C++ 標頭檔路徑</a>
           </li>
         
@@ -779,6 +742,14 @@
           </li>
         
           <li>
+            <a href="/blog/2021/03/28/Python-tkinter-label/">Python tkinter 標籤用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/blog/2021/03/27/Python-tkinter-messagebox/">Python tkinter messagebox 用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/blog/2021/03/26/Python-check-str-empty/">Python 檢查 str 字串是否為空</a>
           </li>
         
@@ -787,23 +758,7 @@
           </li>
         
           <li>
-            <a href="/blog/2021/03/23/Cpp-string-compare/">C/C++ 字串比較的3種方法</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/03/22/std-set/">C++ std::set 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/03/21/Hexo-custom-tag-plugin/">Hexo 新增自定義標籤外掛</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/03/19/Git-clone-specific-folder/">git clone 指定資料夾名稱</a>
-          </li>
-        
-          <li>
-            <a href="/blog/2021/03/18/Git-clone-specific-branch/">git clone 指定分支</a>
+            <a href="/blog/2021/03/24/Python-tkinter-change-label-text/">Python tkinter 修改標籤文字的 2 種方式</a>
           </li>
         
       </ul>
@@ -815,14 +770,18 @@
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">79</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">142</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">79</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">154</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">6</span></li></ul>
     </div>
   </div>
 
 
   
-    <!-- ads-3 -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <ins class="adsbygoogle"
      style="display:block"
      data-ad-client="ca-pub-8106207149031244"
@@ -832,7 +791,19 @@
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
-<!-- ads-3 -->
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+</script>
+
   
 </aside>
         
