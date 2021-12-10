@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>std::atomic 用法與範例 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇介紹 C++ 的 std::atomic 用法，並提供一些範例。   atomic用來保證原子操作，但不保證類型T是無鎖(lock_free)的，因為不同平台的實作方式不同，可以用is_lock_free成員函式來判斷是不是無鎖的，另外atomic_flag肯定是無鎖的。   以下循序漸進地介紹使用 atomic，以及為什麼用 atomic。   最簡單的直覺寫法，但是結果錯誤以下範例為100">
+<meta name="keywords" content="C&#x2F;C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="std::atomic 用法與範例">
+<meta property="og:url" content="https://shengyu7697.github.io/std-atomic/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇介紹 C++ 的 std::atomic 用法，並提供一些範例。   atomic用來保證原子操作，但不保證類型T是無鎖(lock_free)的，因為不同平台的實作方式不同，可以用is_lock_free成員函式來判斷是不是無鎖的，另外atomic_flag肯定是無鎖的。   以下循序漸進地介紹使用 atomic，以及為什麼用 atomic。   最簡單的直覺寫法，但是結果錯誤以下範例為100">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2021-05-24T04:09:39.223Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="std::atomic 用法與範例">
+<meta name="twitter:description" content="本篇介紹 C++ 的 std::atomic 用法，並提供一些範例。   atomic用來保證原子操作，但不保證類型T是無鎖(lock_free)的，因為不同平台的實作方式不同，可以用is_lock_free成員函式來判斷是不是無鎖的，另外atomic_flag肯定是無鎖的。   以下循序漸進地介紹使用 atomic，以及為什麼用 atomic。   最簡單的直覺寫法，但是結果錯誤以下範例為100">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-std-atomic" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-atomic/" class="article-date">
+  <time datetime="2020-04-13T14:00:00.000Z" itemprop="datePublished">2020-04-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      std::atomic 用法與範例
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::atomic 用法，並提供一些範例。  </p>
+<p>atomic<t>用來保證原子操作，但不保證類型T是無鎖(lock_free)的，<br>因為不同平台的實作方式不同，可以用is_lock_free成員函式來判斷是不是無鎖的，<br>另外atomic_flag肯定是無鎖的。  </t></p>
+<p>以下循序漸進地介紹使用 atomic，以及為什麼用 atomic。  </p>
+<h2><span id="最簡單的直覺寫法但是結果錯誤">最簡單的直覺寫法，但是結果錯誤</span></h2><p>以下範例為100個執行緒一起執行，並且同時將全域變數 cnt 取出來 +1 計數，<br>但是由於多個執行緒同時存取 cnt 的關係會造成資料不正確。<br>來看看結果輸出會是怎樣吧！<br><figure class="highlight cpp"><figcaption><span>std-atomic.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">long</span> cnt = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 1866806</span><br><span class="line">duration: 61.7727 ms</span><br></pre></td></tr></table></figure></p>
+<p>結果答案不是我們所預期的 10000000，而且每次跑得結果都不一樣，那考慮加個 mutex 鎖試試看吧！  </p>
+<h2><span id="接著最直覺地加上了-mutex-鎖">接著最直覺地加上了 mutex 鎖</span></h2><p>加 mutex 鎖來保護臨界區域是最常見的做法，<br>使用 mutex 來確保同一時間內只有一個執行緒可以存取 cnt，如果對 mutex 不熟悉的話可以看之前的 <a href="/std-mutex/" title="mutex 介紹">mutex 介紹</a><br>這次來看看結果輸出會是怎樣吧！<br><figure class="highlight cpp"><figcaption><span>std-atomic2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">long</span> cnt = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">std</span>::mutex mtx;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(mtx);</span><br><span class="line">        <span class="comment">//std::cout &lt;&lt; std::this_thread::get_id() &lt;&lt; ": " &lt;&lt; cnt &lt;&lt; '\n';</span></span><br><span class="line">        <span class="comment">//mtx.lock();</span></span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">        <span class="comment">//mtx.unlock();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 10000000</span><br><span class="line">duration: 1426.77 ms</span><br></pre></td></tr></table></figure></p>
+<p>這次答案正確了，以我的電腦所花的時間是 1426.77 ms，這個時間會因電腦規格不同而有所不同，<br>正確地使用 mutex 可以保證資料的正確性，但同時犧牲了效能，<br>那接下來我們會好奇想要知道，有沒有時間更快的方式呢？atomic？  </p>
+<h2><span id="使用-atomic-達到同樣效果時間約少了7倍效能大爆發">使用 atomic 達到同樣效果，時間約少了7倍，效能大爆發</span></h2><p>接下來這裡介紹本篇重頭戲 atomic，<br>如果對象是 long 的話，可以用 <code>std::atomic&lt;long&gt;</code>，也可以用 <code>std::atomic_long</code>這個類別，<br>用 atomic 也可以達到同樣的效果，但所花費的時間有減少嗎？<br>來看看結果輸出會是怎樣吧！  </p>
+<figure class="highlight cpp"><figcaption><span>std-atomic3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//std::atomic&lt;long&gt; cnt(0);</span></span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="keyword">atomic_long</span> <span class="title">cnt</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 10000000</span><br><span class="line">duration: 225.587 ms</span><br></pre></td></tr></table></figure></p>
+<p>這次使用 atomic 的答案也是正確的，同時地只花費了 225.587 ms，相對於 mutex 版本時間花費大幅減少了！<br>性能簡直大爆發了！！<br>透過這篇的學習，我們已經認識了 atomic 的威力，接下來的章節介紹更多的 atomic 實用情境。  </p>
+<h2><span id="使用-atomic-搭配自定義的型別類別">使用 atomic 搭配自定義的型別/類別</span></h2><p>接下來會想試看看如果是使用自定義的結構 struct 或類別 class 是否也能使用 atomic 呢？<br><figure class="highlight cpp"><figcaption><span>std-atomic4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TBD</span><br></pre></td></tr></table></figure></p>
+<p>參考<br><a href="https://en.cppreference.com/w/cpp/atomic/atomic" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/atomic/atomic</a><br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/511579/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/511579/</a><br><a href="https://blog.csdn.net/yockie/article/details/8838686" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/yockie/article/details/8838686</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/std-unordered_map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-random_shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/std-shared_ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/std-async/" title="std::async 用法與範例">std::async 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-atomic/" data-id="ckx0bxqp1008jyss1400oyvz4" data-title="std::atomic 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/python-logging/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Python logging 日誌用法與範例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/std-filesystem-exists/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">std::filesystem::exists 判斷檔案是否存在的用法與範例</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-pyqt-qthread/">Python PyQt5 QThread 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qimage/">Python PyQt5 QImage 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qhboxlayout/">Python PyQt5 QHBoxLayout 水平佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qgridlayout/">Python PyQt5 QGridLayout 網格佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-socket/">Python Socket 網路通訊教學</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697%2F&tabs=timeline&width=280&height=70&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true&appId" width="280" height="70" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- hahow w300xh250 -->
+    <a href='https://affclkr.online/track/clicks/4850/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fhahow.in%2Fapselect-event%3Fmts_s%3Dap%26mts_m%3Dao%26mts_c%3D19ap' rel="external nofollow noreferrer"><img src='https://affclkr.online/track/imp/img/53342/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- udemy w300xh250 -->
+    <a href='https://twcouponcenter.com/track/clicks/4546/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fwww.udemy.com%2F' rel="external nofollow noreferrer"><img src='https://twcouponcenter.com/track/imp/img/97027/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">117</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">200</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

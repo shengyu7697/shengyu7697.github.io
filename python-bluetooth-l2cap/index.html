@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>Python 寫藍芽 L2CAP 通訊程式 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="以下範例 ShengYu 將會介紹如何使用 Python 來寫 L2CAP 藍芽通訊程式，內容包含使用 bluetooth socket 建立一個連線，傳輸資料與斷線。 範例 l2cap-server.py 和 l2cap-client.py 簡單演示了如何使用 L2CAP 傳輸協定。 使用 L2CAP socket 幾乎與 RFCOMM socket 相同。 唯一不一樣的地方是在 Bluetoo">
+<meta name="keywords" content="Bluetooth,Python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python 寫藍芽 L2CAP 通訊程式">
+<meta property="og:url" content="https://shengyu7697.github.io/python-bluetooth-l2cap/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="以下範例 ShengYu 將會介紹如何使用 Python 來寫 L2CAP 藍芽通訊程式，內容包含使用 bluetooth socket 建立一個連線，傳輸資料與斷線。 範例 l2cap-server.py 和 l2cap-client.py 簡單演示了如何使用 L2CAP 傳輸協定。 使用 L2CAP socket 幾乎與 RFCOMM socket 相同。 唯一不一樣的地方是在 Bluetoo">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2021-05-24T04:09:39.207Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python 寫藍芽 L2CAP 通訊程式">
+<meta name="twitter:description" content="以下範例 ShengYu 將會介紹如何使用 Python 來寫 L2CAP 藍芽通訊程式，內容包含使用 bluetooth socket 建立一個連線，傳輸資料與斷線。 範例 l2cap-server.py 和 l2cap-client.py 簡單演示了如何使用 L2CAP 傳輸協定。 使用 L2CAP socket 幾乎與 RFCOMM socket 相同。 唯一不一樣的地方是在 Bluetoo">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-python-bluetooth-l2cap" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-bluetooth-l2cap/" class="article-date">
+  <time datetime="2019-09-09T14:00:00.000Z" itemprop="datePublished">2019-09-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Python 寫藍芽 L2CAP 通訊程式
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>以下範例 ShengYu 將會介紹如何使用 Python 來寫 L2CAP 藍芽通訊程式，內容包含使用 bluetooth socket 建立一個連線，傳輸資料與斷線。</p>
+<p>範例 l2cap-server.py 和 l2cap-client.py 簡單演示了如何使用 L2CAP 傳輸協定。</p>
+<p>使用 L2CAP socket 幾乎與 RFCOMM socket 相同。</p>
+<p>唯一不一樣的地方是在 BluetoothSocket 建構時傳入 L2CAP 這個參數, 並且 port number 為 0x1001 到 0x8FFF 之間的奇數, 而不是原本的 1 到 30。</p>
+<p>預設的最大傳輸單元 MTU 為 672 bytes.</p>
+<h2><span id="server-端程式">server 端程式</span></h2><figure class="highlight python"><figcaption><span>l2cap-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">server_sock=bluetooth.BluetoothSocket( bluetooth.L2CAP )</span><br><span class="line"></span><br><span class="line">port = <span class="number">0x1001</span></span><br><span class="line">server_sock.bind((<span class="string">""</span>,port))</span><br><span class="line">server_sock.listen(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">client_sock,address = server_sock.accept()</span><br><span class="line"><span class="keyword">print</span> <span class="string">"Accepted connection from "</span>,address</span><br><span class="line"></span><br><span class="line">data = client_sock.recv(<span class="number">1024</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"received [%s]"</span> % data</span><br><span class="line"></span><br><span class="line">client_sock.close()</span><br><span class="line">server_sock.close()</span><br></pre></td></tr></table></figure>
+<h2><span id="client-端程式">client 端程式</span></h2><figure class="highlight python"><figcaption><span>l2cap-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">sock=bluetooth.BluetoothSocket( bluetooth.L2CAP )</span><br><span class="line"></span><br><span class="line">bd_addr = <span class="string">"01:23:45:67:89:AB"</span> <span class="comment"># server 端的 addr</span></span><br><span class="line">port = <span class="number">0x1001</span></span><br><span class="line"></span><br><span class="line">sock.connect((bd_addr, port))</span><br><span class="line"></span><br><span class="line">sock.send(<span class="string">"hello!!"</span>)</span><br><span class="line"></span><br><span class="line">sock.close()</span><br></pre></td></tr></table></figure>
+<p>L2CAP 發送封包有最大限制，兩個裝置都各自維護了一個 MTU 來指定收到封包的最大大小，如果兩者調整各自的MTU，那麼它們有可能增加整個連線的MTU，從預設的 672 bytes 可以調整到 65535 bytes。但通常兩裝置的MTU值是設定相同的數值。在 PyBluez 裡，可以透過 set_l2cap_mtu 函式來調整這個值。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">l2cap_sock = bluetooth.BluetoothSocket( bluetooth.L2CAP )</span><br><span class="line">    .</span><br><span class="line">    . <span class="comment"># connect the socket</span></span><br><span class="line">    .</span><br><span class="line">bluetooth.set_l2cap_mtu( l2cap_sock, <span class="number">65535</span> )</span><br></pre></td></tr></table></figure>
+<p>set_l2cap_mtu 這函式使用方式相當地直觀，第一個參數為 L2CAP BluetoothSocket，第二個參數為欲設定的 MTU 數值。指定 Socket 的 incoming MTU 將會被調整，其它的 Socket 不受影響。set_l2cap_mtu 與其它 PyBluez 函式一樣，返回錯誤的話會拋出 BluetoothException 例外。</p>
+<p>雖然我們先前提到使用 L2CAP 連線是不可靠，許多情況下有可能會用到，調整一個連線的可靠性在 PyBluez 也是很簡單呼叫個 set_packet_timeout 函式就完成了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bluetooth.set_packet_timeout( bdaddr, timeout )</span><br></pre></td></tr></table></figure>
+<p>set_packet_timeout 帶入參數為 Bluetooth address 和一個 timeout 時間(單位為milliseconds)，它將嘗試去調整封包的 timeout 時間(對任何 L2CAP 和 RFCOMM 的裝置連線)。 這個程序必須要使用管理員權限執行，且必須是一個主動連線。 只要有任何主動連線是打開的，這調整效果將一直持續，包含 Python 以外的程式。</p>
+<p>參考<br><a href="https://people.csail.mit.edu/albert/bluez-intro/x264.html" rel="noopener external nofollow noreferrer" target="_blank">https://people.csail.mit.edu/albert/bluez-intro/x264.html</a></p>
+<p>相關主題<br><a href="/python-bluetooth-first-program/" title="Python 的第一支藍芽程式">Python 的第一支藍芽程式</a><br><a href="/python-bluetooth-rfcomm/" title="Python 寫藍芽 RFCOMM 通訊程式">Python 寫藍芽 RFCOMM 通訊程式</a><br><a href="/python-bluetooth-sdp/" title="Python 寫藍芽 Service Discovery Protocol 通訊程式">Python 寫藍芽 Service Discovery Protocol 通訊程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-bluetooth-l2cap/" data-id="ckx0bxqms0046yss1axd8e8kv" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/shell-script-while/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Shell Script while 迴圈
+        
+      </div>
+    </a>
+  
+  
+    <a href="/python-2to3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-pyqt-qthread/">Python PyQt5 QThread 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qimage/">Python PyQt5 QImage 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qhboxlayout/">Python PyQt5 QHBoxLayout 水平佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qgridlayout/">Python PyQt5 QGridLayout 網格佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-socket/">Python Socket 網路通訊教學</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697%2F&tabs=timeline&width=280&height=70&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true&appId" width="280" height="70" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- hahow w300xh250 -->
+    <a href='https://affclkr.online/track/clicks/4850/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fhahow.in%2Fapselect-event%3Fmts_s%3Dap%26mts_m%3Dao%26mts_c%3D19ap' rel="external nofollow noreferrer"><img src='https://affclkr.online/track/imp/img/53342/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- udemy w300xh250 -->
+    <a href='https://twcouponcenter.com/track/clicks/4546/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fwww.udemy.com%2F' rel="external nofollow noreferrer"><img src='https://twcouponcenter.com/track/imp/img/97027/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">117</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">200</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

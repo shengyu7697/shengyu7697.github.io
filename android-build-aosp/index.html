@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>如何編譯 Build Android AOSP | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="記錄下 Android 要怎麼編譯 build AOSP (Android Open Source Project)。 123$ source build/envsetup.sh$ lunch$ make -j4 source build/envsetup.sh 之後才能用 mm 或 mmm 指令。lunch 後面可接 target。要跑模擬器的話選擇 lunch aosp_arm-eng 然後">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何編譯 Build Android AOSP">
+<meta property="og:url" content="https://shengyu7697.github.io/android-build-aosp/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="記錄下 Android 要怎麼編譯 build AOSP (Android Open Source Project)。 123$ source build/envsetup.sh$ lunch$ make -j4 source build/envsetup.sh 之後才能用 mm 或 mmm 指令。lunch 後面可接 target。要跑模擬器的話選擇 lunch aosp_arm-eng 然後">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2021-05-24T04:09:38.947Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何編譯 Build Android AOSP">
+<meta name="twitter:description" content="記錄下 Android 要怎麼編譯 build AOSP (Android Open Source Project)。 123$ source build/envsetup.sh$ lunch$ make -j4 source build/envsetup.sh 之後才能用 mm 或 mmm 指令。lunch 後面可接 target。要跑模擬器的話選擇 lunch aosp_arm-eng 然後">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-android-build-aosp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-build-aosp/" class="article-date">
+  <time datetime="2019-12-12T14:00:00.000Z" itemprop="datePublished">2019-12-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      如何編譯 Build Android AOSP
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>記錄下 Android 要怎麼編譯 build AOSP (Android Open Source Project)。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">source</span> build/envsetup.sh</span><br><span class="line">$ lunch</span><br><span class="line">$ make -j4</span><br></pre></td></tr></table></figure>
+<p><code>source build/envsetup.sh</code> 之後才能用 mm 或 mmm 指令。<br><code>lunch</code> 後面可接 target。<br>要跑模擬器的話選擇 <code>lunch aosp_arm-eng</code> 然後 make 完後下 <code>emulator</code> 指令。  </p>
+<p>aosp_arm-eng 的 aosp_arm 是產品名稱，後面的 eng 是 engineer 的意思，另外還有 user、userdebug  </p>
+<table>
+<thead>
+<tr>
+<th>Buildtype</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user</td>
+<td>編譯出來的系統有一定的權限限制, 常用於產品發佈階段</td>
+</tr>
+<tr>
+<td>userdebug</td>
+<td>編譯出來的系統有 root 權限, 常用於開發測試除錯</td>
+</tr>
+<tr>
+<td>eng</td>
+<td>engineer 版本</td>
+</tr>
+</tbody>
+</table>
+<p><code>make -j4</code> 的 <code>-j4</code> 是代表讓電腦使用幾個執行緒進行編譯，這樣能提高編譯速度，這個值取決於開發機器的CPU數、核心數與執行緒數，以四核心CPU的電腦為例，就可以使用 <code>-j4</code> 這參數，<br>如果CPU有支援<a href="https://zh.wikipedia.org/wiki/%E8%B6%85%E5%9F%B7%E8%A1%8C%E7%B7%92" rel="noopener external nofollow noreferrer" target="_blank">超執行緒（HT, Hyper-Threading）</a>的話就可以使用 <code>-j8</code>。  </p>
+<p>要編譯單一模組的話，可以在 make 後面加上模組名稱，以下為常用的模組：  </p>
+<table>
+<thead>
+<tr>
+<th>make &lt;目標模組&gt;</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>make kernel</td>
+<td>編譯 kernel，輸出 boot.img</td>
+</tr>
+<tr>
+<td>make bootimage</td>
+<td>產生 boot.img</td>
+</tr>
+<tr>
+<td>make userdataimage</td>
+<td>產生 userdata.img</td>
+</tr>
+<tr>
+<td>make recoveryimage</td>
+<td>產生 recovery.img</td>
+</tr>
+<tr>
+<td>make cacheimage</td>
+<td>產生 cache.img</td>
+</tr>
+</tbody>
+</table>
+<p>產出的 boot.img、system.img 在out/target/product/<product_name>目錄下<br>接下來就介紹一下 Android 的各種映像檔  </product_name></p>
+<h2><span id="android-的映像檔">Android 的映像檔</span></h2><table>
+<thead>
+<tr>
+<th>名稱</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boot.img</td>
+<td>包含kernel啟動參數, kernel等多個元素？</td>
+</tr>
+<tr>
+<td>ramdisk.img</td>
+<td>一個小型的檔案系統, 是 Android 系統啟動的關鍵</td>
+</tr>
+<tr>
+<td>system.img</td>
+<td>Android 的, framework 也在這裡, 將被掛載到 /system 目錄下</td>
+</tr>
+<tr>
+<td>recovery.img</td>
+<td>「救援模式」時使用的映像檔</td>
+</tr>
+<tr>
+<td>cache.img</td>
+<td>緩衝區, 將被掛載到 /cache 目錄下</td>
+</tr>
+<tr>
+<td>misc.img</td>
+<td>各種雜項</td>
+</tr>
+<tr>
+<td>userdata.img</td>
+<td>各程式的資料儲存地，將被掛載到 /data 目錄下</td>
+</tr>
+<tr>
+<td>metadata.img</td>
+<td></td>
+</tr>
+<tr>
+<td>vendor</td>
+<td></td>
+</tr>
+<tr>
+<td>radio</td>
+<td></td>
+</tr>
+<tr>
+<td>tos</td>
+</tr>
+</tbody>
+</table>
+<p>參考<br>[1] Building Android  |  Android Open Source Project<br><a href="https://source.android.com/setup/build/building" rel="noopener external nofollow noreferrer" target="_blank">https://source.android.com/setup/build/building</a><br>[2] 理解Android編譯命令- Gityuan博客<br><a href="http://gityuan.com/2016/03/19/android-build/" rel="noopener external nofollow noreferrer" target="_blank">http://gityuan.com/2016/03/19/android-build/</a><br>[3] Partitions and Images  |  Android Open Source Project<br><a href="https://source.android.com/devices/bootloader/partitions-images" rel="noopener external nofollow noreferrer" target="_blank">https://source.android.com/devices/bootloader/partitions-images</a><br><a href="https://blog.csdn.net/tuhuolong/article/details/44681037" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/tuhuolong/article/details/44681037</a><br><a href="https://www.twblogs.net/a/5b8e41662b7177188343df5e" rel="noopener external nofollow noreferrer" target="_blank">https://www.twblogs.net/a/5b8e41662b7177188343df5e</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-build-aosp/" data-id="ckx0bxqo3006jyss1gcagm03w" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/std-unordered_map/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          C++ std::unordered_map 用法與範例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/android-fastboot/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android fastboot 基本用法教學</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-pyqt-qthread/">Python PyQt5 QThread 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qimage/">Python PyQt5 QImage 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qhboxlayout/">Python PyQt5 QHBoxLayout 水平佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qgridlayout/">Python PyQt5 QGridLayout 網格佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-socket/">Python Socket 網路通訊教學</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697%2F&tabs=timeline&width=280&height=70&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true&appId" width="280" height="70" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- hahow w300xh250 -->
+    <a href='https://affclkr.online/track/clicks/4850/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fhahow.in%2Fapselect-event%3Fmts_s%3Dap%26mts_m%3Dao%26mts_c%3D19ap' rel="external nofollow noreferrer"><img src='https://affclkr.online/track/imp/img/53342/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- udemy w300xh250 -->
+    <a href='https://twcouponcenter.com/track/clicks/4546/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fwww.udemy.com%2F' rel="external nofollow noreferrer"><img src='https://twcouponcenter.com/track/imp/img/97027/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">117</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">200</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

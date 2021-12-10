@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>如何寫 Android.mk | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇記錄一下如何寫 Android.mk，雖然 Google 已經開始全面地改用 Android.bp，但這段過渡期可能還需幾年的時間，Android.mk 的了解以及如何撰寫還是值得學習的。 從 Android 7 Nougat 開始逐漸地改用 Android.bp 如何寫 Android.mk首先先清理變數12LOCAL_PATH:= $(call my-dir)include $(CLEAR">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何寫 Android.mk">
+<meta property="og:url" content="https://shengyu7697.github.io/android-write-a-android-mk/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇記錄一下如何寫 Android.mk，雖然 Google 已經開始全面地改用 Android.bp，但這段過渡期可能還需幾年的時間，Android.mk 的了解以及如何撰寫還是值得學習的。 從 Android 7 Nougat 開始逐漸地改用 Android.bp 如何寫 Android.mk首先先清理變數12LOCAL_PATH:= $(call my-dir)include $(CLEAR">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2021-05-24T04:09:38.947Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何寫 Android.mk">
+<meta name="twitter:description" content="本篇記錄一下如何寫 Android.mk，雖然 Google 已經開始全面地改用 Android.bp，但這段過渡期可能還需幾年的時間，Android.mk 的了解以及如何撰寫還是值得學習的。 從 Android 7 Nougat 開始逐漸地改用 Android.bp 如何寫 Android.mk首先先清理變數12LOCAL_PATH:= $(call my-dir)include $(CLEAR">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-android-write-a-android-mk" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-write-a-android-mk/" class="article-date">
+  <time datetime="2019-12-06T14:00:00.000Z" itemprop="datePublished">2019-12-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      如何寫 Android.mk
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇記錄一下如何寫 Android.mk，雖然 Google 已經開始全面地改用 Android.bp，但這段過渡期可能還需幾年的時間，Android.mk 的了解以及如何撰寫還是值得學習的。</p>
+<p>從 Android 7 Nougat 開始逐漸地改用 Android.bp</p>
+<h2><span id="如何寫-androidmk">如何寫 Android.mk</span></h2><p>首先先清理變數<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH:= <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="指定模組名與模組變數">指定模組名與模組變數</span></h2><p><code>LOCAL_MODULE</code>︰模組名稱，這名稱必須是唯一，不能和既有模組相同。 如果 LOCAL_MODULE 未設定，則使用LOCAL_PACKAGE_NAME。 如果再沒有，就會編譯失敗。例如模組名叫做hello，那麼就可以透過 make hello 指令直接編譯hello這個模組。<br><code>LOCAL_SRC_FILES</code>︰原始碼檔案列表</p>
+<h2><span id="引用編譯規則">引用編譯規則</span></h2><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure>
+<p>以下這些用來給Android.mk引用的文件及其變數，定義在<code>build/core/config.mk</code>中。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">BUILD_COMBOS:= <span class="variable">$(BUILD_SYSTEM)</span>/combo</span><br><span class="line"></span><br><span class="line">CLEAR_VARS:= <span class="variable">$(BUILD_SYSTEM)</span>/clear_vars.mk</span><br><span class="line">BUILD_HOST_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_static_library.mk</span><br><span class="line">BUILD_HOST_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_library.mk</span><br><span class="line">BUILD_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_library.mk</span><br><span class="line">BUILD_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/shared_library.mk</span><br><span class="line">BUILD_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/executable.mk</span><br><span class="line">BUILD_HOST_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/host_executable.mk</span><br><span class="line">BUILD_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/package.mk</span><br><span class="line">BUILD_PHONY_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/phony_package.mk</span><br><span class="line">BUILD_HOST_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/host_prebuilt.mk</span><br><span class="line">BUILD_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/prebuilt.mk</span><br><span class="line">BUILD_MULTI_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/multi_prebuilt.mk</span><br><span class="line">BUILD_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/java_library.mk</span><br><span class="line">BUILD_STATIC_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_java_library.mk</span><br><span class="line">BUILD_HOST_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_java_library.mk</span><br><span class="line">BUILD_DROIDDOC:= <span class="variable">$(BUILD_SYSTEM)</span>/droiddoc.mk</span><br><span class="line">BUILD_COPY_HEADERS := <span class="variable">$(BUILD_SYSTEM)</span>/copy_headers.mk</span><br><span class="line">BUILD_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/native_test.mk</span><br><span class="line">BUILD_NATIVE_BENCHMARK := <span class="variable">$(BUILD_SYSTEM)</span>/native_benchmark.mk</span><br><span class="line">BUILD_HOST_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/host_native_test.mk</span><br><span class="line"></span><br><span class="line">BUILD_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/shared_test_lib.mk</span><br><span class="line">BUILD_HOST_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_test_lib.mk</span><br><span class="line">BUILD_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/static_test_lib.mk</span><br><span class="line">BUILD_HOST_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_static_test_lib.mk</span><br><span class="line"></span><br><span class="line">BUILD_NOTICE_FILE := <span class="variable">$(BUILD_SYSTEM)</span>/notice_files.mk</span><br><span class="line">BUILD_HOST_DALVIK_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_java_library.mk</span><br><span class="line">BUILD_HOST_DALVIK_STATIC_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_static_java_library.mk</span><br></pre></td></tr></table></figure>
+<h3><span id="範例編譯一個可執行檔">範例：編譯一個可執行檔</span></h3><p>模組名稱為 hellowrold，編譯出一個 hellowrold 的執行檔。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := main.cpp</span><br><span class="line">LOCAL_MODULE := hellowrold</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line">LOCAL_SHARED_LIBRARIES :=</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure></p>
+<h3><span id="範例編譯一個靜態函式庫">範例：編譯一個靜態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.a 的靜態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
+<h3><span id="範例編譯一個動態函式庫">範例：編譯一個動態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.so 的動態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_SHARED_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
+<h3><span id="範例編譯一個-apk-文件">範例：編譯一個 APK 文件</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES := static-library <span class="comment"># 當前模塊依賴的靜態 Java 庫，如果有多個以空格分隔</span></span><br><span class="line">LOCAL_PACKAGE_NAME := LocalPackage <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_PACKAGE)</span> <span class="comment"># 編譯 APK 文件</span></span><br></pre></td></tr></table></figure>
+<h3><span id="範例編譯一個-java-的靜態函式庫">範例：編譯一個 Java 的靜態函式庫</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_JAVA_LIBRARIES := android.test.runner <span class="comment"># 當前模塊依賴的動態 Java 庫名稱</span></span><br><span class="line">LOCAL_MODULE := sample <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_JAVA_LIBRARY)</span> <span class="comment"># 將當前模塊編譯成一個靜態的 Java 庫</span></span><br></pre></td></tr></table></figure>
+<p>下表格為常用與常見的編譯規則</p>
+<table>
+<thead>
+<tr>
+<th>引用編譯規則變數</th>
+<th>檔名</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BUILD_EXECUTABLE</td>
+<td>executable.mk</td>
+<td>編譯成裝置上的可執行檔</td>
+</tr>
+<tr>
+<td>BUILD_STATIC_LIBRARY</td>
+<td>static_library.mk</td>
+<td>編譯成裝置上的靜態函式庫</td>
+</tr>
+<tr>
+<td>BUILD_SHARED_LIBRARY</td>
+<td>shared_library.mk</td>
+<td>編譯成裝置上的動態函式庫</td>
+</tr>
+<tr>
+<td>BUILD_PREBUILT</td>
+<td>prebuilt.mk</td>
+<td>處理一個預編譯好的檔案 (例如.a, .so, .jar)</td>
+</tr>
+<tr>
+<td>BUILD_PACKAGE</td>
+<td>package.mk</td>
+<td>編譯成apk</td>
+</tr>
+</tbody>
+</table>
+<p>參考<br>[1] Android.mk的深入介绍<br><a href="https://note.qidong.name/2017/08/android-mk/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-mk/</a><br>[2] 理解 Android Build 系統<br><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/" rel="noopener external nofollow noreferrer" target="_blank">https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-write-a-android-mk/" data-id="ckx0bxqo1006eyss1njem9sg5" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/android-how-android-mk-work/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android.mk 的運作原理
+        
+      </div>
+    </a>
+  
+  
+    <a href="/android-platform-source-code-version/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-pyqt-qthread/">Python PyQt5 QThread 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qimage/">Python PyQt5 QImage 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qhboxlayout/">Python PyQt5 QHBoxLayout 水平佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qgridlayout/">Python PyQt5 QGridLayout 網格佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-socket/">Python Socket 網路通訊教學</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697%2F&tabs=timeline&width=280&height=70&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true&appId" width="280" height="70" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- hahow w300xh250 -->
+    <a href='https://affclkr.online/track/clicks/4850/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fhahow.in%2Fapselect-event%3Fmts_s%3Dap%26mts_m%3Dao%26mts_c%3D19ap' rel="external nofollow noreferrer"><img src='https://affclkr.online/track/imp/img/53342/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- udemy w300xh250 -->
+    <a href='https://twcouponcenter.com/track/clicks/4546/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fwww.udemy.com%2F' rel="external nofollow noreferrer"><img src='https://twcouponcenter.com/track/imp/img/97027/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">117</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">200</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

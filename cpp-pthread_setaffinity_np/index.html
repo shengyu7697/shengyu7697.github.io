@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒設定 CPU 的方法 pthread_setaffinity_np()，   主執行緒設定 CPU主執行緒要設定跑在哪顆 CPU 的話，可以直接在 main 裡的主執行緒使用 pthread_setaffinity_np() 設定即可，pthread_setaffinity_np() 的第一個參數為 pthread_t，以我的電腦">
+<meta name="keywords" content="C&#x2F;C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C&#x2F;C++ Linux&#x2F;Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np">
+<meta property="og:url" content="https://shengyu7697.github.io/cpp-pthread_setaffinity_np/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒設定 CPU 的方法 pthread_setaffinity_np()，   主執行緒設定 CPU主執行緒要設定跑在哪顆 CPU 的話，可以直接在 main 裡的主執行緒使用 pthread_setaffinity_np() 設定即可，pthread_setaffinity_np() 的第一個參數為 pthread_t，以我的電腦">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2021-10-19T13:27:58.098Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C&#x2F;C++ Linux&#x2F;Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np">
+<meta name="twitter:description" content="本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒設定 CPU 的方法 pthread_setaffinity_np()，   主執行緒設定 CPU主執行緒要設定跑在哪顆 CPU 的話，可以直接在 main 裡的主執行緒使用 pthread_setaffinity_np() 設定即可，pthread_setaffinity_np() 的第一個參數為 pthread_t，以我的電腦">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cpp-pthread_setaffinity_np" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-pthread_setaffinity_np/" class="article-date">
+  <time datetime="2021-05-14T14:00:00.000Z" itemprop="datePublished">2021-05-14</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒設定 CPU 的方法 <code>pthread_setaffinity_np()</code>，  </p>
+<h2><span id="主執行緒設定-cpu">主執行緒設定 CPU</span></h2><p>主執行緒要設定跑在哪顆 CPU 的話，可以直接在 main 裡的主執行緒使用 <code>pthread_setaffinity_np()</code> 設定即可，<code>pthread_setaffinity_np()</code> 的第一個參數為 pthread_t，<br>以我的電腦來說是單 CPU 4 核心，所以有 CPU0~CPU3 可以選擇，這邊示範選擇跑在 CPU3，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt; // for sched_getcpu()</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    <span class="keyword">pthread_t</span> th = pthread_self();</span><br><span class="line">    pthread_setaffinity_np(th, <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>也可以使用 <code><a href="/cpp-sched_setaffinity/" title="sched_setaffinity()">sched_setaffinity()</a></code> 來設定 main 主執行緒跑在哪個 CPU。  </p>
+<h2><span id="在-pthread-執行緒設定-cpu">在 pthread 執行緒設定 CPU</span></h2><p>pthread 建立出來的執行緒要設定 CPU 的話，方式如下，<br>對於 pthread 建立執行緒不熟悉的話可以看我之前的<a href="/cpp-pthread/" title="這篇介紹">這篇介紹</a>，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">    usleep(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(t1, <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，可以發現 <code>foo()</code> 函式裡可能需要加個延遲，以便讓 <code>pthread_setaffinity_np()</code> 的設定生效，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pthread_setaffinity_np cpu3</span><br><span class="line">t1 thread sched_getcpu = 1</span><br><span class="line">t1 thread sched_getcpu = 3</span><br></pre></td></tr></table></figure></p>
+<p>上述方法也許有點不完美，也可以在 <code>foo()</code> 函式裡執行 <code>pthread_setaffinity_np()</code> 就可免去延遲的程式碼。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np3.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(pthread_self(), <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pthread_setaffinity_np cpu3</span><br><span class="line">t1 thread sched_getcpu = 3</span><br></pre></td></tr></table></figure></p>
+<h2><span id="在-c-stdthread-執行緒設定-cpu">在 Ｃ++ std::thread 執行緒設定 CPU</span></h2><p>要在 Ｃ++ std::thread 設定跑在哪顆 CPU 的話可以用 <code>thread::native_handle()</code> 取得 pthread_t 再傳入 <code>pthread_setaffinity_np()</code> 的第一個參數，因為 t1 thread 是 std::thread 建構時就開始執行了，所以下面 <code>pthread_setaffinity_np()</code> 設定太慢的話，就會比較慢生效，所以有可能 foo 執行到一半時才被設定 CPU，因此這邊先加個延遲 1 microseconds，確保一開始執行時就被設定 CPU，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np-std-thread.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np-std-thread.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::microseconds(<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(t1.native_handle(), <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (t1.joinable()) &#123;</span><br><span class="line">        t1.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上述方法也許有點不完美，也可以改成在執行 thread 的函式裡去設定自身 thread 的跑在哪顆 CPU，這樣可以省去延遲的程式碼，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np-std-thread2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np-std-thread2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(pthread_self(), <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (t1.joinable()) &#123;</span><br><span class="line">        t1.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其它參考<br>c++ - Set CPU affinity when create a thread - Stack Overflow<br><a href="https://stackoverflow.com/questions/24645880/set-cpu-affinity-when-create-a-thread" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/24645880/set-cpu-affinity-when-create-a-thread</a><br>pthread_setaffinity_np(3) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man3/pthread_setaffinity_np.3.html" rel="noopener external nofollow noreferrer" target="_blank">https://man7.org/linux/man-pages/man3/pthread_setaffinity_np.3.html</a><br>C++11 threads, affinity and hyperthreading - Eli Bendersky’s website<br><a href="https://eli.thegreenplace.net/2016/c11-threads-affinity-and-hyperthreading/" rel="noopener external nofollow noreferrer" target="_blank">https://eli.thegreenplace.net/2016/c11-threads-affinity-and-hyperthreading/</a><br>SetThreadAffinityMask function (winbase.h) - Win32 apps | Microsoft Docs<br><a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadaffinitymask" rel="noopener external nofollow noreferrer" target="_blank">https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadaffinitymask</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-sched_setaffinity/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-pthread_setaffinity_np/" data-id="ckx0bxrqa00fayss1pm35ds6b" data-title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/linux-sendmail/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Linux sendmail 寄信指令用法與範例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/python-opencv-image-to-pil-image/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Python OpenCV 影像格式轉換成 PIL Image</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-pyqt-qthread/">Python PyQt5 QThread 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qimage/">Python PyQt5 QImage 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qhboxlayout/">Python PyQt5 QHBoxLayout 水平佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-pyqt-qgridlayout/">Python PyQt5 QGridLayout 網格佈局用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/python-socket/">Python Socket 網路通訊教學</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697%2F&tabs=timeline&width=280&height=70&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=true&appId" width="280" height="70" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- hahow w300xh250 -->
+    <a href='https://affclkr.online/track/clicks/4850/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fhahow.in%2Fapselect-event%3Fmts_s%3Dap%26mts_m%3Dao%26mts_c%3D19ap' rel="external nofollow noreferrer"><img src='https://affclkr.online/track/imp/img/53342/ce2bc2bb9a0224ddefcda67f8835ce13286d4dc872edf0ab416db60d6204?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">線上學習課程</h3>
+    <!-- udemy w300xh250 -->
+    <a href='https://twcouponcenter.com/track/clicks/4546/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=&t=https%3A%2F%2Fwww.udemy.com%2F' rel="external nofollow noreferrer"><img src='https://twcouponcenter.com/track/imp/img/97027/ce2bc2b79e0122d8efcda67f8835ce13286d4dc872edf0ab416db6006302?subid_1=&subid_2=&subid_3=&subid_4=&subid_5=' border='0' style="max-width: 100%; height: auto;" /></a>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">117</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">200</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
