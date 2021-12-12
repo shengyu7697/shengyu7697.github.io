@@ -105,6 +105,107 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-android-write-a-android-mk" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-write-a-android-mk/" class="article-date">
+  <time datetime="2019-12-06T14:00:00.000Z" itemprop="datePublished">2019-12-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/android-write-a-android-mk/">如何寫 Android.mk</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇記錄一下如何寫 Android.mk，雖然 Google 已經開始全面地改用 Android.bp，但這段過渡期可能還需幾年的時間，Android.mk 的了解以及如何撰寫還是值得學習的。</p>
+<p>從 Android 7 Nougat 開始逐漸地改用 Android.bp</p>
+<h2><span id="如何寫-androidmk">如何寫 Android.mk</span></h2><p>首先先清理變數<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH:= <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="指定模組名與模組變數">指定模組名與模組變數</span></h2><p><code>LOCAL_MODULE</code>︰模組名稱，這名稱必須是唯一，不能和既有模組相同。 如果 LOCAL_MODULE 未設定，則使用LOCAL_PACKAGE_NAME。 如果再沒有，就會編譯失敗。例如模組名叫做hello，那麼就可以透過 make hello 指令直接編譯hello這個模組。<br><code>LOCAL_SRC_FILES</code>︰原始碼檔案列表</p>
+<h2><span id="引用編譯規則">引用編譯規則</span></h2><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure>
+<p>以下這些用來給Android.mk引用的文件及其變數，定義在<code>build/core/config.mk</code>中。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">BUILD_COMBOS:= <span class="variable">$(BUILD_SYSTEM)</span>/combo</span><br><span class="line"></span><br><span class="line">CLEAR_VARS:= <span class="variable">$(BUILD_SYSTEM)</span>/clear_vars.mk</span><br><span class="line">BUILD_HOST_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_static_library.mk</span><br><span class="line">BUILD_HOST_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_library.mk</span><br><span class="line">BUILD_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_library.mk</span><br><span class="line">BUILD_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/shared_library.mk</span><br><span class="line">BUILD_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/executable.mk</span><br><span class="line">BUILD_HOST_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/host_executable.mk</span><br><span class="line">BUILD_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/package.mk</span><br><span class="line">BUILD_PHONY_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/phony_package.mk</span><br><span class="line">BUILD_HOST_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/host_prebuilt.mk</span><br><span class="line">BUILD_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/prebuilt.mk</span><br><span class="line">BUILD_MULTI_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/multi_prebuilt.mk</span><br><span class="line">BUILD_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/java_library.mk</span><br><span class="line">BUILD_STATIC_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_java_library.mk</span><br><span class="line">BUILD_HOST_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_java_library.mk</span><br><span class="line">BUILD_DROIDDOC:= <span class="variable">$(BUILD_SYSTEM)</span>/droiddoc.mk</span><br><span class="line">BUILD_COPY_HEADERS := <span class="variable">$(BUILD_SYSTEM)</span>/copy_headers.mk</span><br><span class="line">BUILD_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/native_test.mk</span><br><span class="line">BUILD_NATIVE_BENCHMARK := <span class="variable">$(BUILD_SYSTEM)</span>/native_benchmark.mk</span><br><span class="line">BUILD_HOST_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/host_native_test.mk</span><br><span class="line"></span><br><span class="line">BUILD_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/shared_test_lib.mk</span><br><span class="line">BUILD_HOST_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_test_lib.mk</span><br><span class="line">BUILD_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/static_test_lib.mk</span><br><span class="line">BUILD_HOST_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_static_test_lib.mk</span><br><span class="line"></span><br><span class="line">BUILD_NOTICE_FILE := <span class="variable">$(BUILD_SYSTEM)</span>/notice_files.mk</span><br><span class="line">BUILD_HOST_DALVIK_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_java_library.mk</span><br><span class="line">BUILD_HOST_DALVIK_STATIC_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_static_java_library.mk</span><br></pre></td></tr></table></figure>
+<h3><span id="範例編譯一個可執行檔">範例：編譯一個可執行檔</span></h3><p>模組名稱為 hellowrold，編譯出一個 hellowrold 的執行檔。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := main.cpp</span><br><span class="line">LOCAL_MODULE := hellowrold</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line">LOCAL_SHARED_LIBRARIES :=</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure></p>
+<h3><span id="範例編譯一個靜態函式庫">範例：編譯一個靜態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.a 的靜態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
+<h3><span id="範例編譯一個動態函式庫">範例：編譯一個動態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.so 的動態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_SHARED_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
+<h3><span id="範例編譯一個-apk-文件">範例：編譯一個 APK 文件</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES := static-library <span class="comment"># 當前模塊依賴的靜態 Java 庫，如果有多個以空格分隔</span></span><br><span class="line">LOCAL_PACKAGE_NAME := LocalPackage <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_PACKAGE)</span> <span class="comment"># 編譯 APK 文件</span></span><br></pre></td></tr></table></figure>
+<h3><span id="範例編譯一個-java-的靜態函式庫">範例：編譯一個 Java 的靜態函式庫</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_JAVA_LIBRARIES := android.test.runner <span class="comment"># 當前模塊依賴的動態 Java 庫名稱</span></span><br><span class="line">LOCAL_MODULE := sample <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_JAVA_LIBRARY)</span> <span class="comment"># 將當前模塊編譯成一個靜態的 Java 庫</span></span><br></pre></td></tr></table></figure>
+<p>下表格為常用與常見的編譯規則</p>
+<table>
+<thead>
+<tr>
+<th>引用編譯規則變數</th>
+<th>檔名</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BUILD_EXECUTABLE</td>
+<td>executable.mk</td>
+<td>編譯成裝置上的可執行檔</td>
+</tr>
+<tr>
+<td>BUILD_STATIC_LIBRARY</td>
+<td>static_library.mk</td>
+<td>編譯成裝置上的靜態函式庫</td>
+</tr>
+<tr>
+<td>BUILD_SHARED_LIBRARY</td>
+<td>shared_library.mk</td>
+<td>編譯成裝置上的動態函式庫</td>
+</tr>
+<tr>
+<td>BUILD_PREBUILT</td>
+<td>prebuilt.mk</td>
+<td>處理一個預編譯好的檔案 (例如.a, .so, .jar)</td>
+</tr>
+<tr>
+<td>BUILD_PACKAGE</td>
+<td>package.mk</td>
+<td>編譯成apk</td>
+</tr>
+</tbody>
+</table>
+<p>參考<br>[1] Android.mk的深入介绍<br><a href="https://note.qidong.name/2017/08/android-mk/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-mk/</a><br>[2] 理解 Android Build 系統<br><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/" rel="noopener external nofollow noreferrer" target="_blank">https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-write-a-android-mk/" data-id="ckx39jc31006dsbs1566c5ayq" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-android-platform-source-code-version" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/android-platform-source-code-version/" class="article-date">
@@ -154,7 +255,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-platform-source-code-version/" data-id="ckx12jez0006e9bs12vvvhhrq" data-title="如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-platform-source-code-version/" data-id="ckx39jd5g00dksbs1xokpce20" data-title="如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -214,7 +315,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-4-1-2-build-install-in-ubuntu/" data-id="ckx12jez0006c9bs1m89rpnf6" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.2" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-4-1-2-build-install-in-ubuntu/" data-id="ckx39jc30006csbs1f07f5uo5" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -274,7 +375,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-3-4-8-build-install-in-ubuntu/" data-id="ckx12jeyz006b9bs16bh7h8c9" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.8" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-3-4-8-build-install-in-ubuntu/" data-id="ckx39jd5p00dssbs1sog0ehz9" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -330,7 +431,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-grep-ack-ag/" data-id="ckx12jeyz006a9bs10uobp3ic" data-title="使用 Linux grep/ack/ag 搜尋字串" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-grep-ack-ag/" data-id="ckx39jc30006bsbs1qk07i5ta" data-title="使用 Linux grep/ack/ag 搜尋字串" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -415,7 +516,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-find/" data-id="ckx12jeyy00699bs10e0g16rm" data-title="使用 Linux find 尋找檔案/尋找資料夾" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-find/" data-id="ckx39jc2z006asbs1wjycxm17" data-title="使用 Linux find 尋找檔案/尋找資料夾" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -515,7 +616,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-sort/" data-id="ckx12jeyx00689bs1b8uzwwp3" data-title="C++ std::sort 排序用法與範例完整介紹" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-sort/" data-id="ckx39jc2z0069sbs158cvtnjw" data-title="C++ std::sort 排序用法與範例完整介紹" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -577,7 +678,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-camera/" data-id="ckx12jeyx00679bs14w3zul35" data-title="[Python+OpenCV] 顯示camera攝影機串流影像" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-camera/" data-id="ckx39jc2y0068sbs1fxr3y7t1" data-title="[Python+OpenCV] 顯示camera攝影機串流影像" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -640,7 +741,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-install-opencv/" data-id="ckx12jeyx00669bs1ld54yqtz" data-title="Python 安裝 OpenCV 模組" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-install-opencv/" data-id="ckx39jc2x0067sbs17jv5odf0" data-title="Python 安裝 OpenCV 模組" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -715,182 +816,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-simple-web-server/" data-id="ckx12jeyw00659bs17hwwnmk6" data-title="Python 快速建立簡單網頁伺服器 http web sever" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pyautogui" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pyautogui/" class="article-date">
-  <time datetime="2019-11-26T14:00:00.000Z" itemprop="datePublished">2019-11-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pyautogui/">Python PyAutoGUI 使用教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何用 Python 搭配 pyautogui 模組來模擬鍵盤、模擬滑鼠，Python 如何模擬鍵盤按下按鍵與模擬滑鼠移動滑鼠與點擊，將在以下教學內容解釋。  </p>
-<p>如果遇到 ImportError: No module named ‘pyautogui’ 這錯誤訊息就是需要安裝 pyautogui，參考<a href="/python-install-pyautogui/" title="這篇">這篇</a>安裝吧！  </p>
-<h2><span id="模擬鍵盤">模擬鍵盤</span></h2><p>按下按鍵<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> pyautogui</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.press(<span class="string">'a'</span>) <span class="comment"># 按 a</span></span><br></pre></td></tr></table></figure></p>
-<p>常用的一些按鍵整理如下表：  </p>
-<table>
-<thead>
-<tr>
-<th>用法</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>press(‘a’)</td>
-<td>a</td>
-</tr>
-<tr>
-<td>press(‘enter’)</td>
-<td>回車鍵</td>
-</tr>
-<tr>
-<td>press(‘esc’)</td>
-<td>Esc</td>
-</tr>
-<tr>
-<td>press(‘space’)</td>
-<td>space 空白鍵</td>
-</tr>
-<tr>
-<td>press(‘backspace’)</td>
-<td>返回鍵</td>
-</tr>
-<tr>
-<td>press(‘up’)</td>
-<td>上</td>
-</tr>
-<tr>
-<td>press(‘down’)</td>
-<td>下</td>
-</tr>
-<tr>
-<td>press(‘left’)</td>
-<td>左</td>
-</tr>
-<tr>
-<td>press(‘right’)</td>
-<td>右</td>
-</tr>
-<tr>
-<td>press(‘pgup’)</td>
-<td>Page Up</td>
-</tr>
-<tr>
-<td>press(‘pgdn’)</td>
-<td>Page Down</td>
-</tr>
-<tr>
-<td>press(‘playpause’)</td>
-<td>播放/暫停</td>
-</tr>
-<tr>
-<td>press(‘volumeup’)</td>
-<td>大聲</td>
-</tr>
-<tr>
-<td>press(‘volumedown’)</td>
-<td>小聲</td>
-</tr>
-<tr>
-<td>press(‘volumemute’)</td>
-<td>靜音</td>
-</tr>
-<tr>
-<td>press(‘printscreen’)</td>
-<td>Print Screen</td>
-</tr>
-<tr>
-<td>press(‘ctrl’)</td>
-<td>Ctrl</td>
-</tr>
-<tr>
-<td>press(‘shift’)</td>
-<td>Shift</td>
-</tr>
-<tr>
-<td>press(‘alt’)</td>
-<td>Alt</td>
-</tr>
-<tr>
-<td>press(‘option’)</td>
-<td>Option</td>
-</tr>
-</tbody>
-</table>
-<p>更多按鍵資訊可參考<br><a href="https://pyautogui.readthedocs.io/en/latest/keyboard.html" rel="noopener external nofollow noreferrer" target="_blank">https://pyautogui.readthedocs.io/en/latest/keyboard.html</a>  </p>
-<h2><span id="模擬滑鼠">模擬滑鼠</span></h2><p>這邊需要解釋一下螢幕上的座標軸，這樣接下來才清楚滑鼠要往哪邊移動。  </p>
-<p>以下範例為1920 x 1080 的螢幕解析度示意。  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(0,0)       X 增加 --&gt;</span><br><span class="line">+---------------------------+</span><br><span class="line">|                           |  Y 增加</span><br><span class="line">|                           |     |</span><br><span class="line">|   1920 x 1080 screen      |     |</span><br><span class="line">|                           |     V</span><br><span class="line">|                           |</span><br><span class="line">|                           |</span><br><span class="line">+---------------------------+ (1919, 1079)</span><br></pre></td></tr></table></figure>
-<p><strong>取得螢幕解析度</strong>  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> pyautogui</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>width, height = pyautogui.size()</span><br><span class="line">(<span class="number">1920</span>, <span class="number">1080</span>)</span><br></pre></td></tr></table></figure>
-<p><strong>取得滑鼠當前的座標位置</strong>  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> pyautogui</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.position()</span><br><span class="line">(<span class="number">300</span>, <span class="number">200</span>)</span><br></pre></td></tr></table></figure>
-<p><strong>移動滑鼠到絕對位置</strong><br>語法：moveTo(width, height, duration)<br>移動到(300, 200)絕對位置  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> pyautogui</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.moveTo(<span class="number">300</span>, <span class="number">200</span>)                 <span class="comment"># 移動到(300, 200)</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.moveTo(<span class="literal">None</span>, <span class="number">400</span>)                <span class="comment"># 移動到(300, 400)</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.moveTo(<span class="number">500</span>, <span class="literal">None</span>)                <span class="comment"># 移動到(500, 200)</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.moveTo(<span class="number">300</span>, <span class="number">200</span>, duration = <span class="number">1.5</span>) <span class="comment"># 花1.5秒移動到(300, 200)</span></span><br></pre></td></tr></table></figure>
-<p><strong>移動滑鼠到相對位置</strong>  </p>
-<p>語法：moeRel(width, height, duration)<br>移到相對位置，以當前滑鼠位置為基準點  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pyautogui</span><br><span class="line">pyautogui.moveRel(<span class="number">0</span>, <span class="number">100</span>)</span><br><span class="line">pyautogui.moveRel(<span class="number">-100</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-<p><strong>滑鼠拖曳</strong>  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.dragTo(<span class="number">100</span>, <span class="number">200</span>, button=<span class="string">'left'</span>)     <span class="comment"># drag mouse to (100, 200) while holding down left mouse button</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.dragTo(<span class="number">300</span>, <span class="number">400</span>, <span class="number">2</span>, button=<span class="string">'left'</span>)  <span class="comment"># drag mouse to (300, 400) over 2 seconds while holding down left mouse button</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pyautogui.drag(<span class="number">30</span>, <span class="number">0</span>, <span class="number">2</span>, button=<span class="string">'right'</span>)   <span class="comment"># drag the mouse left 30 pixels over 2 seconds while holding down the right mouse button</span></span><br></pre></td></tr></table></figure>
-<p><strong>滑鼠點擊</strong><br>語法：click(width, height, button)</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">button = <span class="string">'left'</span>, <span class="string">'middle'</span>, <span class="string">'right'</span>。</span><br><span class="line"></span><br><span class="line">pyautogui.click()                                <span class="comment">#在當前位置點擊(預設左鍵)</span></span><br><span class="line">pyautogui.click(width, height)                   <span class="comment">#在(width, height)點擊滑鼠(預設左鍵)</span></span><br><span class="line">pyautogui.click(width, height, button=<span class="string">'left'</span>)    <span class="comment">#點擊滑鼠左鍵</span></span><br></pre></td></tr></table></figure>
-<p>更多滑鼠資訊可參考 <a href="https://pyautogui.readthedocs.io/en/latest/mouse.html" rel="noopener external nofollow noreferrer" target="_blank">https://pyautogui.readthedocs.io/en/latest/mouse.html</a>  </p>
-<h2><span id="其他">其他</span></h2><p><strong>暫停幾秒鐘</strong>  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pyautogui.PAUSE = <span class="number">1.5</span></span><br></pre></td></tr></table></figure>
-<p><strong>Fail-Safes (預設false)</strong><br>當滑鼠一道螢幕左上角時，觸發 pyautogui 的FailSafeException 異常  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pyautogui.FAILSAFE = <span class="literal">True</span> <span class="comment"># enables the fail-safe</span></span><br><span class="line">pyautogui.FAILSAFE = <span class="literal">False</span> <span class="comment"># disables the fail-safe</span></span><br></pre></td></tr></table></figure>
-<p>詳情請看<a href="https://pyautogui.readthedocs.io/en/latest/introduction.html#fail-safes" rel="noopener external nofollow noreferrer" target="_blank">https://pyautogui.readthedocs.io/en/latest/introduction.html#fail-safes</a>  </p>
-<p>另外 pyautogui 還有 <a href="https://pyautogui.readthedocs.io/en/latest/msgbox.html" rel="noopener external nofollow noreferrer" target="_blank">Message Box</a> 和 <a href="https://pyautogui.readthedocs.io/en/latest/screenshot.html" rel="noopener external nofollow noreferrer" target="_blank">Screenshot</a> 改天再研究吧!<br>對 Python 自動化有興趣可以參考《<a href="https://shengyu7697.github.io/book-automate-the-boring-stuff-with-python/">Python 自動化的樂趣</a>》這本書中的自動化專題實作章節。  </p>
-<p>參考<br>PyAutoGUI : 使用Python控制電腦 - Yanwei Liu - Medium<br><a href="https://medium.com/@yanweiliu/662cc3b18b80" rel="noopener external nofollow noreferrer" target="_blank">https://medium.com/@yanweiliu/662cc3b18b80</a><br>Python学习笔记——用GUI自动化控制键盘和鼠标 - 简书<br><a href="https://www.jianshu.com/p/41463c82ec8f" rel="noopener external nofollow noreferrer" target="_blank">https://www.jianshu.com/p/41463c82ec8f</a><br>python pyautogui 簡介<br><a href="https://xiang1023.blogspot.com/2017/09/python-pyautogui.html" rel="noopener external nofollow noreferrer" target="_blank">https://xiang1023.blogspot.com/2017/09/python-pyautogui.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-install-pyautogui/" title="Python 安裝 PyAutoGUI 模組">Python 安裝 PyAutoGUI 模組</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyautogui/" data-id="ckx12jeyw00649bs154xpn4f5" data-title="Python PyAutoGUI 使用教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-simple-web-server/" data-id="ckx39jc2x0066sbs1mx1op03c" data-title="Python 快速建立簡單網頁伺服器 http web sever" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -937,6 +863,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/python-pyqt-qpainter/">Python PyQt5 QPainter 用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/python-pyqt-qthread/">Python PyQt5 QThread 用法與範例</a>
           </li>
         
@@ -950,10 +880,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/python-pyqt-qgridlayout/">Python PyQt5 QGridLayout 網格佈局用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/python-socket/">Python Socket 網路通訊教學</a>
           </li>
         
       </ul>
@@ -988,7 +914,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">117</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">200</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">117</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">201</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
