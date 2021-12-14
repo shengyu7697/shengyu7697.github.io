@@ -105,6 +105,71 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-mutex-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-mutex-how/" class="article-date">
+  <time datetime="2019-11-17T14:00:00.000Z" itemprop="datePublished">2019-11-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-mutex-how/">std::mutex 怎麼實作的？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::mutex 的。  </p>
+<p>接下來我們來 trace llvm 的 libc++ 是怎麼實作 std::mutex 的。  </p>
+<h2><span id="1-stdmutexlock-的實作">1. std::mutex::lock 的實作</span></h2><p><code>lock</code> 轉換成內部的 <code>__libcpp_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/mutex.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::lock()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_lock(&amp;__m_);</span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"mutex lock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-1-stdmutexlock-在-unix-平台的實作內容">1-1. std::mutex::lock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 unix 平台是呼叫 <code>pthread_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_lock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-2-stdmutexlock-在-windows-平台的實作內容">1-2. std::mutex::lock 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 windows 平台是呼叫 <code>AcquireSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/support/win32/thread_win32.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  AcquireSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="2-stdmutexunlock-的實作">2. std::mutex::unlock 的實作</span></h2><p><code>unlock</code> 轉換成內部的 <code>__libcpp_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/mutex.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::unlock() _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_unlock(&amp;__m_);</span><br><span class="line">    (<span class="keyword">void</span>)ec;</span><br><span class="line">    _LIBCPP_ASSERT(ec == <span class="number">0</span>, <span class="string">"call to mutex::unlock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-1-stdmutexunlock-在-unix-平台的實作內容">2-1. std::mutex::unlock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 unix 平台是呼叫 <code>pthread_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_unlock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-2-stdmutexunlock-在-在-windows-平台的實作內容">2-2. std::mutex::unlock 在 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 windows 平台是呼叫 <code>ReleaseSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  ReleaseSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="總結">總結</span></h2><p>在一番 trace code 的結果後，std::mutex 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::mutex::lock</code> 轉換成 <code>pthread_mutex_lock</code><br><code>std::mutex::unlock</code> 轉換成 <code>pthread_mutex_unlock</code><br>在 windows 下<br><code>std::mutex::lock</code> 轉換成 <code>AcquireSRWLockExclusive</code><br><code>std::mutex::unlock</code> 轉換成 <code>ReleaseSRWLockExclusive</code>  </p>
+<p><strong>相關主題</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-condition_variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-mutex-how/" data-id="ckx5ckoz0007t3ns1z4dj78yc" data-title="std::mutex 怎麼實作的？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-condition_variable-how" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-condition_variable-how/" class="article-date">
@@ -158,7 +223,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="ckx39jc2s005vsbs15orw1eie" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="ckx5ckoyw007r3ns1jse2bnmc" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -220,14 +285,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2><span id="python-pil-圖片處理系列文">Python PIL 圖片處理系列文</span></h2><p>使用 Python 搭配 PIL 模組作圖片處理的學習。<br><a href="/python-pil-and-pillow/" title="如何安裝PIL">如何安裝PIL</a><br><a href="/python-pil-read-image-and-show-image/" title="讀取圖片並顯示">讀取圖片並顯示</a><br><a href="/python-pil-blur-image/" title="圖片模糊化 blur">圖片模糊化 blur</a><br><a href="/python-pil-smooth-image/" title="圖片平滑化 smooth">圖片平滑化 smooth</a><br><a href="/python-pil-rotate-image/" title="旋轉圖片 rotate">旋轉圖片 rotate</a><br><a href="/python-pil-flip-image/" title="水平翻轉、垂直翻轉圖片">水平翻轉、垂直翻轉圖片</a><br><a href="/python-pil-crop-image/" title="裁切裁剪圖片 crop">裁切裁剪圖片 crop</a><br><a href="/python-pil-resize-image/" title="縮放圖片 resize">縮放圖片 resize</a><br><a href="/python-pil-thumbnail-image/" title="製作圖片縮圖 thumbnail">製作圖片縮圖 thumbnail</a><br><a href="/python-pil-draw-text-on-image/" title="在圖片上繪製文字">在圖片上繪製文字</a><br><a href="/python-pil-paste-image/" title="圖片貼上 paste">圖片貼上 paste</a><br><a href="/python-pil-exif/" title="取得圖片Exif資訊">取得圖片Exif資訊</a>  </p>
 <h2><span id="python-opencv-影像處理系列文">Python OpenCV 影像處理系列文</span></h2><p>使用 Python 搭配 OpenCV 模組來作影像處理的學習。<br><a href="/python-install-opencv/" title="Python 安裝 OpenCV 模組">Python 安裝 OpenCV 模組</a><br><a href="/python-opencv-rgb-to-gray/" title="彩色轉灰階(RGB/BGR to GRAY)">彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-hsv/" title="彩色轉HSV(RGB/BGR to HSV)">彩色轉HSV(RGB/BGR to HSV)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="彩色轉YCbCr(RGB/BGR to YCbCr)">彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-gray-to-rgb/" title="灰階轉彩色(Gray to RGB/BGR)">灰階轉彩色(Gray to RGB/BGR)</a><br><a href="/python-opencv-threshold/" title="影像二值化 Image Thresholding">影像二值化 Image Thresholding</a><br><a href="/python-opencv-blur/" title="影像平滑模糊化 blur">影像平滑模糊化 blur</a><br><a href="/python-opencv-canny/" title="影像邊緣偵測 Canny Edge Detection">影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-vconcat-hconcat/" title="垂直vconcat 和水平hconcat 影像拼接">垂直vconcat 和水平hconcat 影像拼接</a><br><a href="/python-opencv-resize/" title="圖片縮放 resize">圖片縮放 resize</a><br><a href="/python-opencv-camera/" title="顯示camera攝影機串流影像">顯示camera攝影機串流影像</a><br><a href="/python-opencv-video/" title="讀取播放video影片檔案">讀取播放video影片檔案</a><br><a href="/python-opencv-save-video/" title="儲存寫入video影片到檔案">儲存寫入video影片到檔案</a><br><a href="/python-opencv-erode-dilate/" title="影像侵蝕 erode 與影像膨脹 dilate">影像侵蝕 erode 與影像膨脹 dilate</a>  </p>
 <h2><span id="python-tkinter-視窗程式系列文">Python tkinter 視窗程式系列文</span></h2><p>使用 Python 搭配 tkinter 模組來作視窗程式設計的學習。<br><a href="/python-tkinter-label/" title="tkinter Label 標籤用法與範例">tkinter Label 標籤用法與範例</a><br><a href="/python-tkinter-button/" title="tkinter Button 按鈕用法與範例">tkinter Button 按鈕用法與範例</a><br><a href="/python-tkinter-entry/" title="tkinter Entry 文字輸入框用法與範例">tkinter Entry 文字輸入框用法與範例</a><br><a href="/python-tkinter-combobox/" title="tkinter Combobox 用法與範例">tkinter Combobox 用法與範例</a><br><a href="/python-tkinter-optionmenu/" title="tkinter OptionMenu 用法與範例">tkinter OptionMenu 用法與範例</a><br><a href="/python-tkinter-canvas/" title="tkinter Canvas 用法與範例">tkinter Canvas 用法與範例</a><br><a href="/python-tkinter-messagebox/" title="tkinter messagebox 用法與範例">tkinter messagebox 用法與範例</a><br><a href="/python-tkinter-statusbar/" title="tkinter status bar 狀態列用法與範例">tkinter status bar 狀態列用法與範例</a><br><a href="/python-tkinter-filedialog/" title="tkinter filedialog 開啟檔案對話框">tkinter filedialog 開啟檔案對話框</a><br><a href="/python-tkinter-filedialog-directory/" title="tkinter filedialog.askdirectory 選擇資料夾對話框">tkinter filedialog.askdirectory 選擇資料夾對話框</a>  </p>
-<h2><span id="python-pyqt5-視窗程式系列文">Python PyQt5 視窗程式系列文</span></h2><p>使用 Python 搭配 PyQt5 模組來作視窗程式設計的學習。<br><a href="/python-pyqt-qlabel/" title="PyQt5 QLabel 標籤用法與範例">PyQt5 QLabel 標籤用法與範例</a><br><a href="/python-pyqt-qpushbutton/" title="PyQt5 QPushButton 按鈕用法與範例">PyQt5 QPushButton 按鈕用法與範例</a><br><a href="/python-pyqt-qlineedit/" title="PyQt5 QLineEdit 文字輸入框用法與範例">PyQt5 QLineEdit 文字輸入框用法與範例</a><br><a href="/python-pyqt-qcombobox/" title="PyQt5 QComboBox 下拉式選單用法與範例">PyQt5 QComboBox 下拉式選單用法與範例</a><br><a href="/python-pyqt-qradiobutton/" title="PyQt5 QRadioButton 單選框用法與範例">PyQt5 QRadioButton 單選框用法與範例</a><br><a href="/python-pyqt-qcheckbox/" title="PyQt5 QCheckBox 複選框用法與範例">PyQt5 QCheckBox 複選框用法與範例</a><br><a href="/python-pyqt-qvboxlayout/" title="PyQt5 QVBoxLayout 垂直佈局用法與範例">PyQt5 QVBoxLayout 垂直佈局用法與範例</a><br><a href="/python-pyqt-qhboxlayout/" title="PyQt5 QHBoxLayout 水平佈局用法與範例">PyQt5 QHBoxLayout 水平佈局用法與範例</a><br><a href="/python-pyqt-qgridlayout/" title="PyQt5 QGridLayout 網格佈局用法與範例">PyQt5 QGridLayout 網格佈局用法與範例</a><br><a href="/python-pyqt-qpixmap/" title="PyQt5 QPixmap 用法與範例">PyQt5 QPixmap 用法與範例</a><br><a href="/python-pyqt-qimage/" title="PyQt5 QImage 用法與範例">PyQt5 QImage 用法與範例</a><br><a href="/python-pyqt-qthread/" title="PyQt5 QThread 用法與範例">PyQt5 QThread 用法與範例</a><br><a href="/python-pyqt-qtimer/" title="PyQt5 QTimer 定時器用法與範例">PyQt5 QTimer 定時器用法與範例</a><br><a href="/python-pyqt-qmessagebox/" title="PyQt5 QMessageBox 用法與範例">PyQt5 QMessageBox 用法與範例</a><br><a href="/python-pyqt-qfiledialog/" title="PyQt5 QFileDialog 開啟檔案對話框">PyQt5 QFileDialog 開啟檔案對話框</a>  </p>
+<h2><span id="python-pyqt5-視窗程式系列文">Python PyQt5 視窗程式系列文</span></h2><p>使用 Python 搭配 PyQt5 模組來作視窗程式設計的學習。<br><a href="/python-pyqt-qlabel/" title="PyQt5 QLabel 標籤用法與範例">PyQt5 QLabel 標籤用法與範例</a><br><a href="/python-pyqt-qpushbutton/" title="PyQt5 QPushButton 按鈕用法與範例">PyQt5 QPushButton 按鈕用法與範例</a><br><a href="/python-pyqt-qlineedit/" title="PyQt5 QLineEdit 文字輸入框用法與範例">PyQt5 QLineEdit 文字輸入框用法與範例</a><br><a href="/python-pyqt-qcombobox/" title="PyQt5 QComboBox 下拉式選單用法與範例">PyQt5 QComboBox 下拉式選單用法與範例</a><br><a href="/python-pyqt-qradiobutton/" title="PyQt5 QRadioButton 單選框用法與範例">PyQt5 QRadioButton 單選框用法與範例</a><br><a href="/python-pyqt-qcheckbox/" title="PyQt5 QCheckBox 複選框用法與範例">PyQt5 QCheckBox 複選框用法與範例</a><br><a href="/python-pyqt-qvboxlayout/" title="PyQt5 QVBoxLayout 垂直佈局用法與範例">PyQt5 QVBoxLayout 垂直佈局用法與範例</a><br><a href="/python-pyqt-qhboxlayout/" title="PyQt5 QHBoxLayout 水平佈局用法與範例">PyQt5 QHBoxLayout 水平佈局用法與範例</a><br><a href="/python-pyqt-qgridlayout/" title="PyQt5 QGridLayout 網格佈局用法與範例">PyQt5 QGridLayout 網格佈局用法與範例</a><br><a href="/python-pyqt-qpixmap/" title="PyQt5 QPixmap 用法與範例">PyQt5 QPixmap 用法與範例</a><br><a href="/python-pyqt-qimage/" title="PyQt5 QImage 用法與範例">PyQt5 QImage 用法與範例</a><br><a href="/python-pyqt-qpainter/" title="PyQt5 QPainter 用法與範例">PyQt5 QPainter 用法與範例</a><br><a href="/python-pyqt-qthread/" title="PyQt5 QThread 用法與範例">PyQt5 QThread 用法與範例</a><br><a href="/python-pyqt-qtimer/" title="PyQt5 QTimer 定時器用法與範例">PyQt5 QTimer 定時器用法與範例</a><br><a href="/python-pyqt-qmessagebox/" title="PyQt5 QMessageBox 用法與範例">PyQt5 QMessageBox 用法與範例</a><br><a href="/python-pyqt-qfiledialog/" title="PyQt5 QFileDialog 開啟檔案對話框">PyQt5 QFileDialog 開啟檔案對話框</a>  </p>
 <h2><span id="web">Web</span></h2><p>以下為 Python Web 網頁相關的教學。<br><a href="/python-simple-web-server/" title="快速建立簡單網頁伺服器 http websever">快速建立簡單網頁伺服器 http websever</a><br><a href="/python-tornado/" title="建立簡單的 Tornado Web">建立簡單的 Tornado Web</a><br><a href="/python-flask/" title="Flask 建立簡單的網頁">Flask 建立簡單的網頁</a>  </p>
 <h2><span id="網路通訊">網路通訊</span></h2><p>以下為 Python Socket 網路通訊相關的教學。<br><a href="/python-socket/" title="Python Socket 網路通訊教學">Python Socket 網路通訊教學</a><br><a href="/python-tcp-socket/" title="Python TCP Server/Client 網路通訊程式">Python TCP Server/Client 網路通訊程式</a><br><a href="/python-udp-socket/" title="Python UDP Server/Client 網路通訊程式">Python UDP Server/Client 網路通訊程式</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="ckx39jc2r005usbs1w14k3ksd" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="ckx5ckoyw007s3ns1c5iohoca" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -309,7 +374,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="ckx39jc2r005tsbs1p6alxwrv" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="ckx5ckoyv007q3ns1ywzaulbb" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -375,7 +440,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="ckx39jc2q005ssbs17qqzn6gs" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="ckx5ckoyu007p3ns1mbepoow4" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -438,7 +503,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-for/" data-id="ckx39jc2q005rsbs1nwt80krj" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-for/" data-id="ckx5ckoyu007o3ns1xdl05xoc" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -501,7 +566,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="ckx39jc2p005qsbs1gvi9a7j6" data-title="[Python+OpenCV] 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="ckx5ckoyu007n3ns18qtuxl79" data-title="[Python+OpenCV] 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -600,7 +665,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="ckx39jc2p005psbs112vcskr3" data-title="[Python+OpenCV] 圖片縮放 resize" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="ckx5ckoyt007m3ns1gdx5lxw6" data-title="[Python+OpenCV] 圖片縮放 resize" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -663,7 +728,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="ckx39jc2o005osbs1cbr0ovbe" data-title="Python 建立多執行緒 thread" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="ckx5ckoyt007l3ns1v4a8isqa" data-title="Python 建立多執行緒 thread" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -725,73 +790,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="ckx39jc2o005nsbs1sqd1woao" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-paste-image" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-paste-image/" class="article-date">
-  <time datetime="2019-11-07T14:00:00.000Z" itemprop="datePublished">2019-11-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-paste-image/">Python 圖片貼上 paste</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 讀取圖片並且將圖片貼在另一張圖片上，在做影像處理時有時會需要對圖片作剪下貼上的處理，接下來介紹怎麼使用 python 的 PIL 模組來作圖片貼上。  </p>
-<h2><span id="安裝-pil">安裝 PIL</span></h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。  </p>
-<h2><span id="範例1把-lena-的縮圖貼在-lena-圖片上">範例1：把 lena 的縮圖貼在 lena 圖片上</span></h2><p>以下範例 ShengYu 是使用 Image.open() 讀取 lena.jpg 這張圖片，<br>Image.open() 會回傳一個 Image 物件，<br>然後我們使用<a href="/python-pil-thumbnail-image/" title="先前介紹過的圖片縮圖">先前介紹過的圖片縮圖</a>，把它讀取進來，<br>接著來到本篇的重點使用 paste() 將縮圖貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！  </p>
-<figure class="highlight python"><figcaption><span>paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line">img2 = Image.open(<span class="string">"lena-thumbnail.jpg"</span>)</span><br><span class="line">print(img2.size)</span><br><span class="line"></span><br><span class="line">img.paste(img2, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/paste-image.jpg" width="320" title="結果圖"></p>
-<h2><span id="範例2把-crop-下的範圍貼在-lena-圖片上">範例2：把 crop 下的範圍貼在 lena 圖片上</span></h2><p>這範例先使用 crop 裁剪一個範圍，<br>接著使用 paste() 將 crop 的範圍貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！<br><figure class="highlight python"><figcaption><span>crop-paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line"></span><br><span class="line">img2 = img.crop((<span class="number">0</span>, <span class="number">0</span>, <span class="number">300</span>, <span class="number">300</span>))</span><br><span class="line">img.paste(img2, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/crop-paste-image.jpg" width="320" title="結果圖">  </p>
-<h2><span id="範例3把-crop-下的範圍作模糊化再貼在-lena-圖片上">範例3：把 crop 下的範圍作模糊化再貼在 lena 圖片上</span></h2><p>這範例先使用 crop() 裁剪一個範圍，<br>然後使用<a href="/python-pil-blur-image/" title="先前介紹過的模糊化 filter()">先前介紹過的模糊化 filter()</a> 將範圍模糊化，<br>接著使用 paste() 將 crop 的範圍貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！<br><figure class="highlight python"><figcaption><span>crop-filter-paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image, ImageFilter</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line"></span><br><span class="line">img2 = img.crop((<span class="number">0</span>, <span class="number">0</span>, <span class="number">300</span>, <span class="number">300</span>))</span><br><span class="line">img3 = img2.filter(ImageFilter.BLUR)</span><br><span class="line">img.paste(img3, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/crop-filter-paste-image.jpg" width="320" title="結果圖">  </p>
-<p>Image.paste 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.paste" rel="noopener external nofollow noreferrer" target="_blank">這裡</a>  </p>
-<p><strong>相關主題</strong><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-draw-text-on-image/" title="Python 在圖片上繪製文字">Python 在圖片上繪製文字</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-paste-image/" data-id="ckx39jc2n005msbs13abpxved" data-title="Python 圖片貼上 paste" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="ckx5ckoys007k3ns1bxmvpx1g" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -807,7 +806,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/39/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/38/">38</a><a class="page-number" href="/page/39/">39</a><span class="page-number current">40</span><a class="page-number" href="/page/41/">41</a><a class="page-number" href="/page/42/">42</a><span class="space">&hellip;</span><a class="page-number" href="/page/60/">60</a><a class="extend next" rel="next" href="/page/41/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/39/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/38/">38</a><a class="page-number" href="/page/39/">39</a><span class="page-number current">40</span><a class="page-number" href="/page/41/">41</a><a class="page-number" href="/page/42/">42</a><span class="space">&hellip;</span><a class="page-number" href="/page/61/">61</a><a class="extend next" rel="next" href="/page/41/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -838,6 +837,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/windows-findstr/">findstr 用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/python-pyqt-qpainter/">Python PyQt5 QPainter 用法與範例</a>
           </li>
         
@@ -851,10 +854,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/python-pyqt-qhboxlayout/">Python PyQt5 QHBoxLayout 水平佈局用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/python-pyqt-qgridlayout/">Python PyQt5 QGridLayout 網格佈局用法與範例</a>
           </li>
         
       </ul>
