@@ -105,6 +105,331 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-pyinstaller" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-pyinstaller/" class="article-date">
+  <time datetime="2019-03-30T14:00:00.000Z" itemprop="datePublished">2019-03-30</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-pyinstaller/">Python 使用 pyinstaller 將程式打包成 exe 發佈</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本篇介紹如何使用 pyinstaller 將 python 程式打包成 exe 執行檔發佈，學會這招後將可以把 exe 執行檔拿到任何 windows 電腦裡執行，即使那台 windows 電腦沒有裝 python 環境也可以執行唷！  </p>
+<h2 id="安裝-pyinstaller"><a href="#安裝-pyinstaller" class="headerlink" title="安裝 pyinstaller"></a>安裝 pyinstaller</h2><p>pyinstaller 是一個方便的 python 模組，將 python 的 .py 檔打包成為 exe 執行檔，過程會將所有的相依模組一併打包。<br>如果沒有 pyinstaller, 先用 pip 安裝<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install pyinstaller</span><br></pre></td></tr></table></figure></p>
+<h2 id="離線安裝-pyinstaller"><a href="#離線安裝-pyinstaller" class="headerlink" title="離線安裝 pyinstaller"></a>離線安裝 pyinstaller</h2><p>到<a href="https://pypi.org/project/PyInstaller/#files" rel="noopener external nofollow noreferrer" target="_blank">PyPI</a>下載，目前沒有提供.whl檔下載，<br>以目前下載到的PyInstaller-3.6.tar.gz為例子的話，輸入下列pip指令就會去安裝pyinstaller<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install PyInstaller-3.6.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>很可惜地似乎安裝過程中會有其他相依的套件，pip試圖連網安裝缺少的相依套件，結果最後因為離線關係會連線逾時  </p>
+<p>到<a href="https://anaconda.org/conda-forge/pyinstaller/files" rel="noopener external nofollow noreferrer" target="_blank">conda-forge</a>下載 pyinstaller-3.6-py37h7602738_0.tar.bz2<br>用 conda 指令安裝：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda install pyinstaller-3.6-py37h7602738_0.tar.bz2</span><br></pre></td></tr></table></figure></p>
+<p>以為用 conda-forge 的離線包就能裝完全部相依套件，<br>最後發現還是少一些套件，只好認命的把缺少的裝一裝了，<br>分別是</p>
+<ul>
+<li><a href="https://pypi.org/project/pywin32-ctypes/#files" rel="noopener external nofollow noreferrer" target="_blank">pywin32-ctypes</a>  </li>
+<li><a href="https://pypi.org/project/pefile/#files" rel="noopener external nofollow noreferrer" target="_blank">pefile</a>  </li>
+<li><a href="https://pypi.org/project/altgraph/#files" rel="noopener external nofollow noreferrer" target="_blank">altgraph</a>  </li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pip install pywin32_ctypes-0.2.0-py2.py3-none-any.whl</span><br><span class="line">pip install pefile-2019.4.18.tar.gz</span><br><span class="line">pip install altgraph-0.17-py2.py3-none-any.whl</span><br></pre></td></tr></table></figure>
+<p>裝完後就發現 pyinstaller 指令可以使用了！  </p>
+<h2 id="使用範例"><a href="#使用範例" class="headerlink" title="使用範例"></a>使用範例</h2><p>使用pyinstaller打包成exe最簡單的範例如下所示，預設是會打包成一個資料夾，<br>pyinstaller 會去分析程式中所用到的 module，最後把這些東西放在一個資料夾或單一執行檔(看你使用的參數)<br>以這個範例來說，會打包成一個yourprogram資料夾，yourprogram資料夾裡面會有一個yourprogram.exe<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pyinstaller yourprogram.py</span><br></pre></td></tr></table></figure></p>
+<p>使用pyinstaller打包成一個執行檔exe，並且不顯示 cmd 視窗，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pyinstaller -F -w yourprogram.py</span><br></pre></td></tr></table></figure></p>
+<h2 id="常用參數介紹"><a href="#常用參數介紹" class="headerlink" title="常用參數介紹"></a>常用參數介紹</h2><p><code>-h, --help</code>：查看說明<br><code>-F</code>：打包成一個exe文件<br><code>-w, --windowed</code>：不顯示 cmd 視窗<br><code>-c, --console</code>：顯示 cmd 視窗<br><code>-D, --onedir</code>：打包成一個資料夾(預設)<br><code>-F, --onefile</code>：打包成一個執行檔<br><code>--noup</code>：不使用 upx<br><code>--upx-dir UPX_DIR</code>：指定 upx 的資料夾，用來可壓縮執行檔<br><code>--version-file=file_version_info.txt</code>：帶入版本資訊，可以在exe右鍵內容&gt;詳細資料&gt;明細內容 查看到該資訊<br>
+        
+          <p class="article-more-link">
+            <a href="/python-pyinstaller/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-pyinstaller/" data-id="ckxq58lx3003b0rs12ovqzv00" data-title="Python 使用 pyinstaller 將程式打包成 exe 發佈" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-npm" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/npm/" class="article-date">
+  <time datetime="2019-03-30T14:00:00.000Z" itemprop="datePublished">2019-03-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/npm/">npm 指令用法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本篇紀錄 npm 的指令用法，  </p>
+<h2 id="簡介"><a href="#簡介" class="headerlink" title="簡介"></a>簡介</h2><p>npm 全名為 Node Package Manager, 是 Node.js 的套件管理工具, 以 JavaScript 寫的  </p>
+<p>npm 把每個專案要使用的函式庫安裝在專案的 <code>node_modules</code> 資料夾底下<br>這樣專案與專案間(資料夾)就不會有套件衝突相依問題  </p>
+<p>每次使用 <code>npm install --save</code> 時會安裝的套件並寫入 package.json 的列表裡<br>以後別人要使用你的 code 可以很輕易知道使用哪些 dependency 以及版本  </p>
+<h2 id="npm-指令"><a href="#npm-指令" class="headerlink" title="npm 指令"></a>npm 指令</h2><p>查看 npm 版本<br><code>npm --version</code></p>
+<p>安裝套件在專案下的 node_modules 目錄<br><code>npm install [package]</code></p>
+<p>安裝套件在專案下的 node_modules 目錄，並更新該套件資訊到 package.json<br><code>npm install [package] --save</code><br>
+        
+          <p class="article-more-link">
+            <a href="/npm/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/npm/" data-id="ckxq58lx100390rs1f9rb4dad" data-title="npm 指令用法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/npm/">npm</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-git-diff-commit" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/git-diff-commit/" class="article-date">
+  <time datetime="2019-03-28T14:00:00.000Z" itemprop="datePublished">2019-03-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/git-diff-commit/">Git 比對這次 commit 跟前一次 commit 的差異</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>這算是很進階、很方便的一招, 有時候不小心把垃圾或除錯用的 code 給一起 commit 進去了,<br>需要把這些東西移除掉,<br>但是哪段才是想要去除的那段呢？<br>這時候可以用下列指令比對出這次 commit 跟前一次 commit 的差異,<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git diff HEAD^ HEAD</span><br></pre></td></tr></table></figure></p>
+<p>也可以跟某個commit比對<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git diff HEAD^ &lt;SHA1&gt;</span><br></pre></td></tr></table></figure></p>
+<p>也可以使用圖形化比對工具<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git difftool HEAD^ HEAD</span><br></pre></td></tr></table></figure></p>
+<p>之後就在外部比對工具(meld)裡選擇要移除的 code<br>之後再 <code>git add</code> 然後 <code>git commit --amend</code> 就搞定了！超方便的技巧！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/git-diff-commit/" data-id="ckxq58lwy00320rs19lr7uhgv" data-title="Git 比對這次 commit 跟前一次 commit 的差異" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-git-snippets" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/git-snippets/" class="article-date">
+  <time datetime="2019-03-28T14:00:00.000Z" itemprop="datePublished">2019-03-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/git-snippets/">Git 常用指令</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="branch-分支類操作"><a href="#branch-分支類操作" class="headerlink" title="branch 分支類操作"></a>branch 分支類操作</h2><p>開新分支 (根據當前的 HEAD 節點建立新分支)<br><code>git checkout HEAD -b &lt;new branch&gt;</code></p>
+<p>查看當前分支<br><code>git branch</code></p>
+<p>切換分支<br><code>git checkout &lt;branch name&gt;</code></p>
+<hr>
+<h2 id="查看歷史類操作"><a href="#查看歷史類操作" class="headerlink" title="查看歷史類操作"></a>查看歷史類操作</h2><p>看 commit 歷史訊息<br><code>git log</code></p>
+<p>看所有檔案的歷史修改<br><code>git log -p</code><br>
+        
+          <p class="article-more-link">
+            <a href="/git-snippets/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/git-snippets/" data-id="ckxq58lwy00330rs1j0u20edz" data-title="Git 常用指令" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-git-config" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/git-config/" class="article-date">
+  <time datetime="2019-03-28T14:00:00.000Z" itemprop="datePublished">2019-03-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/git-config/">Git config 推薦設定方式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>以下為我的 gitconfig, 設定完後操作 git 比較快速<br>存放位置為 <code>~/.gitconfig</code>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[user]</span><br><span class="line"> name = xxx</span><br><span class="line"> email = xxx@xxx.com</span><br><span class="line">[core]</span><br><span class="line"> editor = vim</span><br><span class="line">[color]</span><br><span class="line"> ui = true</span><br><span class="line">[alias]</span><br><span class="line"> st = status</span><br><span class="line"> co = checkout</span><br><span class="line"> br = branch</span><br><span class="line"> cm = commit</span><br><span class="line"> au = add --update</span><br><span class="line"> cmi = commit -m &quot;init&quot;</span><br><span class="line"> cmu = commit -m &quot;update&quot;</span><br><span class="line"> cmf = commit -m &quot;fixup&quot;</span><br><span class="line"> cmt = commit -m &quot;temp&quot;</span><br><span class="line"> cmam = commit --amend</span><br><span class="line"> ls = ls-files</span><br><span class="line"> glog = log --oneline --graph --decorate</span><br><span class="line">[diff]</span><br><span class="line"> tool = meld</span><br><span class="line">[difftool]</span><br><span class="line"> prompt = false</span><br><span class="line">[difftool &quot;meld&quot;]</span><br><span class="line"> cmd = meld $LOCAL $REMOTE</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/git-config/" data-id="ckxq58lwx00310rs1eusrulj2" data-title="Git config 推薦設定方式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-shell-script-if" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/shell-script-if/" class="article-date">
+  <time datetime="2019-03-27T14:00:00.000Z" itemprop="datePublished">2019-03-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/shell-script-if/">Shell Script if 條件判斷</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>常常在 shell script 腳本裡會需要判斷一些條件，但這些條件不單單只是數字比對、字串比較，還會有其他判斷，例如：對檔案的判斷，有時候日子久了也會忘記一些檔案判斷的寫法，也順便紀錄一下當作備忘。  </p>
+<p>以下除了介紹一下 if 語法介紹外，還會列出各種使用情境與常用的判斷式。  </p>
+<h2 id="if-語法介紹與範例"><a href="#if-語法介紹與範例" class="headerlink" title="if 語法介紹與範例"></a>if 語法介紹與範例</h2><p>使用 if 條件判斷語法要注意<code>[</code> <code>]</code>中括號的兩端必須要有一個空白字元，且最後必須使用 fi 結尾，以下範例介紹 if 的用法，以及比較二個字串是否相等。  </p>
+<h3 id="範例1-1：if-寫法"><a href="#範例1-1：if-寫法" class="headerlink" title="範例1-1：if 寫法"></a>範例1-1：if 寫法</h3><p>最簡單的 if 條件判斷式寫法，範例如下：  </p>
+<figure class="highlight bash"><figcaption><span>if.sh</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> [ <span class="string">'xxx'</span> == <span class="string">'xxx'</span> ] ; <span class="keyword">then</span></span><br><span class="line">  <span class="comment"># do something</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/shell-script-if/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/shell-script-if/" data-id="ckxq58lww00300rs175dqf9q6" data-title="Shell Script if 條件判斷" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-linux-ag" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/linux-ag/" class="article-date">
@@ -139,10 +464,53 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-ag/" data-id="ckxmom7ph003vlls1x8vp7ilc" data-title="Linux 比 grep 還快的 ag 搜尋指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-ag/" data-id="ckxq58lwv002y0rs1jxdnzept" data-title="Linux 比 grep 還快的 ag 搜尋指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/進階指令/">進階指令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-ubuntu-16-tree-view" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/ubuntu-16-tree-view/" class="article-date">
+  <time datetime="2019-03-26T14:00:00.000Z" itemprop="datePublished">2019-03-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/ubuntu-16-tree-view/">Ubuntu 16.04 檔案總管使用樹狀顯示方式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>使用樹狀顯示的好處是移動檔案很快速很方便，<br>直接一直點開資料夾展開樹狀然後選到要移動的檔案，<br>原本的顯示方式需要一直雙擊進入資料夾，相比之下，樹狀顯示顯得比較快速，<br>在 Ubuntu 16.04 有提供這功能，但預設沒有開啟，<br>
+        
+          <p class="article-more-link">
+            <a href="/ubuntu-16-tree-view/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/ubuntu-16-tree-view/" data-id="ckxq58lww002z0rs11fp1pfx1" data-title="Ubuntu 16.04 檔案總管使用樹狀顯示方式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -187,7 +555,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-numpy-array/" data-id="ckxmom7pf003tlls1nqlxx52i" data-title="Python numpy array 陣列" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-numpy-array/" data-id="ckxq58lwv002x0rs17uva50hz" data-title="Python numpy array 陣列" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -248,415 +616,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-measure-execution-time/" data-id="ckxmom7pf003rlls14v8pfyp7" data-title="Python 計算程式執行時間" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-measure-execution-time/" data-id="ckxq58lwu002w0rs1twm811pz" data-title="Python 計算程式執行時間" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-ternary-operator" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-ternary-operator/" class="article-date">
-  <time datetime="2019-03-13T14:00:00.000Z" itemprop="datePublished">2019-03-13</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-ternary-operator/">Python 三元運算子 ternary operator</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在 python 使用三元運算子(ternary conditional operator) 好處是程式碼可以看起來比較簡短，<br>在某些情況 python 使用三元運算子簡化後 code 會變得清爽簡短許多。  </p>
-<p>如果是 C 的寫法像下面這樣<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">flag ? <span class="literal">true</span> : <span class="literal">false</span></span><br></pre></td></tr></table></figure></p>
-        
-          <p class="article-more-link">
-            <a href="/python-ternary-operator/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-ternary-operator/" data-id="ckxmom7pe003plls1sjresspn" data-title="Python 三元運算子 ternary operator" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-numpy-matplotlib" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-numpy-matplotlib/" class="article-date">
-  <time datetime="2019-03-13T14:00:00.000Z" itemprop="datePublished">2019-03-13</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-numpy-matplotlib/">Python 使用 numpy 讀取 csv 資料再畫圖</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇要介紹如何是用 python 搭配 numpy 模組讀取 csv 的資料，之後再用 matplotlib 把資料 plot 畫圖呈現出來。</p>
-<h2><span id="使用範例">使用範例</span></h2><p>這是 data.csv 的內容如下，<br><figure class="highlight plain"><figcaption><span>data.csv</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1,0.1,0.2,0.3,1,2,3,4</span><br><span class="line">2,0.4,0.5,0.6,5,6,7,8</span><br><span class="line">3,0.7,0.8,0.9,9,10,11,12</span><br><span class="line">4,1,1.1,1.2,13,14,15,16</span><br></pre></td></tr></table></figure></p>
-<p>numpy 有提供從檔案取資料的函式叫 genfromtxt()，不用自己寫很方便吧！立馬就拿它來讀取 csv 檔吧！<br><figure class="highlight python"><figcaption><span>numpy_plot_example.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">np1 = np.genfromtxt(<span class="string">'data.csv'</span>, delimiter=<span class="string">','</span>)</span><br><span class="line">print(np1)</span><br><span class="line"></span><br><span class="line">time = np1[:, <span class="number">0</span>]</span><br><span class="line">data = np1[:, <span class="number">4</span>]</span><br><span class="line">plt.plot(time, data, label=<span class="string">'data'</span>)</span><br><span class="line">plt.xlabel(<span class="string">'time'</span>)</span><br><span class="line">plt.legend()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure></p>
-<p>輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[[ 1.   0.1  0.2  0.3  1.   2.   3.   4. ]</span><br><span class="line"> [ 2.   0.4  0.5  0.6  5.   6.   7.   8. ]</span><br><span class="line"> [ 3.   0.7  0.8  0.9  9.  10.  11.  12. ]</span><br><span class="line"> [ 4.   1.   1.1  1.2 13.  14.  15.  16. ]]</span><br></pre></td></tr></table></figure></p>
-<p>畫出來的結果如下圖：<br><img src="/python-numpy-matplotlib/plot.png"></p>
-<p><strong>相關主題</strong><br><a href="/python-matplotlib/" title="Python 使用 matplotlib 畫圖">Python 使用 matplotlib 畫圖</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-numpy-matplotlib/" data-id="ckxmom7pd003nlls1u8z2oy5e" data-title="Python 使用 numpy 讀取 csv 資料再畫圖" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-git-commit-partial-change" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/git-commit-partial-change/" class="article-date">
-  <time datetime="2019-03-13T14:00:00.000Z" itemprop="datePublished">2019-03-13</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/git-commit-partial-change/">Git commit 檔案的某幾個小部分修改</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>有時候想要 commit 某檔案的一小部分修改，一直不知道 git 有沒有這功能，結果是有的！  </p>
-<p>在 git add 後面接上<code>-p</code> 或 <code>--patch</code> 再接檔名。  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git add -p &lt;file&gt;</span><br></pre></td></tr></table></figure>
-<p>之後就會提示你哪段區塊要不要加入 stage area，按<code>y</code>加入, 按<code>n</code>不要加入。  </p>
-<p>參考<br>Commit only part of a file in Git - Stack Overflow<br><a href="https://stackoverflow.com/questions/1085162/commit-only-part-of-a-file-in-git" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1085162/commit-only-part-of-a-file-in-git</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/git-commit-partial-change/" data-id="ckxmom7pb003jlls1rqpvarf7" data-title="Git commit 檔案的某幾個小部分修改" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-tutorial/" class="article-date">
-  <time datetime="2019-02-21T14:00:00.000Z" itemprop="datePublished">2019-02-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-tutorial/">C/C++ 入門教學目錄</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 C/C++ 教學彙整了 ShengYu 過往學習 C/C++ 的知識，在此整理成 C/C++ 教學目錄以便日後的查詢與新手入門學習。  </p>
-<h2><span id="cc-基礎教學">C/C++ 基礎教學</span></h2><p>這邊列出一些 C/C++ 基礎觀念的文章，<br><a href="/cpp-ternary-operator/" title="C/C++ 三元運算子">C/C++ 三元運算子</a><br><a href="/cpp-static/" title="C/C++ static 的 4 種用法">C/C++ static 的 4 種用法</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-function-return-by-reference/" title="C/C++ 函式回傳參考用法 function return by reference">C/C++ 函式回傳參考用法 function return by reference</a><br><a href="/cpp-variable-length-argument/" title="C/C++ 不定長度參數">C/C++ 不定長度參數</a><br><a href="/cpp-exception/" title="C++ exception 例外處理">C++ exception 例外處理</a><br><a href="/cpp-static_assert/" title="C++ static_assert 與 assert 的差異">C++ static_assert 與 assert 的差異</a>  </p>
-<p><strong>檔案處理</strong><br><a href="/cpp-read-text-file/" title="C++ 讀檔，讀取txt文字檔各種範例">C++ 讀檔，讀取txt文字檔各種範例</a><br><a href="/cpp-write-text-file/" title="C++ 寫檔，寫入txt文字檔各種範例">C++ 寫檔，寫入txt文字檔各種範例</a><br><a href="/cpp-check-if-directory-exists/" title="C/C++ 判斷資料夾是否存在">C/C++ 判斷資料夾是否存在</a><br><a href="/cpp-check-if-file-exists/" title="C/C++ 判斷檔案是否存在">C/C++ 判斷檔案是否存在</a>  </p>
-<p><strong>字串處理</strong><br><a href="/cpp-string-to-integer/" title="C/C++ 字串轉數字的3種方法">C/C++ 字串轉數字的3種方法</a><br><a href="/cpp-integer-to-string/" title="C/C++ 整數轉字串的方法與範例">C/C++ 整數轉字串的方法與範例</a><br><a href="/cpp-string-compare/" title="C/C++ 字串比較的3種方法">C/C++ 字串比較的3種方法</a><br><a href="/cpp-string-append/" title="C/C++ 字串連接的3種方法">C/C++ 字串連接的3種方法</a><br><a href="/cpp-string-find/" title="C/C++ 字串搜尋的3種方法">C/C++ 字串搜尋的3種方法</a><br><a href="/cpp-string-split/" title="C/C++ 字串分割的3種方法">C/C++ 字串分割的3種方法</a>  </p>
-<p><strong>演算法處理</strong><br><a href="/cpp-find-max-value/" title="C/C++ 3個求最大值的方法">C/C++ 3個求最大值的方法</a><br><a href="/cpp-find-min-value/" title="C/C++ 3個求最小值的方法">C/C++ 3個求最小值的方法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-bubble-sort/" title="C/C++ bubble sort 泡沫排序法">C/C++ bubble sort 泡沫排序法</a><br><a href="/cpp-selection-sort/" title="C/C++ selection sort 選擇排序法">C/C++ selection sort 選擇排序法</a>  </p>
-<p><strong>其他</strong><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/cpp-sleep/" title="C/C++ sleep 用法與範例">C/C++ sleep 用法與範例</a><br><a href="/cpp-measure-execution-time/" title="C++ 計算程式執行時間">C++ 計算程式執行時間</a><br><a href="/cpp-get-current-time-and-date/" title="C++ 取得系統當前時間">C++ 取得系統當前時間</a>  </p>
-<h2><span id="cc-進階教學">C/C++ 進階教學</span></h2><p>這邊列出一些 C/C++ 進階觀念的文章，<br><a href="/cpp-new-delete/" title="C++ new 動態記憶體配置 / delete 釋放記憶體用法與範例">C++ new 動態記憶體配置 / delete 釋放記憶體用法與範例</a><br><a href="/cpp-nullptr/" title="C++ nullptr 與 NULL 的差異">C++ nullptr 與 NULL 的差異</a><br><a href="/cpp-explicit/" title="C++ explicit 用法與範例">C++ explicit 用法與範例</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a>  </p>
-<p><strong>物件導向</strong><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a>  </p>
-<h2><span id="stl-標準函式庫">STL 標準函式庫</span></h2><p>這邊放 C++ STL (Standard Template Library) 標準函式庫的用法與範例，<br><strong>容器相關</strong><br><a href="/std-string/" title="std::string 用法與範例">std::string 用法與範例</a><br><a href="/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a><br><a href="/std-list/" title="std::list 用法與範例">std::list 用法與範例</a><br><a href="/std-stack/" title="std::stack 用法與範例">std::stack 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-set/" title="std::set 用法與範例">std::set 用法與範例</a><br><a href="/std-unordered_set/" title="std::unordered_set 用法與範例">std::unordered_set 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a><br><a href="/std-multimap/" title="std::multimap 用法與範例">std::multimap 用法與範例</a><br><a href="/std-unordered_map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a>  </p>
-<p><strong>執行緒相關</strong><br><a href="/std-this_thread-sleep_for/" title="std::this_thread::sleep_for 用法與範例">std::this_thread::sleep_for 用法與範例</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/std-condition_variable/" title="std::condition_variable 用法與範例">std::condition_variable 用法與範例</a><br><a href="/std-async/" title="std::async 用法與範例">std::async 用法與範例</a>  </p>
-<p><strong>演算法相關</strong><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-random_shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/std-max/" title="std::max 用法與範例">std::max 用法與範例</a><br><a href="/std-min/" title="std::min 用法與範例">std::min 用法與範例</a><br><a href="/std-max_element/" title="std::max_element 用法與範例">std::max_element 用法與範例</a><br><a href="/std-min_element/" title="std::min_element 用法與範例">std::min_element 用法與範例</a>  </p>
-<p><strong>檔案操作</strong><br><a href="/std-filesystem-copy/" title="std::filesystem::copy 複製檔案的用法與範例">std::filesystem::copy 複製檔案的用法與範例</a><br><a href="/std-filesystem-exists/" title="std::filesystem::exists 判斷檔案是否存在的用法與範例">std::filesystem::exists 判斷檔案是否存在的用法與範例</a><br><a href="/std-filesystem-create_directory/" title="std::filesystem::create_directory 建立資料夾的用法與範例">std::filesystem::create_directory 建立資料夾的用法與範例</a>  </p>
-<p><strong>其它</strong><br><a href="/std-shared_ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/std-unique_ptr/" title="std::unique_ptr 用法與範例">std::unique_ptr 用法與範例</a><br><a href="/std-atomic/" title="std::atomic 用法與範例">std::atomic 用法與範例</a><br><a href="/std-atomic_flag/" title="std::atomic_flag 用法與範例">std::atomic_flag 用法與範例</a><br><a href="/std-function/" title="std::function 用法與範例">std::function 用法與範例</a><br><a href="/std-ref/" title="std::ref 用法與範例">std::ref 用法與範例</a><br><a href="/std-string-find/" title="std::string::find 搜尋字串用法與範例">std::string::find 搜尋字串用法與範例</a>  </p>
-<p><strong>進階</strong><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/std-condition_variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a>  </p>
-<h2><span id="設計模式">設計模式</span></h2><p>這邊放設計模式的用法與範例，<br><a href="/cpp-singleton-pattern/" title="C++ 設計模式 - 單例模式 Singleton Pattern">C++ 設計模式 - 單例模式 Singleton Pattern</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-tutorial/" data-id="ckxmom7pc003llls1qaowmta0" data-title="C/C++ 入門教學目錄" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-tutorial/" class="article-date">
-  <time datetime="2019-02-18T14:00:00.000Z" itemprop="datePublished">2019-02-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-tutorial/">Linux 常用指令教學懶人包</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 彙整了 Linux 常用指令，這些 Linux 常用指令是過往我所學習的知識，在此整理成教學目錄以便日後的查詢與新手入門學習。  </p>
-<h2><span id="linux-常用指令">Linux 常用指令</span></h2><p>以下為 Linux 的常用基本指令，<br><a href="/linux-cut/" title="cut 指令 - 字串處理">cut 指令 - 字串處理</a><br><a href="/linux-sed/" title="sed 指令 - 字串取代">sed 指令 - 字串取代</a><br><a href="/linux-find/" title="find 指令 - 尋找檔案-目錄">find 指令 - 尋找檔案-目錄</a><br><a href="/linux-grep/" title="grep 指令 - 搜尋字串">grep 指令 - 搜尋字串</a><br><a href="/linux-grep-ack-ag/" title="grep/ack/ag 指令 - 搜尋字串">grep/ack/ag 指令 - 搜尋字串</a><br><a href="/linux-ag/" title="比 grep 還快的 ag 搜尋指令">比 grep 還快的 ag 搜尋指令</a><br><a href="/linux-tee/" title="tee 指令 - 同時螢幕標準輸出和輸出到檔案">tee 指令 - 同時螢幕標準輸出和輸出到檔案</a><br><a href="/linux-xargs/" title="xargs 指令 -參數列表轉換">xargs 指令 -參數列表轉換</a><br><a href="/linux-tail/" title="tail 指令 -持續監看檔案輸出">tail 指令 -持續監看檔案輸出</a><br><a href="/linux-du/" title="du 指令 - 查詢硬碟剩餘空間/資料夾容量">du 指令 - 查詢硬碟剩餘空間/資料夾容量</a><br><a href="/linux-kill-by-name/" title="kill 指令 - 砍掉指定的 process name">kill 指令 - 砍掉指定的 process name</a><br><a href="/linux-zip-unzip/" title="zip/unzip 指令 - 壓縮/解壓縮">zip/unzip 指令 - 壓縮/解壓縮</a><br><a href="/linux-7z/" title="7z 指令 - 壓縮/解壓縮">7z 指令 - 壓縮/解壓縮</a><br><a href="/linux-convert/" title="convert 指令 - 圖片格式轉換工具">convert 指令 - 圖片格式轉換工具</a><br><a href="/linux-vim/" title="vim 指令 - 文字編輯器">vim 指令 - 文字編輯器</a><br><a href="/linux-tmux/" title="tmux 指令 - 終端機管理工具">tmux 指令 - 終端機管理工具</a><br><a href="/linux-wget/" title="wget 指令 - 下載檔案">wget 指令 - 下載檔案</a><br><a href="/linux-rsync/" title="rsync 指令 - 同步最近修改的檔案/遠端同步資料檔案">rsync 指令 - 同步最近修改的檔案/遠端同步資料檔案</a><br><a href="/linux-nc/" title="nc 指令 - 測試UDP有沒有通">nc 指令 - 測試UDP有沒有通</a><br><a href="/linux-wc/" title="wc 指令 - 計算數量">wc 指令 - 計算數量</a><br><a href="/linux-df/" title="df 指令 - 查看硬碟容量">df 指令 - 查看硬碟容量</a><br><a href="/linux-cat/" title="cat 指令 - 將檔案內容印出來">cat 指令 - 將檔案內容印出來</a><br><a href="/linux-awk/" title="awk 指令">awk 指令</a>  </p>
-<h2><span id="開發除錯工具">開發除錯工具</span></h2><p>這邊是 Linux 下開發時常用的輔助工具，<br><a href="/linux-nm/" title="nm 用法與範例">nm 用法與範例</a><br><a href="/linux-objdump/" title="objdump 用法與範例">objdump 用法與範例</a><br><a href="/linux-readelf/" title="readelf 用法與範例">readelf 用法與範例</a><br><a href="/linux-ldd/" title="ldd 指令查看執行檔執行時需要哪些 library">ldd 指令查看執行檔執行時需要哪些 library</a>  </p>
-<h2><span id="其他指令">其他指令</span></h2><p>以下為 Linux 的其他指令，<br><a href="/linux-base64/" title="base64 編碼解碼指令用法與範例">base64 編碼解碼指令用法與範例</a><br><a href="/linux-sendmail/" title="sendmail 寄信指令用法與範例">sendmail 寄信指令用法與範例</a><br><a href="/linux-sort/" title="sort 排序用法與範例">sort 排序用法與範例</a><br><a href="/linux-uniq/" title="uniq 去除連續重複用法與範例">uniq 去除連續重複用法與範例</a><br><a href="/linux-dos2unix/" title="dos2unix 轉換 dos 換行字元用法與範例">dos2unix 轉換 dos 換行字元用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-tutorial/" data-id="ckxmom7pa003hlls16ubeb2i7" data-title="Linux 常用指令教學懶人包" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-use-pycharm-ide-windows" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-use-pycharm-ide-windows/" class="article-date">
-  <time datetime="2019-02-14T14:00:00.000Z" itemprop="datePublished">2019-02-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-use-pycharm-ide-windows/">Python 在 Windows 下使用 Pycharm 教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>本篇是介紹 Python 如何在 Windows 下安裝使用 Pycharm 的教學，本篇 pycharm 教學會逐步從下載安裝檔開始到安裝完畢，最後是設定 anaconda 的 interpreter 教學。  </p>
-<p>PyCharm 是一個 IDE，主要用於 Python 程式語言開發，由捷克公司 JetBrains 開發出來的 IntelliJ IDEA 軟體所開發而成的，與 Android Studio 一樣，PyCharm 支援跨平台，支援 Windows, macOS 和 Linux。  </p>
-<p>以下篇幅分為幾部份，分別為：<br><strong>下載安裝 pycharm</strong><br><strong>在 pycharm 中設定 anaconda 的 interpreter</strong>  </p>
-<h2 id="下載安裝-pycharm"><a href="#下載安裝-pycharm" class="headerlink" title="下載安裝 pycharm"></a>下載安裝 pycharm</h2><p>進入下列連結安裝社群版 Community<br><a href="https://www.jetbrains.com/pycharm/download/#section=windows" rel="noopener external nofollow noreferrer" target="_blank">https://www.jetbrains.com/pycharm/download/#section=windows</a>  </p>
-<p>環境：win7<br>我使用的版本為 pycharm-community-2018.3.4<br>安裝步驟如下圖：<br>
-        
-          <p class="article-more-link">
-            <a href="/python-use-pycharm-ide-windows/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-use-pycharm-ide-windows/" data-id="ckxmom7p6003flls1h3awpd19" data-title="Python 在 Windows 下使用 Pycharm 教學" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-github-findhotelonmytrip" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/github-findhotelonmytrip/" class="article-date">
-  <time datetime="2019-02-11T14:00:00.000Z" itemprop="datePublished">2019-02-11</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Projects/">Projects</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/github-findhotelonmytrip/">開源專案FindHotelOnMyTrip-訂飯店的輔助工具</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <h2><span id="介紹">介紹</span></h2><p>因為最近在比較出國期間哪段日期哪間飯店比較便宜，所以用 python 寫了一個小工具，<br>選定飯店與多個指定日期，執行後即可連續開啟多個 Agoda 分頁（我比較常用 Agoda），再自行比較出最便宜的飯店期間！<br><img src="/github-findhotelonmytrip/FindHotelOnMyTrip.png">  </p>
-<p>實際效果圖如下：<br><img src="/github-findhotelonmytrip/FindHotelOnMyTrip_demo.gif">  </p>
-<p>這是個輔助的小工具，還有很多功能沒有實現，<br>不過對於現狀使用是足夠的，有想到什麼改進的地方會再進行修改😂！  </p>
-<p>喜歡我這個小工具的人也歡迎到我的 github 跟我討論或給我星星，或者透過捐獻方式，會讓我更有動力改善這個專案！<br>Github 連結：<a href="https://github.com/shengyu7697/FindHotelOnMyTrip" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/shengyu7697/FindHotelOnMyTrip</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/github-screencapture/" title="開源專案ScreenCapture-螢幕截圖自動存檔小工具">開源專案ScreenCapture-螢幕截圖自動存檔小工具</a><br><a href="/github-cursorjail/" title="開源專案CursorJail-滑鼠鎖定工具">開源專案CursorJail-滑鼠鎖定工具</a><br><a href="/github-2048/" title="開源專案-2048">開源專案-2048</a><br><a href="/github-tetris/" title="開源專案-tetris俄羅斯方塊">開源專案-tetris俄羅斯方塊</a><br><a href="/github-sudoku/" title="開源專案-數獨sudoku">開源專案-數獨sudoku</a><br><a href="/github-kys-cpp/" title="開源專案-金庸群俠傳">開源專案-金庸群俠傳</a><br><a href="/github-sdlpal/" title="開源專案-仙劍奇俠傳">開源專案-仙劍奇俠傳</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-findhotelonmytrip/" data-id="ckxmom7p5003ells16z3zdqnh" data-title="開源專案FindHotelOnMyTrip-訂飯店的輔助工具" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
 
     </footer>
   </div>
@@ -669,7 +632,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/50/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/49/">49</a><a class="page-number" href="/page/50/">50</a><span class="page-number current">51</span><a class="page-number" href="/page/52/">52</a><a class="page-number" href="/page/53/">53</a><span class="space">&hellip;</span><a class="page-number" href="/page/61/">61</a><a class="extend next" rel="next" href="/page/52/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/50/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/49/">49</a><a class="page-number" href="/page/50/">50</a><span class="page-number current">51</span><a class="page-number" href="/page/52/">52</a><a class="page-number" href="/page/53/">53</a><span class="space">&hellip;</span><a class="page-number" href="/page/62/">62</a><a class="extend next" rel="next" href="/page/52/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -700,23 +663,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
-            <a href="/std-ceil/">C++ std::ceil 無條件進位用法與範例</a>
+            <a href="/python-pyqt-tutorial/">Python PyQt5 新手入門教學</a>
           </li>
         
           <li>
-            <a href="/python-tkinter-listbox/">Python tkinter Listbox 用法與範例</a>
+            <a href="/python-tkinter-tutorial/">Python tkinter 新手入門教學</a>
           </li>
         
           <li>
-            <a href="/python-base64/">Python base64 編碼用法與範例</a>
+            <a href="/std-floor/">C++ std::floor 無條件捨去用法與範例</a>
           </li>
         
           <li>
-            <a href="/python-math-ceil/">Python ceil 向上取整用法與範例</a>
+            <a href="/python-tkinter-checkbutton/">Python tkinter Checkbutton 複選框用法與範例</a>
           </li>
         
           <li>
-            <a href="/windows-findstr/">findstr 用法與範例</a>
+            <a href="/python-find-min-value/">Python 求最小值的 3 個方法</a>
           </li>
         
       </ul>
@@ -751,7 +714,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">118</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">204</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">119</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">210</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
