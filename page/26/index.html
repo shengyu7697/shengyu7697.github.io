@@ -105,6 +105,351 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-socketserver" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-socketserver/" class="article-date">
+  <time datetime="2020-10-12T14:00:00.000Z" itemprop="datePublished">2020-10-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-socketserver/">Python socketserver 伺服器端網路通訊程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹如何使用 Python 3 提供的 socketserver 類別來撰寫 Server 伺服器端的程式，在上一篇介紹了<a href="/python-tcp-socket/" title="怎麼撰寫一個基本的 TCP socket 通訊程式">怎麼撰寫一個基本的 TCP socket 通訊程式</a>，<br>這一篇將專門介紹 server 伺服器端的撰寫，為什麼呢？因為通常伺服器端的程式是比客戶端的程式還要難的，<br>所以 python 提供了 socketserver 這個模組來簡化這個開發的難易度，<br>而 python 的 socketserver 模組提供了 TCPServer，UDPServer，UnixStreamServer，UnixDatagramServer 這4種，<br>接下來的內容將會先以 TCP 解說為優先，本篇學習了 <code>socketserver</code> 基礎概念後下篇會以本篇為基礎撰寫一個簡單的聊天程式，  </p>
+<h2><span id="使用-socketservertcpserver">使用 socketserver.TCPServer</span></h2><p>以下使用 <code>socketserver.TCPServer</code> 的範例，client 端可以沿用之前的範例，<br>範例中直接實例化 <code>socketserver.TCPServer</code> 與 <code>MyTCPHandler</code> 繼承 <code>socketserver.BaseRequestHandler</code>，<br><code>socketserver.BaseRequestHandler</code> 是用來處理接收資料時事件處理，不能直接產生實例，需要繼承 <code>socketserver.BaseRequestHandler</code> 後才能實例化，<br>在 <code>handle()</code> 裡撰寫接收後的程式邏輯即可，以這個範例為例，接收到一個 request 後，就開始一個迴圈來交換傳遞資料，  </p>
+<p>另外補充一下python 2與python 3的差異處，<br>python 2 是 <code>SocketServer</code> class 與 <code>import SocketServer</code><br>python 3 是 <code>socketserver</code> class 與 <code>import socketserver</code><br><figure class="highlight python"><figcaption><span>python3-socketserver-echo-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socketserver</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTCPHandler</span><span class="params">(socketserver.BaseRequestHandler)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">'connected by '</span> + str(self.client_address))</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            indata = self.request.recv(<span class="number">1024</span>).strip()</span><br><span class="line">            <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">                self.request.close()</span><br><span class="line">                print(<span class="string">'client closed connection.'</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">            outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">            self.request.sendall(outdata.encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    HOST, PORT = <span class="string">"0.0.0.0"</span>, <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Create the server, binding to localhost on port 7000</span></span><br><span class="line">    socketserver.TCPServer.allow_reuse_address = <span class="literal">True</span></span><br><span class="line">    server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        server.serve_forever()</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        print(<span class="string">"closing the server."</span>)</span><br><span class="line">        server.server_close()</span><br><span class="line">        <span class="keyword">raise</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="多執行緒的伺服器端程式">多執行緒的伺服器端程式</span></h2><p>上述的例子一次最多只能服務一個客戶端，這篇介紹用 <code>socketserver.ThreadingMixIn</code> 的方式達成每個連線都建立一個新的執行緒來服務，<br>進而達成多客戶端連線溝通的例子，<br>在範例中的 <code>ThreadedTCPServer</code> 是多重繼承 <code>socketserver.ThreadingMixIn</code> 與 <code>socketserver.TCPServer</code><br><figure class="highlight python"><figcaption><span>python3-socketserver-asynchronous-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socketserver, sys, threading</span><br><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> ctime</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadedTCPRequestHandler</span><span class="params">(socketserver.BaseRequestHandler)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle</span><span class="params">(self)</span>:</span></span><br><span class="line">        cur = threading.current_thread()</span><br><span class="line">        print(<span class="string">'[%s] Client connected from %s and [%s] is handling with him.'</span> % (ctime(), self.request.getpeername(), cur.name))</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            indata = self.request.recv(<span class="number">1024</span>).strip()</span><br><span class="line">            <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">                self.request.close()</span><br><span class="line">                print(<span class="string">'client closed connection.'</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">            outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">            self.request.send(outdata.encode())</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadedTCPServer</span><span class="params">(socketserver.ThreadingMixIn, socketserver.TCPServer)</span>:</span></span><br><span class="line">    daemon_threads = <span class="literal">True</span></span><br><span class="line">    allow_reuse_address = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    HOST, PORT = <span class="string">'0.0.0.0'</span>, <span class="number">7000</span></span><br><span class="line">    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)</span><br><span class="line">    ip, port = server.server_address</span><br><span class="line">    print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        server.serve_forever()</span><br><span class="line">    <span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">        sys.exit(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>21.21. socketserver — A framework for network servers — Python 3.5.10 documentation<br><a href="https://docs.python.org/3.5/library/socketserver.html#examples" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3.5/library/socketserver.html#examples</a><br>例項講解Python中SocketServer模組處理網路請求的用法 | 程式前沿<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368565/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368565/</a><br>Python使用SocketServer模組編寫基本伺服器程式的教程 | 程式前沿<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368387/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368387/</a><br>Python socketserver — A framework for network servers | My.APOLLO<br><a href="https://myapollo.com.tw/zh-tw/python-socketserver/" rel="noopener external nofollow noreferrer" target="_blank">https://myapollo.com.tw/zh-tw/python-socketserver/</a><br>20.17. SocketServer — A framework for network servers — Python 2 documentation<br><a href="https://docs.python.org/2/library/socketserver.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/2/library/socketserver.html</a><br>socketserver — A framework for network servers — Python 3 documentation<br><a href="https://docs.python.org/3/library/socketserver.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3/library/socketserver.html</a>  </p>
+<p>其他相關參考<br>c# - Why does my python TCP server need to bind to 0.0.0.0 and not localhost or it’s IP address? - Stack Overflow<br><a href="https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its</a><br>Python 3 TypeError: Can’t convert ‘bytes’ object to str implicitly - Mkyong.com<br><a href="https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/" rel="noopener external nofollow noreferrer" target="_blank">https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊程式">Python TCP Socket Server/Client 網路通訊程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-socketserver/" data-id="ckzbec0bz00afsfs1dzimozg3" data-title="Python socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-integer-multiplication-overflow" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-integer-multiplication-overflow/" class="article-date">
+  <time datetime="2020-10-08T14:00:00.000Z" itemprop="datePublished">2020-10-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-integer-multiplication-overflow/">C/C++ 整數乘法溢位</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>今天要介紹寫程式時應該要避免的 integer multiplication overflow 整數乘法溢位問題，  </p>
+<p>故事是某天我在做時間單位轉換時發生了一個小意外，<br>想要將 us 轉成 ms 時間單位，程式碼如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us = <span class="number">12345678</span>;</span><br><span class="line"><span class="keyword">uint32_t</span> ms;</span><br><span class="line"></span><br><span class="line">ms = us / <span class="number">1000</span>;</span><br><span class="line"><span class="keyword">uint64_t</span> us2 = ms * <span class="number">1000</span>;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; ms &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us2 &lt;&lt; \n;</span><br></pre></td></tr></table></figure></p>
+<p>乍看之下，好像沒什麼問題，但總是有問題不會發生在當下，而是在某個時機發生了XD，  </p>
+<p>怎麼說呢，讓我們換個例子試試<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us = <span class="number">43</span>xxxxxxx;</span><br><span class="line"><span class="keyword">uint32_t</span> ms;</span><br><span class="line"></span><br><span class="line">ms = us / <span class="number">1000</span>;</span><br><span class="line"><span class="keyword">uint64_t</span> us2 = ms * <span class="number">1000</span>;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; ms &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us2 &lt;&lt; \n;</span><br></pre></td></tr></table></figure></p>
+<p>不難發現，程式執行結果不符合我們的預期，  </p>
+<p>其實問題會發生在這一行，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us2 = ms * <span class="number">1000</span>;</span><br></pre></td></tr></table></figure></p>
+<p>ms 這個變數是uint32_t 大小的，其實是用uint32_t這個大小去乘1000，乘完放在uint32_t，最後再複製到uint64_t，如果ms變數裡面放的數字乘出來的結果會超過uint32_t的話，悲劇就會發生了，發生了「乘法溢位」。 </p>
+<p>所以我們應該怎麼改？<br>答案是，先把ms從uint32_t擴大轉換widening conversions(promotion)成uint64_t大小，這樣在計算時就會以uint64_t去作計算，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us2 = <span class="keyword">uint64_t</span>(ms) * <span class="number">1000</span>;</span><br></pre></td></tr></table></figure></p>
+<p>所以要把握一個原則，「乘法時要小心溢位」  </p>
+<p>參考<br>小心 int 乘法溢出! - IT閱讀<br><a href="https://www.itread01.com/articles/1506858849.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.itread01.com/articles/1506858849.html</a><br>Check for integer overflow on multiplication - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/check-integer-overflow-multiplication/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/check-integer-overflow-multiplication/</a><br>c - Catch and compute overflow during multiplication of two large integers - Stack Overflow<br><a href="https://stackoverflow.com/questions/1815367/catch-and-compute-overflow-during-multiplication-of-two-large-integers" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1815367/catch-and-compute-overflow-during-multiplication-of-two-large-integers</a><br>類型轉換與類型安全 | Microsoft Docs<br><a href="https://docs.microsoft.com/zh-tw/cpp/cpp/type-conversions-and-type-safety-modern-cpp?view=msvc-160" rel="noopener external nofollow noreferrer" target="_blank">https://docs.microsoft.com/zh-tw/cpp/cpp/type-conversions-and-type-safety-modern-cpp?view=msvc-160</a><br>Type conversions - C++ Tutorials<br><a href="http://www.cplusplus.com/doc/tutorial/typecasting/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/doc/tutorial/typecasting/</a><br>Type Conversion in C++ - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/type-conversion-in-c/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/type-conversion-in-c/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-integer-multiplication-overflow/" data-id="ckzbec0bz00aesfs1ufkgmj7x" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-linux-vim-ctags-cscope" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/linux-vim-ctags-cscope/" class="article-date">
+  <time datetime="2020-10-05T14:00:00.000Z" itemprop="datePublished">2020-10-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/linux-vim-ctags-cscope/">vim 使用 ctags 與 cscope 的開發環境</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>vim 要 trace code 時必裝兩大套件，trace code 效率大幅提升，這兩個套件叫 <code>ctags</code> 與 <code>cscope</code>，<br>簡單說就是「跳至定義處」這功能要裝 ctags，要「查找誰呼叫這個函式」這功能要裝 cscope，<br>使用這兩個套件打造出來的這樣開發環境幾乎可以媲美付費的 source insight。  </p>
+<h2><span id="ctags-安裝設定">ctags 安裝設定</span></h2><p>Ubuntu/Debian 安裝 ctags 可以透過 apt 安裝<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install exuberant-ctags</span><br></pre></td></tr></table></figure></p>
+<p>最簡單無腦的 ctags 產生方式，<code>.</code> 表示當前目錄或不指定也可以，<br>ctags 還能指定其他參數，這部份以後有機會在介紹，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ctags -R .</span><br></pre></td></tr></table></figure></p>
+<p>Vim 加入 ctags 產生出來的 <code>tags</code> 檔案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:set tags=./tags</span><br></pre></td></tr></table></figure></p>
+<h2><span id="cscope-安裝設定">cscope 安裝設定</span></h2><p>Ubuntu/Debian 安裝 cscope 可以透過 apt 安裝<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install cscope</span><br></pre></td></tr></table></figure></p>
+<p>最簡單無腦的 cscope 產生方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cscope -Rbq</span><br></pre></td></tr></table></figure></p>
+<p>常用參數說明如下，<br><code>R</code>: Recurse directories for files (目錄下遞迴建立索引)<br><code>b</code>: Build the cross-reference only<br><code>q</code>: Build an inverted index for quick symbol searching (建立 cscope.in.out 和 cscope.po.out，以便增快搜尋速度)<br><code>k</code>: Kernel Mode - don’t use /usr/include for #include files (不索引 /usr/include)  </p>
+<p>Vim 加入 cscope 產生出來的 <code>cscope.out</code> 檔案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:cs add cscope.out</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>vim附件：cscope+ctag 使用筆記 @ CONY的世界 :: 痞客邦 ::<br><a href="https://angledark0123.pixnet.net/blog/post/51919594" rel="noopener external nofollow noreferrer" target="_blank">https://angledark0123.pixnet.net/blog/post/51919594</a><br>[Linux] - 將vim打造成source insight | Ivan’s Blog<br><a href="https://ivan7645.github.io/2016/07/12/vim_to_si/" rel="noopener external nofollow noreferrer" target="_blank">https://ivan7645.github.io/2016/07/12/vim_to_si/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/linux-vim-ctags-cscope/" data-id="ckzbec0by00adsfs1n8pzkng5" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-linux-vim-shortcuts" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/linux-vim-shortcuts/" class="article-date">
+  <time datetime="2020-09-28T14:00:00.000Z" itemprop="datePublished">2020-09-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/linux-vim-shortcuts/">vim 常用快捷鍵</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇記錄一下 Linux vim 文字編輯器的常用快捷鍵，特別是trace code時，善用快捷鍵會快很多，效率大幅提升。  </p>
+<table>
+<thead>
+<tr>
+<th>名稱</th>
+<th>Linux</th>
+<th>備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Go to Definition</td>
+<td><code>Ctrl</code>+<code>]</code></td>
+<td>跳至定義處(要配合用ctags)</td>
+</tr>
+<tr>
+<td>Navigate Back</td>
+<td><code>Ctrl</code>+<code>t</code></td>
+<td>返回</td>
+</tr>
+<tr>
+<td>Retrace your movements in file in backwards</td>
+<td><code>Ctrl</code>+<code>o</code></td>
+<td>往後</td>
+</tr>
+<tr>
+<td>Retrace your movements in file in forwards.</td>
+<td><code>Ctrl</code>+<code>i</code></td>
+<td>往前</td>
+</tr>
+<tr>
+<td>Find Usage / Find Reference</td>
+<td>:cs find s <symbol></symbol></td>
+<td>要配合用cscope</td>
+</tr>
+</tbody>
+</table>
+<p>參考<br>In vim, how do I go back to where I was before a search? - Stack Overflow<br><a href="https://stackoverflow.com/questions/53911/in-vim-how-do-i-go-back-to-where-i-was-before-a-search" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/53911/in-vim-how-do-i-go-back-to-where-i-was-before-a-search</a><br>VIM: Jump Back To Previous or Last Cursor Position - nixCraft<br><a href="https://www.cyberciti.biz/faq/unix-linux-vim-go-back-to-last-cursor-position/" rel="noopener external nofollow noreferrer" target="_blank">https://www.cyberciti.biz/faq/unix-linux-vim-go-back-to-last-cursor-position/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/qt-shortcuts/" title="Qt Creator 常用快捷鍵">Qt Creator 常用快捷鍵</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/linux-vim-shortcuts/" data-id="ckzbec0by00acsfs1ou1q2yc3" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-multiple-inheritance" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-multiple-inheritance/" class="article-date">
+  <time datetime="2020-09-24T14:00:00.000Z" itemprop="datePublished">2020-09-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-multiple-inheritance/">Python 多重繼承 multiple inheritance</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 Python 多重繼承 multiple inheritance 的寫法，  </p>
+<h2><span id="python-多重繼承multiple-inheritance的寫法">Python 多重繼承(Multiple Inheritance)的寫法</span></h2><p>Python multiple inheritance 最簡單的多重繼承寫法如下，<br>有 BaseClass1, BaseClass2, DerivedClass 三個類別<br>DerivedClass 多重繼承 BaseClass1 和 BaseClass2  </p>
+<figure class="highlight python"><figcaption><span>python-multiple-inheritance.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BaseClass1</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BaseClass2</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DerivedClass</span><span class="params">(BaseClass1, BaseClass2)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">derived = DerivedClass()</span><br></pre></td></tr></table></figure>
+<h2><span id="方法覆寫method-overriding">方法覆寫(Method Overriding)</span></h2><p>Dog3 多重繼承了 Dog1 和 Dog2，如果沒有覆寫父類的 eat，呼叫子類 Dog3.eat() 時會繼承的前面/左邊父類(Dog1)方法優先，  </p>
+<figure class="highlight python"><figcaption><span>python-multiple-inheritance2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog1</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">eat</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog1 class eat method is called."</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog2</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">eat</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog2 class eat method is called."</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog3</span><span class="params">(Dog1, Dog2)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">dog = Dog3()</span><br><span class="line">dog.eat()</span><br></pre></td></tr></table></figure>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Dog1 class eat method is called.</span><br></pre></td></tr></table></figure></p>
+<h2><span id="子類建構子constructor傳遞參數到父類建構子">子類建構子(Constructor)傳遞參數到父類建構子</span></h2><p>在多重繼承的情況下，子類建構子又是如何傳遞參數到父類的建構子，這邊來介紹一下，<br>呼叫</p>
+<figure class="highlight python"><figcaption><span>python-multiple-inheritance3.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog1</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog1 "</span>, name)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">eat</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog1 class eat method is called."</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog2</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, sex)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog2 "</span>, sex)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">eat</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog2 class eat method is called."</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog3</span><span class="params">(Dog2)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, sex)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog3 "</span>, sex)</span><br><span class="line">        Dog2.__init__(self, sex)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">eat</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"Dog3 class eat method is called."</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Dog4</span><span class="params">(Dog1, Dog3)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, sex)</span>:</span></span><br><span class="line">        Dog1.__init__(self, name)</span><br><span class="line">        Dog3.__init__(self, sex)</span><br><span class="line"></span><br><span class="line"><span class="comment">#dog = Dog4(name="Harry", sex="female")</span></span><br><span class="line">dog = Dog4(<span class="string">"Harry"</span>, <span class="string">"female"</span>)</span><br><span class="line">dog.eat()</span><br></pre></td></tr></table></figure>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Dog1  Harry</span><br><span class="line">Dog3  female</span><br><span class="line">Dog2  female</span><br><span class="line">Dog1 class eat method is called.</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>Classes — Python 3.9.0 documentation<br><a href="https://docs.python.org/3/tutorial/classes.html#multiple-inheritance" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3/tutorial/classes.html#multiple-inheritance</a><br>Python 速查手冊 - 6.9 多重繼承<br><a href="http://kaiching.org/pydoing/py/python-multiple-inheritance.html" rel="noopener external nofollow noreferrer" target="_blank">http://kaiching.org/pydoing/py/python-multiple-inheritance.html</a><br>程式語言教學誌 FB, YouTube: PYDOING: Python 3.1 快速導覽 - 類別 多重繼承<br><a href="https://pydoing.blogspot.com/2011/01/python-multiple.html" rel="noopener external nofollow noreferrer" target="_blank">https://pydoing.blogspot.com/2011/01/python-multiple.html</a><br>Python-QA/Python多重繼承屬性問題.md at master · dokelung/Python-QA<br><a href="https://github.com/dokelung/Python-QA/blob/master/questions/object/Python%E5%A4%9A%E9%87%8D%E7%B9%BC%E6%89%BF%E5%B1%AC%E6%80%A7%E5%95%8F%E9%A1%8C.md" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/dokelung/Python-QA/blob/master/questions/object/Python%E5%A4%9A%E9%87%8D%E7%B9%BC%E6%89%BF%E5%B1%AC%E6%80%A7%E5%95%8F%E9%A1%8C.md</a>  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-inheritance/" title="Python 繼承">Python 繼承</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-str/" title="Python str 字串用法與範例">Python str 字串用法與範例</a><br><a href="/python-list/" title="Python list 串列用法與範例">Python list 串列用法與範例</a><br><a href="/python-set/" title="Python set 集合用法與範例">Python set 集合用法與範例</a><br><a href="/python-dict/" title="Python dict 字典用法與範例">Python dict 字典用法與範例</a><br><a href="/python-tuple/" title="Python tuple 元組用法與範例">Python tuple 元組用法與範例</a><br><a href="/python-split/" title="Python 字串分割 split">Python 字串分割 split</a><br><a href="/python-replace/" title="Python 取代字元或取代字串 replace">Python 取代字元或取代字串 replace</a><br><a href="/python-how-to-use-sleep-function/" title="Python 讓程式 sleep 延遲暫停時間">Python 讓程式 sleep 延遲暫停時間</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-multiple-inheritance/" data-id="ckzbec0bx00absfs142embbbd" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-eclipse-cpp-reference-another-project" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/eclipse-cpp-reference-another-project/" class="article-date">
@@ -148,7 +493,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="ckyu5hvo400aa28s1svjg6gep" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="ckzbec0bx00aasfs1xzplowoa" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -215,7 +560,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="ckyu5hvo300a928s1tq7rwsct" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="ckzbec0bw00a9sfs1pcfat9z1" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -324,7 +669,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-shortcuts/" data-id="ckyu5hvo300a828s10tqvk1q4" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-shortcuts/" data-id="ckzbec0bw00a8sfs1pdgbdygm" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -380,7 +725,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-kill-by-name/" data-id="ckyu5hvo300a728s1j158x5qm" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-kill-by-name/" data-id="ckzbec0bw00a7sfs11mssf2yy" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -453,331 +798,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-scrcpy/" data-id="ckyu5hvo200a628s1pbrozqbg" data-title="開源專案scrcpy-讓Android投影/鏡射到電腦，還可鍵盤滑鼠操控" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-scrcpy/" data-id="ckzbec0bv00a6sfs1b7s10bbz" data-title="開源專案scrcpy-讓Android投影/鏡射到電腦，還可鍵盤滑鼠操控" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-mac-git" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/mac-git/" class="article-date">
-  <time datetime="2020-09-03T14:00:00.000Z" itemprop="datePublished">2020-09-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/mac-git/">macOS 用 Homebrew 安裝 git 指令</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇紀錄在 macOS 下用 Homebrew 安裝 git 指令與 git gui (gitk)，macOS 內建沒有 git 指令所以需要自行安裝，<br>macOS 請先安裝 Homebrew，請參考<a href="https://brew.sh/index_zh-tw" rel="noopener external nofollow noreferrer" target="_blank">官網</a>教學安裝，macOS 有安裝過 Homebrew 也請更新，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew update</span><br></pre></td></tr></table></figure></p>
-<p>Homebrew最新的版本為2.4.16<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ brew --version</span><br><span class="line">Homebrew 2.4.16-39-g48c6dc8</span><br><span class="line">Homebrew/homebrew-core (git revision 158ad0; last commit 2020-09-01)</span><br><span class="line">Homebrew/homebrew-cask (git revision c1c3f; last commit 2020-09-01)</span><br></pre></td></tr></table></figure></p>
-<h2><span id="macos-安裝-git-指令">macOS 安裝 git 指令</span></h2><p>接下來透過 Homebrew 安裝 git 指令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ brew install git</span><br></pre></td></tr></table></figure></p>
-<p>如果之前已經透過 Homebrew 安裝 git 過，他應該會提示你用<code>brew upgrade</code>升級的指令，如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ brew install git</span><br><span class="line">Updating Homebrew...</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/pcre2-10.35.high_sierra.bot</span><br><span class="line">==&gt; Downloading from https://d29vzk4ow07wi7.cloudfront.net/69c4fb400d19d1910df33</span><br><span class="line">######################################################################## 100.0%</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/git-2.28.0.high_sierra.bott</span><br><span class="line">==&gt; Downloading from https://d29vzk4ow07wi7.cloudfront.net/5095b064dfafb8cf4cabd</span><br><span class="line">######################################################################## 100.0%</span><br><span class="line">Error: git 2.2.0 is already installed</span><br><span class="line">To upgrade to 2.28.0, run `brew upgrade git`.</span><br><span class="line">$ brew upgrade git</span><br><span class="line">Updating Homebrew...</span><br><span class="line">==&gt; Upgrading 1 outdated package:</span><br><span class="line">git 2.2.0 -&gt; 2.28.0</span><br><span class="line">==&gt; Upgrading git 2.2.0 -&gt; 2.28.0</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/pcre2-10.35.high_sierra.bot</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>查看一下安裝 git 的版本，本次升級完 git 的版本為 2.28<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git version</span><br><span class="line">git version 2.28.0</span><br></pre></td></tr></table></figure></p>
-<p>用 <code>which</code> 指令檢查一下 git 指令是位在 <code>/usr/local/bin/git</code> 下<br>且軟連結到<code>/usr/local/Cellar/git/2.28.0/bin/git</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ which git</span><br><span class="line">/usr/local/bin/git</span><br><span class="line">$ ls -al /usr/local/bin/git</span><br><span class="line">lrwxr-xr-x  1 shengyu  admin  28  9  1 22:35 /usr/local/bin/git -&gt; ../Cellar/git/2.28.0/bin/git</span><br></pre></td></tr></table></figure></p>
-<h2><span id="macos-安裝-gitk-git-gui">macOS 安裝 gitk / git-gui</span></h2><p>接下來透過 Homebrew 安裝 gitk 指令，安裝完後就可以使用 gitk 指令了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ brew install git-gui</span><br></pre></td></tr></table></figure></p>
-<p>用 <code>which</code> 指令檢查一下 gitk 指令是位在 <code>/usr/local/bin/gitk</code> 下<br>且軟連結到<code>/usr/local/Cellar/git-gui/2.28.0/bin/gitk</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ which gitk</span><br><span class="line">/usr/local/bin/gitk</span><br><span class="line">$ ls -al /usr/local/bin/gitk</span><br><span class="line">lrwxr-xr-x  1 shengyu  admin  33  9  1 22:37 /usr/local/bin/gitk -&gt; ../Cellar/git-gui/2.28.0/bin/gitk</span><br></pre></td></tr></table></figure></p>
-<p>之前 git 2.2.0 時使用 gitk 明顯地畫質還沒跟上高解析度的螢幕，<br>經過這次的升級到 2.28.0 後，這 gitk 畫質不足問題已經獲得改善。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-git/" data-id="ckyu5hvo200a528s1ejzc0ikv" data-title="macOS 用 Homebrew 安裝 git 指令" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-std-function" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/std-function/" class="article-date">
-  <time datetime="2020-09-02T14:00:00.000Z" itemprop="datePublished">2020-09-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/std-function/">C++ std::function 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹 C++ 的 std::function 的用法教學，並提供一些入門常用的範例程式碼。  </p>
-<p><strong>需要引入的標頭檔</strong>：<code>&lt;functional&gt;</code>  </p>
-<p>在實務上最常用到 std::function 的情形就是使用 callback 回調函式的時候，  </p>
-<h2><span id="使用-stdfunction-取代傳統的-function-pointer">使用 std::function 取代傳統的 function pointer</span></h2><p>使用 std::function 取代傳統的 function pointer 優點有幾個，  </p>
-<ul>
-<li>可讀性佳</li>
-<li>可接受 lambda 函式</li>
-</ul>
-<p>讓我們先來看看一段使用 function pointer 的範例，<br><figure class="highlight cpp"><figcaption><span>function-pointer-callback.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ function-pointer-callback.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">keyevent</span><span class="params">(<span class="keyword">int</span> keycode, <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"keycode = "</span> &lt;&lt; keycode &lt;&lt; <span class="string">" status = "</span> &lt;&lt; status &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span> (*callback_keyevent)(<span class="keyword">int</span>, <span class="keyword">int</span>) = <span class="literal">NULL</span>;</span><br><span class="line">    callback_keyevent = keyevent;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback_keyevent)</span><br><span class="line">        callback_keyevent(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>改成 std::function 後變成這樣<br><figure class="highlight cpp"><figcaption><span>std-function-callback.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-function-callback.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">keyevent</span><span class="params">(<span class="keyword">int</span> keycode, <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"keycode = "</span> &lt;&lt; keycode &lt;&lt; <span class="string">" status = "</span> &lt;&lt; status &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(<span class="keyword">int</span>, <span class="keyword">int</span>)&gt; callback_keyevent = <span class="literal">nullptr</span>;</span><br><span class="line">    callback_keyevent = keyevent;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback_keyevent)</span><br><span class="line">        callback_keyevent(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] std::function - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/utility/functional/function" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/utility/functional/function</a><br>[2] function::function - C++ Reference<br><a href="http://www.cplusplus.com/reference/functional/function/function/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/reference/functional/function/function/</a><br>[3] C++11 std::function的用法 - 滴酱的个人空间 - OSCHINA<br><a href="https://my.oschina.net/u/2274890/blog/499159" rel="noopener external nofollow noreferrer" target="_blank">https://my.oschina.net/u/2274890/blog/499159</a><br>[4] C++11 std::function用法-码农场<br><a href="https://www.hankcs.com/program/cpp/c11-std-function-usage.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.hankcs.com/program/cpp/c11-std-function-usage.html</a><br>[5] Cocos2d-x 的 onKeyPressed 與 onKeyReleased<br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.h" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.h</a><br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.cpp" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.cpp</a><br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/tests/performance-tests/Classes/tests/PerformanceEventDispatcherTest.cpp" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/tests/performance-tests/Classes/tests/PerformanceEventDispatcherTest.cpp</a><br>cocos2d-x 在 PerformanceEventDispatcherTest.cpp 的 KeyboardEventDispatchingPerfTest::generateTestFunctions 使用 onKeyPressed 接收一個 lambda 函式<br>[6] 邁向王者的旅途: 簡介 std::function (C++11 後的新功能)<br><a href="https://shininglionking.blogspot.com/2017/01/stdfunction-c11.html" rel="noopener external nofollow noreferrer" target="_blank">https://shininglionking.blogspot.com/2017/01/stdfunction-c11.html</a><br>[7] Should I use std::function or a function pointer in C++? - Stack Overflow<br><a href="https://stackoverflow.com/questions/25848690/should-i-use-stdfunction-or-a-function-pointer-in-c" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/25848690/should-i-use-stdfunction-or-a-function-pointer-in-c</a><br>這篇討論提到應該盡量使用 std::function 來取代 function pointer，除非有什麼其他特殊原因<br>[8] 在 C++ 裡傳遞、儲存函式 Part 3：Function Object in TR1 – Heresy’s Space<br><a href="https://kheresy.wordpress.com/2010/11/12/function_object_tr1/" rel="noopener external nofollow noreferrer" target="_blank">https://kheresy.wordpress.com/2010/11/12/function_object_tr1/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-sort/" title="C++ std::sort 排序用法與範例完整介紹">C++ std::sort 排序用法與範例完整介紹</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-check-if-file-exists/" title="C/C++ 判斷檔案是否存在">C/C++ 判斷檔案是否存在</a><br><a href="/cpp-singleton-pattern/" title="C++ 設計模式 - 單例模式 Singleton Pattern">C++ 設計模式 - 單例模式 Singleton Pattern</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-function/" data-id="ckyu5hvo100a428s1l9evted6" data-title="C++ std::function 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ubuntu-tplink-t4u-driver" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/ubuntu-tplink-t4u-driver/" class="article-date">
-  <time datetime="2020-08-27T14:00:00.000Z" itemprop="datePublished">2020-08-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/ubuntu-tplink-t4u-driver/">Ubuntu 安裝 TP-Link Archer T4U Driver 筆記</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇紀錄 Ubuntu 安裝 TP-Link Archer T4U Driver 筆記與心得，最近買了一隻 wireless dongle，升級成5G(802.11ac)網速，當然家中還要搭配 AP 也是要支援到5G，但之前我早已把家裡網路上升級成 Giga 等級以及具備有 5G 的 AP 了，但我常用環境為 Ubuntu，但這隻 dongle 似乎還沒被預設的 Ubuntu 系統支援，我試了Ubuntu 16.04、18.04、20.04 內建驅動都無法支援，雖然當初在買的時候就從外包裝盒發現沒有 linux 的圖示，只有 windows 與 macOS 圖示，但憑著一股熱情，只好自己手動來編譯安裝了。  </p>
-<h2><span id="查詢-wireless-dongle-的-chipset">查詢 wireless dongle 的 chipset</span></h2><p>接下來要首先需要確定的是這隻 wireless dongle 用的是什麼 chipset，這對於曾經在網通廠工作經驗豐富的我不算什麼問題，  </p>
-<ol>
-<li><p>找一下該 wireless dongle 是第幾版，我購買的 TP-Link Archer T4U 的版本是 v3.20，通常在外盒上可以找到或者 dongle 本體上的標籤，為什麼要查詢版本呢？因為有時候同型號，廠商可能後來改用不同的 chipset，通常都是 costdown，也有可能是其他因素。  </p>
-</li>
-<li><p>在網路上 Google 一下，即可發現 TP-Link Archer T4U V3 用的 chipset 為 Realtek 的 RTL8812BU，<br>而 TP-Link Archer T4U V2 以前都是使用 RTL8812AU，<br>所以要找的驅動是要找 RTL8812BU 而不是 RTL8812AU，不然就會安裝後也無法使用，<br><a href="http://en.techinfodepot.shoutwiki.com/wiki/TP-LINK_Archer_T4U_v3" rel="noopener external nofollow noreferrer" target="_blank">http://en.techinfodepot.shoutwiki.com/wiki/TP-LINK_Archer_T4U_v3</a>  </p>
-</li>
-</ol>
-<h2><span id="編譯驅動並安裝">編譯驅動並安裝</span></h2><p>我是參考 <a href="https://askubuntu.com/questions/802205/how-to-install-tp-link-archer-t4u-driver" rel="noopener external nofollow noreferrer" target="_blank">https://askubuntu.com/questions/802205/how-to-install-tp-link-archer-t4u-driver</a><br>這篇的第二個方法，適用於 RTL8812BU chipset，<br>第一個方法是 RTL8812AU  </p>
-<p>這裡就順便記錄一下我的步驟<br>以下步驟我在 Ubuntu 18.04, 16.04 編譯後安裝後都是可以成功連線的，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/EntropicEffect/rtl8822bu</span><br><span class="line">sudo apt-get install build-essential dkms <span class="comment"># 安裝編譯所需套件</span></span><br><span class="line"><span class="built_in">cd</span> rtl8822bu</span><br><span class="line">make <span class="comment"># 編譯</span></span><br><span class="line">sudo make install <span class="comment"># 安裝至系統</span></span><br><span class="line">sudo modprobe 88x2bu <span class="comment"># 載入驅動模組</span></span><br></pre></td></tr></table></figure></p>
-<p>到這裡以上的步驟就可以連線了，可以發現網路管理員已經可以掃描的到其他 WiFi 的 SSID 了，<br>不論是 2.4G 或 5G 都掃得到了，也可以成功連線～YA！  </p>
-<p>輸入下列指令完善一下整個安裝，<br>其目的是讓 Linux 核心升級也自動重新編譯一下該驅動程式，<br>否則之後 Linux 核心升級後該驅動不匹配就會無法使用，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms add . <span class="comment"># 將驅動程式加入 DKMS 管理表中</span></span><br><span class="line">sudo dkms install -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
-<p>其他未驗證的參考<br><a href="https://itectec.com/ubuntu/ubuntu-cant-install-tp-link-archer-t4u-v3-driver-on-19-04/" rel="noopener external nofollow noreferrer" target="_blank">https://itectec.com/ubuntu/ubuntu-cant-install-tp-link-archer-t4u-v3-driver-on-19-04/</a><br><a href="https://gist.github.com/tchelit/289881a73df5189431cd6070b72f3f61" rel="noopener external nofollow noreferrer" target="_blank">https://gist.github.com/tchelit/289881a73df5189431cd6070b72f3f61</a>  </p>
-<h2><span id="其他補充">其他補充</span></h2><p>查看目前 dkms 內有什麼<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms status</span><br></pre></td></tr></table></figure></p>
-<p>安裝驅動模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms install -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
-<p>解除安裝驅動模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms uninstall -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
-<p>完整移除整個驅動程式模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms remove 88x2bu/1.1 --all</span><br></pre></td></tr></table></figure></p>
-<p>modprobe 指令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo modprobe 88x2bu # 載入模組</span><br><span class="line">sudo modprobe -r 88x2bu # 卸載模組</span><br></pre></td></tr></table></figure></p>
-<p>insmod、rmmod 與 lsmod<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">insmod 88x2bu.ko # 載入模組</span><br><span class="line">rmmod 88x2bu # 卸載模組</span><br><span class="line">lsmod # 查看載入的模組</span><br></pre></td></tr></table></figure></p>
-<p>其他參考<br>核心模組的載入與移除： insmod, modprobe, rmmod<br><a href="http://mingyi-ulinux.blogspot.com/2009/01/insmod-modprobe-rmmod.html" rel="noopener external nofollow noreferrer" target="_blank">http://mingyi-ulinux.blogspot.com/2009/01/insmod-modprobe-rmmod.html</a><br>Linux DKMS 機制導入筆記 - 石頭閒語<br><a href="http://rocksaying.tw/archives/2015/Linux_DKMS_%E6%A9%9F%E5%88%B6%E5%B0%8E%E5%85%A5%E7%AD%86%E8%A8%98.html" rel="noopener external nofollow noreferrer" target="_blank">http://rocksaying.tw/archives/2015/Linux_DKMS_%E6%A9%9F%E5%88%B6%E5%B0%8E%E5%85%A5%E7%AD%86%E8%A8%98.html</a><br>DKMS简介 - wwang - 博客园<br><a href="https://www.cnblogs.com/wwang/archive/2011/06/21/2085571.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/wwang/archive/2011/06/21/2085571.html</a><br>DKMS的流程圖邏輯很清晰  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/ubuntu-netbootin-live-usb/" title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料">使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料</a><br><a href="/ubuntu-apt-update-error/" title="Ubuntu apt update 的一堆 error 問題與解決方法">Ubuntu apt update 的一堆 error 問題與解決方法</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-tplink-t4u-driver/" data-id="ckyu5hvo100a328s134bijk2w" data-title="Ubuntu 安裝 TP-Link Archer T4U Driver 筆記" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-glossary" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-glossary/" class="article-date">
-  <time datetime="2020-08-24T14:00:00.000Z" itemprop="datePublished">2020-08-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-glossary/">C/C++ 一堆名詞解釋</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>紀錄一下 C/C++ 一堆名詞解釋。  </p>
-<h2><span id="覆載-override">覆載 override</span></h2><p>就是子類覆蓋掉父類的實作叫<code>覆載 override</code>，就像例子中的bbb<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span> &#123;</span></span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">bbb</span> <span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span> :</span> <span class="keyword">public</span> Base &#123;</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> bbb <span class="title">override</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"bbb"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="多載-overload">多載 overload</span></h2><p>就是相同函式名，但參數不一樣，叫<code>多載 overload</code><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">float</span> a, <span class="keyword">float</span> b)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="其他雜類">其他雜類</span></h2><p>繼承：inheritance<br>多型：polymorphism<br>建構子：constructor<br>複製建構子：copy constructor<br>解構子：destructor<br>函子/函式物件：functor<br>抽象類別：abstract class<br>父類：base class<br>子類：derived class  </p>
-<p>參考<br>C++ Glossary<br><a href="https://gcallah.github.io/OOP2/glossary.html" rel="noopener external nofollow noreferrer" target="_blank">https://gcallah.github.io/OOP2/glossary.html</a><br>C++ Glossary - Step by Step Programming<br><a href="https://sites.google.com/site/simplestjava/c-glossary" rel="noopener external nofollow noreferrer" target="_blank">https://sites.google.com/site/simplestjava/c-glossary</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-singleton-pattern/" title="C++ 設計模式 - 單例模式 Singleton Pattern">C++ 設計模式 - 單例模式 Singleton Pattern</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/std-sort/" title="C++ std::sort 排序用法與範例完整介紹">C++ std::sort 排序用法與範例完整介紹</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-glossary/" data-id="ckyu5hvo000a228s1dd3tvm7t" data-title="C/C++ 一堆名詞解釋" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ubuntu-apt-update-error" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/ubuntu-apt-update-error/" class="article-date">
-  <time datetime="2020-08-20T14:00:00.000Z" itemprop="datePublished">2020-08-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/ubuntu-apt-update-error/">Ubuntu apt update 的一堆 error 問題與解決方法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>Ubuntu 久久用 apt update 很常遇到一些 error，這些問題長久累積起來已經可以寫成一篇問題集了，今天就順手記錄下來。  </p>
-<h2><span id="ubuntu-apt-update-遇到-no_pubkey-的-gpg-error-的解法">ubuntu apt update 遇到 NO_PUBKEY 的 GPG error 的解法</span></h2><p>參考這篇<br>Linux APT 遇到 NO_PUBKEY 的 GPG error 解法 | Tsung’s Blog<br><a href="https://blog.longwin.com.tw/2019/05/linux-apt-no-pubkey-gpg-error-fix-2019/" rel="noopener external nofollow noreferrer" target="_blank">https://blog.longwin.com.tw/2019/05/linux-apt-no-pubkey-gpg-error-fix-2019/</a>  </p>
-<p>例如遇到下列錯誤訊息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NO_PUBKEY 9334A25F8507EFA5</span><br></pre></td></tr></table></figure></p>
-<p>就將該 KEY 透過下列指令直接重新取得<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-key adv --keyserver keys.gnupg.net --recv-keys 9334A25F8507EFA5</span><br></pre></td></tr></table></figure></p>
-<h2><span id="ubuntu-apt-update-遇到-the-following-signatures-were-invalid-keyexpired-1544811256">ubuntu apt update 遇到 The following signatures were invalid: KEYEXPIRED 1544811256</span></h2><p>參考這篇<br>Fix Ubuntu/Debian apt-get “KEYEXPIRED: The following signatures were invalid”<br><a href="https://futurestud.io/tutorials/fix-ubuntu-debian-apt-get-keyexpired-the-following-signatures-were-invalid" rel="noopener external nofollow noreferrer" target="_blank">https://futurestud.io/tutorials/fix-ubuntu-debian-apt-get-keyexpired-the-following-signatures-were-invalid</a>  </p>
-<p>用 <code>sudo apt-key list</code> 找到過期的 key<br>再用下列指令去 renew<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys &lt;KEY&gt;`</span><br></pre></td></tr></table></figure></p>
-<p>但我曾經遇到 mogodb renew 後也沒變，索性只好移除 mogodb 的 ppa 了，</p>
-<h2><span id="移除-ppa">移除 ppa</span></h2><p>這邊介紹怎麼移除 ppa，<br>參考這篇<br>Ubuntu Linux 新增與移除 PPA 個人套件庫指令教學 - G. T. Wang<br><a href="https://blog.gtwang.org/linux/ubuntu-linux-add-and-remove-ppa-command-tutorial/" rel="noopener external nofollow noreferrer" target="_blank">https://blog.gtwang.org/linux/ubuntu-linux-add-and-remove-ppa-command-tutorial/</a>  </p>
-<p>在 Ubuntu 作業系統下移除不要的 PPA 倉庫 - Clay-Technology World<br><a href="https://clay-atlas.com/blog/2020/02/04/linux-ubuntu-chinese-note-remove-ppa/" rel="noopener external nofollow noreferrer" target="_blank">https://clay-atlas.com/blog/2020/02/04/linux-ubuntu-chinese-note-remove-ppa/</a><br>講的很仔細，不錯  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/ubuntu-netbootin-live-usb/" title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料">使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-apt-update-error/" data-id="ckyu5hvo000a128s1k27l5c3v" data-title="Ubuntu apt update 的一堆 error 問題與解決方法" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -790,7 +814,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/25/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="page-number" href="/page/25/">25</a><span class="page-number current">26</span><a class="page-number" href="/page/27/">27</a><a class="page-number" href="/page/28/">28</a><span class="space">&hellip;</span><a class="page-number" href="/page/62/">62</a><a class="extend next" rel="next" href="/page/27/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/25/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="page-number" href="/page/25/">25</a><span class="page-number current">26</span><a class="page-number" href="/page/27/">27</a><a class="page-number" href="/page/28/">28</a><span class="space">&hellip;</span><a class="page-number" href="/page/63/">63</a><a class="extend next" rel="next" href="/page/27/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -821,23 +845,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
-            <a href="/cpp-const/">C/C++ const 的 3 種用法與範例</a>
+            <a href="/gimp-resize/">GIMP 圖片縮放</a>
           </li>
         
           <li>
-            <a href="/cpp-extern/">C/C++ extern 用法與範例</a>
+            <a href="/python-min/">Python min 用法與範例</a>
           </li>
         
           <li>
-            <a href="/python-write-binary-file/">Python 寫入二進制檔</a>
+            <a href="/vscode-js-go-to-definition/">Visual Studio Code javascript go to definition 無法跳至定義處解決方法</a>
           </li>
         
           <li>
-            <a href="/python-read-binary-file/">Python 讀取二進制檔</a>
+            <a href="/pc-replace-case-fan/">更換電腦機殼風扇 Cooler Master</a>
           </li>
         
           <li>
-            <a href="/python-bytes-to-string/">Python bytes 轉 string 的 2 種方法</a>
+            <a href="/python-max/">Python max 用法與範例</a>
           </li>
         
       </ul>
@@ -864,7 +888,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">121</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">216</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">121</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
