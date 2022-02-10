@@ -105,6 +105,68 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-backtrace" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-backtrace/" class="article-date">
+  <time datetime="2021-05-06T14:00:00.000Z" itemprop="datePublished">2021-05-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-backtrace/">C/C++ dump stack backtrace 的方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ dump stack backtrace 的方法，  </p>
+<p>C/C++ 印出 backtrace 的方法如下，<br><figure class="highlight cpp"><figcaption><span>cpp-backtrace.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ -g -rdynamic cpp-backtrace.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;execinfo.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_backtrace</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span> *buffer[<span class="number">64</span>];</span><br><span class="line">    <span class="keyword">char</span> **symbols;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> num = backtrace(buffer, <span class="number">64</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"backtrace() returned %d addresses\n"</span>, num);</span><br><span class="line"></span><br><span class="line">    symbols = backtrace_symbols(buffer, num);</span><br><span class="line">    <span class="keyword">if</span> (symbols == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        perror(<span class="string">"backtrace_symbols"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; num; j++)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, symbols[j]);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(symbols);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc3</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    print_backtrace();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    myfunc3();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    myfunc2();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    myfunc1();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">backtrace() returned 7 addresses</span><br><span class="line">./a.out(_Z15print_backtracev+0x2e) [0x400a94]</span><br><span class="line">./a.out(_Z7myfunc3v+0x9) [0x400b79]</span><br><span class="line">./a.out(_Z7myfunc2v+0x9) [0x400b85]</span><br><span class="line">./a.out(_Z7myfunc1v+0x9) [0x400b91]</span><br><span class="line">./a.out(main+0x9) [0x400b9d]</span><br><span class="line">/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0) [0x7fb39bc04840]</span><br><span class="line">./a.out(_start+0x29) [0x400999]</span><br></pre></td></tr></table></figure></p>
+<p>用 <a href="/linux-addr2line/" title="addr2line">addr2line</a> 來看 0x400a94 address 是在程式碼的那一行，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">addr2line -fie a.out 0x400a94</span><br><span class="line">_Z15print_backtracev</span><br><span class="line">cpp-backtrace.cpp:9</span><br></pre></td></tr></table></figure></p>
+<p>發現輸出結果 _Z15print_backtracev 看得似懂非懂，addr2line 加上 <code>-C</code> 來解析 C++ 的名稱，這樣就解決了！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">addr2line -Cfie a.out 0x400a94</span><br><span class="line">print_backtrace()</span><br><span class="line">cpp-backtrace.cpp:9</span><br><span class="line">$ addr2line -Cfie a.out 0x400b79</span><br><span class="line">myfunc3()</span><br><span class="line">cpp-backtrace.cpp:30</span><br><span class="line">$ addr2line -Cfie a.out 0x400b85</span><br><span class="line">myfunc2()</span><br><span class="line">cpp-backtrace.cpp:34</span><br><span class="line">$ addr2line -Cfie a.out 0x400b91</span><br><span class="line">myfunc1()</span><br><span class="line">cpp-backtrace.cpp:38</span><br><span class="line">$ addr2line -Cfie a.out 0x400b9d</span><br><span class="line">main</span><br><span class="line">cpp-backtrace.cpp:42</span><br></pre></td></tr></table></figure></p>
+<p>在<a href="https://panthema.net/2008/0901-stacktrace-demangled/" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>是乾脆就順便用 <code>abi::__cxa_demangle()</code> 直接解析出 C++ 的符號了，過程中需要自行從 symbols 裡的 mangled function name 擷取出來後在執行 <code>abi::__cxa_demangle()</code>，還蠻費工的～  </p>
+<p>其它參考<br>Unix backtrace<br><a href="https://man7.org/linux/man-pages/man3/backtrace.3.html" rel="noopener external nofollow noreferrer" target="_blank">https://man7.org/linux/man-pages/man3/backtrace.3.html</a><br>Windows CaptureBackTrace<br><a href="http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx" rel="noopener external nofollow noreferrer" target="_blank">http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx</a><br>C++ Code Snippet - Print Stack Backtrace Programmatically with Demangled Function Names<br><a href="https://panthema.net/2008/0901-stacktrace-demangled/" rel="noopener external nofollow noreferrer" target="_blank">https://panthema.net/2008/0901-stacktrace-demangled/</a><br>C++的backtrace<br><a href="https://owent.net/2018/1801.html" rel="noopener external nofollow noreferrer" target="_blank">https://owent.net/2018/1801.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-backtrace/" data-id="ckzh2d3ai00l6b3s14tim2t9y" data-title="C/C++ dump stack backtrace 的方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-ctrl-c-signal" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-ctrl-c-signal/" class="article-date">
@@ -155,7 +217,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="ckzfikqbu00f0wcs1jrz2er76" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="ckzh2d3ai00l4b3s1h8sjeqxu" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -216,7 +278,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="ckzfikqbt00ezwcs1nrz0gd3l" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="ckzh2d3ah00l3b3s1c0s6lj29" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -277,7 +339,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="ckzfikqbs00exwcs1m5ue39z1" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="ckzh2d3ah00l1b3s1sa86cdh6" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -338,7 +400,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="ckzfikqbr00evwcs1mlnyyzzm" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="ckzh2d3ag00l0b3s1nh0piz13" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -399,7 +461,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="ckzfikqbq00etwcs1fj9htquh" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="ckzh2d3af00kyb3s1l0pmlft9" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -464,7 +526,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-import/" data-id="ckzfikqbp00erwcs15y6n9a5q" data-title="Python import 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-import/" data-id="ckzh2d3af00kxb3s13m3qsgui" data-title="Python import 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -525,7 +587,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-binary-search/" data-id="ckzfikqbn00epwcs1m3gjxmxg" data-title="Python 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-binary-search/" data-id="ckzh2d3ae00kvb3s1zh16ei5l" data-title="Python 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -619,7 +681,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tkinter-canvas/" data-id="ckzfikqbm00enwcs1l586gu4i" data-title="Python tkinter Canvas 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tkinter-canvas/" data-id="ckzh2d3ae00kub3s16wiobekl" data-title="Python tkinter Canvas 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tkinter/">tkinter</a></li></ul>
@@ -682,68 +744,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-main/" data-id="ckzfikqbl00elwcs10wd0m775" data-title="在 Python 寫 main 函式" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-sequential-search" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-sequential-search/" class="article-date">
-  <time datetime="2021-04-15T14:00:00.000Z" itemprop="datePublished">2021-04-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-sequential-search/">Python 循序搜尋法 Sequential Search</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Python 循序搜尋法 Sequential Search。  </p>
-<h2><span id="python-sequential-search-循序搜尋法">Python Sequential Search 循序搜尋法</span></h2><p>以下為 Python 循序搜尋法的實作，要從串列 data 裡尋找數字 7，循序搜尋法是最簡單的實作方式，主要是由一個主迴圈從頭掃到尾，一個一個值拿來跟 key 作比對，一直到有比對成功救回傳索引值或者一直到結束都沒有比對成功，沒有比對成功的話就回傳 -1，範例如下，<br><figure class="highlight python"><figcaption><span>python3-sequential-search.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sequential_search</span><span class="params">(data, key)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(data)):</span><br><span class="line">        <span class="keyword">if</span> key == data[i]:</span><br><span class="line">            <span class="keyword">return</span> i</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>]</span><br><span class="line">key = <span class="number">7</span></span><br><span class="line">print(data)</span><br><span class="line">ret = sequential_search(data, key)</span><br><span class="line"><span class="keyword">if</span> ret == <span class="number">-1</span>:</span><br><span class="line">    print(<span class="string">'找不到'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'找到索引值'</span> + str(ret))</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span><br><span class="line">找到索引值6</span><br></pre></td></tr></table></figure></p>
-<h2><span id="使用循序搜尋法時資料不需要先排序過">使用循序搜尋法時資料不需要先排序過</span></h2><p>使用循序搜尋法前時資料不需要先排序過就可以直接搜尋了，跟<a href="/python-binary-search/" title="二元搜尋法">二元搜尋法</a>比較不一樣，範例如下，<br><figure class="highlight python"><figcaption><span>python3-sequential-search2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sequential_search</span><span class="params">(data, key)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(data)):</span><br><span class="line">        <span class="keyword">if</span> key == data[i]:</span><br><span class="line">            <span class="keyword">return</span> i</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">9</span>, <span class="number">2</span>, <span class="number">7</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">5</span>, <span class="number">6</span>]</span><br><span class="line">key = <span class="number">7</span></span><br><span class="line">print(data)</span><br><span class="line">ret = sequential_search(data, key)</span><br><span class="line"><span class="keyword">if</span> ret == <span class="number">-1</span>:</span><br><span class="line">    print(<span class="string">'找不到'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'找到索引值'</span> + str(ret))</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[1, 9, 2, 7, 4, 10, 3, 8, 5, 6]</span><br><span class="line">找到索引值3</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-binary-search/" title="Python 二元搜尋法 Binary Search">Python 二元搜尋法 Binary Search</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sequential-search/" data-id="ckzfikqbk00ejwcs1a6rw2zhu" data-title="Python 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-main/" data-id="ckzh2d3ad00ksb3s1a423453z" data-title="在 Python 寫 main 函式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -790,6 +791,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
           </li>
         
@@ -803,10 +808,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-fopen/">C/C++ fopen 用法與範例</a>
           </li>
         
       </ul>
@@ -825,7 +826,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">126</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">127</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
