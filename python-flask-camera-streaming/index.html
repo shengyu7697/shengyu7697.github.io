@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>Python Flask OpenCV 攝影機影像即時串流 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇介紹如何用 Python 與 Flask OpenCV 來建立一個攝影機 MJPEG (Motion JPEG) 即時串流的網站，在網站上顯示 webcam 或 camera 攝影機的即時串流影像，這個應用常見於監控系統或者即時影像處理的情形上。讀取攝影機的影像在這篇使用的是 OpenCV 模組，你也可以改用其它方式來讀取攝影機的影像。你可以使用隨手可得的 webcam，也可以使用一般的 ca">
+<meta name="keywords" content="Python,flask,MJPEG">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python Flask OpenCV 攝影機影像即時串流">
+<meta property="og:url" content="https://shengyu7697.github.io/python-flask-camera-streaming/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇介紹如何用 Python 與 Flask OpenCV 來建立一個攝影機 MJPEG (Motion JPEG) 即時串流的網站，在網站上顯示 webcam 或 camera 攝影機的即時串流影像，這個應用常見於監控系統或者即時影像處理的情形上。讀取攝影機的影像在這篇使用的是 OpenCV 模組，你也可以改用其它方式來讀取攝影機的影像。你可以使用隨手可得的 webcam，也可以使用一般的 ca">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:image" content="https://shengyu7697.github.io/python-flask-camera-streaming/flask-pictures-streaming.gif">
+<meta property="og:updated_time" content="2022-02-04T13:36:17.035Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python Flask OpenCV 攝影機影像即時串流">
+<meta name="twitter:description" content="本篇介紹如何用 Python 與 Flask OpenCV 來建立一個攝影機 MJPEG (Motion JPEG) 即時串流的網站，在網站上顯示 webcam 或 camera 攝影機的即時串流影像，這個應用常見於監控系統或者即時影像處理的情形上。讀取攝影機的影像在這篇使用的是 OpenCV 模組，你也可以改用其它方式來讀取攝影機的影像。你可以使用隨手可得的 webcam，也可以使用一般的 ca">
+<meta name="twitter:image" content="https://shengyu7697.github.io/python-flask-camera-streaming/flask-pictures-streaming.gif">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-python-flask-camera-streaming" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-flask-camera-streaming/" class="article-date">
+  <time datetime="2020-11-03T14:00:00.000Z" itemprop="datePublished">2020-11-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Python Flask OpenCV 攝影機影像即時串流
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹如何用 Python 與 Flask OpenCV 來建立一個攝影機 MJPEG (Motion JPEG) 即時串流的網站，在網站上顯示 webcam 或 camera 攝影機的即時串流影像，這個應用常見於監控系統或者即時影像處理的情形上。讀取攝影機的影像在這篇使用的是 OpenCV 模組，你也可以改用其它方式來讀取攝影機的影像。你可以使用隨手可得的 webcam，也可以使用一般的 camera 攝影機就可以來試試本篇的教學囉！  </p>
+<p>學習這篇後你將可以，</p>
+<ul>
+<li>建立一個家庭安全監視系統</li>
+<li>建立一個嬰兒監視系統</li>
+<li>建立一個視訊串流網頁，例如：17直播、Zoom多人線上視訊會議</li>
+</ul>
+<p>我陪我老婆在月子中心的時候，就透過月子中心提供的 App 來觀看嬰兒室裡寶寶的最新畫面，同時也可以從網站上觀看，之後我便對此視訊串流技術感到興趣，經過一連串的研究與了解背後的技術是怎麼實現，最後實做完變成了這篇文章。  </p>
+<p>在建立一個 Flask 串流網站前，需要先了解一個基本的網站是怎麼寫的，要學習建立一個網頁最間單的方式就是從 Hello World 開始，這部分可以參考我之前幾篇 <a href="/python-flask/" title="Flask 系列教學">Flask 系列教學</a>，如果你已經學會怎麼建立一個 Flask 網站，接下來就先小試身手，用 Flask 建立一個可以顯示圖片的網站，再一步步進入本篇的主軸。  </p>
+<h2 id="顯示圖片的-Flask-網頁伺服器"><a href="#顯示圖片的-Flask-網頁伺服器" class="headerlink" title="顯示圖片的 Flask 網頁伺服器"></a>顯示圖片的 Flask 網頁伺服器</h2><p>這邊就直接使用 <a href="/python-flask-render_template/" title="Flask 模板">Flask 模板</a>的寫法來處理 index.html，在 index.html 裡放置一張圖片，而圖片這種，<br><figure class="highlight html"><figcaption><span>templates/index.html</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Flask<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h3</span>&gt;</span>Picture<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">"/static/lena.jpg"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>Flask 裡使用 render_template 處理 templete，<br><figure class="highlight python"><figcaption><span>flask-picture.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">'index.html'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app.run(<span class="string">'0.0.0.0'</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="Multipart-x-mixed-replace-Responses"><a href="#Multipart-x-mixed-replace-Responses" class="headerlink" title="Multipart/x-mixed-replace Responses"></a>Multipart/x-mixed-replace Responses</h2><p>本篇使用的串流技術是 HTTP 的 multipart 類型回應，瀏覽器透過不同的 Content-Type header 定義可以做出對應的反應，例如瀏覽器遇到 Content-Type 是 <code>application/zip</code> 就下載檔案，遇到 Content-Type 是 <code>application/pdf</code> 就預覽 pdf 等等。  </p>
+<p>而本篇使用到的 Content-Type 是 <code>multipart/x-mixed-replace</code>，<a href="https://en.wikipedia.org/wiki/MIME#x-mixed-replace" target="_blank" rel="noopener">x-mixed-replace</a> 是 Server 利用 HTTP 推送串流的技術其中之一，作法是讓每一個資料區塊取代頁面中先前的一塊藉此達到更新畫面，利用這種技術你可以將圖片作為每一個資料區塊來傳送，這樣在瀏覽器上看起來就像在播放視訊或播放動畫的效果。</p>
+<p>實作更新的關鍵在於使用 multipart 回應。multipart 回應的內容是先一個 Content-Type 為 <code>multipart/x-mixed-replace</code> 的 header 並指名 <code>boundary=frame</code> 的分割名稱(分割名稱可自行更改)，之後的每一個資料區塊的是用 <code>--frame</code> 作為資料區塊分割的標記，並且後面接著 Content-Type 與資料，Content-Type 為 <code>image/jpeg</code> 表示接下來的資料是 jpeg 資料。</p>
+<p>以下為資料傳送的示意，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Content-Type: multipart/x-mixed-replace; boundary=frame</span><br><span class="line"></span><br><span class="line">--frame</span><br><span class="line">Content-Type: image/jpeg</span><br><span class="line"></span><br><span class="line">&lt;jpeg data here&gt;</span><br><span class="line">--frame</span><br><span class="line">Content-Type: image/jpeg</span><br><span class="line"></span><br><span class="line">&lt;jpeg data here&gt;</span><br><span class="line">--frame</span><br><span class="line">Content-Type: image/jpeg</span><br><span class="line"></span><br><span class="line">&lt;jpeg data here&gt;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<h2 id="Flask-串流連續影像"><a href="#Flask-串流連續影像" class="headerlink" title="Flask 串流連續影像"></a>Flask 串流連續影像</h2><p>在之前的範例已經可以在網頁中呈現一張靜態影像了，接下來我們要來呈現連續影像，用的就是上一節介紹的技術，這邊我們示範連續地循環串流 5 張數字影像，在 index.html 的 img 標籤裡放入 <code>video_feed</code>，<br><figure class="highlight html"><figcaption><span>templates/index.html</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Flask<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h3</span>&gt;</span>Pictures Streaming<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">"&#123;&#123; url_for('video_feed') &#125;&#125;"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>在 <code>/video_feed</code> 路由處理<br><figure class="highlight python"><figcaption><span>flask-pictures-streaming.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, Response</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line">frames = [open(f + <span class="string">'.jpg'</span>, <span class="string">'rb'</span>).read() <span class="keyword">for</span> f <span class="keyword">in</span> [<span class="string">'1'</span>, <span class="string">'2'</span>, <span class="string">'3'</span>, <span class="string">'4'</span>, <span class="string">'5'</span>]]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">gen_frames</span><span class="params">()</span>:</span></span><br><span class="line">    counter = <span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        n = counter % <span class="number">5</span></span><br><span class="line">        print(str(n))</span><br><span class="line">        frame = frames[counter % <span class="number">5</span>]</span><br><span class="line">        counter += <span class="number">1</span></span><br><span class="line">        <span class="keyword">yield</span> (<span class="string">b'--frame\r\n'</span></span><br><span class="line">                <span class="string">b'Content-Type: image/jpeg\r\n\r\n'</span> + frame + <span class="string">b'\r\n'</span>)</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/video_feed')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">video_feed</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> Response(gen_frames(),</span><br><span class="line">                    mimetype=<span class="string">'multipart/x-mixed-replace; boundary=frame'</span>)</span><br><span class="line"><span class="meta">@app.route('/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">'index.html'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app.run(<span class="string">'0.0.0.0'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>開啟 <a href="http://0.0.0.0:5000/" target="_blank" rel="noopener">http://0.0.0.0:5000/</a> 網頁後，應該可以看到網頁上不停地輪流播放 1~5 數字影像，如下圖，<br><img src="/python-flask-camera-streaming/flask-pictures-streaming.gif" width="640" title="flask pictures streaming">  </p>
+<h2 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h2><p>關於 之前已經介紹過了，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def gen_frames():</span><br><span class="line">    yield 1</span><br><span class="line">    yield 2</span><br><span class="line">    yield 3</span><br></pre></td></tr></table></figure></p>
+<p>生成器(generator functions)  </p>
+<h2 id="Flask-camera-攝影機影像串流"><a href="#Flask-camera-攝影機影像串流" class="headerlink" title="Flask camera 攝影機影像串流"></a>Flask camera 攝影機影像串流</h2><p>Response 傳入一個 genator，<br><code>multipart/x-mixed-replace</code>：後續抵達的資料區塊會覆蓋先前的結果，藉此達成動畫效果<br><code>boundary=frame</code>：告知後續的連續資料塊以 <code>--frame</code> 作為各單位資料區塊邊界<br><code>image/jpeg</code>：告知傳送的每一塊的資料型態為 jpeg 影像</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Flask<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h3</span>&gt;</span>Camera Live Streaming<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">"&#123;&#123; url_for('video_feed') &#125;&#125;"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><figcaption><span>flask-camera-streaming.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template, Response</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line">camera = cv2.VideoCapture(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">gen_frames</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        success, frame = camera.read()</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> success:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            ret, buffer = cv2.imencode(<span class="string">'.jpg'</span>, frame)</span><br><span class="line">            frame = buffer.tobytes()</span><br><span class="line">            <span class="keyword">yield</span> (<span class="string">b'--frame\r\n'</span></span><br><span class="line">                   <span class="string">b'Content-Type: image/jpeg\r\n\r\n'</span> + frame + <span class="string">b'\r\n'</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/video_feed')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">video_feed</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> Response(gen_frames(),</span><br><span class="line">                    mimetype=<span class="string">'multipart/x-mixed-replace; boundary=frame'</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">'index.html'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app.run(<span class="string">'0.0.0.0'</span>)</span><br></pre></td></tr></table></figure>
+<p><code>app.run()</code> 如果沒有使用 <code>threaded=True</code> 的話，會發現一次只能一個使用者觀看，加上 <code>threaded=True</code> 後 flask 就能夠用多執行緒的方式來服務多個使用者。  </p>
+<p>執行接下來就可以直接在瀏覽器，開啟 <a href="http://127.0.0.1:5000/" target="_blank" rel="noopener">http://127.0.0.1:5000/</a> 這個網址。  </p>
+<p>下一篇介紹不使用 Flask 的   </p>
+<p>其它參考<br>Video Streaming with Flask - miguelgrinberg.com<br><a href="https://blog.miguelgrinberg.com/post/video-streaming-with-flask" target="_blank" rel="noopener">https://blog.miguelgrinberg.com/post/video-streaming-with-flask</a><br>OpenCV – Stream video to web browser/HTML page<br><a href="https://www.pyimagesearch.com/2019/09/02/opencv-stream-video-to-web-browser-html-page/" target="_blank" rel="noopener">https://www.pyimagesearch.com/2019/09/02/opencv-stream-video-to-web-browser-html-page/</a><br>Live Webcam Flask Opencv Python<br><a href="https://medium.com/@manivannan_data/live-webcam-flask-opencv-python-26a61fee831" target="_blank" rel="noopener">https://medium.com/@manivannan_data/live-webcam-flask-opencv-python-26a61fee831</a><br>Video Streaming in Web Browsers with OpenCV &amp; Flask<br><a href="https://towardsdatascience.com/video-streaming-in-web-browsers-with-opencv-flask-93a38846fe00" target="_blank" rel="noopener">https://towardsdatascience.com/video-streaming-in-web-browsers-with-opencv-flask-93a38846fe00</a><br>miguelgrinberg / flask-video-streaming<br><a href="https://github.com/miguelgrinberg/flask-video-streaming" target="_blank" rel="noopener">https://github.com/miguelgrinberg/flask-video-streaming</a><br>akmamun / camera-live-streaming<br><a href="https://github.com/akmamun/camera-live-streaming" target="_blank" rel="noopener">https://github.com/akmamun/camera-live-streaming</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-flask/" title="Python Flask 建立簡單的網頁">Python Flask 建立簡單的網頁</a><br><a href="/python-flask-render_template/" title="Python Flask render_template 模板">Python Flask render_template 模板</a><br><br><a href="/python-flask-screenshare/" title="Python Flask 螢幕分享">Python Flask 螢幕分享</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-flask-camera-streaming/" data-id="ckzo5u40m00hhnjt0emlotq8p" data-title="Python Flask OpenCV 攝影機影像即時串流" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MJPEG/">MJPEG</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/std-map/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          C++ std::map 用法與範例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/python-opencv-waitkey/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">[Python+OpenCV] 等待按鍵事件 cv2.waitKey</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fwrite/">C/C++ fwrite 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fgets/">C/C++ fgets 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">127</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 ShengYu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

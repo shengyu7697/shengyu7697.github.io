@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>程式segmentation fault後, 用dmesg和addr2line來除錯 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇紀錄如何從程式的 segmentation fault，配合 dmesg 和 addr2line 來除錯，查出程式是掛(死)在哪個原始碼的第幾行。   首先先來寫一個會讓程式崩潰的程式，再來配合使用 dmesg 查 kernel log 看是掛在哪個記憶體位置，再來配合使用 addr2line 查出該記憶體位置是在程式碼的那一行開始吧！   寫一個會讓程式崩潰的程式讓一個 ptr 指標指向 N">
+<meta name="keywords" content="C&#x2F;C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="程式segmentation fault後, 用dmesg和addr2line來除錯">
+<meta property="og:url" content="https://shengyu7697.github.io/segmentation-fault-core-dumped-dmesg-addr2line/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇紀錄如何從程式的 segmentation fault，配合 dmesg 和 addr2line 來除錯，查出程式是掛(死)在哪個原始碼的第幾行。   首先先來寫一個會讓程式崩潰的程式，再來配合使用 dmesg 查 kernel log 看是掛在哪個記憶體位置，再來配合使用 addr2line 查出該記憶體位置是在程式碼的那一行開始吧！   寫一個會讓程式崩潰的程式讓一個 ptr 指標指向 N">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2021-06-22T02:30:42.506Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="程式segmentation fault後, 用dmesg和addr2line來除錯">
+<meta name="twitter:description" content="本篇紀錄如何從程式的 segmentation fault，配合 dmesg 和 addr2line 來除錯，查出程式是掛(死)在哪個原始碼的第幾行。   首先先來寫一個會讓程式崩潰的程式，再來配合使用 dmesg 查 kernel log 看是掛在哪個記憶體位置，再來配合使用 addr2line 查出該記憶體位置是在程式碼的那一行開始吧！   寫一個會讓程式崩潰的程式讓一個 ptr 指標指向 N">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-segmentation-fault-core-dumped-dmesg-addr2line" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/segmentation-fault-core-dumped-dmesg-addr2line/" class="article-date">
+  <time datetime="2020-01-06T14:00:00.000Z" itemprop="datePublished">2020-01-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      程式segmentation fault後, 用dmesg和addr2line來除錯
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇紀錄如何從程式的 segmentation fault，配合 dmesg 和 addr2line 來除錯，<br>查出程式是掛(死)在哪個原始碼的第幾行。  </p>
+<p>首先先來寫一個會讓程式崩潰的程式，<br>再來配合使用 dmesg 查 kernel log 看是掛在哪個記憶體位置，<br>再來配合使用 addr2line 查出該記憶體位置是在程式碼的那一行<br>開始吧！  </p>
+<h2 id="寫一個會讓程式崩潰的程式"><a href="#寫一個會讓程式崩潰的程式" class="headerlink" title="寫一個會讓程式崩潰的程式"></a>寫一個會讓程式崩潰的程式</h2><p>讓一個 ptr 指標指向 NULL, 使用 printf 印出 ptr 指向的值，<br>使用 <code>g++ cpp-crash.cpp -o a.out</code> 進行編譯，<br>之後再執行 <code>a.out</code> 就會發現程式執行到一半發生segmentation fault (core dumped) 了！<br><figure class="highlight cpp"><figcaption><span>cpp-crash.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-crash.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myprint</span><span class="params">(<span class="keyword">int</span>* ptr)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, *ptr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> *ptr = <span class="literal">NULL</span>;</span><br><span class="line">    myprint(ptr);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Segmentation fault (core dumped)</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用-dmesg-查-kernel-log-看是掛在哪個記憶體位置"><a href="#使用-dmesg-查-kernel-log-看是掛在哪個記憶體位置" class="headerlink" title="使用 dmesg 查 kernel log 看是掛在哪個記憶體位置"></a>使用 dmesg 查 kernel log 看是掛在哪個記憶體位置</h2><p>接著 dmesg 指令可以查看發生段錯誤的程式名稱、造成錯誤發生的記憶體地址、指令指標地址、堆疊指標地址、錯誤程式碼、錯誤原因等，<br>接著使用 dmesg 看看記憶體位置，找到顯示的 ip 為 0000000000400536<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a.out[14306]: segfault at 0 ip 0000000000400536 sp 00007ffce9c58050 error 4 in a.out[400000+1000]</span><br></pre></td></tr></table></figure></p>
+<p>也可用 Android logcat 上 backtrace 的 pc 記憶體位置來去查。  </p>
+<h2 id="配合使用-addr2line-查出該記憶體位置是在程式碼的那一行"><a href="#配合使用-addr2line-查出該記憶體位置是在程式碼的那一行" class="headerlink" title="配合使用 addr2line 查出該記憶體位置是在程式碼的那一行"></a>配合使用 addr2line 查出該記憶體位置是在程式碼的那一行</h2><p>最後使用 addr2line 找出 ip 0000000000400536 在程式碼第幾行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ addr2line -Cfie ./a.out 0000000000400536</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myprint(int*)</span><br><span class="line">??:?</span><br></pre></td></tr></table></figure></p>
+<p>上列資訊顯示程式死在 myprint 這個函式裡，但是看不到行數，<br>原因是因為使用 g++ 時沒用 <code>-g</code> 參數讓它編譯出有除錯的資訊<br>使用 <code>g++ cpp-crash.cpp -o a.out -g</code> 再編譯一次吧！<br>之後在執行一次，將 ip 拿去用 addr2line 查出的結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myprint(int*)</span><br><span class="line">/home/xxx/cpp-crash.cpp:5</span><br></pre></td></tr></table></figure></p>
+<p>這次就可以很清楚看到原始檔名稱與行數了！<br>這樣就可以回去程式碼裡好好看看是哪裡寫錯了。  </p>
+<h2 id="使用-nm-查詢"><a href="#使用-nm-查詢" class="headerlink" title="使用 nm 查詢"></a>使用 nm 查詢</h2><p>使用 nm 指令 <code>nm -gC a.out</code> 可以導出 symbol，<br>如下所示，發現 myprint 的位置是 0000000000400526 跟上面的 ip 很接近  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">0000000000601038 B __bss_start</span><br><span class="line">0000000000601028 D __data_start</span><br><span class="line">0000000000601028 W data_start</span><br><span class="line">0000000000601030 D __dso_handle</span><br><span class="line">0000000000601038 D _edata</span><br><span class="line">0000000000601040 B _end</span><br><span class="line">00000000004005e4 T _fini</span><br><span class="line">                 w __gmon_start__</span><br><span class="line">00000000004003c8 T _init</span><br><span class="line">00000000004005f0 R _IO_stdin_used</span><br><span class="line">                 w _ITM_deregisterTMCloneTable</span><br><span class="line">                 w _ITM_registerTMCloneTable</span><br><span class="line">                 w _Jv_RegisterClasses</span><br><span class="line">00000000004005e0 T __libc_csu_fini</span><br><span class="line">0000000000400570 T __libc_csu_init</span><br><span class="line">                 U __libc_start_main@@GLIBC_2.2.5</span><br><span class="line">000000000040054c T main</span><br><span class="line">                 U printf@@GLIBC_2.2.5</span><br><span class="line">0000000000400430 T _start</span><br><span class="line">0000000000601038 D __TMC_END__</span><br><span class="line">0000000000400526 T myprint(int*)</span><br></pre></td></tr></table></figure>
+<p>參考<br>[1] 使用dmesg和addr2line查找程序崩潰後的現場報告 | cpper<br><a href="http://www.cpper.cn/2016/09/09/develop/dmesg-addr2line/" target="_blank" rel="noopener">http://www.cpper.cn/2016/09/09/develop/dmesg-addr2line/</a>  </p>
+<p>[2] gdb調試core dump入門實踐（順便複習一下之前介紹過的addr2line命令調試） - stpeace的專欄<br><a href="https://blog.csdn.net/stpeace/article/details/49806473" target="_blank" rel="noopener">https://blog.csdn.net/stpeace/article/details/49806473</a>  </p>
+<p>[3] 關於Segmentation fault (core dumped)幾個簡單問題的整理<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/560380/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/560380/</a><br>什麼是Core Dump，可以看看這篇的介紹  </p>
+<p>[4]【已解決】Linux下出現Segmentation Fault（core dump）錯誤 - YSBJ123的博客<br><a href="https://blog.csdn.net/YSBJ123/article/details/50035169" target="_blank" rel="noopener">https://blog.csdn.net/YSBJ123/article/details/50035169</a><br>其他也不錯的文章，這篇有好幾種讓你產生 Segmentation Fault 的程式<br>從 <a href="https://www.cnblogs.com/panfeng412/archive/2011/11/06/segmentation-fault-in-linux.html" target="_blank" rel="noopener">https://www.cnblogs.com/panfeng412/archive/2011/11/06/segmentation-fault-in-linux.html</a> 轉載  </p>
+<p>[5] 内核 segfault 报错分析 - Jamin Zhang<br><a href="https://jaminzhang.github.io/linux/Kernel-Segfault-Analysis/" target="_blank" rel="noopener">https://jaminzhang.github.io/linux/Kernel-Segfault-Analysis/</a><br>解釋 error 4 代表什麼意思  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/linux-addr2line/" title="addr2line 用法">addr2line 用法</a><br><a href="/linux-nm/" title="nm 用法與範例">nm 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="ckzo5u2tv0070njt0kdwizkl9" data-title="程式segmentation fault後, 用dmesg和addr2line來除錯" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/cpp-printf-int32_t-uint32_t/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          printf 列印 int32_t / uint32_t 的方法
+        
+      </div>
+    </a>
+  
+  
+    <a href="/use-breakpoint-in-visual-studio-release-mode/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">在 Visual Studio 的 Release 模式下使用中斷點</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fwrite/">C/C++ fwrite 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fgets/">C/C++ fgets 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">127</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 ShengYu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

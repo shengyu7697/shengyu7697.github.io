@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>std::ref 用法與範例 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇 ShengYu 介紹 C++ std::ref 用法與範例，   C++ 要使用 std::ref 的話，需要引入的標頭檔：&amp;lt;functional&amp;gt;   以下內容將分為這幾部份，    簡單的 std::ref 用法   已經有 &amp;amp; ，那什麼時候會用到 std::ref？   std::ref 與 std::cref   std::ref() 與 &amp;amp; 的轉換關係">
+<meta name="keywords" content="C&#x2F;C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="std::ref 用法與範例">
+<meta property="og:url" content="https://shengyu7697.github.io/std-ref/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇 ShengYu 介紹 C++ std::ref 用法與範例，   C++ 要使用 std::ref 的話，需要引入的標頭檔：&amp;lt;functional&amp;gt;   以下內容將分為這幾部份，    簡單的 std::ref 用法   已經有 &amp;amp; ，那什麼時候會用到 std::ref？   std::ref 與 std::cref   std::ref() 與 &amp;amp; 的轉換關係">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2022-02-04T13:36:17.059Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="std::ref 用法與範例">
+<meta name="twitter:description" content="本篇 ShengYu 介紹 C++ std::ref 用法與範例，   C++ 要使用 std::ref 的話，需要引入的標頭檔：&amp;lt;functional&amp;gt;   以下內容將分為這幾部份，    簡單的 std::ref 用法   已經有 &amp;amp; ，那什麼時候會用到 std::ref？   std::ref 與 std::cref   std::ref() 與 &amp;amp; 的轉換關係">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-std-ref" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-ref/" class="article-date">
+  <time datetime="2021-03-08T14:00:00.000Z" itemprop="datePublished">2021-03-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      std::ref 用法與範例
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C++ std::ref 用法與範例，  </p>
+<p>C++ 要使用 std::ref 的話，<strong>需要引入的標頭檔</strong>：<code>&lt;functional&gt;</code>  </p>
+<p>以下內容將分為這幾部份，  </p>
+<ul>
+<li>簡單的 std::ref 用法  </li>
+<li>已經有 <code>&amp;</code> ，那什麼時候會用到 std::ref？  </li>
+<li>std::ref 與 std::cref  </li>
+<li>std::ref() 與 <code>&amp;</code> 的轉換關係  </li>
+</ul>
+<h2 id="簡單的-std-ref-用法"><a href="#簡單的-std-ref-用法" class="headerlink" title="簡單的 std::ref 用法"></a>簡單的 std::ref 用法</h2><p>簡單的 std::ref 用法如下，感覺很像 <code>&amp;</code> reference 參考，對 std::ref() 產生出來的 n2 做修改可以影響原本的 n1，<br><figure class="highlight cpp"><figcaption><span>std-ref.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ref.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n1 = <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> n2 = <span class="built_in">std</span>::ref(n1);</span><br><span class="line"></span><br><span class="line">    n2++;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"n1="</span> &lt;&lt; n1 &lt;&lt; <span class="string">",n2="</span> &lt;&lt; n2 &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    n1++;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"n1="</span> &lt;&lt; n1 &lt;&lt; <span class="string">",n2="</span> &lt;&lt; n2 &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">n1=6,n2=6</span><br><span class="line">n1=7,n2=7</span><br></pre></td></tr></table></figure></p>
+<h2 id="已經有-amp-，那什麼時候會用到-std-ref？"><a href="#已經有-amp-，那什麼時候會用到-std-ref？" class="headerlink" title="已經有 &amp; ，那什麼時候會用到 std::ref？"></a>已經有 <code>&amp;</code> ，那什麼時候會用到 std::ref？</h2><p>你可能會疑惑 C++ 已經有 <code>&amp;</code> 參考了，那 C++11 新增的 std::ref 是幹麻用的呢？<br>那我們就來看看什麼時候用 <code>&amp;</code> 參考，什麼時候用 std::ref，<br>某天我有個 myfunc 是用來傳參考並在 myfunc 裡面對 n 作一些計算，之後在 main 可以取得 n 的計算結果，這個傳參考的方式相信大家都很熟了，傳參考不熟的可以看<a href="/cpp-call-by-value-pointer-reference/" title="這篇">這篇</a>，<br><figure class="highlight cpp"><figcaption><span>std-ref2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ref2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc</span><span class="params">(<span class="keyword">int</span>&amp; n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"myfunc n="</span> &lt;&lt; n &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    n++;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">0</span>;</span><br><span class="line">    myfunc(n);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main n="</span> &lt;&lt; n &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myfunc n=0</span><br><span class="line">main n=1</span><br></pre></td></tr></table></figure></p>
+<p>後來我有個需求要另外開個執行緒來做 myfunc 這件事，在之前我們已經有介紹過<a href="/std-thread/" title="怎麼建立執行緒">怎麼建立執行緒</a>，所以我們馬上開始改寫成下面這樣，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc</span><span class="params">(<span class="keyword">int</span>&amp; n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"myfunc n="</span> &lt;&lt; n &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    n++;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(myfunc, n)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main n="</span> &lt;&lt; n &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>疑？！結果居然出現編譯錯誤，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/usr/include/c++/5/functional: In instantiation of ‘struct std::_Bind_simple&lt;void (*(int))(int&amp;)&gt;’:</span><br><span class="line">/usr/include/c++/5/thread:137:59:   required from ‘std::thread::thread(_Callable&amp;&amp;, _Args&amp;&amp; ...) [with _Callable = void (&amp;)(int&amp;); _Args = &#123;int&amp;&#125;]’</span><br><span class="line">std-ref4.cpp:12:29:   required from here</span><br><span class="line">/usr/include/c++/5/functional:1505:61: error: no type named ‘type’ in ‘class std::result_of&lt;void (*(int))(int&amp;)&gt;’</span><br><span class="line">       typedef typename result_of&lt;_Callable(_Args...)&gt;::type result_type;</span><br><span class="line">                                                             ^</span><br><span class="line">/usr/include/c++/5/functional:1526:9: error: no type named ‘type’ in ‘class std::result_of&lt;void (*(int))(int&amp;)&gt;’</span><br><span class="line">         _M_invoke(_Index_tuple&lt;_Indices...&gt;)</span><br><span class="line">         ^</span><br></pre></td></tr></table></figure></p>
+<p>如果改成 <code>myfunc(int n)</code> 就可以編譯成功，但這樣是傳值不是我想要的，<br>那麼開執行緒執行 <code>myfunc(int&amp; n)</code> 參數傳參考要如何寫呢？<br>透過查詢文件與了解後，發現原來像 std::thread() 或 std::bind() 這種函式裡的參數傳遞方式為傳值(call by value)，如果要傳參考的話，就要使用 std::ref 輔助類別來達成，也就是我現在這種開執行緒執行 myfunc 函式時參數是傳參考時，需要在 std::thread 建構時帶入的參數使用 std::ref() 來達到傳參考的目的啦！  </p>
+<p>原來如此，那馬上來修改，修改後的程式碼變這樣，<br><figure class="highlight cpp"><figcaption><span>std-ref3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ref3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc</span><span class="params">(<span class="keyword">int</span>&amp; n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"myfunc n="</span> &lt;&lt; n &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    n++;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(myfunc, <span class="built_in">std</span>::ref(n))</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main n="</span> &lt;&lt; n &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>馬上在 std::thread 開執行緒時傳遞參數改成 <code>std::ref(n)</code> 就可以編譯成功了，輸出結果如下，由此可見 <code>std::thread()</code> 預設使用的是參數傳遞方式是傳值 call by value 而不是傳參考 call by reference，關於 call by value 與 call by reference 這兩個的參數傳遞差異可以看<a href="/cpp-call-by-value-pointer-reference/" title="這篇">這篇</a>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myfunc n=0</span><br><span class="line">main n=1</span><br></pre></td></tr></table></figure></p>
+<h2 id="std-ref-與-std-cref"><a href="#std-ref-與-std-cref" class="headerlink" title="std::ref 與 std::cref"></a>std::ref 與 std::cref</h2><p>透過上述的漸進式說明，我們了解了 std::ref 主要是考慮<a href="https://zh.m.wikipedia.org/wiki/%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B" target="_blank" rel="noopener">函數式程式設計 functional programming</a>在使用時(例如 std::bind)是對參數傳值，而不是傳參考。  </p>
+<p>我們知道了 std::ref 用於包裝傳參考之外，那麼 const 傳參考呢？答案就是 std::cref，我們來看看下面 std::bind 例子就可以很清楚了解這兩者之間的差異了，std::bind() 是一個函式樣板 function template，它的原理是根據已有的樣板，生成一個函式，但是由於 std::bind() 不知道生成的函式執行的時候，傳遞進來的參數是否還有效。所以它選擇傳值 call by value 而不是傳參考 call by reference。如果要傳參考就要使用 std::ref 或 std::cref。  </p>
+<figure class="highlight cpp"><figcaption><span>std-ref4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ref4.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>&amp; n1, <span class="keyword">int</span>&amp; n2, <span class="keyword">const</span> <span class="keyword">int</span>&amp; n3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"In function: "</span> &lt;&lt; n1 &lt;&lt; <span class="string">' '</span> &lt;&lt; n2 &lt;&lt; <span class="string">' '</span> &lt;&lt; n3 &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    ++n1; <span class="comment">// increments the copy of n1 stored in the function object</span></span><br><span class="line">    ++n2; <span class="comment">// increments the main()'s n2</span></span><br><span class="line">    <span class="comment">// ++n3; // compile error</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n1 = <span class="number">0</span>, n2 = <span class="number">0</span>, n3 = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>()&gt; bound_f = <span class="built_in">std</span>::bind(f, n1, <span class="built_in">std</span>::ref(n2), <span class="built_in">std</span>::cref(n3));</span><br><span class="line">    n1 = <span class="number">1</span>;</span><br><span class="line">    n2 = <span class="number">1</span>;</span><br><span class="line">    n3 = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Before function: "</span> &lt;&lt; n1 &lt;&lt; <span class="string">' '</span> &lt;&lt; n2 &lt;&lt; <span class="string">' '</span> &lt;&lt; n3 &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    bound_f();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"After function: "</span> &lt;&lt; n1 &lt;&lt; <span class="string">' '</span> &lt;&lt; n2 &lt;&lt; <span class="string">' '</span> &lt;&lt; n3 &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Before function: 1 1 1</span><br><span class="line">In function: 0 1 1</span><br><span class="line">After function: 1 2 1</span><br></pre></td></tr></table></figure></p>
+<p>在 std::bind 後面的參數中，n1 是傳值，所以 f 函式內部的 n1 修改不會影響到 main 的 n1，因為傳值是在 f 函式裡複製一份(副本)，<br>n2 是傳參考，所以 f 函式內部的 n2 修改會影響到 main 的 n2，<br>n3 是 const 傳參考，所以在 f 函式內部裡不能對 n3 修改，如果嘗試修改 n3 的話就會編譯錯誤。  </p>
+<h2 id="std-ref-與-amp-的轉換關係"><a href="#std-ref-與-amp-的轉換關係" class="headerlink" title="std::ref() 與 &amp; 的轉換關係"></a>std::ref() 與 <code>&amp;</code> 的轉換關係</h2><p>std::ref() 和 std::cref() 是輔助類別會回傳 std::reference_wrapper 類別樣板 class template，用於傳遞物件的參考給 std::bind 或 std::thread 建構子時，<br>所以它到底跟 <code>&amp;</code> 有什麼關係呢？我們來看看下面這段程式了解它們之間的型別關係，<br><figure class="highlight cpp"><figcaption><span>std-ref5.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ref5.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;type_traits&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n1 = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">auto</span> n2 = <span class="built_in">std</span>::ref(n1);</span><br><span class="line">    <span class="built_in">std</span>::reference_wrapper&lt;<span class="keyword">int</span>&gt; n3 = <span class="built_in">std</span>::ref(n1);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; </span><br><span class="line">        <span class="built_in">std</span>::is_same&lt;<span class="keyword">int</span>&amp;, <span class="keyword">decltype</span>(n2)&gt;::value &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; </span><br><span class="line">        <span class="built_in">std</span>::is_same&lt;<span class="keyword">int</span>&amp;, <span class="keyword">decltype</span>(n2.get())&gt;::value &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    </span><br><span class="line">    n1 = <span class="number">10</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"n1="</span> &lt;&lt; n1 &lt;&lt; <span class="string">",n2="</span> &lt;&lt; n2 &lt;&lt; <span class="string">",n3="</span> &lt;&lt; n3 &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">false</span><br><span class="line">true</span><br><span class="line">n1=10,n2=10,n3=10</span><br></pre></td></tr></table></figure></p>
+<p>由此可見 std::ref() 回傳後的 std::reference_wrapper::get() 就相當於使用 <code>&amp;</code>，有興趣的人可以去看 std::reference_wrapper 的原始碼實作，  </p>
+<p>其他參考<br>ref - C++ Reference<br><a href="http://www.cplusplus.com/reference/functional/ref/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/functional/ref/</a><br>std::ref, std::cref - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/utility/functional/ref" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/utility/functional/ref</a><br>std::reference_wrapper - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper</a><br>std::ref和std::cref使用_幻想之漁-CSDN博客<br><a href="https://blog.csdn.net/lmb1612977696/article/details/81543802" target="_blank" rel="noopener">https://blog.csdn.net/lmb1612977696/article/details/81543802</a><br>為什麼C++11引入了std::ref？ - jiayayao - 博客園<br><a href="https://www.cnblogs.com/jiayayao/p/6527713.html" target="_blank" rel="noopener">https://www.cnblogs.com/jiayayao/p/6527713.html</a><br>C++11 的 std::ref 用法 | 拾荒志<br><a href="https://murphypei.github.io/blog/2019/04/cpp-std-ref" target="_blank" rel="noopener">https://murphypei.github.io/blog/2019/04/cpp-std-ref</a><br>std::ref()和&amp; - 简书<br><a href="https://www.jianshu.com/p/277675675593" target="_blank" rel="noopener">https://www.jianshu.com/p/277675675593</a><br>C++11中std::reference_wrapper的理解 - 简书<br><a href="https://www.jianshu.com/p/060901307b68" target="_blank" rel="noopener">https://www.jianshu.com/p/060901307b68</a><br>什麼是 函數式編程 functional programming？<br><a href="https://ithelp.ithome.com.tw/articles/10192916" target="_blank" rel="noopener">https://ithelp.ithome.com.tw/articles/10192916</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-string-to-integer/" title="C/C++ 3種字串轉數字的方法與範例">C/C++ 3種字串轉數字的方法與範例</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-ref/" data-id="ckzo5u40q00hlnjt078w7khfl" data-title="std::ref 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/cpp-cout-myclass/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          C++ cout 自定義類別
+        
+      </div>
+    </a>
+  
+  
+    <a href="/python-tkinter-statusbar/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Python tkinter status bar 狀態列用法與範例</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fwrite/">C/C++ fwrite 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fgets/">C/C++ fgets 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">127</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 ShengYu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

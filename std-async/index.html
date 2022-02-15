@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>C++ std::async 用法與範例 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇介紹 C++ 的 std::async 非同步函式的用法教學，並提供一些入門常用的範例程式碼。   首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。st">
+<meta name="keywords" content="C&#x2F;C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ std::async 用法與範例">
+<meta property="og:url" content="https://shengyu7697.github.io/std-async/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇介紹 C++ 的 std::async 非同步函式的用法教學，並提供一些入門常用的範例程式碼。   首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。st">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2022-02-04T13:36:17.015Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ std::async 用法與範例">
+<meta name="twitter:description" content="本篇介紹 C++ 的 std::async 非同步函式的用法教學，並提供一些入門常用的範例程式碼。   首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。st">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-std-async" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-async/" class="article-date">
+  <time datetime="2020-02-08T14:00:00.000Z" itemprop="datePublished">2020-02-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C++ std::async 用法與範例
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::async 非同步函式的用法教學，並提供一些入門常用的範例程式碼。  </p>
+<p>首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：<br>std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。<br>std::launch::deferred：拖延/懶惰模式，別人來跟我要資料時，我才去建立執行緒運算生成這些資料(在呼叫 std::async 時還不會建立新執行緒，而是呼叫 std::future 的函式時才開始建立新執行緒去運算執行）。<br><strong>需要引入的標頭檔</strong>：<code>&lt;future&gt;</code>  </p>
+<p>本篇內容將分為：  </p>
+<ul>
+<li><strong>範例1. async (async policy)</strong>  </li>
+<li><strong>範例2. async (deferred policy)</strong>  </li>
+<li><strong>範例3. async (default policy)</strong>  </li>
+<li><strong>async 與 thread 的差異之處</strong>  </li>
+</ul>
+<h2 id="範例1-async-async-policy"><a href="#範例1-async-async-policy" class="headerlink" title="範例1. async (async policy)"></a>範例1. async (async policy)</h2><p>以下範例為 async policy 的示範，中譯叫非同步策略，意思是同時進行，main() 主執行緒呼叫 std::async 建構子立即返回後即繼續執行，std::async 會將這個 foo() 丟到另外的執行緒去執行，所以以下的範例輸出將會有兩種情形，一種是主執行緒很快的就印出 <code>--1--</code>，另一種情形是先印出 <code>a3</code> 再印出 <code>--1--</code>。<br><figure class="highlight cpp"><figcaption><span>std-async1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async1.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a1 = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::async, foo, <span class="string">"a1"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    a1.get();</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a1--1--</span><br><span class="line"></span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>or<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">a1</span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="範例2-async-deferred-policy"><a href="#範例2-async-deferred-policy" class="headerlink" title="範例2. async (deferred policy)"></a>範例2. async (deferred policy)</h2><p>以下範例是 async 使用 deferred policy 這個策略，什麼是deferred policy 呢？deferred policy 就是拖延/懶惰模式，簡單說就是別人來跟我要資料時，我才去運算生產/運算這些資料，這裡的 wait() 或者 get() 就是別人來跟我要資料的比喻。<br>當 a2.get() or a2.wait() 被呼叫時，才去同步執行 foo() 印出 “a2”。<br>future 的結果有三種方式：<br><code>get()</code>：等待非同步執行結束並回傳結果。<br><code>wait()</code>：等待非同步執行結束，沒有回傳值。<br><code>wait_for()</code>：超過等待時間回傳結果。<br><figure class="highlight cpp"><figcaption><span>std-async2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a2 = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::deferred, foo, <span class="string">"a2"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    a2.wait(); <span class="comment">// 印出 a2</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">--2--</span><br><span class="line">a2</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>這個功能在實作爬蟲時特別好用，例如：一次同時爬 n 個網站。  </p>
+<hr>
+<h2 id="範例3-async-default-policy"><a href="#範例3-async-default-policy" class="headerlink" title="範例3. async (default policy)"></a>範例3. async (default policy)</h2><p>以下為 default policy 的範例，default policy 就是 async policy 或 deferred policy 兩種其中一種，基本上 default policy 就是前兩種範例的混合體囉！所以在輸出的結果上也會有兩種情形。<br><figure class="highlight cpp"><figcaption><span>std-async3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a3 = <span class="built_in">std</span>::async(foo, <span class="string">"a3"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a3--1--</span><br><span class="line"></span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>or<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">a3</span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<h2 id="async-與-thread-的差異之處"><a href="#async-與-thread-的差異之處" class="headerlink" title="async 與 thread 的差異之處"></a>async 與 thread 的差異之處</h2><p>要取得運算結果時，使用 thread 要取得運算結果通常是在全域變數宣告一個變數，之後使用 join() 再將得到這個變數值，過程比較繁瑣些，使用 async 的話，可以透過回傳的 future 去取得這個運算結果，非常方便。  </p>
+<p>接下來下篇會介紹實際上什麼情況會需要用到 async 與應用場合及範例。  </p>
+<hr>
+<p>參考<br>[1] std::async - cppreference.com - C++ Reference<br><a href="https://en.cppreference.com/w/cpp/thread/async" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/thread/async</a><br>[2] async - C++ Reference<br><a href="http://www.cplusplus.com/reference/future/async/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/future/async/</a><br>[3] C++11 程式的平行化：async 與 future<br><a href="https://kheresy.wordpress.com/2016/03/14/async-and-future-in-c11/" target="_blank" rel="noopener">https://kheresy.wordpress.com/2016/03/14/async-and-future-in-c11/</a><br>[4] C++ 使用 Async 非同步函數開發平行化計算程式教學<br><a href="https://blog.gtwang.org/programming/cpp-11-async-function-parallel-computing-tutorial/" target="_blank" rel="noopener">https://blog.gtwang.org/programming/cpp-11-async-function-parallel-computing-tutorial/</a><br>[5] C++並發實戰13：std::future、std::async、std::promise、std::packaged_task - wanghualin033的博客 - CSDN博客<br><a href="https://blog.csdn.net/wanghualin033/article/details/89421221" target="_blank" rel="noopener">https://blog.csdn.net/wanghualin033/article/details/89421221</a><br>[6] Futures with std::async<br><a href="http://jakascorner.com/blog/2016/02/futures.html" target="_blank" rel="noopener">http://jakascorner.com/blog/2016/02/futures.html</a><br>[7] std::async 的两个坑 - 知乎<br><a href="https://zhuanlan.zhihu.com/p/39757902" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/39757902</a><br>在 std::future 解構時會 block 直到非同步的執行結束，所以用 lambda expression 時需注意。  </p>
+<hr>
+<p><strong>相關文章</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-async/" data-id="ckzo5u2u2007fnjt0975hps05" data-title="C++ std::async 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/std-this_thread-sleep_for/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          std::this_thread::sleep_for 用法與範例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/std-find/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">C++ std::find 搜尋用法與範例</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fwrite/">C/C++ fwrite 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fgets/">C/C++ fgets 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">127</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 ShengYu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

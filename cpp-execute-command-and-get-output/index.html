@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <script data-ad-client="ca-pub-8106207149031244" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <meta charset="utf-8">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>C/C++ 取得 shell 指令的螢幕輸出字串 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇介紹在 C/C++ 程式用 popen 來取得外部執行 shell command 指令結果(螢幕輸出字串)，例如在程式裡執行 ls 指令，那我們怎麼透過 popen 獲得 ls 指令的輸出結果，請參考下面內容。   同樣是在程式裡執行 ls，來看看這幾個方式有什麼不同，使用 system 來執行會等待system執行完(blocking)，就接著往下執行了，使用 popen 來執行不會等待執">
+<meta name="keywords" content="C&#x2F;C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C&#x2F;C++ 取得 shell 指令的螢幕輸出字串">
+<meta property="og:url" content="https://shengyu7697.github.io/cpp-execute-command-and-get-output/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇介紹在 C/C++ 程式用 popen 來取得外部執行 shell command 指令結果(螢幕輸出字串)，例如在程式裡執行 ls 指令，那我們怎麼透過 popen 獲得 ls 指令的輸出結果，請參考下面內容。   同樣是在程式裡執行 ls，來看看這幾個方式有什麼不同，使用 system 來執行會等待system執行完(blocking)，就接著往下執行了，使用 popen 來執行不會等待執">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2022-02-04T13:36:17.029Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C&#x2F;C++ 取得 shell 指令的螢幕輸出字串">
+<meta name="twitter:description" content="本篇介紹在 C/C++ 程式用 popen 來取得外部執行 shell command 指令結果(螢幕輸出字串)，例如在程式裡執行 ls 指令，那我們怎麼透過 popen 獲得 ls 指令的輸出結果，請參考下面內容。   同樣是在程式裡執行 ls，來看看這幾個方式有什麼不同，使用 system 來執行會等待system執行完(blocking)，就接著往下執行了，使用 popen 來執行不會等待執">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cpp-execute-command-and-get-output" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-execute-command-and-get-output/" class="article-date">
+  <time datetime="2020-08-12T14:00:00.000Z" itemprop="datePublished">2020-08-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C/C++ 取得 shell 指令的螢幕輸出字串
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹在 C/C++ 程式用 popen 來取得外部執行 shell command 指令結果(螢幕輸出字串)，例如在程式裡執行 ls 指令，那我們怎麼透過 popen 獲得 ls 指令的輸出結果，請參考下面內容。  </p>
+<p>同樣是在程式裡執行 ls，來看看這幾個方式有什麼不同，<br>使用 <code>system</code> 來執行會等待system執行完(blocking)，就接著往下執行了，<br>使用 <code>popen</code> 來執行不會等待執行完(non-blocking)，才接著往下執行，<br>但是如果要讀取 <code>popen</code> 的執行結果就必須等待執行完成(blocking)，才接著往下執行，<br>要記得這幾個之前差異，在使用上才能依情境挑選適合的 api 來使用。  </p>
+<h2 id="範例-用-popen-取得外部執行的結果"><a href="#範例-用-popen-取得外部執行的結果" class="headerlink" title="範例. 用 popen 取得外部執行的結果"></a>範例. 用 popen 取得外部執行的結果</h2><p>以下範例為執行一個外部指令 ls 並取讀取 ls 的輸出，將其輸出用 cout 印出來，  </p>
+<p>使用 popen 去建立一個管道 pipe，透過 fork 產生新的子行程，然後執行 ls 指令，<br>popen 回傳的是 FILE 類型，可以用讀取文件的方式去操作它，最後不使用時要 pclose，  </p>
+<p>其中 fgets 是每次讀取一行，也就是讀取到’\n’換行字元就會返回，<br>也可以換成 fread，視不同情形而定，<br>不斷地將讀取到的內容疊加在 result 裡最後返回，<br><figure class="highlight cpp"><figcaption><span>cpp-get-exec-cmd-output.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-get-exec-cmd-output.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdexcept&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">shellCmd</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span> &amp;cmd, <span class="built_in">string</span> &amp;result)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">512</span>];</span><br><span class="line">    result = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Open pipe to file</span></span><br><span class="line">    FILE* pipe = popen(cmd.c_str(), <span class="string">"r"</span>);</span><br><span class="line">    <span class="keyword">if</span> (!pipe) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// read till end of process:</span></span><br><span class="line">    <span class="keyword">while</span> (!feof(pipe)) &#123;</span><br><span class="line">        <span class="comment">// use buffer to read and add to result</span></span><br><span class="line">        <span class="keyword">if</span> (fgets(buffer, <span class="keyword">sizeof</span>(buffer), pipe) != <span class="literal">NULL</span>)</span><br><span class="line">            result += buffer;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pclose(pipe);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">string</span> result;</span><br><span class="line">    shellCmd(<span class="string">"ls"</span>, result);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; result;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>有一定經驗的人都知道 <code>popen</code> 與 <code>pclose</code> 只有在 unix 系統下有，在 windows 下是沒有 <code>popen</code> 與 <code>pclose</code>，但是有對應的函式，<br><code>popen</code> 與 <code>pclose</code> 在 Windows 裡對應的函式為 <code>_popen</code> 與 <code>_pclose</code>， 詳情請看<a href="https://docs.microsoft.com/zh-tw/cpp/c-runtime-library/reference/popen-wpopen?view=vs-2019" target="_blank" rel="noopener">微軟官方文件</a>  </p>
+<h2 id="使用-C-11-的寫法"><a href="#使用-C-11-的寫法" class="headerlink" title="使用 C++11 的寫法"></a>使用 C++11 的寫法</h2><figure class="highlight cpp"><figcaption><span>cpp-get-exec-cmd-output-cpp11.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TBD</span><br></pre></td></tr></table></figure>
+<h2 id="進階-寫個像-tail-或-tee-指令的程式"><a href="#進階-寫個像-tail-或-tee-指令的程式" class="headerlink" title="進階. 寫個像 tail 或 tee 指令的程式"></a>進階. 寫個像 tail 或 tee 指令的程式</h2><p><code>tail -f</code>指令可以持續監控對某個檔案，該檔案一旦有新增便會將內容印出來，<br>tee 指令是將某指令的標準輸出重新導到檔案也順便導到標準輸出，  </p>
+<p>其訣竅在持續讀取，<br><figure class="highlight cpp"><figcaption><span>cpp-get-exec-cmd-output2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-get-exec-cmd-output2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdexcept&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> stop = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">shellCmd</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span> &amp;cmd)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">512</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Open pipe to file</span></span><br><span class="line">    FILE* pipe = popen(cmd.c_str(), <span class="string">"r"</span>);</span><br><span class="line">    <span class="keyword">if</span> (!pipe) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// read till end of process:</span></span><br><span class="line">    <span class="keyword">while</span> (!feof(pipe) || stop) &#123;</span><br><span class="line">        <span class="comment">// use buffer to read and add to result</span></span><br><span class="line">        <span class="keyword">if</span> (fgets(buffer, <span class="keyword">sizeof</span>(buffer), pipe) != <span class="literal">NULL</span>)</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; buffer;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pclose(pipe);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    thread th1 = thread(shellCmd, <span class="string">"tail -f /var/log/syslog"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">10</span>));</span><br><span class="line">    stop = <span class="literal">true</span>;</span><br><span class="line">    th1.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>不過在結束時可能會卡在 plcose 結束不了有點小缺陷，之後有時間再把它改寫吧～  </p>
+<p>參考<br>[1] process - How do I execute a command and get the output of the command within C++ using POSIX? - Stack Overflow<br><a href="https://stackoverflow.com/questions/478898/how-do-i-execute-a-command-and-get-the-output-of-the-command-within-c-using-po" target="_blank" rel="noopener">https://stackoverflow.com/questions/478898/how-do-i-execute-a-command-and-get-the-output-of-the-command-within-c-using-po</a><br>[2] How to execute a command and get the output of command within C++ using POSIX?<br><a href="https://www.tutorialspoint.com/How-to-execute-a-command-and-get-the-output-of-command-within-Cplusplus-using-POSIX" target="_blank" rel="noopener">https://www.tutorialspoint.com/How-to-execute-a-command-and-get-the-output-of-command-within-Cplusplus-using-POSIX</a><br>有效<br>[3] c++11 - How to execute a command and get return code stdout and stderr of command in C++ - Stack Overflow<br><a href="https://stackoverflow.com/questions/52164723/how-to-execute-a-command-and-get-return-code-stdout-and-stderr-of-command-in-c" target="_blank" rel="noopener">https://stackoverflow.com/questions/52164723/how-to-execute-a-command-and-get-return-code-stdout-and-stderr-of-command-in-c</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-sort/" title="C++ std::sort 排序用法與範例完整介紹">C++ std::sort 排序用法與範例完整介紹</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-check-if-file-exists/" title="C/C++ 判斷檔案是否存在">C/C++ 判斷檔案是否存在</a><br><a href="/cpp-singleton-pattern/" title="C++ 設計模式 - 單例模式 Singleton Pattern">C++ 設計模式 - 單例模式 Singleton Pattern</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-execute-command-and-get-output/" data-id="ckzo5u2v7009onjt0rixjmsws" data-title="C/C++ 取得 shell 指令的螢幕輸出字串" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="1792535573"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <!-- ads-2 -->
+    
+<nav id="article-nav">
+  
+    <a href="/ubuntu-netbootin-live-usb/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料
+        
+      </div>
+    </a>
+  
+  
+    <a href="/cpp-string-reverse/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">C/C++ 字串反轉 reverse</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fwrite/">C/C++ fwrite 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fgets/">C/C++ fgets 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">127</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!--<h3 class="widget-title">廣告</h3>
+  <div class="widget">
+  </div>-->
+  <!-- ads-3 -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="8896181732"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  <!-- ads-3 -->
+</div>
+<script>
+  setTimeout(() => {
+    let ad1h = 280;
+    let ad2h = 280;
+    let ad3h = 600;
+    let mainh = document.getElementById("main").clientHeight
+    let sidebarh = mainh+ad1h+ad2h-ad3h;
+    document.getElementById("sidebar").style.height = sidebarh+"px";
+    }, 1200);
+  setTimeout(() => {
+      let ad1h = 280;
+      let ad2h = 280;
+      let ad3h = 600;
+      let mainh = document.getElementById("main").clientHeight
+      let sidebarh = mainh+ad1h+ad2h-ad3h;
+      document.getElementById("sidebar").style.height = sidebarh+"px";
+      }, 3000);
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2022 ShengYu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
