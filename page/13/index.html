@@ -105,6 +105,79 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-pthread" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-pthread/" class="article-date">
+  <time datetime="2021-05-07T14:00:00.000Z" itemprop="datePublished">2021-05-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-pthread/">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 要介紹 C/C++ Linux/Unix pthread 建立多執行緒用法與範例，  </p>
+<ul>
+<li>pthread 建立新 thread 來執行一個函式  </li>
+<li>pthread 建立新 thread 來執行一個函式，且帶入參數  </li>
+<li>pthread 建立新 thread 來執行一個類別函式  </li>
+<li>pthread detach 不等待 thread 執行結束  </li>
+<li>pthread 用陣列建立多個 thread  </li>
+</ul>
+<h2 id="pthread-建立新-thread-來執行一個函式"><a href="#pthread-建立新-thread-來執行一個函式" class="headerlink" title="pthread 建立新 thread 來執行一個函式"></a>pthread 建立新 thread 來執行一個函式</h2><p>pthread 要建立新 thread 的話使用的函式為 pthread_create，<br>第三個參數為執行緒的函式指標，要注意的是 foo 的函式參數與回傳值類型要符合 pthread_create 的規定，<br>最後需要使用 pthread_join 來等待 t1 執行完成，這表示主執行緒會停在這一行，直到 t1 thread 執行完成才會往下繼續執行，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="pthread-建立新-thread-來執行一個函式，且帶入參數"><a href="#pthread-建立新-thread-來執行一個函式，且帶入參數" class="headerlink" title="pthread 建立新 thread 來執行一個函式，且帶入參數"></a>pthread 建立新 thread 來執行一個函式，且帶入參數</h2><p>這邊示範 pthread 建立新 thread 如何傳遞參數，分別是傳字串跟傳整數，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo, "</span> &lt;&lt; (<span class="keyword">char</span> *)arg &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">bar</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> *n = (<span class="keyword">int</span> *)arg;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"bar, "</span> &lt;&lt; *n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, (<span class="keyword">void</span> *)<span class="string">"foo thread"</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pthread_t</span> t2;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t2, <span class="literal">NULL</span>, bar, &amp;n) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(t2, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo, foo thread</span><br><span class="line">bar, 10</span><br></pre></td></tr></table></figure></p>
+<h2 id="pthread-建立新-thread-來執行一個類別函式"><a href="#pthread-建立新-thread-來執行一個類別函式" class="headerlink" title="pthread 建立新 thread 來執行一個類別函式"></a>pthread 建立新 thread 來執行一個類別函式</h2><p>這邊示範 <code>pthread_create()</code> 在 class 裡建立 thread，並指定成員函式為 <code>FOO::run()</code>，<code>FOO::run()</code> 需要宣告成 static，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-class.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-class.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FOO</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    FOO(<span class="keyword">int</span> id) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;id = id;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"FOO id = "</span> &lt;&lt; id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">create_thread</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, run, <span class="keyword">this</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">join_thread</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> * <span class="title">run</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">        FOO *self = (FOO *)arg;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"run id = "</span> &lt;&lt; self-&gt;id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">FOO <span class="title">foo</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    foo.create_thread();</span><br><span class="line"></span><br><span class="line">    foo.join_thread();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>跟上例不同，這邊示範 <code>pthread_create()</code> 在 class 外建立 thread，並指定成員函式為 <code>FOO::run()</code>，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-class2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-class2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FOO</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    FOO(<span class="keyword">int</span> id) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;id = id;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"FOO id = "</span> &lt;&lt; id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> * <span class="title">run</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">        FOO *self = (FOO *)arg;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"run id = "</span> &lt;&lt; self-&gt;id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">FOO <span class="title">foo</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, FOO::run, &amp;foo) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="pthread-detach-不等待-thread-執行結束"><a href="#pthread-detach-不等待-thread-執行結束" class="headerlink" title="pthread detach 不等待 thread 執行結束"></a>pthread detach 不等待 thread 執行結束</h2><p>如果主執行緒不想等或是可以不用等待 t1 執行緒的話，<br>就可以使用 <code>pthread_detach()</code> 來讓 t1 執行緒分離，接著主執行緒就可以繼續執行，t1執行緒也在繼續執行，<br>也可以在 foo 裡使用 <code>pthread_detach()</code> 使用 <code>pthread_self()</code> 傳入自身的 pthread_t 即可，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-detach.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt; // for sleep</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// pthread_detach(pthread_self());</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo 1\n"</span>;</span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo 2\n"</span>;</span><br><span class="line">    <span class="comment">//pthread_exit(NULL);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"main 1\n"</span>;</span><br><span class="line">    pthread_detach(t1);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"main 2\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">main 1</span><br><span class="line">main 2</span><br><span class="line">foo 1</span><br></pre></td></tr></table></figure></p>
+<h2 id="pthread-用陣列建立多個-thread"><a href="#pthread-用陣列建立多個-thread" class="headerlink" title="pthread 用陣列建立多個 thread"></a>pthread 用陣列建立多個 thread</h2><p>這邊示範用陣列建立多個 thread，傳入的參數也變成陣列各自獨立，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-array.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-array.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = *(<span class="keyword">int</span> *)arg;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo, "</span> &lt;&lt; n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> threads[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">int</span> args[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        args[i] = i;</span><br><span class="line">        <span class="keyword">if</span> (pthread_create(&amp;threads[i], <span class="literal">NULL</span>, foo, &amp;args[i]) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        pthread_join(threads[i], <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">foo, 1</span><br><span class="line">foo, 0</span><br><span class="line">foo, 2</span><br></pre></td></tr></table></figure></p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-sleep/" title="C/C++ sleep 用法與範例">C/C++ sleep 用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-pthread/" data-id="ckzqravi700dswat0mk67rxzi" data-title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-backtrace" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-backtrace/" class="article-date">
@@ -155,7 +228,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-backtrace/" data-id="ckzo5u2x600drnjt0pnvvbz7p" data-title="C/C++ dump stack backtrace 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-backtrace/" data-id="ckzqravi600drwat0mzl2082o" data-title="C/C++ dump stack backtrace 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -217,7 +290,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="ckzo5u2x600dqnjt0q5a0lmxv" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="ckzqravi500dqwat0s5gosv70" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -278,7 +351,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="ckzo5u2x500dpnjt0m75e2xtn" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="ckzqravi500dpwat0l8l41vyj" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -339,7 +412,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="ckzo5u2x500donjt0fwfbxs8i" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="ckzqravi400dowat0134v61xz" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -400,7 +473,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="ckzo5u2x500dnnjt0zbw4gbv2" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="ckzqravi400dnwat0rw7bhhfy" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -461,7 +534,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="ckzo5u2x400dmnjt0apwmtfv9" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="ckzqravi300dmwat02316w0ar" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -526,7 +599,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-import/" data-id="ckzo5u2x400dlnjt0jkzr2of6" data-title="Python import 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-import/" data-id="ckzqravi300dlwat0tmfd544y" data-title="Python import 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -587,7 +660,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-binary-search/" data-id="ckzo5u2x300dknjt0wnlzh2hb" data-title="Python 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-binary-search/" data-id="ckzqravi200dkwat0t0iex0pz" data-title="Python 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -681,73 +754,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tkinter-canvas/" data-id="ckzo5u40t00hpnjt0wapytst1" data-title="Python tkinter Canvas 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tkinter-canvas/" data-id="ckzqraww300hqwat0p5paj4k7" data-title="Python tkinter Canvas 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tkinter/">tkinter</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-main" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-main/" class="article-date">
-  <time datetime="2021-04-16T14:00:00.000Z" itemprop="datePublished">2021-04-16</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-main/">在 Python 寫 main 函式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹 Python main 主程式進入點用法與範例，<br>Python 中沒有所謂的 main 主程式入口函式，Python 是腳本語言，執行時是從上往下逐步解析執行，  </p>
-<h2 id="Python-中基本的-main-函式"><a href="#Python-中基本的-main-函式" class="headerlink" title="Python 中基本的 main 函式"></a>Python 中基本的 main 函式</h2><p>在 Python 中一個 main 函式的基本寫法如下，<br>Python interpreter 執行 Python 腳本時會定義 <strong>name</strong> 變數為某個字串，<br>寫 <code>if __name__ == &#39;__main__&#39;</code>，是想表示 main() 只有在當前腳本被直接執行時才執行，不希望被導入其它模組時執行。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">	print(<span class="string">'Hello World'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure></p>
-<h2 id="Python-中模組的-main-函式"><a href="#Python-中模組的-main-函式" class="headerlink" title="Python 中模組的 main 函式"></a>Python 中模組的 main 函式</h2><p>有時候執行 Python 檔案時，並沒有指定入口檔案（命令行中較常見，例如：<code>python -m http.server 8000</code>），這時候程式是從哪個檔案開始執行呢？答案是 <code>__main__.py</code> 檔案，它所在的包被當成一個”檔案”來執行了</p>
-<p>其它參考<br>Python - if <strong>name</strong> == ‘<strong>main</strong>‘ 涵義<br><a href="http://blog.castman.net/%E6%95%99%E5%AD%B8/2018/01/27/python-name-main.html" target="_blank" rel="noopener">http://blog.castman.net/%E6%95%99%E5%AD%B8/2018/01/27/python-name-main.html</a><br>python的 if <strong>name</strong> == ‘<strong>main</strong>‘: 是什麼意思?<br><a href="https://ithelp.ithome.com.tw/articles/10231756" target="_blank" rel="noopener">https://ithelp.ithome.com.tw/articles/10231756</a><br>在Python中定義Main函數<br><a href="https://kknews.cc/zh-tw/code/gjxb2am.html" target="_blank" rel="noopener">https://kknews.cc/zh-tw/code/gjxb2am.html</a>  </p>
-<hr>
-<p>在Python中定义Main函数（第一部分）<br><a href="https://python.freelycode.com/contribution/detail/1584" target="_blank" rel="noopener">https://python.freelycode.com/contribution/detail/1584</a><br>在Python中定义Main函数（第二部分）<br><a href="https://blog.csdn.net/sinat_38682860/article/details/90522767" target="_blank" rel="noopener">https://blog.csdn.net/sinat_38682860/article/details/90522767</a><br>在Python中定义Main函数（第三部分）<br><a href="https://python.freelycode.com/contribution/detail/1586" target="_blank" rel="noopener">https://python.freelycode.com/contribution/detail/1586</a><br>Defining Main Functions in Python (原文)<br><a href="https://realpython.com/python-main-function/" target="_blank" rel="noopener">https://realpython.com/python-main-function/</a>  </p>
-<p>Python為什麼沒有main函數？為什麼我不推薦寫main函數？<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/723146/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/723146/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-write-text-file/" title="Python 寫檔，寫入 txt 文字檔">Python 寫檔，寫入 txt 文字檔</a><br><a href="/python-read-csv-file/" title="[Python] 讀取 csv 檔案">[Python] 讀取 csv 檔案</a><br><a href="/python-write-csv-file/" title="[Python] 寫入 csv 檔案">[Python] 寫入 csv 檔案</a><br><a href="/python-read-write-file/" title="[Python] 讀寫檔案">[Python] 讀寫檔案</a><br><a href="/python-generate-non-repeating-random-numbers/" title="[Python] 產生 random 隨機不重複的數字 list">[Python] 產生 random 隨機不重複的數字 list</a><br><a href="/python-pyautogui/" title="[Python] PyAutoGUI 使用教學">[Python] PyAutoGUI 使用教學</a><br><a href="/python-opencv-resize/" title="[Python+OpenCV] 圖片縮放 resize">[Python+OpenCV] 圖片縮放 resize</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-main/" data-id="ckzo5u2x300djnjt0u5kgjswq" data-title="在 Python 寫 main 函式" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
 
     </footer>
   </div>
@@ -791,6 +801,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/shell-script-check-if-file-exists/">Shell Script 判斷檔案是否存在</a>
+          </li>
+        
+          <li>
             <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
           </li>
         
@@ -804,10 +818,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-fgets/">C/C++ fgets 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
           </li>
         
       </ul>
