@@ -105,6 +105,223 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-integer-multiplication-overflow" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-integer-multiplication-overflow/" class="article-date">
+  <time datetime="2020-10-08T14:00:00.000Z" itemprop="datePublished">2020-10-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-integer-multiplication-overflow/">C/C++ 整數乘法溢位</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>今天要介紹寫程式時應該要避免的 integer multiplication overflow 整數乘法溢位問題，  </p>
+<p>故事是某天我在做時間單位轉換時發生了一個小意外，<br>想要將 us 轉成 ms 時間單位，程式碼如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us = <span class="number">12345678</span>;</span><br><span class="line"><span class="keyword">uint32_t</span> ms;</span><br><span class="line"></span><br><span class="line">ms = us / <span class="number">1000</span>;</span><br><span class="line"><span class="keyword">uint64_t</span> us2 = ms * <span class="number">1000</span>;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; ms &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us2 &lt;&lt; \n;</span><br></pre></td></tr></table></figure></p>
+<p>乍看之下，好像沒什麼問題，但總是有問題不會發生在當下，而是在某個時機發生了XD，  </p>
+<p>怎麼說呢，讓我們換個例子試試<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us = <span class="number">43</span>xxxxxxx;</span><br><span class="line"><span class="keyword">uint32_t</span> ms;</span><br><span class="line"></span><br><span class="line">ms = us / <span class="number">1000</span>;</span><br><span class="line"><span class="keyword">uint64_t</span> us2 = ms * <span class="number">1000</span>;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; ms &lt;&lt; \n;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; us2 &lt;&lt; \n;</span><br></pre></td></tr></table></figure></p>
+<p>不難發現，程式執行結果不符合我們的預期，  </p>
+<p>其實問題會發生在這一行，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us2 = ms * <span class="number">1000</span>;</span><br></pre></td></tr></table></figure></p>
+<p>ms 這個變數是uint32_t 大小的，其實是用uint32_t這個大小去乘1000，乘完放在uint32_t，最後再複製到uint64_t，如果ms變數裡面放的數字乘出來的結果會超過uint32_t的話，悲劇就會發生了，發生了「乘法溢位」。 </p>
+<p>所以我們應該怎麼改？<br>答案是，先把ms從uint32_t擴大轉換widening conversions(promotion)成uint64_t大小，這樣在計算時就會以uint64_t去作計算，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> us2 = <span class="keyword">uint64_t</span>(ms) * <span class="number">1000</span>;</span><br></pre></td></tr></table></figure></p>
+<p>所以要把握一個原則，「乘法時要小心溢位」  </p>
+<p>參考<br>小心 int 乘法溢出! - IT閱讀<br><a href="https://www.itread01.com/articles/1506858849.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.itread01.com/articles/1506858849.html</a><br>Check for integer overflow on multiplication - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/check-integer-overflow-multiplication/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/check-integer-overflow-multiplication/</a><br>c - Catch and compute overflow during multiplication of two large integers - Stack Overflow<br><a href="https://stackoverflow.com/questions/1815367/catch-and-compute-overflow-during-multiplication-of-two-large-integers" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1815367/catch-and-compute-overflow-during-multiplication-of-two-large-integers</a><br>類型轉換與類型安全 | Microsoft Docs<br><a href="https://docs.microsoft.com/zh-tw/cpp/cpp/type-conversions-and-type-safety-modern-cpp?view=msvc-160" rel="noopener external nofollow noreferrer" target="_blank">https://docs.microsoft.com/zh-tw/cpp/cpp/type-conversions-and-type-safety-modern-cpp?view=msvc-160</a><br>Type conversions - C++ Tutorials<br><a href="http://www.cplusplus.com/doc/tutorial/typecasting/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/doc/tutorial/typecasting/</a><br>Type Conversion in C++ - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/type-conversion-in-c/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/type-conversion-in-c/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-integer-multiplication-overflow/" data-id="cl18ox2q200ahrvs1sydxx25a" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-linux-vim-ctags-cscope" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/linux-vim-ctags-cscope/" class="article-date">
+  <time datetime="2020-10-05T14:00:00.000Z" itemprop="datePublished">2020-10-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/linux-vim-ctags-cscope/">vim 使用 ctags 與 cscope 的開發環境</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>vim 要 trace code 時必裝兩大套件，trace code 效率大幅提升，這兩個套件叫 <code>ctags</code> 與 <code>cscope</code>，<br>簡單說就是「跳至定義處」這功能要裝 ctags，要「查找誰呼叫這個函式」這功能要裝 cscope，<br>使用這兩個套件打造出來的這樣開發環境幾乎可以媲美付費的 source insight。  </p>
+<h2><span id="ctags-安裝設定">ctags 安裝設定</span></h2><p>Ubuntu/Debian 安裝 ctags 可以透過 apt 安裝<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install exuberant-ctags</span><br></pre></td></tr></table></figure></p>
+<p>最簡單無腦的 ctags 產生方式，<code>.</code> 表示當前目錄或不指定也可以，<br>ctags 還能指定其他參數，這部份以後有機會在介紹，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ctags -R .</span><br></pre></td></tr></table></figure></p>
+<p>Vim 加入 ctags 產生出來的 <code>tags</code> 檔案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:set tags=./tags</span><br></pre></td></tr></table></figure></p>
+<h2><span id="cscope-安裝設定">cscope 安裝設定</span></h2><p>Ubuntu/Debian 安裝 cscope 可以透過 apt 安裝<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install cscope</span><br></pre></td></tr></table></figure></p>
+<p>最簡單無腦的 cscope 產生方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cscope -Rbq</span><br></pre></td></tr></table></figure></p>
+<p>常用參數說明如下，<br><code>R</code>: Recurse directories for files (目錄下遞迴建立索引)<br><code>b</code>: Build the cross-reference only<br><code>q</code>: Build an inverted index for quick symbol searching (建立 cscope.in.out 和 cscope.po.out，以便增快搜尋速度)<br><code>k</code>: Kernel Mode - don’t use /usr/include for #include files (不索引 /usr/include)  </p>
+<p>Vim 加入 cscope 產生出來的 <code>cscope.out</code> 檔案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:cs add cscope.out</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>vim附件：cscope+ctag 使用筆記 @ CONY的世界 :: 痞客邦 ::<br><a href="https://angledark0123.pixnet.net/blog/post/51919594" rel="noopener external nofollow noreferrer" target="_blank">https://angledark0123.pixnet.net/blog/post/51919594</a><br>[Linux] - 將vim打造成source insight | Ivan’s Blog<br><a href="https://ivan7645.github.io/2016/07/12/vim_to_si/" rel="noopener external nofollow noreferrer" target="_blank">https://ivan7645.github.io/2016/07/12/vim_to_si/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/linux-vim-ctags-cscope/" data-id="cl18ox2q000acrvs1w1mpbo9n" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-linux-vim-shortcuts" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/linux-vim-shortcuts/" class="article-date">
+  <time datetime="2020-09-28T14:00:00.000Z" itemprop="datePublished">2020-09-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/linux-vim-shortcuts/">vim 常用快捷鍵</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇記錄一下 Linux vim 文字編輯器的常用快捷鍵，特別是trace code時，善用快捷鍵會快很多，效率大幅提升。  </p>
+<table>
+<thead>
+<tr>
+<th>名稱</th>
+<th>Linux</th>
+<th>備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Go to Definition</td>
+<td><code>Ctrl</code>+<code>]</code></td>
+<td>跳至定義處(要配合用ctags)</td>
+</tr>
+<tr>
+<td>Navigate Back</td>
+<td><code>Ctrl</code>+<code>t</code></td>
+<td>返回</td>
+</tr>
+<tr>
+<td>Retrace your movements in file in backwards</td>
+<td><code>Ctrl</code>+<code>o</code></td>
+<td>往後</td>
+</tr>
+<tr>
+<td>Retrace your movements in file in forwards.</td>
+<td><code>Ctrl</code>+<code>i</code></td>
+<td>往前</td>
+</tr>
+<tr>
+<td>Find Usage / Find Reference</td>
+<td>:cs find s <symbol></symbol></td>
+<td>要配合用cscope</td>
+</tr>
+</tbody>
+</table>
+<p>參考<br>In vim, how do I go back to where I was before a search? - Stack Overflow<br><a href="https://stackoverflow.com/questions/53911/in-vim-how-do-i-go-back-to-where-i-was-before-a-search" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/53911/in-vim-how-do-i-go-back-to-where-i-was-before-a-search</a><br>VIM: Jump Back To Previous or Last Cursor Position - nixCraft<br><a href="https://www.cyberciti.biz/faq/unix-linux-vim-go-back-to-last-cursor-position/" rel="noopener external nofollow noreferrer" target="_blank">https://www.cyberciti.biz/faq/unix-linux-vim-go-back-to-last-cursor-position/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/qt-shortcuts/" title="Qt Creator 常用快捷鍵">Qt Creator 常用快捷鍵</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/linux-vim-shortcuts/" data-id="cl18ox2pz00abrvs10txj3th2" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-multiple-inheritance" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-multiple-inheritance/" class="article-date">
@@ -159,7 +376,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multiple-inheritance/" data-id="ckzh2mz3l00aamis1ta527oh9" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-multiple-inheritance/" data-id="cl18ox2pz00aarvs1ee7mydtz" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -214,7 +431,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="ckzh2mz3m00abmis13aipc6g9" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="cl18ox2pz00a9rvs1cnmtysum" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -281,7 +498,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="ckzh2mz3l00a9mis17v2shdnf" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="cl18ox2py00a8rvs1osiruaga" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -390,7 +607,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-shortcuts/" data-id="ckzh2mz3k00a8mis15n9l2f25" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-shortcuts/" data-id="cl18ox2py00a7rvs1qdrylc9w" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -446,7 +663,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-kill-by-name/" data-id="ckzh2mz3k00a7mis1kd1iosq4" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-kill-by-name/" data-id="cl18ox2px00a6rvs1yrrarzbg" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -519,7 +736,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-scrcpy/" data-id="ckzh2mz3j00a6mis15g1g5hun" data-title="開源專案scrcpy-讓Android投影/鏡射到電腦，還可鍵盤滑鼠操控" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-scrcpy/" data-id="cl18ox2px00a5rvs16tdiw11a" data-title="開源專案scrcpy-讓Android投影/鏡射到電腦，還可鍵盤滑鼠操控" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -579,210 +796,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-git/" data-id="ckzh2mz3i00a4mis10uxd16k9" data-title="macOS 用 Homebrew 安裝 git 指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-git/" data-id="cl18ox2pw00a4rvs119h9wqk8" data-title="macOS 用 Homebrew 安裝 git 指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-std-function" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/std-function/" class="article-date">
-  <time datetime="2020-09-02T14:00:00.000Z" itemprop="datePublished">2020-09-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/std-function/">C++ std::function 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹 C++ 的 std::function 的用法教學，並提供一些入門常用的範例程式碼。  </p>
-<p><strong>需要引入的標頭檔</strong>：<code>&lt;functional&gt;</code>  </p>
-<p>在實務上最常用到 std::function 的情形就是使用 callback 回調函式的時候，  </p>
-<h2><span id="使用-stdfunction-取代傳統的-function-pointer">使用 std::function 取代傳統的 function pointer</span></h2><p>使用 std::function 取代傳統的 function pointer 優點有幾個，  </p>
-<ul>
-<li>可讀性佳</li>
-<li>可接受 lambda 函式</li>
-</ul>
-<p>讓我們先來看看一段使用 function pointer 的範例，<br><figure class="highlight cpp"><figcaption><span>function-pointer-callback.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ function-pointer-callback.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">keyevent</span><span class="params">(<span class="keyword">int</span> keycode, <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"keycode = "</span> &lt;&lt; keycode &lt;&lt; <span class="string">" status = "</span> &lt;&lt; status &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span> (*callback_keyevent)(<span class="keyword">int</span>, <span class="keyword">int</span>) = <span class="literal">NULL</span>;</span><br><span class="line">    callback_keyevent = keyevent;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback_keyevent)</span><br><span class="line">        callback_keyevent(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>改成 std::function 後變成這樣<br><figure class="highlight cpp"><figcaption><span>std-function-callback.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-function-callback.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">keyevent</span><span class="params">(<span class="keyword">int</span> keycode, <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"keycode = "</span> &lt;&lt; keycode &lt;&lt; <span class="string">" status = "</span> &lt;&lt; status &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(<span class="keyword">int</span>, <span class="keyword">int</span>)&gt; callback_keyevent = <span class="literal">nullptr</span>;</span><br><span class="line">    callback_keyevent = keyevent;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callback_keyevent)</span><br><span class="line">        callback_keyevent(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] std::function - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/utility/functional/function" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/utility/functional/function</a><br>[2] function::function - C++ Reference<br><a href="http://www.cplusplus.com/reference/functional/function/function/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/reference/functional/function/function/</a><br>[3] C++11 std::function的用法 - 滴酱的个人空间 - OSCHINA<br><a href="https://my.oschina.net/u/2274890/blog/499159" rel="noopener external nofollow noreferrer" target="_blank">https://my.oschina.net/u/2274890/blog/499159</a><br>[4] C++11 std::function用法-码农场<br><a href="https://www.hankcs.com/program/cpp/c11-std-function-usage.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.hankcs.com/program/cpp/c11-std-function-usage.html</a><br>[5] Cocos2d-x 的 onKeyPressed 與 onKeyReleased<br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.h" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.h</a><br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.cpp" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/cocos/base/CCEventListenerKeyboard.cpp</a><br><a href="https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/tests/performance-tests/Classes/tests/PerformanceEventDispatcherTest.cpp" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cocos2d/cocos2d-x/blob/e3438ed3fd10a304b7ca2cd3dad9b29fead818d2/tests/performance-tests/Classes/tests/PerformanceEventDispatcherTest.cpp</a><br>cocos2d-x 在 PerformanceEventDispatcherTest.cpp 的 KeyboardEventDispatchingPerfTest::generateTestFunctions 使用 onKeyPressed 接收一個 lambda 函式<br>[6] 邁向王者的旅途: 簡介 std::function (C++11 後的新功能)<br><a href="https://shininglionking.blogspot.com/2017/01/stdfunction-c11.html" rel="noopener external nofollow noreferrer" target="_blank">https://shininglionking.blogspot.com/2017/01/stdfunction-c11.html</a><br>[7] Should I use std::function or a function pointer in C++? - Stack Overflow<br><a href="https://stackoverflow.com/questions/25848690/should-i-use-stdfunction-or-a-function-pointer-in-c" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/25848690/should-i-use-stdfunction-or-a-function-pointer-in-c</a><br>這篇討論提到應該盡量使用 std::function 來取代 function pointer，除非有什麼其他特殊原因<br>[8] 在 C++ 裡傳遞、儲存函式 Part 3：Function Object in TR1 – Heresy’s Space<br><a href="https://kheresy.wordpress.com/2010/11/12/function_object_tr1/" rel="noopener external nofollow noreferrer" target="_blank">https://kheresy.wordpress.com/2010/11/12/function_object_tr1/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-sort/" title="C++ std::sort 排序用法與範例完整介紹">C++ std::sort 排序用法與範例完整介紹</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-check-if-file-exists/" title="C/C++ 判斷檔案是否存在">C/C++ 判斷檔案是否存在</a><br><a href="/cpp-singleton-pattern/" title="C++ 設計模式 - 單例模式 Singleton Pattern">C++ 設計模式 - 單例模式 Singleton Pattern</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-function/" data-id="ckzh2mz3j00a5mis158n1ruqp" data-title="C++ std::function 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ubuntu-tplink-t4u-driver" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/ubuntu-tplink-t4u-driver/" class="article-date">
-  <time datetime="2020-08-27T14:00:00.000Z" itemprop="datePublished">2020-08-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/ubuntu-tplink-t4u-driver/">Ubuntu 安裝 TP-Link Archer T4U Driver 筆記</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇紀錄 Ubuntu 安裝 TP-Link Archer T4U Driver 筆記與心得，最近買了一隻 wireless dongle，升級成5G(802.11ac)網速，當然家中還要搭配 AP 也是要支援到5G，但之前我早已把家裡網路上升級成 Giga 等級以及具備有 5G 的 AP 了，但我常用環境為 Ubuntu，但這隻 dongle 似乎還沒被預設的 Ubuntu 系統支援，我試了Ubuntu 16.04、18.04、20.04 內建驅動都無法支援，雖然當初在買的時候就從外包裝盒發現沒有 linux 的圖示，只有 windows 與 macOS 圖示，但憑著一股熱情，只好自己手動來編譯安裝了。  </p>
-<h2><span id="查詢-wireless-dongle-的-chipset">查詢 wireless dongle 的 chipset</span></h2><p>接下來要首先需要確定的是這隻 wireless dongle 用的是什麼 chipset，這對於曾經在網通廠工作經驗豐富的我不算什麼問題，  </p>
-<ol>
-<li><p>找一下該 wireless dongle 是第幾版，我購買的 TP-Link Archer T4U 的版本是 v3.20，通常在外盒上可以找到或者 dongle 本體上的標籤，為什麼要查詢版本呢？因為有時候同型號，廠商可能後來改用不同的 chipset，通常都是 costdown，也有可能是其他因素。  </p>
-</li>
-<li><p>在網路上 Google 一下，即可發現 TP-Link Archer T4U V3 用的 chipset 為 Realtek 的 RTL8812BU，<br>而 TP-Link Archer T4U V2 以前都是使用 RTL8812AU，<br>所以要找的驅動是要找 RTL8812BU 而不是 RTL8812AU，不然就會安裝後也無法使用，<br><a href="http://en.techinfodepot.shoutwiki.com/wiki/TP-LINK_Archer_T4U_v3" rel="noopener external nofollow noreferrer" target="_blank">http://en.techinfodepot.shoutwiki.com/wiki/TP-LINK_Archer_T4U_v3</a>  </p>
-</li>
-</ol>
-<h2><span id="編譯驅動並安裝">編譯驅動並安裝</span></h2><p>我是參考 <a href="https://askubuntu.com/questions/802205/how-to-install-tp-link-archer-t4u-driver" rel="noopener external nofollow noreferrer" target="_blank">https://askubuntu.com/questions/802205/how-to-install-tp-link-archer-t4u-driver</a><br>這篇的第二個方法，適用於 RTL8812BU chipset，<br>第一個方法是 RTL8812AU  </p>
-<p>這裡就順便記錄一下我的步驟<br>以下步驟我在 Ubuntu 18.04, 16.04 編譯後安裝後都是可以成功連線的，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/EntropicEffect/rtl8822bu</span><br><span class="line">sudo apt-get install build-essential dkms <span class="comment"># 安裝編譯所需套件</span></span><br><span class="line"><span class="built_in">cd</span> rtl8822bu</span><br><span class="line">make <span class="comment"># 編譯</span></span><br><span class="line">sudo make install <span class="comment"># 安裝至系統</span></span><br><span class="line">sudo modprobe 88x2bu <span class="comment"># 載入驅動模組</span></span><br></pre></td></tr></table></figure></p>
-<p>到這裡以上的步驟就可以連線了，可以發現網路管理員已經可以掃描的到其他 WiFi 的 SSID 了，<br>不論是 2.4G 或 5G 都掃得到了，也可以成功連線～YA！  </p>
-<p>輸入下列指令完善一下整個安裝，<br>其目的是讓 Linux 核心升級也自動重新編譯一下該驅動程式，<br>否則之後 Linux 核心升級後該驅動不匹配就會無法使用，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms add . <span class="comment"># 將驅動程式加入 DKMS 管理表中</span></span><br><span class="line">sudo dkms install -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
-<p>其他未驗證的參考<br><a href="https://itectec.com/ubuntu/ubuntu-cant-install-tp-link-archer-t4u-v3-driver-on-19-04/" rel="noopener external nofollow noreferrer" target="_blank">https://itectec.com/ubuntu/ubuntu-cant-install-tp-link-archer-t4u-v3-driver-on-19-04/</a><br><a href="https://gist.github.com/tchelit/289881a73df5189431cd6070b72f3f61" rel="noopener external nofollow noreferrer" target="_blank">https://gist.github.com/tchelit/289881a73df5189431cd6070b72f3f61</a>  </p>
-<h2><span id="其他補充">其他補充</span></h2><p>查看目前 dkms 內有什麼<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms status</span><br></pre></td></tr></table></figure></p>
-<p>安裝驅動模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms install -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
-<p>解除安裝驅動模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms uninstall -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
-<p>完整移除整個驅動程式模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms remove 88x2bu/1.1 --all</span><br></pre></td></tr></table></figure></p>
-<p>modprobe 指令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo modprobe 88x2bu # 載入模組</span><br><span class="line">sudo modprobe -r 88x2bu # 卸載模組</span><br></pre></td></tr></table></figure></p>
-<p>insmod、rmmod 與 lsmod<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">insmod 88x2bu.ko # 載入模組</span><br><span class="line">rmmod 88x2bu # 卸載模組</span><br><span class="line">lsmod # 查看載入的模組</span><br></pre></td></tr></table></figure></p>
-<p>其他參考<br>核心模組的載入與移除： insmod, modprobe, rmmod<br><a href="http://mingyi-ulinux.blogspot.com/2009/01/insmod-modprobe-rmmod.html" rel="noopener external nofollow noreferrer" target="_blank">http://mingyi-ulinux.blogspot.com/2009/01/insmod-modprobe-rmmod.html</a><br>Linux DKMS 機制導入筆記 - 石頭閒語<br><a href="http://rocksaying.tw/archives/2015/Linux_DKMS_%E6%A9%9F%E5%88%B6%E5%B0%8E%E5%85%A5%E7%AD%86%E8%A8%98.html" rel="noopener external nofollow noreferrer" target="_blank">http://rocksaying.tw/archives/2015/Linux_DKMS_%E6%A9%9F%E5%88%B6%E5%B0%8E%E5%85%A5%E7%AD%86%E8%A8%98.html</a><br>DKMS简介 - wwang - 博客园<br><a href="https://www.cnblogs.com/wwang/archive/2011/06/21/2085571.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/wwang/archive/2011/06/21/2085571.html</a><br>DKMS的流程圖邏輯很清晰  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/ubuntu-netbootin-live-usb/" title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料">使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料</a><br><a href="/ubuntu-apt-update-error/" title="Ubuntu apt update 的一堆 error 問題與解決方法">Ubuntu apt update 的一堆 error 問題與解決方法</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-tplink-t4u-driver/" data-id="ckzh2mz3i00a3mis1zpewnhlo" data-title="Ubuntu 安裝 TP-Link Archer T4U Driver 筆記" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-glossary" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-glossary/" class="article-date">
-  <time datetime="2020-08-24T14:00:00.000Z" itemprop="datePublished">2020-08-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-glossary/">C/C++ 一堆名詞解釋</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>紀錄一下 C/C++ 一堆名詞解釋。  </p>
-<h2><span id="覆載-override">覆載 override</span></h2><p>就是子類覆蓋掉父類的實作叫<code>覆載 override</code>，就像例子中的bbb<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span> &#123;</span></span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">bbb</span> <span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span> :</span> <span class="keyword">public</span> Base &#123;</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> bbb <span class="title">override</span> <span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"bbb"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="多載-overload">多載 overload</span></h2><p>就是相同函式名，但參數不一樣，叫<code>多載 overload</code><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">float</span> a, <span class="keyword">float</span> b)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="其他雜類">其他雜類</span></h2><p>繼承：inheritance<br>多型：polymorphism<br>建構子：constructor<br>複製建構子：copy constructor<br>解構子：destructor<br>函子/函式物件：functor<br>抽象類別：abstract class<br>父類：base class<br>子類：derived class  </p>
-<p>參考<br>C++ Glossary<br><a href="https://gcallah.github.io/OOP2/glossary.html" rel="noopener external nofollow noreferrer" target="_blank">https://gcallah.github.io/OOP2/glossary.html</a><br>C++ Glossary - Step by Step Programming<br><a href="https://sites.google.com/site/simplestjava/c-glossary" rel="noopener external nofollow noreferrer" target="_blank">https://sites.google.com/site/simplestjava/c-glossary</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-singleton-pattern/" title="C++ 設計模式 - 單例模式 Singleton Pattern">C++ 設計模式 - 單例模式 Singleton Pattern</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/std-sort/" title="C++ std::sort 排序用法與範例完整介紹">C++ std::sort 排序用法與範例完整介紹</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-glossary/" data-id="ckzh2mz3h00a2mis1iv52yolb" data-title="C/C++ 一堆名詞解釋" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -826,23 +843,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/mac-move-dock-to-other-screen/">mac 雙螢幕延伸模式的 dock 切換方法</a>
+          </li>
+        
+          <li>
+            <a href="/linux-grep-binary-file-standard-input-matches/">grep 遇到 binary file (standard input) matches 解決方法</a>
+          </li>
+        
+          <li>
+            <a href="/shell-script-check-if-file-exists/">Shell Script 判斷檔案是否存在</a>
+          </li>
+        
+          <li>
             <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
           </li>
         
           <li>
             <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-fwrite/">C/C++ fwrite 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-fgets/">C/C++ fgets 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-fread/">C/C++ fread 用法與範例</a>
           </li>
         
       </ul>
