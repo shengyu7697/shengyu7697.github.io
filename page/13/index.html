@@ -105,6 +105,191 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-pthread_setaffinity_np" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-pthread_setaffinity_np/" class="article-date">
+  <time datetime="2021-05-14T14:00:00.000Z" itemprop="datePublished">2021-05-14</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-pthread_setaffinity_np/">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒設定 CPU 的方法 <code>pthread_setaffinity_np()</code>，  </p>
+<h2 id="主執行緒設定-CPU"><a href="#主執行緒設定-CPU" class="headerlink" title="主執行緒設定 CPU"></a>主執行緒設定 CPU</h2><p>主執行緒要設定跑在哪顆 CPU 的話，可以直接在 main 裡的主執行緒使用 <code>pthread_setaffinity_np()</code> 設定即可，<code>pthread_setaffinity_np()</code> 的第一個參數為 pthread_t，<br>以我的電腦來說是單 CPU 4 核心，所以有 CPU0~CPU3 可以選擇，這邊示範選擇跑在 CPU3，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt; // for sched_getcpu()</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    <span class="keyword">pthread_t</span> th = pthread_self();</span><br><span class="line">    pthread_setaffinity_np(th, <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>也可以使用 <code><a href="/cpp-sched_setaffinity/" title="sched_setaffinity()">sched_setaffinity()</a></code> 來設定 main 主執行緒跑在哪個 CPU。  </p>
+<h2 id="在-pthread-執行緒設定-CPU"><a href="#在-pthread-執行緒設定-CPU" class="headerlink" title="在 pthread 執行緒設定 CPU"></a>在 pthread 執行緒設定 CPU</h2><p>pthread 建立出來的執行緒要設定 CPU 的話，方式如下，<br>對於 pthread 建立執行緒不熟悉的話可以看我之前的<a href="/cpp-pthread/" title="這篇介紹">這篇介紹</a>，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">    usleep(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(t1, <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，可以發現 <code>foo()</code> 函式裡可能需要加個延遲，以便讓 <code>pthread_setaffinity_np()</code> 的設定生效，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pthread_setaffinity_np cpu3</span><br><span class="line">t1 thread sched_getcpu = 1</span><br><span class="line">t1 thread sched_getcpu = 3</span><br></pre></td></tr></table></figure></p>
+<p>上述方法也許有點不完美，也可以在 <code>foo()</code> 函式裡執行 <code>pthread_setaffinity_np()</code> 就可免去延遲的程式碼。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np3.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(pthread_self(), <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pthread_setaffinity_np cpu3</span><br><span class="line">t1 thread sched_getcpu = 3</span><br></pre></td></tr></table></figure></p>
+<h2 id="在-C-std-thread-執行緒設定-CPU"><a href="#在-C-std-thread-執行緒設定-CPU" class="headerlink" title="在 Ｃ++ std::thread 執行緒設定 CPU"></a>在 Ｃ++ std::thread 執行緒設定 CPU</h2><p>要在 Ｃ++ std::thread 設定跑在哪顆 CPU 的話可以用 <code>thread::native_handle()</code> 取得 pthread_t 再傳入 <code>pthread_setaffinity_np()</code> 的第一個參數，因為 t1 thread 是 std::thread 建構時就開始執行了，所以下面 <code>pthread_setaffinity_np()</code> 設定太慢的話，就會比較慢生效，所以有可能 foo 執行到一半時才被設定 CPU，因此這邊先加個延遲 1 microseconds，確保一開始執行時就被設定 CPU，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np-std-thread.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np-std-thread.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::microseconds(<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(t1.native_handle(), <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (t1.joinable()) &#123;</span><br><span class="line">        t1.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上述方法也許有點不完美，也可以改成在執行 thread 的函式裡去設定自身 thread 的跑在哪顆 CPU，這樣可以省去延遲的程式碼，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_setaffinity_np-std-thread2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_setaffinity_np-std-thread2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_setaffinity_np cpu%d\n"</span>, cpu_id);</span><br><span class="line">    pthread_setaffinity_np(pthread_self(), <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (t1.joinable()) &#123;</span><br><span class="line">        t1.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其它參考<br>c++ - Set CPU affinity when create a thread - Stack Overflow<br><a href="https://stackoverflow.com/questions/24645880/set-cpu-affinity-when-create-a-thread" target="_blank" rel="noopener">https://stackoverflow.com/questions/24645880/set-cpu-affinity-when-create-a-thread</a><br>pthread_setaffinity_np(3) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man3/pthread_setaffinity_np.3.html" target="_blank" rel="noopener">https://man7.org/linux/man-pages/man3/pthread_setaffinity_np.3.html</a><br>C++11 threads, affinity and hyperthreading - Eli Bendersky’s website<br><a href="https://eli.thegreenplace.net/2016/c11-threads-affinity-and-hyperthreading/" target="_blank" rel="noopener">https://eli.thegreenplace.net/2016/c11-threads-affinity-and-hyperthreading/</a><br>SetThreadAffinityMask function (winbase.h) - Win32 apps | Microsoft Docs<br><a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadaffinitymask" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadaffinitymask</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-sched_setaffinity/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-pthread_setaffinity_np/" data-id="cl19c0iom00dxn7t0g0lyy8xg" data-title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-opencv-image-to-pil-image" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-opencv-image-to-pil-image/" class="article-date">
+  <time datetime="2021-05-13T14:00:00.000Z" itemprop="datePublished">2021-05-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-opencv-image-to-pil-image/">Python OpenCV 影像格式轉換成 PIL Image</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 Python OpenCV 影像格式轉換成 PIL Image 的方法。  </p>
+<h2 id="OpenCV-轉換-PIL-Image-影像格式"><a href="#OpenCV-轉換-PIL-Image-影像格式" class="headerlink" title="OpenCV 轉換 PIL.Image 影像格式"></a>OpenCV 轉換 PIL.Image 影像格式</h2><p>PIL image 採用的影像排列方式為 RGB，而 opencv 採用的影像排列方式為 BGR，所以這邊要將 opencv 轉為 PIL image 影像格式的話，就需要將影像排列方式從 BGR 轉成 RGB，使用的是 PIL 的 <code>cv2.cvtColor()</code> 函式，之後再用 <code>Image.fromarray()</code> 轉成 PIL 的格式，使用方式如下所示，<br><figure class="highlight python"><figcaption><span>opencv-image-to-pil-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = cv2.imread(<span class="string">'lena.jpg'</span>)</span><br><span class="line">cv2.imshow(<span class="string">'opencv image'</span>, img)</span><br><span class="line"></span><br><span class="line">img2 = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))</span><br><span class="line">img2.show()</span><br><span class="line"></span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
+<p>其它相關文章：<a href="/python-pil-image-to-opencv-image/" title="Python PIL Image 轉換成 OpenCV 影像格式">Python PIL Image 轉換成 OpenCV 影像格式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-opencv-image-to-pil-image/" data-id="cl19c0iol00dwn7t00qym5zwc" data-title="Python OpenCV 影像格式轉換成 PIL Image" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-ubuntu-empty-trash" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/ubuntu-empty-trash/" class="article-date">
+  <time datetime="2021-05-12T14:00:00.000Z" itemprop="datePublished">2021-05-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/ubuntu-empty-trash/">Ubuntu 清空垃圾桶指令</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 Ubuntu 如何用指令清空垃圾桶？  </p>
+<p>一般我們圖形化介面的清空垃圾桶大家都知道，但今天如果要在命令列下要輸入指令來清空垃圾桶的話，有兩種方式</p>
+<ul>
+<li>方法1. 清空 ~/.local/share/Trash/files/  </li>
+<li>方法2. 使用 trash-empty 指令清空垃圾桶  </li>
+</ul>
+<h2 id="方法1-清空-local-share-Trash-files"><a href="#方法1-清空-local-share-Trash-files" class="headerlink" title="方法1. 清空 ~/.local/share/Trash/files/"></a>方法1. 清空 ~/.local/share/Trash/files/</h2><p>清空 <code>~/.local/share/Trash/files/</code> 的指令如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd ~/.local/share/Trash/files/</span><br><span class="line">$ rm -rf *</span><br></pre></td></tr></table></figure></p>
+<p>或者是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rm -rf ~/.local/share/Trash/files/*</span><br></pre></td></tr></table></figure></p>
+<h2 id="方法2-使用-trash-empty-指令清空垃圾桶"><a href="#方法2-使用-trash-empty-指令清空垃圾桶" class="headerlink" title="方法2. 使用 trash-empty 指令清空垃圾桶"></a>方法2. 使用 trash-empty 指令清空垃圾桶</h2><p>使用 trash-empty 指令來清空垃圾桶是很簡單輕鬆的，較新的 Ubuntu 預設沒安裝，所以會需要先安裝這個指令，安裝指令如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt install trash-cli</span><br></pre></td></tr></table></figure></p>
+<p>安裝好後，就可以使用 trash-empty 指令來清空垃圾桶，如下所示，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ trash-empty</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/ubuntu-empty-trash/" data-id="cl19c0iol00dvn7t0doa6y1cd" data-title="Ubuntu 清空垃圾桶指令" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-sched_setaffinity" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-sched_setaffinity/" class="article-date">
@@ -157,7 +342,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sched_setaffinity/" data-id="cl17768yu00dukct0sfdjiv84" data-title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sched_setaffinity/" data-id="cl19c0iol00dun7t0c99sp9i0" data-title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -217,7 +402,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-ctrl-c-signal/" data-id="cl17768yt00dtkct0qu5aoiyt" data-title="Python 捕捉 ctrl+c 事件的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-ctrl-c-signal/" data-id="cl19c0iok00dtn7t0mf9w7p35" data-title="Python 捕捉 ctrl+c 事件的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -290,7 +475,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-pthread/" data-id="cl17768yt00dskct08urw3z3p" data-title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-pthread/" data-id="cl19c0iok00dsn7t0c1rpnwyi" data-title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -352,7 +537,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-backtrace/" data-id="cl17768ys00drkct0icen6tzn" data-title="C/C++ dump stack backtrace 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-backtrace/" data-id="cl19c0ioj00drn7t0bivg9ogo" data-title="C/C++ dump stack backtrace 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -414,7 +599,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="cl17768ys00dqkct0nkfvnxwj" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="cl19c0ioj00dqn7t0y1ghzyof" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -475,7 +660,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="cl17768yr00dpkct0hbe1c11r" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="cl19c0ioi00dpn7t01pxttl2z" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -536,197 +721,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="cl17768yr00dokct072qqlnpr" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="cl19c0ioi00don7t0ni5zppi5" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-random-randint" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-random-randint/" class="article-date">
-  <time datetime="2021-04-26T14:00:00.000Z" itemprop="datePublished">2021-04-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-random-randint/">Python random.randint 產生隨機數字</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹 Python random.randint 產生隨機數字，  </p>
-<p>Python random.randint 產生隨機數字要用 <code>randint()</code> 來產生，<code>randint()</code> 會產生指定範圍內的隨機整數，傳入最小值與最大值，這樣生成的隨機數就會在這個範圍內，如下範例的產生 1～10 範圍內的隨機數字(包含1和10)，<br><figure class="highlight python"><figcaption><span>python3-random-randint.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line">min = <span class="number">1</span></span><br><span class="line">max = <span class="number">10</span></span><br><span class="line">ret = random.randint(min, max)</span><br><span class="line">print(ret)</span><br></pre></td></tr></table></figure></p>
-<p>某一次產生的結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2</span><br></pre></td></tr></table></figure></p>
-<p>以下示範多次產生隨機數字，<br><figure class="highlight python"><figcaption><span>python3-random-randint2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line">min = <span class="number">1</span></span><br><span class="line">max = <span class="number">10</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    ret = random.randint(min, max)</span><br><span class="line">    print(ret)</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">10</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">4</span><br><span class="line">2</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-generate-non-repeating-random-numbers/" title="Python 產生 random 隨機不重複的數字 list">Python 產生 random 隨機不重複的數字 list</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-write-text-file/" title="Python 寫檔，寫入 txt 文字檔">Python 寫檔，寫入 txt 文字檔</a><br><a href="/python-read-csv-file/" title="Python 讀取 csv 檔案">Python 讀取 csv 檔案</a><br><a href="/python-pyautogui/" title="[Python] PyAutoGUI 使用教學">[Python] PyAutoGUI 使用教學</a><br><a href="/python-opencv-resize/" title="[Python+OpenCV] 圖片縮放 resize">[Python+OpenCV] 圖片縮放 resize</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="cl17768yq00dnkct0dlali5qc" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-sequential-search" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-sequential-search/" class="article-date">
-  <time datetime="2021-04-22T14:00:00.000Z" itemprop="datePublished">2021-04-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-sequential-search/">C/C++ 循序搜尋法 Sequential Search</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ 循序搜尋法 Sequential Search。  </p>
-<h2 id="C-C-Sequential-Search-循序搜尋法"><a href="#C-C-Sequential-Search-循序搜尋法" class="headerlink" title="C/C++ Sequential Search 循序搜尋法"></a>C/C++ Sequential Search 循序搜尋法</h2><p>以下為 C/C++ 循序搜尋法的實作，要從串列 data 裡尋找數字 7，循序搜尋法是最簡單的實作方式，主要是由一個主迴圈從頭掃到尾，一個一個值拿來跟 key 作比對，一直到有比對成功救回傳索引值或者一直到結束都沒有比對成功，沒有比對成功的話就回傳 -1，範例如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-sequential-search.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sequential_search</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;data, <span class="keyword">int</span> key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; data.size(); ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (key == data[i]) &#123;</span><br><span class="line">            <span class="keyword">return</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; data = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> key = <span class="number">7</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;i : data)</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; i &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> ret = sequential_search(data, key);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">-1</span>)</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"找不到\n"</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"找到索引值"</span> &lt;&lt; ret &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 2 3 4 5 6 7 8 9 10 </span><br><span class="line">找到索引值6</span><br></pre></td></tr></table></figure></p>
-<h2 id="使用循序搜尋法時資料不需要先排序過"><a href="#使用循序搜尋法時資料不需要先排序過" class="headerlink" title="使用循序搜尋法時資料不需要先排序過"></a>使用循序搜尋法時資料不需要先排序過</h2><p>使用循序搜尋法前時資料不需要先排序過就可以直接搜尋了，跟<a href="/cpp-binary-search/" title="二元搜尋法">二元搜尋法</a>比較不一樣，範例如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-sequential-search.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sequential_search</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;data, <span class="keyword">int</span> key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; data.size(); ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (key == data[i]) &#123;</span><br><span class="line">            <span class="keyword">return</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; data = &#123;<span class="number">1</span>, <span class="number">9</span>, <span class="number">2</span>, <span class="number">7</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">5</span>, <span class="number">6</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> key = <span class="number">7</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;i : data)</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; i &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> ret = sequential_search(data, key);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">-1</span>)</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"找不到\n"</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"找到索引值"</span> &lt;&lt; ret &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 9 2 7 4 10 3 8 5 6 </span><br><span class="line">找到索引值3</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-binary-search/" title="C/C++ 二元搜尋法 Binary Search">C/C++ 二元搜尋法 Binary Search</a><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="cl17768yq00dmkct087t4dmbk" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-import" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-import/" class="article-date">
-  <time datetime="2021-04-21T14:00:00.000Z" itemprop="datePublished">2021-04-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-import/">Python import 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹 Python import 用法與範例，  </p>
-<h2 id="導入模組"><a href="#導入模組" class="headerlink" title="導入模組"></a>導入模組</h2><p>語法如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import 模組名稱</span><br></pre></td></tr></table></figure></p>
-<p>例如我有個 AAA 模組裡有 func1 函式<br>這樣就可以用 <code>AAA.func1()</code> 的方式來使用，</p>
-<h2 id="導入模組內某一個函式"><a href="#導入模組內某一個函式" class="headerlink" title="導入模組內某一個函式"></a>導入模組內某一個函式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">from 模組名稱 import 函式名稱</span><br></pre></td></tr></table></figure>
-<p>這樣就可以不用再寫 AAA 前綴字，直接呼叫 <code>func1()</code> 即可，</p>
-<h2 id="導入模組內多個函式"><a href="#導入模組內多個函式" class="headerlink" title="導入模組內多個函式"></a>導入模組內多個函式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">from 模組名稱 import 函式名稱1, 函式名稱2, 函式名稱3</span><br></pre></td></tr></table></figure>
-<p>這樣就可以不用再寫 AAA 前綴字，直接呼叫 <code>func1()</code>、<code>func2()</code>、<code>func3()</code> 即可，</p>
-<h2 id="導入模組內所有函式"><a href="#導入模組內所有函式" class="headerlink" title="導入模組內所有函式"></a>導入模組內所有函式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">from 模組名稱 import *</span><br></pre></td></tr></table></figure>
-<p>這樣就可以不用再寫 AAA 前綴字，直接呼叫 AAA 裡的任一函式即可，</p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-write-text-file/" title="Python 寫檔，寫入 txt 文字檔">Python 寫檔，寫入 txt 文字檔</a><br><a href="/python-read-csv-file/" title="[Python] 讀取 csv 檔案">[Python] 讀取 csv 檔案</a><br><a href="/python-write-csv-file/" title="[Python] 寫入 csv 檔案">[Python] 寫入 csv 檔案</a><br><a href="/python-read-write-file/" title="[Python] 讀寫檔案">[Python] 讀寫檔案</a><br><a href="/python-generate-non-repeating-random-numbers/" title="[Python] 產生 random 隨機不重複的數字 list">[Python] 產生 random 隨機不重複的數字 list</a><br><a href="/python-pyautogui/" title="[Python] PyAutoGUI 使用教學">[Python] PyAutoGUI 使用教學</a><br><a href="/python-opencv-resize/" title="[Python+OpenCV] 圖片縮放 resize">[Python+OpenCV] 圖片縮放 resize</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-import/" data-id="cl17768yq00dlkct0ao4bi76b" data-title="Python import 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
 
     </footer>
   </div>
@@ -770,23 +768,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-pthread_join/">C/C++ Linux pthread_join 用法</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-pthread_attr_getstacksize/">C/C++ Linux pthread_attr_getstacksize 取得執行緒堆疊大小用法</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-pthread_attr_setstacksize/">C/C++ Linux pthread_attr_setstacksize 設定執行緒堆疊大小用法</a>
+          </li>
+        
+          <li>
             <a href="/mac-move-dock-to-other-screen/">mac 雙螢幕延伸模式的 dock 切換方法</a>
           </li>
         
           <li>
             <a href="/linux-grep-binary-file-standard-input-matches/">grep 遇到 binary file (standard input) matches 解決方法</a>
-          </li>
-        
-          <li>
-            <a href="/shell-script-check-if-file-exists/">Shell Script 判斷檔案是否存在</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-fclose/">C/C++ fclose 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-fputs/">C/C++ fputs 用法與範例</a>
           </li>
         
       </ul>
@@ -805,7 +803,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">127</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">130</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
