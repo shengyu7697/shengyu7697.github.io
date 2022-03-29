@@ -105,6 +105,67 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-trace-osvr" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/trace-osvr/" class="article-date">
+  <time datetime="2018-01-30T14:00:00.000Z" itemprop="datePublished">2018-01-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/trace-osvr/">Trace OSVR 演算法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <h2 id="Trace-OSVR-演算法-VideoBasedTracker"><a href="#Trace-OSVR-演算法-VideoBasedTracker" class="headerlink" title="Trace OSVR 演算法 (VideoBasedTracker)"></a>Trace OSVR 演算法 (VideoBasedTracker)</h2><p>原始程式碼如下：<br><a href="https://github.com/OSVR/OSVR-Core/blob/master/plugins/videobasedtracker/VideoBasedTracker.cpp" target="_blank" rel="noopener">videobasedtracker/VideoBasedTracker.cpp</a>  </p>
+<p>以下為簡化過程式碼的流程：<br><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> VideoBasedTracker::processImage(cv::Mat frame, cv::Mat grayImage,</span><br><span class="line">                                     OSVR_TimeValue <span class="keyword">const</span> &amp;tv,</span><br><span class="line">                                     PoseHandler handler) &#123;</span><br><span class="line"></span><br><span class="line">    m_frame = frame;</span><br><span class="line">    m_imageGray = grayImage;</span><br><span class="line">    <span class="keyword">auto</span> foundLeds = m_blobExtractor.extractBlobs(grayImage); <span class="comment">// blob 偵測</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> undistortedLeds = undistortLeds(foundLeds, m_camParams);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">size_t</span> sensor = <span class="number">0</span>; sensor &lt; m_identifiers.size(); sensor++) &#123;</span><br><span class="line"></span><br><span class="line">        osvrPose3SetIdentity(&amp;m_pose);</span><br><span class="line">        <span class="keyword">auto</span> ledsMeasurements = undistortedLeds;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">auto</span> &amp;myLeds = m_led_groups[sensor];</span><br><span class="line">            <span class="keyword">auto</span> led = begin(myLeds);</span><br><span class="line">            <span class="keyword">auto</span> e = end(myLeds);</span><br><span class="line">            <span class="keyword">while</span> (led != end(myLeds)) &#123;</span><br><span class="line">                led-&gt;resetUsed();</span><br><span class="line">                <span class="keyword">auto</span> threshold = m_params.blobMoveThreshold *</span><br><span class="line">                                 led-&gt;getMeasurement().diameter;</span><br><span class="line">                <span class="keyword">auto</span> nearest = led-&gt;nearest(ledsMeasurements, threshold); <span class="comment">// 找最近的</span></span><br><span class="line">                <span class="keyword">if</span> (nearest == end(ledsMeasurements)) &#123;</span><br><span class="line">                    <span class="comment">// We have no blob corresponding to this LED, so we need</span></span><br><span class="line">                    <span class="comment">// to delete this LED.</span></span><br><span class="line">                    led = myLeds.erase(led);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// Update the values in this LED and then go on to the</span></span><br><span class="line">                    <span class="comment">// next one. Remove this blob from the list of potential matches.</span></span><br><span class="line">                    <span class="comment">// 因為已經這個 blob 是哪個 LED, 所以從 ledsMeasurements 裡移除這個 LED</span></span><br><span class="line">                    led-&gt;addMeasurement(*nearest, m_params.blobsKeepIdentity);</span><br><span class="line">                    ledsMeasurements.erase(nearest);</span><br><span class="line">                    ++led;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="comment">// while</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;remainingLed : ledsMeasurements) &#123;</span><br><span class="line">                myLeds.emplace_back(m_identifiers[sensor].get(), remainingLed);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">bool</span> gotPose = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (m_estimators[sensor]) &#123;</span><br><span class="line">            OSVR_PoseState pose;</span><br><span class="line">            <span class="keyword">if</span> (m_estimators[sensor]-&gt;EstimatePoseFromLeds( <span class="comment">// 估算 Pose</span></span><br><span class="line">                    m_led_groups[sensor], tv, pose)) &#123;</span><br><span class="line">                m_pose = pose;</span><br><span class="line">                handler(<span class="keyword">static_cast</span>&lt;<span class="keyword">unsigned</span>&gt;(sensor), pose); <span class="comment">// 送 Pose 出去</span></span><br><span class="line">                gotPose = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="comment">// for</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> done;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ledsMeasurements 是偵測到的 LED blobs  </p>
+<p>重點流程如下：  </p>
+<ul>
+<li>m_blobExtractor.extractBlobs(grayImage); // blob 偵測</li>
+<li>m_estimators[sensor]-&gt;EstimatePoseFromLeds() // 估算 Pose</li>
+<li>handler(static_cast<unsigned>(sensor), pose); // 送 Pose 出去</unsigned></li>
+</ul>
+<p>相關程式碼：<br><a href="https://github.com/OSVR/OSVR-Core/blob/master/plugins/videobasedtracker/LED.h" target="_blank" rel="noopener">videobasedtracker/LED.h</a><br><a href="https://github.com/OSVR/OSVR-Core/blob/master/plugins/videobasedtracker/LED.cpp" target="_blank" rel="noopener">videobasedtracker/LED.cpp</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/trace-osvr/" data-id="cl1csp56p000cr7t09v1y8afd" data-title="Trace OSVR 演算法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OSVR/">OSVR</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-trace-osvr-videobasedtracker-plugin" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/trace-osvr-videobasedtracker-plugin/" class="article-date">
@@ -147,7 +208,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/trace-osvr-videobasedtracker-plugin/" data-id="cl19c6w2p000bwit0rlcc7joc" data-title="Trace OSVR videobasedtracker plugin" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/trace-osvr-videobasedtracker-plugin/" data-id="cl1csp56n000br7t0zb1y6my4" data-title="Trace OSVR videobasedtracker plugin" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OSVR/">OSVR</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -212,10 +273,71 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/build-opencv-3-on-ubuntu/" data-id="cl19c6w2o000awit0pg0zbzdl" data-title="Build OpenCV 3 on Ubuntu" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/build-opencv-3-on-ubuntu/" data-id="cl1csp56j0009r7t0lt1rpdr1" data-title="Build OpenCV 3 on Ubuntu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-qt-add-git-version-or-sha1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/qt-add-git-version-or-sha1/" class="article-date">
+  <time datetime="2018-01-26T14:00:00.000Z" itemprop="datePublished">2018-01-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Qt教學/">Qt教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/qt-add-git-version-or-sha1/">Qt add Git version or SHA1</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>紀錄一下如何在 Qt .pro 專案檔裡帶入 git 的版本資訊或是 git 的 SHA1，讓編譯出來的 Qt 程式夾帶 git 版本資訊。  </p>
+<p>Add code to Qt .pro file.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GIT_VERSION = &quot;$(shell git -C \&quot;&quot;$$_PRO_FILE_PWD_&quot;\&quot; describe)&quot;</span><br><span class="line">DEFINES += GIT_VERSION=\\\&quot;$$GIT_VERSION\\\&quot;</span><br></pre></td></tr></table></figure></p>
+<p>(Windows 下要先確保 git 指令的路徑已經有加到系統環境變數裡)  </p>
+<p>Use the define inside your code. (cpp files)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">QString version(GIT_VERSION);</span><br></pre></td></tr></table></figure></p>
+<p>參考文章<br><a href="https://stackoverflow.com/questions/27041573/print-git-hash-in-qt-as-macro-created-at-compile-time" target="_blank" rel="noopener">https://stackoverflow.com/questions/27041573/print-git-hash-in-qt-as-macro-created-at-compile-time</a><br><a href="https://gist.github.com/grassator/11405930" target="_blank" rel="noopener">https://gist.github.com/grassator/11405930</a><br><a href="https://www.everythingfrontend.com/posts/app-version-from-git-tag-in-qt-qml.html" target="_blank" rel="noopener">https://www.everythingfrontend.com/posts/app-version-from-git-tag-in-qt-qml.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/qt-read-text-file/" title="[Qt] 讀檔，讀取 txt 文字檔">[Qt] 讀檔，讀取 txt 文字檔</a><br><a href="/qt-write-text-file/" title="[Qt] 寫檔，寫入 txt 文字檔">[Qt] 寫檔，寫入 txt 文字檔</a><br><a href="/install-qt-on-windows-use-msvc/" title="安裝 Qt 在 Windows 7 (使用MSVC)">安裝 Qt 在 Windows 7 (使用MSVC)</a><br><a href="/qt-deploy-exe/" title="Qt產生的exe發布方式">Qt產生的exe發布方式</a><br><a href="/qt-translator/" title="Qt 新增多國語言.ts翻譯檔案">Qt 新增多國語言.ts翻譯檔案</a><br><a href="/qt-chinese-garbled-problem/" title="Qt5的中文亂碼問題如何解決">Qt5的中文亂碼問題如何解決</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/qt-add-git-version-or-sha1/" data-id="cl1csp56k000ar7t0q3adjk8f" data-title="Qt add Git version or SHA1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
 
     </footer>
   </div>
@@ -286,123 +408,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-opencv-3-on-windows-use-mingw/" data-id="cl19c6w2n0009wit07frz95zw" data-title="Qt and OpenCV 3 on Windows (使用 MinGW)" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-opencv-3-on-windows-use-mingw/" data-id="cl1csp56e0005r7t0z1r9p4a0" data-title="Qt and OpenCV 3 on Windows (使用 MinGW)" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-qt-add-git-version-or-sha1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/qt-add-git-version-or-sha1/" class="article-date">
-  <time datetime="2018-01-26T14:00:00.000Z" itemprop="datePublished">2018-01-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Qt教學/">Qt教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/qt-add-git-version-or-sha1/">Qt add Git version or SHA1</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>紀錄一下如何在 Qt .pro 專案檔裡帶入 git 的版本資訊或是 git 的 SHA1，讓編譯出來的 Qt 程式夾帶 git 版本資訊。  </p>
-<p>Add code to Qt .pro file.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GIT_VERSION = &quot;$(shell git -C \&quot;&quot;$$_PRO_FILE_PWD_&quot;\&quot; describe)&quot;</span><br><span class="line">DEFINES += GIT_VERSION=\\\&quot;$$GIT_VERSION\\\&quot;</span><br></pre></td></tr></table></figure></p>
-<p>(Windows 下要先確保 git 指令的路徑已經有加到系統環境變數裡)  </p>
-<p>Use the define inside your code. (cpp files)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">QString version(GIT_VERSION);</span><br></pre></td></tr></table></figure></p>
-<p>參考文章<br><a href="https://stackoverflow.com/questions/27041573/print-git-hash-in-qt-as-macro-created-at-compile-time" target="_blank" rel="noopener">https://stackoverflow.com/questions/27041573/print-git-hash-in-qt-as-macro-created-at-compile-time</a><br><a href="https://gist.github.com/grassator/11405930" target="_blank" rel="noopener">https://gist.github.com/grassator/11405930</a><br><a href="https://www.everythingfrontend.com/posts/app-version-from-git-tag-in-qt-qml.html" target="_blank" rel="noopener">https://www.everythingfrontend.com/posts/app-version-from-git-tag-in-qt-qml.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/qt-read-text-file/" title="[Qt] 讀檔，讀取 txt 文字檔">[Qt] 讀檔，讀取 txt 文字檔</a><br><a href="/qt-write-text-file/" title="[Qt] 寫檔，寫入 txt 文字檔">[Qt] 寫檔，寫入 txt 文字檔</a><br><a href="/install-qt-on-windows-use-msvc/" title="安裝 Qt 在 Windows 7 (使用MSVC)">安裝 Qt 在 Windows 7 (使用MSVC)</a><br><a href="/qt-deploy-exe/" title="Qt產生的exe發布方式">Qt產生的exe發布方式</a><br><a href="/qt-translator/" title="Qt 新增多國語言.ts翻譯檔案">Qt 新增多國語言.ts翻譯檔案</a><br><a href="/qt-chinese-garbled-problem/" title="Qt5的中文亂碼問題如何解決">Qt5的中文亂碼問題如何解決</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-add-git-version-or-sha1/" data-id="cl19c6w2m0008wit0o4yyo8xj" data-title="Qt add Git version or SHA1" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-hexo-shortcuts" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/hexo-shortcuts/" class="article-date">
-  <time datetime="2018-01-24T14:00:00.000Z" itemprop="datePublished">2018-01-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/hexo-shortcuts/">Hexo 快捷鍵</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <h2 id="基本常用快捷鍵"><a href="#基本常用快捷鍵" class="headerlink" title="基本常用快捷鍵"></a>基本常用快捷鍵</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo s -&gt; hexo server</span><br><span class="line">hexo n -&gt; hexo new</span><br><span class="line">hexo d -&gt; hexo deploy</span><br><span class="line">hexo g -&gt; hexo generate</span><br></pre></td></tr></table></figure>
-<h2 id="清除緩存文件-db-json-和已生成的靜態文件-public"><a href="#清除緩存文件-db-json-和已生成的靜態文件-public" class="headerlink" title="清除緩存文件 db.json 和已生成的靜態文件 public"></a>清除緩存文件 db.json 和已生成的靜態文件 public</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/hexo-shortcuts/" data-id="cl19c6w2l0007wit0a3aa03j6" data-title="Hexo 快捷鍵" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li></ul>
 
     </footer>
   </div>
@@ -465,10 +474,62 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/hexo-install-ubuntu/" data-id="cl19c6w2j0005wit0o9jvfqyc" data-title="Ubuntu 安裝 Hexo" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/hexo-install-ubuntu/" data-id="cl1csp56i0008r7t0ppa2pvlk" data-title="Ubuntu 安裝 Hexo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Nodejs/">Nodejs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-hexo-shortcuts" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/hexo-shortcuts/" class="article-date">
+  <time datetime="2018-01-24T14:00:00.000Z" itemprop="datePublished">2018-01-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/hexo-shortcuts/">Hexo 快捷鍵</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <h2 id="基本常用快捷鍵"><a href="#基本常用快捷鍵" class="headerlink" title="基本常用快捷鍵"></a>基本常用快捷鍵</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo s -&gt; hexo server</span><br><span class="line">hexo n -&gt; hexo new</span><br><span class="line">hexo d -&gt; hexo deploy</span><br><span class="line">hexo g -&gt; hexo generate</span><br></pre></td></tr></table></figure>
+<h2 id="清除緩存文件-db-json-和已生成的靜態文件-public"><a href="#清除緩存文件-db-json-和已生成的靜態文件-public" class="headerlink" title="清除緩存文件 db.json 和已生成的靜態文件 public"></a>清除緩存文件 db.json 和已生成的靜態文件 public</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/hexo-shortcuts/" data-id="cl1csp56g0007r7t0me0h7g3e" data-title="Hexo 快捷鍵" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li></ul>
 
     </footer>
   </div>
@@ -521,7 +582,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-chewing/" data-id="cl19c6w2c0001wit0rcps5oxz" data-title="Ubuntu 安裝中文輸入法 (注音)" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-chewing/" data-id="cl1csp56c0003r7t0fyv98xet" data-title="Ubuntu 安裝中文輸入法 (注音)" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -603,7 +664,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/diy-buggy-car/" data-id="cl19c6w2h0003wit0o638txvn" data-title="DIY 自製 Arduino 遙控車" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/diy-buggy-car/" data-id="cl1csp5660001r7t0v2jys6aq" data-title="DIY 自製 Arduino 遙控車" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Arduino/">Arduino</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DIY/">DIY</a></li></ul>
@@ -650,6 +711,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-pthread_exit/">C/C++ Linux pthread_exit 用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/cpp-pthread_join/">C/C++ Linux pthread_join 用法</a>
           </li>
         
@@ -663,10 +728,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/mac-move-dock-to-other-screen/">mac 雙螢幕延伸模式的 dock 切換方法</a>
-          </li>
-        
-          <li>
-            <a href="/linux-grep-binary-file-standard-input-matches/">grep 遇到 binary file (standard input) matches 解決方法</a>
           </li>
         
       </ul>
@@ -685,7 +746,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">130</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">131</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">218</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
