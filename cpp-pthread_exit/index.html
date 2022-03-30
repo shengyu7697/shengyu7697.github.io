@@ -35,7 +35,7 @@
 <meta property="og:site_name" content="ShengYu Talk">
 <meta property="og:description" content="本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒 pthread_exit() 用法，pthread_exit() 是用來結束該執行緒並頭透過 pthread_exit 的 retval 參數來回傳值，該回傳值可被 pthread_join 取得到。 pthread_exit 基本用法以下簡單示範如何使用 pthread_exit()，在 foo 函式裡用 pthread_ex">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2022-03-29T23:53:15.203Z">
+<meta property="og:updated_time" content="2022-03-30T23:58:35.060Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C&#x2F;C++ Linux pthread_exit 用法與範例">
 <meta name="twitter:description" content="本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒 pthread_exit() 用法，pthread_exit() 是用來結束該執行緒並頭透過 pthread_exit 的 retval 參數來回傳值，該回傳值可被 pthread_join 取得到。 pthread_exit 基本用法以下簡單示範如何使用 pthread_exit()，在 foo 函式裡用 pthread_ex">
@@ -151,12 +151,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>如果要讓建立出來的執行緒不被 main 主程式的結束退出影響的話可以在主程式結束時呼叫 <code>pthread_exit()</code>，會等到所以所有執行緒結束後 main 才會退出，如下範例，<br><figure class="highlight c++"><figcaption><span>cpp-pthread_exit3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_exit3.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo ++\n"</span>);</span><br><span class="line">    sleep(<span class="number">3</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo --\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"main ++\n"</span>);</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_exit\n"</span>);</span><br><span class="line">    pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"main --\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>而使用 pthread_exit 自然不會執行到後面的 <code>printf(&quot;main --\n&quot;);</code> 與 <code>return 0</code>，輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">main ++</span><br><span class="line">pthread_exit</span><br><span class="line">foo ++</span><br><span class="line">foo --</span><br></pre></td></tr></table></figure></p>
 <p>其它參考<br>pthread_exit(3) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man3/pthread_exit.3.html" target="_blank" rel="noopener">https://man7.org/linux/man-pages/man3/pthread_exit.3.html</a><br>pthread_exit()函數：終止線程<br><a href="http://c.biancheng.net/view/8608.html" target="_blank" rel="noopener">http://c.biancheng.net/view/8608.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pthread_attr_getstacksize/" title="C/C++ Linux pthread_attr_getstacksize 取得執行緒堆疊大小用法">C/C++ Linux pthread_attr_getstacksize 取得執行緒堆疊大小用法</a><br><a href="/cpp-sched_setaffinity/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pthread_join/" title="C/C++ Linux pthread_join 用法與範例">C/C++ Linux pthread_join 用法與範例</a><br><a href="/cpp-sched_setaffinity/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a>  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-pthread_exit/" data-id="cl1csp5l300gqr7t0qycyqr9h" data-title="C/C++ Linux pthread_exit 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-pthread_exit/" data-id="cl1e8brfm00gtr9t095jfnfol" data-title="C/C++ Linux pthread_exit 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -182,7 +182,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   
     <a href="/cpp-pthread_join/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">C/C++ Linux pthread_join 用法</div>
+      <div class="article-nav-title">C/C++ Linux pthread_join 用法與範例</div>
     </a>
   
 </nav>
@@ -222,7 +222,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>
         
           <li>
-            <a href="/cpp-pthread_join/">C/C++ Linux pthread_join 用法</a>
+            <a href="/cpp-pthread_join/">C/C++ Linux pthread_join 用法與範例</a>
           </li>
         
           <li>
