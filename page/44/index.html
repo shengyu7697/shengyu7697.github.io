@@ -105,6 +105,71 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-mutex-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-mutex-how/" class="article-date">
+  <time datetime="2019-11-17T14:00:00.000Z" itemprop="datePublished">2019-11-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-mutex-how/">std::mutex 怎麼實作的？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::mutex 的。  </p>
+<p>接下來我們來 trace llvm 的 libc++ 是怎麼實作 std::mutex 的。  </p>
+<h2 id="1-std-mutex-lock-的實作"><a href="#1-std-mutex-lock-的實作" class="headerlink" title="1. std::mutex::lock 的實作"></a>1. std::mutex::lock 的實作</h2><p><code>lock</code> 轉換成內部的 <code>__libcpp_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/mutex.cpp.html" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::lock()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_lock(&amp;__m_);</span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"mutex lock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="1-1-std-mutex-lock-在-unix-平台的實作內容"><a href="#1-1-std-mutex-lock-在-unix-平台的實作內容" class="headerlink" title="1-1. std::mutex::lock 在 unix 平台的實作內容"></a>1-1. std::mutex::lock 在 unix 平台的實作內容</h3><p><code>__libcpp_mutex_lock</code> 在 unix 平台是呼叫 <code>pthread_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_lock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="1-2-std-mutex-lock-在-windows-平台的實作內容"><a href="#1-2-std-mutex-lock-在-windows-平台的實作內容" class="headerlink" title="1-2. std::mutex::lock 在 windows 平台的實作內容"></a>1-2. std::mutex::lock 在 windows 平台的實作內容</h3><p><code>__libcpp_mutex_lock</code> 在 windows 平台是呼叫 <code>AcquireSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/support/win32/thread_win32.cpp.html" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  AcquireSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="2-std-mutex-unlock-的實作"><a href="#2-std-mutex-unlock-的實作" class="headerlink" title="2. std::mutex::unlock 的實作"></a>2. std::mutex::unlock 的實作</h2><p><code>unlock</code> 轉換成內部的 <code>__libcpp_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/mutex.cpp" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::unlock() _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_unlock(&amp;__m_);</span><br><span class="line">    (<span class="keyword">void</span>)ec;</span><br><span class="line">    _LIBCPP_ASSERT(ec == <span class="number">0</span>, <span class="string">"call to mutex::unlock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-1-std-mutex-unlock-在-unix-平台的實作內容"><a href="#2-1-std-mutex-unlock-在-unix-平台的實作內容" class="headerlink" title="2-1. std::mutex::unlock 在 unix 平台的實作內容"></a>2-1. std::mutex::unlock 在 unix 平台的實作內容</h3><p><code>__libcpp_mutex_unlock</code> 在 unix 平台是呼叫 <code>pthread_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_unlock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-2-std-mutex-unlock-在-在-windows-平台的實作內容"><a href="#2-2-std-mutex-unlock-在-在-windows-平台的實作內容" class="headerlink" title="2-2. std::mutex::unlock 在 在 windows 平台的實作內容"></a>2-2. std::mutex::unlock 在 在 windows 平台的實作內容</h3><p><code>__libcpp_mutex_unlock</code> 在 windows 平台是呼叫 <code>ReleaseSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" target="_blank" rel="noopener">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  ReleaseSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p>在一番 trace code 的結果後，std::mutex 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::mutex::lock</code> 轉換成 <code>pthread_mutex_lock</code><br><code>std::mutex::unlock</code> 轉換成 <code>pthread_mutex_unlock</code><br>在 windows 下<br><code>std::mutex::lock</code> 轉換成 <code>AcquireSRWLockExclusive</code><br><code>std::mutex::unlock</code> 轉換成 <code>ReleaseSRWLockExclusive</code>  </p>
+<p><strong>相關主題</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-condition_variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-mutex-how/" data-id="cl334aibg005sfet0ha6pz6v7" data-title="std::mutex 怎麼實作的？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-condition_variable-how" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-condition_variable-how/" class="article-date">
@@ -158,7 +223,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="cl2q55dx6005qz0t0kw3u5dop" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="cl334aibg005tfet0rzo8nsb7" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -227,7 +292,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="cl2q55g7c00h1z0t03gl6egt4" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="cl334ajmp00h4fet0p9vrsa6r" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -310,7 +375,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="cl2q55dx6005pz0t0o23ho71o" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="cl334aibf005rfet0o7sgliex" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -376,7 +441,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="cl2q55dx4005nz0t0acazktw4" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="cl334aibf005qfet0ul4g5u7j" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -439,7 +504,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-for/" data-id="cl2q55dx5005oz0t0ymfgpo2o" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-for/" data-id="cl334aibe005pfet0apihy582" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -502,7 +567,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="cl2q55dx4005mz0t0ehcs57q9" data-title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="cl334aibd005ofet0n0iqjrxh" data-title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -554,7 +619,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </script>
         <!-- ads-1 -->
         <p>本篇將介紹如何使用 Python 搭配 OpenCV 來 resize 縮放圖片，在寫 python 影像處理程式時常常會用到 opencv cv2.resize 圖片縮放的功能，接下來介紹怎麼使用 python 搭配 OpenCV 模組來進行圖片縮放 resize。  </p>
-<h2 id="使用範例"><a href="#使用範例" class="headerlink" title="使用範例"></a>使用範例</h2><p>以下 python 範例 ShengYu 是將 lena.jpg 讀取進來後，使用 opencv cv2.resize 進行縮放，從原本的512x512大小縮放成256x256 的大小。<br><figure class="highlight python"><figcaption><span>opencv-resize.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'lena.jpg'</span>)</span><br><span class="line">image = cv2.resize(image, (<span class="number">256</span>, <span class="number">256</span>), interpolation=cv2.INTER_AREA)</span><br><span class="line">cv2.imshow(<span class="string">'Result'</span>, image)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用範例"><a href="#使用範例" class="headerlink" title="使用範例"></a>使用範例</h2><p>以下 python 範例 ShengYu 是將 lena.jpg 讀取進來後，使用 opencv cv2.resize 進行縮放，從原本的512x512大小縮放成256x256 的大小。<br><figure class="highlight python"><figcaption><span>opencv-resize.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'lena.jpg'</span>)</span><br><span class="line">image = cv2.resize(image, (<span class="number">256</span>, <span class="number">256</span>), interpolation=cv2.INTER_AREA)</span><br><span class="line">cv2.imshow(<span class="string">'Result'</span>, image)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
 <p>結果如下圖所示：<br><img src="/python-opencv-resize/opencv-resize.jpg" width="320" title="結果圖">  </p>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
 <h2 id="參數說明"><a href="#參數說明" class="headerlink" title="參數說明"></a>參數說明</h2><p><code>cv2.resize(src, dsize[, dst[, fx[, fy[, interpolation]]]])</code>  </p>
@@ -590,7 +655,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </table>
 <p>cv2.resize 參數的詳細細節請參考<a href="https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#cv2.resize" target="_blank" rel="noopener">這裡</a>  </p>
 <h2 id="OpenCV-cv2-resize-提供五種方式的結果比較"><a href="#OpenCV-cv2-resize-提供五種方式的結果比較" class="headerlink" title="OpenCV cv2.resize 提供五種方式的結果比較"></a>OpenCV cv2.resize 提供五種方式的結果比較</h2><p>下面的例子將 cv2.resize 所提供的所有種類都使用看看，來互相比較之間的差異，<br>我們先 resize 縮小成 400x400 的大小 來比較看看，<br>例子中還使用了 matplotlib 的方式將有圖片一起呈現在同一個視窗內，關於 matplotlib 的使用可以看看<a href="/python-matplotlib/" title="這篇">這篇</a>，<br>其中 matplotlib 的 imshow 圖片是使用RGB排列方式，所以這邊我們將 opencv 的 BGR 排列作個轉換，<br>這樣在 matplotlib 上顏色顯示才會正確。  </p>
-<figure class="highlight python"><figcaption><span>opencv-resize.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'lena.jpg'</span>)</span><br><span class="line">img1 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_NEAREST)</span><br><span class="line">img2 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_LINEAR)</span><br><span class="line">img3 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_AREA)</span><br><span class="line">img4 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_CUBIC)</span><br><span class="line">img5 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_LANCZOS4)</span><br><span class="line"></span><br><span class="line"><span class="comment"># BGR 轉 RGB</span></span><br><span class="line">img0_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</span><br><span class="line">img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)</span><br><span class="line">img2_rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)</span><br><span class="line">img3_rgb = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)</span><br><span class="line">img4_rgb = cv2.cvtColor(img4, cv2.COLOR_BGR2RGB)</span><br><span class="line">img5_rgb = cv2.cvtColor(img5, cv2.COLOR_BGR2RGB)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或這樣轉也可以</span></span><br><span class="line"><span class="comment">#img1_rgb = img1[:,:,::-1]</span></span><br><span class="line"></span><br><span class="line">titles = [<span class="string">'Original Image'</span>, <span class="string">'INTER_NEAREST'</span>, <span class="string">'INTER_LINEAR'</span>, <span class="string">'INTER_AREA'</span>, <span class="string">'INTER_CUBIC'</span>, <span class="string">'INTER_LANCZOS4'</span>]</span><br><span class="line">images = [img0_rgb, img1_rgb, img2_rgb, img3_rgb, img4_rgb, img5_rgb]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">6</span>):</span><br><span class="line">    plt.subplot(<span class="number">2</span>, <span class="number">3</span>, i+<span class="number">1</span>)</span><br><span class="line">    plt.imshow(images[i])</span><br><span class="line">    plt.title(titles[i])</span><br><span class="line">    plt.xticks([]), plt.yticks([])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><figcaption><span>opencv-resize.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'lena.jpg'</span>)</span><br><span class="line">img1 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_NEAREST)</span><br><span class="line">img2 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_LINEAR)</span><br><span class="line">img3 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_AREA)</span><br><span class="line">img4 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_CUBIC)</span><br><span class="line">img5 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_LANCZOS4)</span><br><span class="line"></span><br><span class="line"><span class="comment"># BGR 轉 RGB</span></span><br><span class="line">img0_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</span><br><span class="line">img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)</span><br><span class="line">img2_rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)</span><br><span class="line">img3_rgb = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)</span><br><span class="line">img4_rgb = cv2.cvtColor(img4, cv2.COLOR_BGR2RGB)</span><br><span class="line">img5_rgb = cv2.cvtColor(img5, cv2.COLOR_BGR2RGB)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或這樣轉也可以</span></span><br><span class="line"><span class="comment">#img1_rgb = img1[:,:,::-1]</span></span><br><span class="line"></span><br><span class="line">titles = [<span class="string">'Original Image'</span>, <span class="string">'INTER_NEAREST'</span>, <span class="string">'INTER_LINEAR'</span>, <span class="string">'INTER_AREA'</span>, <span class="string">'INTER_CUBIC'</span>, <span class="string">'INTER_LANCZOS4'</span>]</span><br><span class="line">images = [img0_rgb, img1_rgb, img2_rgb, img3_rgb, img4_rgb, img5_rgb]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">6</span>):</span><br><span class="line">    plt.subplot(<span class="number">2</span>, <span class="number">3</span>, i+<span class="number">1</span>)</span><br><span class="line">    plt.imshow(images[i])</span><br><span class="line">    plt.title(titles[i])</span><br><span class="line">    plt.xticks([]), plt.yticks([])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
 <p>結果如下圖所示，從下列結果圖發現，使用 INTER_NEAREST 會有些微地鋸齒狀，在圖片中的帽緣與鏡子邊緣上的線條可以發現，<br>INTER_NEAREST 是最簡單的插值方法，且速度快，但也容易出現鋸齒的現象。<br><img src="/python-opencv-resize/opencv-resize2.jpg" title="結果圖">  </p>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
 <h2 id="OpenCV-cv2-resize-這五種方式在速度上的比較"><a href="#OpenCV-cv2-resize-這五種方式在速度上的比較" class="headerlink" title="OpenCV cv2.resize 這五種方式在速度上的比較"></a>OpenCV cv2.resize 這五種方式在速度上的比較</h2><p>由快到慢排序：INTER_NEAREST &gt; INTER_CUBIC &gt; INTER_LINEAR &gt; INTER_AREA &gt; INTER_LANCZOS4<br>這是以我的電腦的測試數據，每次跑的結果都不太一樣，但整體速度排序來說差不多，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">INTER_NEAREST：  0.000447 seconds</span><br><span class="line">INTER_LINEAR：   0.000673 seconds</span><br><span class="line">INTER_AREA：     0.001684 seconds</span><br><span class="line">INTER_CUBIC：    0.000482 seconds</span><br><span class="line">INTER_LANCZOS4： 0.003038 seconds</span><br></pre></td></tr></table></figure></p>
@@ -601,7 +666,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="cl2q55dx3005lz0t00rpf290e" data-title="Python OpenCV resize 圖片縮放" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="cl334aibd005nfet0i0n09ymd" data-title="Python OpenCV resize 圖片縮放" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -655,7 +720,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>本篇 ShengYu 將介紹如何使用 Python 來建立多執行緒 multithread，多執行緒 multithread 是很常會用到的程式技能，接下來介紹怎麼使用 python 3 的 threading 模組來建立執行緒吧。  </p>
 <h2 id="單執行緒到多執行緒的思維"><a href="#單執行緒到多執行緒的思維" class="headerlink" title="單執行緒到多執行緒的思維"></a>單執行緒到多執行緒的思維</h2><p>原本寫程式只會單執行緒從頭寫到尾，例如單執行緒做了 ABC 三件事，總共花了 3 秒，但如果 ABC 三件事的內容是互相不影響的，那改成多執行緒的寫法，同時開 3 個執行緒分別去執行A、B和C的話，可能總共只需要 1 秒呢！這麼厲害的技巧一定要學囉，馬上來學習吧！  </p>
 <h2 id="建立多個執行緒的範例"><a href="#建立多個執行緒的範例" class="headerlink" title="建立多個執行緒的範例"></a>建立多個執行緒的範例</h2><p>下範例是使用 Python 3 的<code>threading.Thread()</code>建立了三個執行緒，每次的寫法都不太一樣，分別為去執行 <code>print_hello()</code>、<code>print_hellowrold()</code> 與 <code>print_hi()</code>，<br><code>print_hello()</code>函式裡很簡單地印出3次的 Hello，並且間隔0.5秒印一次，<br><code>print_hellowrold()</code>函式是根據帶入一個參數n去印，需要注意的是在<code>threading.Thread()</code> 的 <code>args</code> 是要傳入一個tuple， 而tuple只有一個元素的寫法為 <code>args = (3,)</code> 這樣，需要另外加個逗號，<br><code>print_hi()</code>函式為兩個參數。  </p>
-<p>另外依據 <code>time.sleep()</code> 參數給入的秒數，<code>time.sleep()</code> 函式暫停執行當前的執行緒，<br>如果行程裡只有單一條執行緒的話，等同於暫停執行整個行程。<br><figure class="highlight python"><figcaption><span>python3-create-thread.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hello</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>):</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line">        print(<span class="string">"Hello "</span> + str(i))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hellowrold</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(n):</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line">        print(<span class="string">"Hello world "</span>+ str(i))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hi</span><span class="params">(n, interval)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(n):</span><br><span class="line">        time.sleep(interval)</span><br><span class="line">        print(<span class="string">"Hi "</span>+ str(i))</span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target = print_hello)</span><br><span class="line">t2 = threading.Thread(target = print_hellowrold, args = (<span class="number">3</span>,))</span><br><span class="line">t3 = threading.Thread(target = print_hi,</span><br><span class="line">                      args = (<span class="number">3</span>, <span class="number">0.2</span>))</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t3.start()</span><br></pre></td></tr></table></figure></p>
+<p>另外依據 <code>time.sleep()</code> 參數給入的秒數，<code>time.sleep()</code> 函式暫停執行當前的執行緒，<br>如果行程裡只有單一條執行緒的話，等同於暫停執行整個行程。<br><figure class="highlight python"><figcaption><span>python3-create-thread.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hello</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>):</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line">        print(<span class="string">"Hello "</span> + str(i))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hellowrold</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(n):</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line">        print(<span class="string">"Hello world "</span>+ str(i))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hi</span><span class="params">(n, interval)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(n):</span><br><span class="line">        time.sleep(interval)</span><br><span class="line">        print(<span class="string">"Hi "</span>+ str(i))</span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target = print_hello)</span><br><span class="line">t2 = threading.Thread(target = print_hellowrold, args = (<span class="number">3</span>,))</span><br><span class="line">t3 = threading.Thread(target = print_hi,</span><br><span class="line">                      args = (<span class="number">3</span>, <span class="number">0.2</span>))</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t3.start()</span><br></pre></td></tr></table></figure></p>
 <p>輸出結果如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Hi</span><br><span class="line">Hi</span><br><span class="line">Hello</span><br><span class="line">Hi</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br></pre></td></tr></table></figure></p>
 <p>另外開執行緒也可以不取得回傳變數直接執行，例如<code>threading.Thread(target = print_hello).start()</code>這樣寫，  </p>
 <p>threading 的詳細細節請參考<a href="https://docs.python.org/3.8/library/threading.html" target="_blank" rel="noopener">這裡</a>  </p>
@@ -664,7 +729,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="cl2q55dx3005kz0t0rq0iurvw" data-title="Python 建立多執行緒 thread" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="cl334aiba005mfet04cu81tin" data-title="Python 建立多執行緒 thread" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -726,73 +791,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="cl2q55dx1005jz0t02tq8esee" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-paste-image" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-paste-image/" class="article-date">
-  <time datetime="2019-11-07T14:00:00.000Z" itemprop="datePublished">2019-11-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-paste-image/">Python 圖片貼上 paste</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 讀取圖片並且將圖片貼在另一張圖片上，在做影像處理時有時會需要對圖片作剪下貼上的處理，接下來介紹怎麼使用 python 的 PIL 模組來作圖片貼上。  </p>
-<h2 id="安裝-PIL"><a href="#安裝-PIL" class="headerlink" title="安裝 PIL"></a>安裝 PIL</h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。  </p>
-<h2 id="範例1：把-lena-的縮圖貼在-lena-圖片上"><a href="#範例1：把-lena-的縮圖貼在-lena-圖片上" class="headerlink" title="範例1：把 lena 的縮圖貼在 lena 圖片上"></a>範例1：把 lena 的縮圖貼在 lena 圖片上</h2><p>以下範例 ShengYu 是使用 Image.open() 讀取 lena.jpg 這張圖片，<br>Image.open() 會回傳一個 Image 物件，<br>然後我們使用<a href="/python-pil-thumbnail-image/" title="先前介紹過的圖片縮圖">先前介紹過的圖片縮圖</a>，把它讀取進來，<br>接著來到本篇的重點使用 paste() 將縮圖貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！  </p>
-<figure class="highlight python"><figcaption><span>paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line">img2 = Image.open(<span class="string">"lena-thumbnail.jpg"</span>)</span><br><span class="line">print(img2.size)</span><br><span class="line"></span><br><span class="line">img.paste(img2, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/paste-image.jpg" width="320" title="結果圖"></p>
-<h2 id="範例2：把-crop-下的範圍貼在-lena-圖片上"><a href="#範例2：把-crop-下的範圍貼在-lena-圖片上" class="headerlink" title="範例2：把 crop 下的範圍貼在 lena 圖片上"></a>範例2：把 crop 下的範圍貼在 lena 圖片上</h2><p>這範例先使用 crop 裁剪一個範圍，<br>接著使用 paste() 將 crop 的範圍貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！<br><figure class="highlight python"><figcaption><span>crop-paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line"></span><br><span class="line">img2 = img.crop((<span class="number">0</span>, <span class="number">0</span>, <span class="number">300</span>, <span class="number">300</span>))</span><br><span class="line">img.paste(img2, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/crop-paste-image.jpg" width="320" title="結果圖">  </p>
-<h2 id="範例3：把-crop-下的範圍作模糊化再貼在-lena-圖片上"><a href="#範例3：把-crop-下的範圍作模糊化再貼在-lena-圖片上" class="headerlink" title="範例3：把 crop 下的範圍作模糊化再貼在 lena 圖片上"></a>範例3：把 crop 下的範圍作模糊化再貼在 lena 圖片上</h2><p>這範例先使用 crop() 裁剪一個範圍，<br>然後使用<a href="/python-pil-blur-image/" title="先前介紹過的模糊化 filter()">先前介紹過的模糊化 filter()</a> 將範圍模糊化，<br>接著使用 paste() 將 crop 的範圍貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！<br><figure class="highlight python"><figcaption><span>crop-filter-paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image, ImageFilter</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line"></span><br><span class="line">img2 = img.crop((<span class="number">0</span>, <span class="number">0</span>, <span class="number">300</span>, <span class="number">300</span>))</span><br><span class="line">img3 = img2.filter(ImageFilter.BLUR)</span><br><span class="line">img.paste(img3, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/crop-filter-paste-image.jpg" width="320" title="結果圖">  </p>
-<p>Image.paste 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.paste" target="_blank" rel="noopener">這裡</a>  </p>
-<p><strong>相關主題</strong><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-draw-text-on-image/" title="Python 在圖片上繪製文字">Python 在圖片上繪製文字</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-paste-image/" data-id="cl2q55dx1005iz0t0nli5x7px" data-title="Python 圖片貼上 paste" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="cl334aib9005lfet0rt8w6m0n" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -839,6 +838,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/android-adb-shell-input/">Android adb shell input 事件用法</a>
+          </li>
+        
+          <li>
             <a href="/python-pip-install-specific-version/">Python pip install 如何安裝指定版本的套件</a>
           </li>
         
@@ -852,10 +855,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-pthread_join/">C/C++ Linux pthread_join 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-pthread_attr_getstacksize/">C/C++ Linux pthread_attr_getstacksize 取得執行緒堆疊大小用法</a>
           </li>
         
       </ul>

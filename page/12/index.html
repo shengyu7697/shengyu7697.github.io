@@ -105,6 +105,85 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-flask-screenshare" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-flask-screenshare/" class="article-date">
+  <time datetime="2021-06-17T14:00:00.000Z" itemprop="datePublished">2021-06-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-flask-screenshare/">Python Flask 螢幕分享</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 要介紹使用 Python Flask 螢幕分享的作法，完成後就可以將你的桌面螢幕利用網頁的方式串流影像出去，其它使用者只需要一個瀏覽器就可以看你的螢幕分享(電腦或手機或平板)。  </p>
+<p>在之前的文章中曾經介紹過 <a href="/python-flask/" title="Python Flask 的網頁開發">Python Flask 的網頁開發</a>、<a href="/python-flask-camera-streaming/" title="攝影機串流">攝影機串流</a>以及<a href="/python-pyscreenshot/" title="螢幕截圖">螢幕截圖</a>，今天來點不一樣的，來作個螢幕分享的功能吧！  </p>
+<p>本篇所使用到的 Python 模組有  </p>
+<ul>
+<li>Flask  </li>
+<li>pyscreenshot (Linux)  </li>
+<li>PIL ImageGrab (Windows and macOS)  </li>
+</ul>
+<h2 id="顯示圖片的-Flask-網頁"><a href="#顯示圖片的-Flask-網頁" class="headerlink" title="顯示圖片的 Flask 網頁"></a>顯示圖片的 Flask 網頁</h2><p>基於之前的 <a href="/python-flask/" title="Flask 系列文章">Flask 系列文章</a>介紹，可以透過下列的程式碼簡單的建立一個網頁並顯示一張圖片，  </p>
+<figure class="highlight html"><figcaption><span>index.html</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">"&#123;&#123; url_for('video_feed') &#125;&#125;"</span> <span class="attr">alt</span>=<span class="string">""</span> <span class="attr">style</span>=<span class="string">"width: 100%"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>之前介紹過 <a href="/python-flask-render_template/" title="Flask 使用 template">Flask 使用 template</a> 的方式了，這邊就直接使用吧！<br><figure class="highlight python"><figcaption><span>main.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> flask</span><br><span class="line"></span><br><span class="line">app = flask.Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> flask.render_template(<span class="string">'index.html'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(host=<span class="string">'0.0.0.0'</span>, debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure></p>
+<p>但是這次我不只單純顯示一張圖片就好，我要顯示一連串圖片，  </p>
+<h2 id="Flask-顯示串流影像"><a href="#Flask-顯示串流影像" class="headerlink" title="Flask 顯示串流影像"></a>Flask 顯示串流影像</h2><p>在<a href="/python-flask-camera-streaming/" title="攝影機串流">攝影機串流</a>這篇介紹到可以將一張張影像串流出去，</p>
+<p><code>boundary=--jpgboundary</code><br>指出後續的連續資料塊以 <code>--jpgboundary</code> 作為各單位資料區塊邊界<br>你也可以改用<br><code>boundary=frame</code><br>之後連續資料塊以 <code>--frame</code> 作為各單位資料區塊邊界</p>
+<p>這邊我在 Ubuntu 系統下使用 <a href="/python-pyscreenshot/" title="pyscreenshot 來擷取螢幕的畫面">pyscreenshot 來擷取螢幕的畫面</a>，Windows 與 macOS 系統直接使用 PIL ImageGrab 即可  </p>
+<p>轉 bytes 方式有兩種，一種是先 seek(0) 再 read() 可以讀取 bytes 資料<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">img_buffer = BytesIO()</span><br><span class="line">ImageGrab.grab().save(img_buffer, <span class="string">'JPEG'</span>)</span><br><span class="line">img_buffer.seek(<span class="number">0</span>)</span><br><span class="line">img_buffer.read() <span class="comment"># bytes</span></span><br></pre></td></tr></table></figure></p>
+<p>另一種是直接 getvalue()，就不用 seek<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">img_buffer = BytesIO()</span><br><span class="line">ImageGrab.grab().save(img_buffer, <span class="string">'JPEG'</span>)</span><br><span class="line">img_buffer.getvalue() <span class="comment"># bytes</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="Ubuntu-遇到-IMageGrab-錯誤訊息的解決方法"><a href="#Ubuntu-遇到-IMageGrab-錯誤訊息的解決方法" class="headerlink" title="Ubuntu 遇到 IMageGrab 錯誤訊息的解決方法"></a>Ubuntu 遇到 IMageGrab 錯誤訊息的解決方法</h2><p>在 Ubuntu 下執行時如果遇到 <code>ImageGrab is macOS and Windows only</code> 的錯誤訊息時，代表 ImageGrab 這個模組只支援 OS X 跟 Windows，</p>
+<p>在 Linux 平台下可以用 pyscreenshot 模組來取代 ImageGrab，<br>把原本的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">from PIL  import ImageGrab</span><br></pre></td></tr></table></figure></p>
+<p>替換成<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import pyscreenshot as ImageGrab</span><br></pre></td></tr></table></figure></p>
+<p>這樣就可以了。  </p>
+<p>以上的完整原始碼放在<a href="https://github.com/shengyu7697/screenshare" target="_blank" rel="noopener">我的 github</a> 上。  </p>
+<p>其它參考<br><a href="https://stackoverflow.com/questions/43520757/imagegrab-alternative-in-linux" target="_blank" rel="noopener">https://stackoverflow.com/questions/43520757/imagegrab-alternative-in-linux</a></p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-flask-camera-streaming/" title="Python Flask & OpenCV 即時串流 webcam 攝影機影像">Python Flask & OpenCV 即時串流 webcam 攝影機影像</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-flask-screenshare/" data-id="cl334aifx00ebfet0dh83f2ch" data-title="Python Flask 螢幕分享" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-pyscreenshot" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-pyscreenshot/" class="article-date">
@@ -166,7 +245,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyscreenshot/" data-id="cl2q55e4900e7z0t0znrxakv2" data-title="Python 螢幕截圖存檔 pyscreenshot 用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyscreenshot/" data-id="cl334aifw00e9fet0hy7een37" data-title="Python 螢幕截圖存檔 pyscreenshot 用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -231,7 +310,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/url-shortening/" data-id="cl2q55e4600e3z0t0hbvwd2bf" data-title="4 種常用的縮短網址服務  " class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/url-shortening/" data-id="cl334aifw00e8fet0xo1v80or" data-title="4 種常用的縮短網址服務  " class="article-share-link">Share</a>
       
       
     </footer>
@@ -288,7 +367,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-macdeployqt/" data-id="cl2q55e4800e6z0t07jjdbmd8" data-title="在 macOS 發佈 Qt 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-macdeployqt/" data-id="cl334aifw00e7fet014a8oxjd" data-title="在 macOS 發佈 Qt 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -347,7 +426,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-mjpeg-streaming-app/" data-id="cl2q55e4700e5z0t0g2ka7u9p" data-title="Android MJPEG Streaming App" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-mjpeg-streaming-app/" data-id="cl334aifv00e6fet0z2gr7npt" data-title="Android MJPEG Streaming App" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MJPEG/">MJPEG</a></li></ul>
@@ -425,7 +504,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-queue/" data-id="cl2q55e4700e4z0t0a0idui1w" data-title="Python Queue 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-queue/" data-id="cl334aifv00e5fet0wq4yb9bs" data-title="Python Queue 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -487,7 +566,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-qrcode-to-text/" data-id="cl2q55e4400e0z0t0o8u9qa1m" data-title="Python QR Code 轉文字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-qrcode-to-text/" data-id="cl334aifu00e4fet0rclunmlu" data-title="Python QR Code 轉文字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -549,7 +628,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-text-to-qrcode/" data-id="cl2q55e4300dzz0t0p5py5j0c" data-title="Python 文字轉 QR Code" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-text-to-qrcode/" data-id="cl334aifu00e3fet0gda228wv" data-title="Python 文字轉 QR Code" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -604,7 +683,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/excel-sort/" data-id="cl2q55e4500e2z0t04x3svfp6" data-title="Excel 排序1位數、2位數、3位數、4位數" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/excel-sort/" data-id="cl334aift00e2fet0ha6p4acx" data-title="Excel 排序1位數、2位數、3位數、4位數" class="article-share-link">Share</a>
       
       
     </footer>
@@ -664,72 +743,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-version/" data-id="cl2q55e4400e1z0t0uetvokst" data-title="Ubuntu 查詢版本資訊的 4 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-version/" data-id="cl334aifs00e0fet01ed7kox4" data-title="Ubuntu 查詢版本資訊的 4 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-sleep" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-sleep/" class="article-date">
-  <time datetime="2021-05-21T14:00:00.000Z" itemprop="datePublished">2021-05-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-sleep/">C/C++ sleep 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Windows/Linux/Unix 平台 C/C++ sleep 函式用法與範例，sleep 就是讓程式暫停執行一段時間，各平台的 sleep 函式名稱與使用方法不盡相同，將會在本篇一一說明，  </p>
-<h2 id="在-Windows-平台的-Sleep-毫秒"><a href="#在-Windows-平台的-Sleep-毫秒" class="headerlink" title="在 Windows 平台的 Sleep (毫秒)"></a>在 Windows 平台的 Sleep (毫秒)</h2><p>在 Windows 平台的 <a href="https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep" target="_blank" rel="noopener"><code>Sleep()</code></a> 的時間單位是毫秒(ms / millisecond)，所以要延遲1秒的話就是1000毫秒，寫法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;windows.h&gt;</span></span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">Sleep(<span class="number">1000</span>); <span class="comment">// 1s</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="在-Linux-Unix-平台的-sleep-秒"><a href="#在-Linux-Unix-平台的-sleep-秒" class="headerlink" title="在 Linux/Unix 平台的 sleep (秒)"></a>在 Linux/Unix 平台的 sleep (秒)</h2><p>在 Linux / Unix 平台的 <a href="https://man7.org/linux/man-pages/man3/sleep.3.html" target="_blank" rel="noopener"><code>sleep()</code></a> 的時間單位是秒(s / second)，寫法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">sleep(<span class="number">1</span>); <span class="comment">// 1s</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="在-Linux-Unix-平台的-usleep-微秒"><a href="#在-Linux-Unix-平台的-usleep-微秒" class="headerlink" title="在 Linux/Unix 平台的 usleep (微秒)"></a>在 Linux/Unix 平台的 usleep (微秒)</h2><p>承上例，那麼在 Linux / Unix 平台下想要 sleep 的時間單位是秒級以下呢？<br>Linux / Unix 平台下有個 <a href="https://man7.org/linux/man-pages/man3/usleep.3.html" target="_blank" rel="noopener"><code>usleep()</code></a> 函式，usleep 的時間單位是微秒(us / microsecond)，寫法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">usleep(<span class="number">1000</span>*<span class="number">1000</span>); <span class="comment">// 1s</span></span><br></pre></td></tr></table></figure></p>
-<p>另外 Linux/Unix 平台還有 <a href="https://man7.org/linux/man-pages/man2/nanosleep.2.html" target="_blank" rel="noopener"><code>nanosleep()</code></a> 函式，時間單位為納秒 (ns / nanosecond)，關於這部分下次我再寫一篇給大家講解，  </p>
-<h2 id="C-11-的-sleep-for"><a href="#C-11-的-sleep-for" class="headerlink" title="C++11 的 sleep_for"></a>C++11 的 sleep_for</h2><p>跨平台開發的話以 C++11 所提供的 <a href="/std-this_thread-sleep_for/" title="sleep_for">sleep_for</a> 最為方便，現今編譯器已普遍支援，寫法如下，提供了各種時間單位，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>)); <span class="comment">// 1s</span></span><br><span class="line"><span class="comment">// or</span></span><br><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::milliseconds(<span class="number">1000</span>)); <span class="comment">// 1s</span></span><br><span class="line"><span class="comment">// or</span></span><br><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::microseconds(<span class="number">1000</span>*<span class="number">1000</span>)); <span class="comment">// 1s</span></span><br><span class="line"><span class="comment">// or</span></span><br><span class="line"><span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::nanoseconds(<span class="number">1000</span>*<span class="number">1000</span>*<span class="number">1000</span>)); <span class="comment">// 1s</span></span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-this_thread-sleep_for/" title="std::this_thread::sleep_for 用法與範例">std::this_thread::sleep_for 用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sleep/" data-id="cl2q55e4300dyz0t0gc5wt7qg" data-title="C/C++ sleep 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -773,6 +790,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/android-adb-shell-input/">Android adb shell input 事件用法</a>
+          </li>
+        
+          <li>
             <a href="/python-pip-install-specific-version/">Python pip install 如何安裝指定版本的套件</a>
           </li>
         
@@ -786,10 +807,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-pthread_join/">C/C++ Linux pthread_join 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-pthread_attr_getstacksize/">C/C++ Linux pthread_attr_getstacksize 取得執行緒堆疊大小用法</a>
           </li>
         
       </ul>
