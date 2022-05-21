@@ -105,6 +105,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-opencv-build-program-by-gcc" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/opencv-build-program-by-gcc/" class="article-date">
+  <time datetime="2019-10-11T14:00:00.000Z" itemprop="datePublished">2019-10-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/opencv-build-program-by-gcc/">使用 gcc / g++ 編譯 opencv 程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹如何使用 gcc / g++ 指令來編譯 opencv 程式，並且透過 pkg-config 指令來取得 opencv 編譯所需的參數。</p>
+<p>以下範例為簡單的讀取 lena 圖片，詳細的介紹說明請看 <a href="/opencv-first-program-in-ubuntu/" title="這篇">這篇</a>。<br><figure class="highlight cpp"><figcaption><span>readPicture.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Mat image;</span><br><span class="line">    image = imread(<span class="string">"lena.jpg"</span>, IMREAD_COLOR);</span><br><span class="line"></span><br><span class="line">    imshow(<span class="string">"view"</span>, image);</span><br><span class="line">    waitKey(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用-g-編譯-opencv-程式"><a href="#使用-g-編譯-opencv-程式" class="headerlink" title="使用 g++ 編譯 opencv 程式"></a>使用 g++ 編譯 opencv 程式</h2><p>正常編譯的話通常是使用 <code>g++ readPicture.cpp -o readPicture</code> 就完成了，但是這邊還需要帶入 opencv 的標頭檔目錄與連結函式庫，<br>這邊使用 pkg-config 這個工具來輔助完成這件事，最後透過結合這兩個指令就可以編譯出執行檔，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ readPicture.cpp -o readPicture `pkg-config --cflags --libs opencv`</span><br></pre></td></tr></table></figure></p>
+<h2 id="pkg-config-原理"><a href="#pkg-config-原理" class="headerlink" title="pkg-config 原理"></a>pkg-config 原理</h2><p>使用 <code>pkg-config --cflags opencv</code> 指令會輸出 opencv 所需要的標頭檔目錄，<br>輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-I/usr/local/include/opencv -I/usr/local/include</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>pkg-config --libs opencv</code> 指令會輸出 opencv 所需要連結的函式庫，<br>輸出如下(本篇使用opencv 3.4.7，使用其他版本或許輸出有些不同)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-L/usr/local/lib -lopencv_ml -lopencv_dnn -lopencv_highgui -lopencv_superres -lopencv_objdetect -lopencv_stitching -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_photo -lopencv_flann -lopencv_shape -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core</span><br></pre></td></tr></table></figure></p>
+<p>如果結合–cflags 和 –libs 兩個一起使用的話 <code>pkg-config --cflags --libs opencv</code> 則會一起輸出標頭檔目錄與連結的函式庫，輸出如下(本篇使用opencv 3.4.7，使用其他版本或許輸出有些不同)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-I/usr/local/include/opencv -I/usr/local/include -L/usr/local/lib -lopencv_ml -lopencv_dnn -lopencv_highgui -lopencv_superres -lopencv_objdetect -lopencv_stitching -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_photo -lopencv_flann -lopencv_shape -lopencv_video -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core</span><br></pre></td></tr></table></figure></p>
+<p><strong>相關主題</strong><br><a href="/opencv-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/opencv-build-program-by-gcc/" data-id="cl3fc3oci004tcit0g7t4mcxh" data-title="使用 gcc / g++ 編譯 opencv 程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-opencv-4-1-1-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/opencv-4-1-1-build-install-in-ubuntu/" class="article-date">
@@ -153,7 +211,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-4-1-1-build-install-in-ubuntu/" data-id="cl3f9u8sc004rdvt0zxm8t53j" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.1" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-4-1-1-build-install-in-ubuntu/" data-id="cl3fc3och004scit0k80uvtia" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -218,7 +276,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-first-program-in-ubuntu/" data-id="cl3f9u8sc004sdvt0gdg4md0e" data-title="在 Ubuntu 下寫第一支 OpenCV 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-first-program-in-ubuntu/" data-id="cl3fc3ocg004rcit0um4u2u7c" data-title="在 Ubuntu 下寫第一支 OpenCV 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -278,7 +336,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-3-4-7-build-install-in-ubuntu/" data-id="cl3f9u8sa004pdvt00scehusj" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.7" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-3-4-7-build-install-in-ubuntu/" data-id="cl3fc3oce004pcit0rxaitxi2" data-title="在 Ubuntu 下編譯安裝 OpenCV 3.4.7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -347,7 +405,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-update-forked-repository/" data-id="cl3f9u8sb004qdvt0ia1jhso1" data-title="Github 如何更新已經 fork 的專案與原專案紀錄同步" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-update-forked-repository/" data-id="cl3fc3ocg004qcit0ktnikymp" data-title="Github 如何更新已經 fork 的專案與原專案紀錄同步" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -404,7 +462,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-first-program-in-ubuntu/" data-id="cl3f9u8sa004odvt0x0tuo68q" data-title="在 Ubuntu 下寫第一支 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-first-program-in-ubuntu/" data-id="cl3fc3oca004ncit0jrvocivp" data-title="在 Ubuntu 下寫第一支 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -449,7 +507,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-1-71-0-build-install-in-ubuntu/" data-id="cl3f9u8s9004ndvt0jj66igbl" data-title="在 Ubuntu 下編譯安裝 Boost 1.71.0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-1-71-0-build-install-in-ubuntu/" data-id="cl3fc3ocb004ocit051xyfcpz" data-title="在 Ubuntu 下編譯安裝 Boost 1.71.0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -530,7 +588,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-sed/" data-id="cl3f9u8s9004mdvt02wjacmfv" data-title="Linux sed 字串取代用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-sed/" data-id="cl3fc3oc9004mcit0rzdu9gti" data-title="Linux sed 字串取代用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -596,7 +654,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-cut/" data-id="cl3f9u8s8004ldvt0m8k70zsq" data-title="Linux cut 字串處理用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-cut/" data-id="cl3fc3oc8004lcit064pklmun" data-title="Linux cut 字串處理用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -654,66 +712,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/git-view-repository-history/" data-id="cl3f9u8s7004jdvt0ss88um9x" data-title="Git 顯示整個repository的歷史修改記錄" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/git-view-repository-history/" data-id="cl3fc3oc7004kcit0n26or58b" data-title="Git 顯示整個repository的歷史修改記錄" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-7z" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-7z/" class="article-date">
-  <time datetime="2019-10-01T14:00:00.000Z" itemprop="datePublished">2019-10-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-7z/">Linux 7z 壓縮/解壓縮用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>Ubuntu 找不到指令的話可以安裝下列套件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install p7zip-full</span><br></pre></td></tr></table></figure></p>
-<p>壓縮指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z a &lt;filename.7z&gt; &lt;file_to_be_compressed/directory_to_be_compressed&gt;</span><br></pre></td></tr></table></figure></p>
-<p>解壓縮指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z x &lt;filename.7z&gt;</span><br></pre></td></tr></table></figure></p>
-<p>選項說明<br>a: 將檔名列中的檔案加入壓縮檔<br>x: 以完整路徑的格式解出檔案  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-7z-split/" title="Linux 7z 檔案分割">Linux 7z 檔案分割</a><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-sed/" title="Linux sed 字串取代用法與範例">Linux sed 字串取代用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-xargs/" title="Linux xargs 參數列表轉換用法與範例">Linux xargs 參數列表轉換用法與範例</a><br><a href="/linux-du/" title="Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例">Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例</a><br><a href="/linux-wget/" title="Linux wget 下載檔案用法與範例">Linux wget 下載檔案用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-7z/" data-id="cl3f9u8s7004kdvt0uu58vaha" data-title="Linux 7z 壓縮/解壓縮用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -757,6 +759,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/python-numpy-write-csv-file/">Python numpy 寫入 csv</a>
+          </li>
+        
+          <li>
             <a href="/mac-pip-install-opencv/">macOS 使用 pip 安裝 opencv</a>
           </li>
         
@@ -770,10 +776,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-pthread_detach/">C/C++ Linux pthread_detach 用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-pthread_exit/">C/C++ Linux pthread_exit 用法與範例</a>
           </li>
         
       </ul>
@@ -792,7 +794,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">220</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
