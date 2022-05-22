@@ -105,6 +105,72 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-bluetooth-sdp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-bluetooth-sdp/" class="article-date">
+  <time datetime="2019-09-19T14:00:00.000Z" itemprop="datePublished">2019-09-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-bluetooth-sdp/">Python 寫藍芽 Service Discovery Protocol 通訊程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>到目前為止介紹了如何偵測鄰近的藍芽裝置，且建立兩種傳輸類型的連線，都是用固定的 Bluetooth address 和 port numbers，在實務上我們不推薦這麼做。</p>
+<p>在 PyBluez 裡, 使用 服務發現協定 Service Discovery Protocol (SDP) 來動態地配置 port number 進行尋找是很簡單的。get_available_port 函式用來查找可用的 L2CAP 或 RFCOMM 的 port。advertise_service 函式用來廣播這個本地端 SDP 伺服器的服務，find_service 函式用來搜尋指定名稱的藍芽裝置。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bluetooth.get_available_port( protocol )</span><br></pre></td></tr></table></figure>
+<p>get_available_port 回傳指定 protocol 第一個可用的 port number。目前只有支援 RFCOMM 和 L2CAP protocols。get_available_port 只是回傳一個 port number，並沒有實際預定使用任何資源，所以有可能當你要 bind 時，這 port 已經被別人 bind 走了，如果發生的話 bind 會拋出一個BluetoothException 例外。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bluetooth.advertise_service( sock, name, uuid )</span><br><span class="line">bluetooth.stop_advertising( sock )</span><br><span class="line">bluetooth.find_service( name = <span class="literal">None</span>, uuid = <span class="literal">None</span>, bdaddr = <span class="literal">None</span> )</span><br></pre></td></tr></table></figure>
+<p>以上這三種函式用來廣撥服務，advertise_service 函式參數分別為 socket, service name 服務名稱, UUID，<br>這廣撥服務直到呼叫 stop_advertising 函式來關閉該 socket。</p>
+<p>find_service可以搜尋單個或者所有附近特定裝置。透過匹配 name 和 UUID 進行 service 尋找(必須至少指定其中一個)。如果 bdaddr 是 None，那麼所有附近的設備都會進行尋找。如果提供了 localhost 作為 bdaddr 參數，那麼會對本地的 SDP 進行尋找。否則，就會指定的 bdaddr 藍芽裝置進行尋找。</p>
+<h2 id="server-端程式"><a href="#server-端程式" class="headerlink" title="server 端程式"></a>server 端程式</h2><figure class="highlight python"><figcaption><span>rfcomm-server-sdp.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )</span><br><span class="line"></span><br><span class="line">port = bluetooth.get_available_port( bluetooth.RFCOMM )</span><br><span class="line">server_sock.bind((<span class="string">""</span>,port))</span><br><span class="line">server_sock.listen(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"listening on port %d"</span> % port</span><br><span class="line"></span><br><span class="line">uuid = <span class="string">"1e0ca4ea-299d-4335-93eb-27fcfe7fa848"</span></span><br><span class="line">bluetooth.advertise_service( server_sock, <span class="string">"FooBar Service"</span>, uuid )</span><br><span class="line"></span><br><span class="line">client_sock,address = server_sock.accept()</span><br><span class="line"><span class="keyword">print</span> <span class="string">"Accepted connection from "</span>,address</span><br><span class="line"></span><br><span class="line">data = client_sock.recv(<span class="number">1024</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"received [%s]"</span> % data</span><br><span class="line"></span><br><span class="line">client_sock.close()</span><br><span class="line">server_sock.close()</span><br></pre></td></tr></table></figure>
+<h2 id="client-端程式"><a href="#client-端程式" class="headerlink" title="client 端程式"></a>client 端程式</h2><figure class="highlight python"><figcaption><span>rfcomm-client-sdp.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> bluetooth</span><br><span class="line"></span><br><span class="line">uuid = <span class="string">"1e0ca4ea-299d-4335-93eb-27fcfe7fa848"</span></span><br><span class="line">service_matches = bluetooth.find_service( uuid = uuid )</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> len(service_matches) == <span class="number">0</span>:</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"couldn't find the FooBar service"</span></span><br><span class="line">    sys.exit(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">first_match = service_matches[<span class="number">0</span>]</span><br><span class="line">port = first_match[<span class="string">"port"</span>]</span><br><span class="line">name = first_match[<span class="string">"name"</span>]</span><br><span class="line">host = first_match[<span class="string">"host"</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"connecting to \"%s\" on %s"</span> % (name, host)</span><br><span class="line"></span><br><span class="line">sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )</span><br><span class="line">sock.connect((host, port))</span><br><span class="line">sock.send(<span class="string">"hello!!"</span>)</span><br><span class="line">sock.close()</span><br></pre></td></tr></table></figure>
+<p>參考<br><a href="https://people.csail.mit.edu/albert/bluez-intro/x290.html" target="_blank" rel="noopener">https://people.csail.mit.edu/albert/bluez-intro/x290.html</a></p>
+<p>相關主題<br><a href="/python-bluetooth-first-program/" title="Python 的第一支藍芽程式">Python 的第一支藍芽程式</a><br><a href="/python-bluetooth-rfcomm/" title="Python 寫藍芽 RFCOMM 通訊程式">Python 寫藍芽 RFCOMM 通訊程式</a><br><a href="/python-bluetooth-l2cap/" title="Python 寫藍芽 L2CAP 通訊程式">Python 寫藍芽 L2CAP 通訊程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-bluetooth-sdp/" data-id="cl3hh8fww004bm6t048wzadsg" data-title="Python 寫藍芽 Service Discovery Protocol 通訊程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-bluetooth-first-program" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-bluetooth-first-program/" class="article-date">
@@ -159,7 +225,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-bluetooth-first-program/" data-id="cl3fif2u6004aqut0jd3b2o3d" data-title="Python 的第一支藍芽程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-bluetooth-first-program/" data-id="cl3hh8fwv004am6t0rj6da4wy" data-title="Python 的第一支藍芽程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -219,7 +285,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/hexo-local-disable-google-analytics/" data-id="cl3fif2u40049qut0h4df3m9w" data-title="Hexo 本機測試時如何關閉 Google Analytics" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/hexo-local-disable-google-analytics/" data-id="cl3hh8fwu0049m6t0ygibn9ew" data-title="Hexo 本機測試時如何關閉 Google Analytics" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -286,7 +352,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/app-google-analytics/" data-id="cl3fif2u30048qut01kzgp839" data-title="Google Analytics Mobile App 隨時掌握網站即時資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/app-google-analytics/" data-id="cl3hh8fwt0048m6t0f5aj8lu2" data-title="Google Analytics Mobile App 隨時掌握網站即時資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li></ul>
@@ -329,7 +395,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-while/" data-id="cl3fif2u20047qut0agj5w3rz" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-while/" data-id="cl3hh8fwt0047m6t0tbvfl71s" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -399,7 +465,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-bluetooth-l2cap/" data-id="cl3fif2u10046qut0ykylcjtc" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-bluetooth-l2cap/" data-id="cl3hh8fws0046m6t09vkcpjyf" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -466,7 +532,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/apple-macbook-pro-retina-15-mid-2014-replace-battery/" data-id="cl3fif2u00045qut02jz0ivpz" data-title="macbook pro retina 15 mid 2014 更換電池驚險記" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/apple-macbook-pro-retina-15-mid-2014-replace-battery/" data-id="cl3hh8fwr0045m6t0ag3o9olp" data-title="macbook pro retina 15 mid 2014 更換電池驚險記" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Apple/">Apple</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Macbook-Pro/">Macbook Pro</a></li></ul>
@@ -526,7 +592,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-2to3/" data-id="cl3fif2tz0043qut01n809687" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-2to3/" data-id="cl3hh8fwq0044m6t0c1emxfyg" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -586,7 +652,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-view-model/" data-id="cl3fif2u00044qut0b8thlias" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-view-model/" data-id="cl3hh8fwp0043m6t0m5d0vnh4" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -648,73 +714,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-version/" data-id="cl3fif2ty0042qut0o8x3dutm" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-version/" data-id="cl3hh8fwo0042m6t0u7s35v0g" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-get-current-time-and-date" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-get-current-time-and-date/" class="article-date">
-  <time datetime="2019-05-17T14:00:00.000Z" itemprop="datePublished">2019-05-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-get-current-time-and-date/">C++ 取得系統當前時間</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 C++ 取得系統當前時間，<br>取得系統當前時間有幾種，本篇介紹使用 C++11 的 chrono 的寫法來取得系統當前時間。  </p>
-<h2 id="範例1-取得系統當下時間並轉成字串"><a href="#範例1-取得系統當下時間並轉成字串" class="headerlink" title="範例1: 取得系統當下時間並轉成字串"></a>範例1: 取得系統當下時間並轉成字串</h2><p>使用時，需要先宣告引用 <code>chrono</code>，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line">...</span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getCurrentSystemTime</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> tt = <span class="built_in">std</span>::chrono::system_clock::<span class="keyword">to_time_t</span>(<span class="built_in">std</span>::chrono::system_clock::now());</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">tm</span>* <span class="title">ptm</span> = <span class="title">localtime</span>(&amp;<span class="title">tt</span>);</span></span><br><span class="line">    <span class="keyword">char</span> date[<span class="number">60</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">    <span class="built_in">sprintf</span>(date, <span class="string">"%d-%02d-%02d-%02d.%02d.%02d"</span>,</span><br><span class="line">        (<span class="keyword">int</span>)ptm-&gt;tm_year + <span class="number">1900</span>, (<span class="keyword">int</span>)ptm-&gt;tm_mon + <span class="number">1</span>, (<span class="keyword">int</span>)ptm-&gt;tm_mday,</span><br><span class="line">        (<span class="keyword">int</span>)ptm-&gt;tm_hour, (<span class="keyword">int</span>)ptm-&gt;tm_min, (<span class="keyword">int</span>)ptm-&gt;tm_sec);</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">string</span>(date);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p><a href="/cpp-get-current-time-and-date/main.cpp">完整範例下載</a></p>
-<p>使用 g++ 編譯 <code>g++ main.cpp -std=c++11</code><br>輸出結果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2019-05-17-20.56.58</span><br></pre></td></tr></table></figure></p>
-<h2 id="範例2-取得從-epoch-到現在經過多少微秒-milliseconds"><a href="#範例2-取得從-epoch-到現在經過多少微秒-milliseconds" class="headerlink" title="範例2: 取得從 epoch 到現在經過多少微秒 milliseconds"></a>範例2: 取得從 epoch 到現在經過多少微秒 milliseconds</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span> milliseconds_since_epoch =</span><br><span class="line">    <span class="built_in">std</span>::chrono::system_clock::now().time_since_epoch() / <span class="built_in">std</span>::chrono::milliseconds(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-<p>或者<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span> milliseconds_since_epoch = </span><br><span class="line">    <span class="built_in">std</span>::chrono::duration_cast&lt;<span class="built_in">std</span>::chrono::milliseconds&gt;(<span class="built_in">std</span>::chrono::system_clock::now().time_since_epoch()).count();</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] c++ - Get time since epoch in milliseconds, preferably using C++11 chrono - Stack Overflow<br><a href="https://stackoverflow.com/questions/16177295/get-time-since-epoch-in-milliseconds-preferably-using-c11-chrono" target="_blank" rel="noopener">https://stackoverflow.com/questions/16177295/get-time-since-epoch-in-milliseconds-preferably-using-c11-chrono</a>  </p>
-<p><strong>相關文章</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-measure-execution-time/" title="C++ 計算程式執行時間">C++ 計算程式執行時間</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/python-get-current-time-and-date/" title="Python 取得系統當前時間">Python 取得系統當前時間</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-get-current-time-and-date/" data-id="cl3fif2ty0041qut0qcho07vv" data-title="C++ 取得系統當前時間" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -758,6 +761,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/python-opencv-gaussianblur/">Python OpenCV cv2.GaussianBlur 影像平滑模糊化</a>
+          </li>
+        
+          <li>
             <a href="/python-numpy-print-array-precision/">Python print numpy array 設定精準度</a>
           </li>
         
@@ -771,10 +778,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/android-adb-shell-input/">Android adb shell input 事件用法</a>
-          </li>
-        
-          <li>
-            <a href="/python-pip-install-specific-version/">Python pip install 如何安裝指定版本的套件</a>
           </li>
         
       </ul>
@@ -793,7 +796,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">222</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">223</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
