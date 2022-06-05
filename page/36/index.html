@@ -105,6 +105,77 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-atomic" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-atomic/" class="article-date">
+  <time datetime="2020-04-13T14:00:00.000Z" itemprop="datePublished">2020-04-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-atomic/">std::atomic 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::atomic 用法，並提供一些範例。  </p>
+<p>atomic<t>用來保證原子操作，但不保證類型T是無鎖(lock_free)的，<br>因為不同平台的實作方式不同，可以用is_lock_free成員函式來判斷是不是無鎖的，<br>另外atomic_flag肯定是無鎖的。  </t></p>
+<p>以下循序漸進地介紹使用 atomic，以及為什麼用 atomic。  </p>
+<h2 id="最簡單的直覺寫法，但是結果錯誤"><a href="#最簡單的直覺寫法，但是結果錯誤" class="headerlink" title="最簡單的直覺寫法，但是結果錯誤"></a>最簡單的直覺寫法，但是結果錯誤</h2><p>以下範例為100個執行緒一起執行，並且同時將全域變數 cnt 取出來 +1 計數，<br>但是由於多個執行緒同時存取 cnt 的關係會造成資料不正確。<br>來看看結果輸出會是怎樣吧！<br><figure class="highlight cpp"><figcaption><span>std-atomic.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">long</span> cnt = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 1866806</span><br><span class="line">duration: 61.7727 ms</span><br></pre></td></tr></table></figure></p>
+<p>結果答案不是我們所預期的 10000000，而且每次跑得結果都不一樣，那考慮加個 mutex 鎖試試看吧！  </p>
+<h2 id="接著最直覺地加上了-mutex-鎖"><a href="#接著最直覺地加上了-mutex-鎖" class="headerlink" title="接著最直覺地加上了 mutex 鎖"></a>接著最直覺地加上了 mutex 鎖</h2><p>加 mutex 鎖來保護臨界區域是最常見的做法，<br>使用 mutex 來確保同一時間內只有一個執行緒可以存取 cnt，如果對 mutex 不熟悉的話可以看之前的 <a href="/std-mutex/" title="mutex 介紹">mutex 介紹</a><br>這次來看看結果輸出會是怎樣吧！<br><figure class="highlight cpp"><figcaption><span>std-atomic2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">long</span> cnt = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">std</span>::mutex mtx;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(mtx);</span><br><span class="line">        <span class="comment">//std::cout &lt;&lt; std::this_thread::get_id() &lt;&lt; ": " &lt;&lt; cnt &lt;&lt; '\n';</span></span><br><span class="line">        <span class="comment">//mtx.lock();</span></span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">        <span class="comment">//mtx.unlock();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 10000000</span><br><span class="line">duration: 1426.77 ms</span><br></pre></td></tr></table></figure></p>
+<p>這次答案正確了，以我的電腦所花的時間是 1426.77 ms，這個時間會因電腦規格不同而有所不同，<br>正確地使用 mutex 可以保證資料的正確性，但同時犧牲了效能，<br>那接下來我們會好奇想要知道，有沒有時間更快的方式呢？atomic？  </p>
+<h2 id="使用-atomic-達到同樣效果，時間約少了7倍，效能大爆發"><a href="#使用-atomic-達到同樣效果，時間約少了7倍，效能大爆發" class="headerlink" title="使用 atomic 達到同樣效果，時間約少了7倍，效能大爆發"></a>使用 atomic 達到同樣效果，時間約少了7倍，效能大爆發</h2><p>接下來這裡介紹本篇重頭戲 atomic，<br>如果對象是 long 的話，可以用 <code>std::atomic&lt;long&gt;</code>，也可以用 <code>std::atomic_long</code>這個類別，<br>用 atomic 也可以達到同樣的效果，但所花費的時間有減少嗎？<br>來看看結果輸出會是怎樣吧！  </p>
+<figure class="highlight cpp"><figcaption><span>std-atomic3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//std::atomic&lt;long&gt; cnt(0);</span></span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="keyword">atomic_long</span> <span class="title">cnt</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counter</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; i++) &#123;</span><br><span class="line">        cnt += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> t1 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != <span class="number">100</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(counter);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;th : threads)</span><br><span class="line">        th.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> t2 = <span class="built_in">std</span>::chrono::high_resolution_clock::now();</span><br><span class="line">    <span class="built_in">std</span>::chrono::duration&lt;<span class="keyword">double</span>, <span class="built_in">std</span>::milli&gt; elapsed = t2 - t1;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"result: "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"duration: "</span> &lt;&lt; elapsed.count() &lt;&lt; <span class="string">" ms"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result: 10000000</span><br><span class="line">duration: 225.587 ms</span><br></pre></td></tr></table></figure></p>
+<p>這次使用 atomic 的答案也是正確的，同時地只花費了 225.587 ms，相對於 mutex 版本時間花費大幅減少了！<br>性能簡直大爆發了！！<br>透過這篇的學習，我們已經認識了 atomic 的威力，接下來的章節介紹更多的 atomic 實用情境。  </p>
+<h2 id="使用-atomic-搭配自定義的型別-類別"><a href="#使用-atomic-搭配自定義的型別-類別" class="headerlink" title="使用 atomic 搭配自定義的型別/類別"></a>使用 atomic 搭配自定義的型別/類別</h2><p>接下來會想試看看如果是使用自定義的結構 struct 或類別 class 是否也能使用 atomic 呢？<br><figure class="highlight cpp"><figcaption><span>std-atomic4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TBD</span><br></pre></td></tr></table></figure></p>
+<p>參考<br><a href="https://en.cppreference.com/w/cpp/atomic/atomic" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/atomic/atomic</a><br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/511579/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/511579/</a><br><a href="https://blog.csdn.net/yockie/article/details/8838686" target="_blank" rel="noopener">https://blog.csdn.net/yockie/article/details/8838686</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/std-unordered_map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-random_shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/std-shared_ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/std-async/" title="std::async 用法與範例">std::async 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-atomic/" data-id="cl41g28a3008bpmt08wrqr80n" data-title="std::atomic 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-filesystem-exists" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-filesystem-exists/" class="article-date">
@@ -155,7 +226,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-filesystem-exists/" data-id="cl419runp008ajft0wndjm2xq" data-title="std::filesystem::exists 判斷檔案是否存在的用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-filesystem-exists/" data-id="cl41g28a3008apmt054thqpds" data-title="std::filesystem::exists 判斷檔案是否存在的用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -218,7 +289,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-filesystem-copy/" data-id="cl419runo0089jft0vwhlm9cp" data-title="std::filesystem::copy 複製檔案的用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-filesystem-copy/" data-id="cl41g28a30089pmt0hn3ukmfe" data-title="std::filesystem::copy 複製檔案的用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -279,7 +350,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-filesystem-create_directory/" data-id="cl419runo0088jft0xyqol4ot" data-title="std::filesystem::create_directory 建立資料夾的用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-filesystem-create_directory/" data-id="cl41g28a20088pmt0aflh2p8j" data-title="std::filesystem::create_directory 建立資料夾的用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -340,7 +411,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-get-cpu-usage/" data-id="cl419runo0087jft0zmdj3oy7" data-title="Python 取得cpu使用率" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-get-cpu-usage/" data-id="cl41g28a20087pmt0qyhtit67" data-title="Python 取得cpu使用率" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -443,7 +514,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-print/" data-id="cl419runn0086jft0j3e7v1b5" data-title="Python print 格式化輸出與排版" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-print/" data-id="cl41g28a20086pmt0skn9oqjn" data-title="Python print 格式化輸出與排版" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -512,7 +583,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-puttext/" data-id="cl419runn0085jft0jjmiuhr1" data-title="Python OpenCV 繪製文字 putText" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-puttext/" data-id="cl41g28a10085pmt0pa34iqvp" data-title="Python OpenCV 繪製文字 putText" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -572,7 +643,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-fillpoly/" data-id="cl419runn0084jft0slhrf681" data-title="Python OpenCV 填充多邊形 fillPoly" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-fillpoly/" data-id="cl41g28a10084pmt0jclio19a" data-title="Python OpenCV 填充多邊形 fillPoly" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -632,7 +703,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-polylines/" data-id="cl419runm0083jft0hjresib2" data-title="Python OpenCV 畫多邊形 polylines" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-polylines/" data-id="cl41g28a10083pmt0z2y5m0ec" data-title="Python OpenCV 畫多邊形 polylines" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -695,67 +766,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-rectangle/" data-id="cl419runm0082jft0zfkeh151" data-title="Python OpenCV 畫矩形 rectangle" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-opencv-ellipse" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-opencv-ellipse/" class="article-date">
-  <time datetime="2020-04-03T14:00:00.000Z" itemprop="datePublished">2020-04-03</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-opencv-ellipse/">Python OpenCV 畫橢圓 ellipse</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇將介紹如何使用 OpenCV 與 Python 來畫橢圓 ellipse，在寫 Python 影像處理程式時常會用到 OpenCV cv2.ellipse 畫橢圓的功能，接下來介紹怎麼使用 Python 搭配 OpenCV 模組來畫橢圓 ellipse。  </p>
-<h2 id="使用範例"><a href="#使用範例" class="headerlink" title="使用範例"></a>使用範例</h2><p>詳細程式碼如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># Create a blank 640x480 black image</span></span><br><span class="line">image = np.zeros((<span class="number">480</span>, <span class="number">640</span>, <span class="number">3</span>), np.uint8)</span><br><span class="line"><span class="comment"># Fill image with gray color(set each pixel to gray)</span></span><br><span class="line">image[:] = (<span class="number">128</span>, <span class="number">128</span>, <span class="number">128</span>)</span><br><span class="line"></span><br><span class="line">center = (<span class="number">300</span>, <span class="number">300</span>)</span><br><span class="line">axes = (<span class="number">100</span>, <span class="number">50</span>)</span><br><span class="line">angle = <span class="number">45</span></span><br><span class="line">startAngle = <span class="number">0</span></span><br><span class="line">endAngle = <span class="number">270</span></span><br><span class="line">thickness = <span class="number">-1</span></span><br><span class="line">color = (<span class="number">0</span>, <span class="number">0</span>, <span class="number">255</span>) <span class="comment"># BGR red</span></span><br><span class="line">cv2.ellipse(image, center, axes, angle, startAngle, endAngle, color, thickness)</span><br><span class="line"><span class="comment">#cv2.ellipse(image, (300, 300), (100, 50), 45, 0, 270, (0, 0, 255), -1)</span></span><br><span class="line"></span><br><span class="line">cv2.imshow(<span class="string">'Result'</span>, image)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-opencv-ellipse/opencv-ellipse.png" width="640" title="結果圖">  </p>
-<p>cv2.ellipse 參數的詳細細節請參考<a href="https://docs.opencv.org/2.4/modules/core/doc/drawing_functions.html?highlight=cv2.ellipse#cv2.ellipse" target="_blank" rel="noopener">這裡</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-opencv-line/" title="Python OpenCV 畫線條 line">Python OpenCV 畫線條 line</a><br><a href="/python-opencv-circle/" title="Python OpenCV 畫圓 circle">Python OpenCV 畫圓 circle</a><br><a href="/python-opencv-rectangle/" title="Python OpenCV 畫矩形 rectangle">Python OpenCV 畫矩形 rectangle</a><br><a href="/python-opencv-polylines/" title="Python OpenCV 畫多邊形 polylines">Python OpenCV 畫多邊形 polylines</a><br><a href="/python-opencv-puttext/" title="Python OpenCV 繪製文字 putText">Python OpenCV 繪製文字 putText</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-ellipse/" data-id="cl419runm0081jft0qpi5we0f" data-title="Python OpenCV 畫橢圓 ellipse" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-rectangle/" data-id="cl41g28a00082pmt0o5btfiph" data-title="Python OpenCV 畫矩形 rectangle" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -837,7 +848,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">137</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">224</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">138</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">224</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
