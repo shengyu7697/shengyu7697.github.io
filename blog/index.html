@@ -154,7 +154,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>brew 安裝 OpenSSL 3 會編譯失敗的可以參考<a href="https://github.com/openssl/openssl/issues/15937" target="_blank" rel="noopener">這篇</a>，在 <a href="https://github.com/Homebrew/homebrew-core/blob/master/Formula/openssl%403.rb" target="_blank" rel="noopener">openssl@3.rb</a> 的 configure_args 函式裡的 args 新增 no-asm 選項，然後再次安裝 <code>brew install openssl@3</code>，<br><figure class="highlight ruby"><figcaption><span>/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/openssl@3.rb</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">configure_args</span></span></span><br><span class="line">  args = <span class="string">%W[</span></span><br><span class="line"><span class="string">    --prefix=<span class="subst">#&#123;prefix&#125;</span></span></span><br><span class="line"><span class="string">    --openssldir=<span class="subst">#&#123;openssldir&#125;</span></span></span><br><span class="line"><span class="string">    --libdir=<span class="subst">#&#123;lib&#125;</span></span></span><br><span class="line"><span class="string">    no-ssl3</span></span><br><span class="line"><span class="string">    no-ssl3-method</span></span><br><span class="line"><span class="string">    no-zlib</span></span><br><span class="line"><span class="string">    no-asm</span></span><br><span class="line"><span class="string">  ]</span></span><br></pre></td></tr></table></figure></p>
 <p>或者改裝 OpenSSL 1.1.1 的版本。</p>
 <h2 id="下載-OpenSSL-3-原始碼編譯與安裝-OpenSSL"><a href="#下載-OpenSSL-3-原始碼編譯與安裝-OpenSSL" class="headerlink" title="下載 OpenSSL 3 原始碼編譯與安裝 OpenSSL"></a>下載 OpenSSL 3 原始碼編譯與安裝 OpenSSL</h2><p>這邊介紹 OpenSSL 3 的編譯安裝方式，使用下列指令下載 OpenSSL 3.0.3 原始碼並且解壓縮，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.openssl.org/source/openssl-3.0.3.tar.gz</span><br><span class="line">tar xvf openssl-3.0.3.tar.gz</span><br></pre></td></tr></table></figure></p>
-<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-3.0.3</span><br><span class="line">./config shared</span><br><span class="line">#./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">make -j4</span><br><span class="line">make test</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，如果不用 shared 的方式則 <code>./config no-shared</code> 即可，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-3.0.3</span><br><span class="line">./config shared</span><br><span class="line">#./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">make -j4</span><br><span class="line">make test</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
 <h2 id="OpenSSL-3-原始碼編譯失敗解決方法"><a href="#OpenSSL-3-原始碼編譯失敗解決方法" class="headerlink" title="OpenSSL 3 原始碼編譯失敗解決方法"></a>OpenSSL 3 原始碼編譯失敗解決方法</h2><p>我的 macOS 10.13.4 會出現這樣的編譯錯誤訊息，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">crypto/bn/rsaz-3k-avx512.s:1283:12: error: register %ymm20 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm20,320(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1284:12: error: register %ymm21 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm21,352(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1285:12: error: register %ymm22 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm22,384(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1286:12: error: register %ymm23 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm23,416(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1287:12: error: register %ymm24 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm24,448(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1288:12: error: register %ymm25 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm25,480(%rdi)</span><br><span class="line">           ^~~~~~</span><br></pre></td></tr></table></figure></p>
 <p>檢查 Xcode 版本，我的是 Xcode 9.1，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ xcodebuild -version</span><br><span class="line">Xcode 9.1</span><br><span class="line">Build version 9B55</span><br></pre></td></tr></table></figure></p>
 <p><a href="https://github.com/openssl/openssl/issues/15937" target="_blank" rel="noopener">這篇</a>下面的網友提供了一個解決方法 workaround，<br>就是在 configure 時加入 <code>no-asm</code> 的選項，這樣就可以編譯過了，但是似乎這個方法就沒法得到好的效能，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./config shared no-asm</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure></p>
@@ -162,7 +162,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>在 <code>make install</code> 安裝到系統之前，使用 <code>openssl version</code> 指令測試執行 openssl 是否成功，出現找不到 libssl.3.dylib 動態函式庫的錯誤訊息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./apps/openssl version</span><br><span class="line">dyld: Library not loaded: /usr/local/lib/libssl.3.dylib</span><br><span class="line">  Referenced from: /Users/sheng/Desktop/github/openssl/./apps/openssl</span><br><span class="line">  Reason: image not found</span><br><span class="line">Abort trap: 6</span><br></pre></td></tr></table></figure></p>
 <p>設定 DYLD_LIBRARY_PATH 要載入動態函式庫的路徑，因為 libssl.3.dylib 在這個編譯的目錄下，所以就設定一下 libssl.3.dylib 目錄的路徑(相對路徑或絕對路徑都可)，這樣就成功執行起來了，macOS 的 DYLD_LIBRARY_PATH 是對應到 linux 的 LD_LIBRARY_PATH，在 macOS 下使用 LD_LIBRARY_PATH 是無效的，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ DYLD_LIBRARY_PATH=&quot;./&quot; ./apps/openssl version</span><br><span class="line"># or</span><br><span class="line">$ DYLD_LIBRARY_PATH=&quot;/Users/shengyu/openssl-3.0.3&quot; ./apps/openssl version</span><br><span class="line">OpenSSL 3.1.0-dev  (Library: OpenSSL 3.1.0-dev )</span><br></pre></td></tr></table></figure></p>
 <h2 id="下載-OpenSSL-1-1-1-原始碼編譯與安裝-OpenSSL"><a href="#下載-OpenSSL-1-1-1-原始碼編譯與安裝-OpenSSL" class="headerlink" title="下載 OpenSSL 1.1.1 原始碼編譯與安裝 OpenSSL"></a>下載 OpenSSL 1.1.1 原始碼編譯與安裝 OpenSSL</h2><p>這邊也順便介紹一下的 OpenSSL 1.1.1x 的編譯安裝方式，基本上跟 OpenSSL 3 沒什麼太大差異，使用下列指令下載 OpenSSL 1.1.1o 原始碼並且解壓縮，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz</span><br><span class="line">tar xvf openssl-1.1.1o.tar.gz</span><br></pre></td></tr></table></figure></p>
-<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-1.1.1o</span><br><span class="line">./config shared</span><br><span class="line">#./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">make -j4</span><br><span class="line">make test</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，如果不用 shared 的方式則 <code>./config no-shared</code> 即可，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-1.1.1o</span><br><span class="line">./config shared</span><br><span class="line">#./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">make -j4</span><br><span class="line">make test</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
 <p>OpenSSL 1.1.1o 我可以順利編譯過沒有遇到 OpenSSL 3 的 AVX512 的問題。  </p>
 <p>其他參考<br>OpenSSL master (and 3.0 branch) won’t build on MacOS 10.11 (El Capitan) · Issue #16670 · openssl/openssl<br><a href="https://github.com/openssl/openssl/issues/16670" target="_blank" rel="noopener">https://github.com/openssl/openssl/issues/16670</a>  </p>
 <p>DYLD_LIBRARY_PATH 的相關討論<br>language agnostic - Is it OK to use DYLD_LIBRARY_PATH on Mac OS X? And, what’s the dynamic library search algorithm with it? - Stack Overflow<br><a href="https://stackoverflow.com/questions/3146274/is-it-ok-to-use-dyld-library-path-on-mac-os-x-and-whats-the-dynamic-library-s" target="_blank" rel="noopener">https://stackoverflow.com/questions/3146274/is-it-ok-to-use-dyld-library-path-on-mac-os-x-and-whats-the-dynamic-library-s</a><br>How do I configure the LD_LIBRARY_PATH on Linux and DYLD_LIBRARY_PATH on MAC OS X to point to MCR?<br><a href="https://www.mathworks.com/matlabcentral/answers/473971-how-do-i-configure-the-ld_library_path-on-linux-and-dyld_library_path-on-mac-os-x-to-point-to-mcr" target="_blank" rel="noopener">https://www.mathworks.com/matlabcentral/answers/473971-how-do-i-configure-the-ld_library_path-on-linux-and-dyld_library_path-on-mac-os-x-to-point-to-mcr</a>  </p>
@@ -171,7 +171,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cl41g4ykl00hbskt0dwxpw065" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cl42rfllq00l1sjt04fbu2lbu" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -236,7 +236,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cl41g4ykl00haskt0spy1wqng" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cl42rfllo00kxsjt01j9sjlv7" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -295,7 +295,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>安裝後可以使用 <code>openssl version</code> 確認一下 openssl 的版本，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ openssl version</span><br><span class="line">OpenSSL 1.0.2g  1 Mar 2016</span><br></pre></td></tr></table></figure></p>
 <h2 id="方法2-下載-OpenSSL-原始碼編譯與安裝-OpenSSL"><a href="#方法2-下載-OpenSSL-原始碼編譯與安裝-OpenSSL" class="headerlink" title="方法2. 下載 OpenSSL 原始碼編譯與安裝 OpenSSL"></a>方法2. 下載 OpenSSL 原始碼編譯與安裝 OpenSSL</h2><p>由於 apt-get 上安裝的 OpenSSL 版本太舊，不符合我的需求，那就只能自己去下載 source code 下來編譯安裝了，使用下列指令下載 OpenSSL 1.1.1o 原始碼並且解壓縮，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/src/</span><br><span class="line">sudo wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz</span><br><span class="line">sudo tar xvf openssl-1.1.1o.tar.gz</span><br></pre></td></tr></table></figure></p>
 <p>如果你 wget 下載時會出現憑證問題，可以使用 –no-check-certificate 選項不檢查憑證，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz --no-check-certificate</span><br></pre></td></tr></table></figure></p>
-<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-1.1.1o</span><br><span class="line">sudo ./config shared</span><br><span class="line">#sudo ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">sudo make -j4</span><br><span class="line">sudo make test</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
+<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，如果不用 shared 的方式則 <code>sudo ./config no-shared</code> 即可，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-1.1.1o</span><br><span class="line">sudo ./config shared</span><br><span class="line">#sudo ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">sudo make -j4</span><br><span class="line">sudo make test</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
 <p>在 /etc/ld.so.conf.d/ 目錄下新增一個 openssl-1.1.1o.conf 設定檔，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/ld.so.conf.d/openssl-1.1.1o.conf</span><br></pre></td></tr></table></figure></p>
 <p>開啟 openssl-1.1.1o.conf 後加入這一行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/ssl/lib</span><br></pre></td></tr></table></figure></p>
 <p>重新載入動態連結，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure></p>
@@ -308,7 +308,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cl41g4ykk00h9skt0s6kt6ig7" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cl42rfllo00kvsjt03qg99f09" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -369,7 +369,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cl41g4ykk00h8skt0jv2olwkj" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cl42rflln00ktsjt03t6labzw" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -431,7 +431,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cl41g4ykk00h7skt0lxdpdrf2" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cl42rfllm00kssjt05punwe6p" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -502,7 +502,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cl41g4ykj00h6skt0r91s9k1m" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cl42rflll00kpsjt0wjhdroz0" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -569,7 +569,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-snprintf/" data-id="cl41g4ykj00h5skt0srlyf3qr" data-title="C/C++ snprintf 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-snprintf/" data-id="cl42rfllt00l5sjt05qgf5dyg" data-title="C/C++ snprintf 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -636,7 +636,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sprintf/" data-id="cl41g4ykj00h4skt0jrwhda91" data-title="C/C++ sprintf 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sprintf/" data-id="cl42rfllr00l3sjt0r964qb61" data-title="C/C++ sprintf 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -702,7 +702,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-memcmp/" data-id="cl41g4yki00h3skt0qjm1r11q" data-title="C/C++ memcmp 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-memcmp/" data-id="cl42rflll00kosjt0ey72cwt5" data-title="C/C++ memcmp 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -768,7 +768,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strncmp/" data-id="cl41g4ykh00h2skt0xse2f4ky" data-title="C/C++ strncmp 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strncmp/" data-id="cl42rfllk00klsjt0km11tiu3" data-title="C/C++ strncmp 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
