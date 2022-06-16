@@ -105,6 +105,66 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-myclass-range-based-for-loop" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-myclass-range-based-for-loop/" class="article-date">
+  <time datetime="2021-06-21T14:00:00.000Z" itemprop="datePublished">2021-06-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-myclass-range-based-for-loop/">自定義類別支援 range-based for loop 寫法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹如何讓自定義類別支援 range-based for loop 的寫法。  </p>
+<p>range-based for loop 是 C++11 中增加的新特性，使用 range-based for loop 避免了存取越界，也提高了程式的可讀性以及寫程式的效率。range-based for loop 的寫法如下，先來複習一下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; vec = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span>&amp; v : vec) &#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; v &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>要讓自己寫的 class 支援 range-based for loop 關鍵在於實作 <code>begin()</code> 跟 <code>end()</code>，如下範例所示，如果自己寫的 class 沒有實作 <code>begin()</code> 跟 <code>end()</code> 的話會出現 <code>error: invalid range expression of type &#39;MyList&#39;; no viable &#39;begin&#39; function available</code> 的編譯錯誤訊息，以下範例以自定義的 MyList 與 std::list 為例，MyList 內部還是使用 std::list 當作主要的存取容器，這邊就要來寫 <code>begin()</code> 跟 <code>end()</code> 的實作來支援 range-based for loop 的寫法，<br><figure class="highlight cpp"><figcaption><span>cpp-myclass-range-based-for-loop.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-myclass-range-based-for-loop.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;list&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyList</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    MyList() &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">push_back</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123; mList.push_back(n); &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt;::<span class="function">iterator <span class="title">begin</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> mList.begin(); &#125;</span><br><span class="line">    <span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt;::<span class="function">iterator <span class="title">end</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> mList.end(); &#125;</span><br><span class="line">    <span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt;::<span class="function">const_iterator <span class="title">begin</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> mList.cbegin(); &#125;</span><br><span class="line">    <span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt;::<span class="function">const_iterator <span class="title">end</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> mList.cend(); &#125;</span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">//auto begin() &#123; return mList.begin(); &#125; // need C++14</span></span><br><span class="line">    <span class="comment">//auto end() &#123; return mList.end(); &#125; // need C++14</span></span><br><span class="line">    <span class="comment">//auto begin() const &#123; return mList.begin(); &#125; // need C++14</span></span><br><span class="line">    <span class="comment">//auto end() const &#123; return mList.end(); &#125; // need C++14</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt; mList;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt; list1;</span><br><span class="line">    list1.push_back(<span class="number">1</span>);</span><br><span class="line">    list1.push_back(<span class="number">2</span>);</span><br><span class="line">    list1.push_back(<span class="number">3</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; l : list1) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; l &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MyList list2;</span><br><span class="line">    list2.push_back(<span class="number">4</span>);</span><br><span class="line">    list2.push_back(<span class="number">5</span>);</span><br><span class="line">    list2.push_back(<span class="number">6</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; l : list2) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; l &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，這樣 MyList 跟原本的 list 容器一樣都能提供 支援 range-based for loop 的寫法了，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td></tr></table></figure></p>
+<p>其他參考<br>c++ - How to allow range-for loop on my class? - Stack Overflow<br><a href="https://stackoverflow.com/questions/18321092/how-to-allow-range-for-loop-on-my-class" target="_blank" rel="noopener">https://stackoverflow.com/questions/18321092/how-to-allow-range-for-loop-on-my-class</a><br>[c++]自定义class的for each loop_I have a adream-CSDN博客<br><a href="https://blog.csdn.net/adream307/article/details/86721033" target="_blank" rel="noopener">https://blog.csdn.net/adream307/article/details/86721033</a><br>AOSP 的 service_list class<br><a href="https://github.com/aosp-mirror/platform_system_core/blob/34a0e57a257f0081c672c9be0e87230762e677ca/init/service_list.h" target="_blank" rel="noopener">https://github.com/aosp-mirror/platform_system_core/blob/34a0e57a257f0081c672c9be0e87230762e677ca/init/service_list.h</a><br>service_list 使用 range-based for loop 的範例在 service_utils.cpp 裡<br><a href="https://github.com/aosp-mirror/platform_system_core/blob/34a0e57a257f0081c672c9be0e87230762e677ca/init/test_utils/service_utils.cpp" target="_blank" rel="noopener">https://github.com/aosp-mirror/platform_system_core/blob/34a0e57a257f0081c672c9be0e87230762e677ca/init/test_utils/service_utils.cpp</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-myclass-range-based-for-loop/" data-id="cl4h5c4yl00eazlt0ilpayg5m" data-title="自定義類別支援 range-based for loop 寫法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-flask-screenshare" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-flask-screenshare/" class="article-date">
@@ -172,7 +232,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-flask-screenshare/" data-id="cl4e8xdgr00e9a0t0e8n749mr" data-title="Python Flask 螢幕分享" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-flask-screenshare/" data-id="cl4h5c4yl00e9zlt0q3j7n5g1" data-title="Python Flask 螢幕分享" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li></ul>
@@ -245,7 +305,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyscreenshot/" data-id="cl4e8xdgr00e8a0t0oa2veqmd" data-title="Python 螢幕截圖存檔 pyscreenshot 用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyscreenshot/" data-id="cl4h5c4yk00e8zlt0d9shucsm" data-title="Python 螢幕截圖存檔 pyscreenshot 用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -310,7 +370,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/url-shortening/" data-id="cl4e8xdgq00e7a0t0passzcc0" data-title="4 種常用的縮短網址服務  " class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/url-shortening/" data-id="cl4h5c4yk00e7zlt0092j120o" data-title="4 種常用的縮短網址服務  " class="article-share-link">Share</a>
       
       
     </footer>
@@ -367,7 +427,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-macdeployqt/" data-id="cl4e8xdgq00e6a0t0aqc4bxft" data-title="在 macOS 發佈 Qt 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-macdeployqt/" data-id="cl4h5c4yk00e6zlt0qg0kwmqe" data-title="在 macOS 發佈 Qt 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -426,7 +486,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-mjpeg-streaming-app/" data-id="cl4e8xdgq00e5a0t0lrgawg1g" data-title="Android MJPEG Streaming App" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-mjpeg-streaming-app/" data-id="cl4h5c4yj00e5zlt0wt81fni6" data-title="Android MJPEG Streaming App" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MJPEG/">MJPEG</a></li></ul>
@@ -504,7 +564,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-queue/" data-id="cl4e8xdgp00e4a0t05q1utgwa" data-title="Python Queue 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-queue/" data-id="cl4h5c4yj00e4zlt08176rxdw" data-title="Python Queue 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -566,7 +626,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-qrcode-to-text/" data-id="cl4e8xdgp00e3a0t01hecruo3" data-title="Python QR Code 轉文字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-qrcode-to-text/" data-id="cl4h5c4yj00e3zlt0t8vgw69k" data-title="Python QR Code 轉文字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -628,7 +688,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-text-to-qrcode/" data-id="cl4e8xdgp00e2a0t0rojuzo9e" data-title="Python 文字轉 QR Code" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-text-to-qrcode/" data-id="cl4h5c4yi00e2zlt01l9xem72" data-title="Python 文字轉 QR Code" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -683,71 +743,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/excel-sort/" data-id="cl4e8xdgo00e1a0t058jxqkch" data-title="Excel 排序1位數、2位數、3位數、4位數" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/excel-sort/" data-id="cl4h5c4yi00e1zlt0jjuvxk90" data-title="Excel 排序1位數、2位數、3位數、4位數" class="article-share-link">Share</a>
       
       
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ubuntu-version" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/ubuntu-version/" class="article-date">
-  <time datetime="2021-05-24T14:00:00.000Z" itemprop="datePublished">2021-05-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/ubuntu-version/">查詢 Ubuntu 版本資訊的 4 種方法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹如何查詢 Ubuntu 版本資訊？分為以下 4 種方法，  </p>
-<ul>
-<li>使用 lsb_release -a 查詢 Ubuntu 版本資訊  </li>
-<li>使用 cat /etc/lsb-release 查詢 Ubuntu 版本資訊  </li>
-<li>使用 uname -a 查詢 Ubuntu 版本資訊  </li>
-<li>使用 cat /etc/issue 查詢 Ubuntu 版本資訊  </li>
-</ul>
-<h2 id="使用-lsb-release-a-查詢-Ubuntu-版本資訊"><a href="#使用-lsb-release-a-查詢-Ubuntu-版本資訊" class="headerlink" title="使用 lsb_release -a 查詢 Ubuntu 版本資訊"></a>使用 lsb_release -a 查詢 Ubuntu 版本資訊</h2><p>使用 <code>lsb_release -a</code> 指令查詢 Ubuntu 版本資訊，建議優先使用，結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ lsb_release -a</span><br><span class="line">No LSB modules are available.</span><br><span class="line">Distributor ID: Ubuntu</span><br><span class="line">Description:    Ubuntu 16.04.5 LTS</span><br><span class="line">Release:        16.04</span><br><span class="line">Codename:       xenial</span><br></pre></td></tr></table></figure></p>
-<h2 id="使用-cat-etc-lsb-release-查詢-Ubuntu-版本資訊"><a href="#使用-cat-etc-lsb-release-查詢-Ubuntu-版本資訊" class="headerlink" title="使用 cat /etc/lsb-release 查詢 Ubuntu 版本資訊"></a>使用 cat /etc/lsb-release 查詢 Ubuntu 版本資訊</h2><p>使用 <code>cat /etc/lsb-release</code> 指令查詢 Ubuntu 版本資訊，跟前一個指令類似，結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/lsb-release</span><br><span class="line">DISTRIB_ID=Ubuntu</span><br><span class="line">DISTRIB_RELEASE=16.04</span><br><span class="line">DISTRIB_CODENAME=xenial</span><br><span class="line">DISTRIB_DESCRIPTION=&quot;Ubuntu 16.04.5 LTS&quot;</span><br></pre></td></tr></table></figure></p>
-<h2 id="使用-uname-a-查詢-Ubuntu-版本資訊"><a href="#使用-uname-a-查詢-Ubuntu-版本資訊" class="headerlink" title="使用 uname -a 查詢 Ubuntu 版本資訊"></a>使用 uname -a 查詢 Ubuntu 版本資訊</h2><p>使用 <code>uname -a</code> 指令查詢 Ubuntu 版本資訊，這個指令是可以看到 kernel 版本，結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ uname -a</span><br><span class="line">Linux shengyu 4.10.0-40-generic #44~16.04.1-Ubuntu SMP Thu Nov 9 15:37:44 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux</span><br></pre></td></tr></table></figure></p>
-<h2 id="使用-cat-etc-issue-查詢-Ubuntu-版本資訊"><a href="#使用-cat-etc-issue-查詢-Ubuntu-版本資訊" class="headerlink" title="使用 cat /etc/issue 查詢 Ubuntu 版本資訊"></a>使用 cat /etc/issue 查詢 Ubuntu 版本資訊</h2><p>最後一種查詢 Ubuntu 版本資訊的方法是使用 <code>cat /etc/issue</code> 指令，結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/issue</span><br><span class="line">Ubuntu 16.04.5 LTS \n \l</span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-version/" data-id="cl4e8xdgo00e0a0t0kqb8qrwb" data-title="查詢 Ubuntu 版本資訊的 4 種方法" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
     </footer>
   </div>
   
@@ -790,6 +788,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/vscode-debugging-on-ubuntu/">Ubuntu 使用 VS Code Debugger 除錯教學</a>
+          </li>
+        
+          <li>
             <a href="/android-adb-forward/">Android adb forward 通訊埠轉發用法教學</a>
           </li>
         
@@ -803,10 +805,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/ubuntu-spotify/">Ubuntu 安裝 Spotify 的方法</a>
-          </li>
-        
-          <li>
-            <a href="/ubuntu-openssl/">Ubuntu 2 種安裝 OpenSSL 的方法</a>
           </li>
         
       </ul>
