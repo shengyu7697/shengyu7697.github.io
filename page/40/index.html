@@ -105,6 +105,87 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-async" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-async/" class="article-date">
+  <time datetime="2020-02-08T14:00:00.000Z" itemprop="datePublished">2020-02-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-async/">C++ std::async 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::async 非同步函式的用法教學，並提供一些入門常用的範例程式碼。  </p>
+<p>首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：<br>std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。<br>std::launch::deferred：拖延/懶惰模式，別人來跟我要資料時，我才去建立執行緒運算生成這些資料(在呼叫 std::async 時還不會建立新執行緒，而是呼叫 std::future 的函式時才開始建立新執行緒去運算執行）。<br><strong>需要引入的標頭檔</strong>：<code>&lt;future&gt;</code>  </p>
+<p>本篇內容將分為：  </p>
+<ul>
+<li><strong>範例1. async (async policy)</strong>  </li>
+<li><strong>範例2. async (deferred policy)</strong>  </li>
+<li><strong>範例3. async (default policy)</strong>  </li>
+<li><strong>async 與 thread 的差異之處</strong>  </li>
+</ul>
+<h2 id="範例1-async-async-policy"><a href="#範例1-async-async-policy" class="headerlink" title="範例1. async (async policy)"></a>範例1. async (async policy)</h2><p>以下範例為 async policy 的示範，中譯叫非同步策略，意思是同時進行，main() 主執行緒呼叫 std::async 建構子立即返回後即繼續執行，std::async 會將這個 foo() 丟到另外的執行緒去執行，所以以下的範例輸出將會有兩種情形，一種是主執行緒很快的就印出 <code>--1--</code>，另一種情形是先印出 <code>a3</code> 再印出 <code>--1--</code>。<br><figure class="highlight cpp"><figcaption><span>std-async1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async1.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a1 = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::async, foo, <span class="string">"a1"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    a1.get();</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a1--1--</span><br><span class="line"></span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>or<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">a1</span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="範例2-async-deferred-policy"><a href="#範例2-async-deferred-policy" class="headerlink" title="範例2. async (deferred policy)"></a>範例2. async (deferred policy)</h2><p>以下範例是 async 使用 deferred policy 這個策略，什麼是deferred policy 呢？deferred policy 就是拖延/懶惰模式，簡單說就是別人來跟我要資料時，我才去運算生產/運算這些資料，這裡的 wait() 或者 get() 就是別人來跟我要資料的比喻。<br>當 a2.get() or a2.wait() 被呼叫時，才去同步執行 foo() 印出 “a2”。<br>future 的結果有三種方式：<br><code>get()</code>：等待非同步執行結束並回傳結果。<br><code>wait()</code>：等待非同步執行結束，沒有回傳值。<br><code>wait_for()</code>：超過等待時間回傳結果。<br><figure class="highlight cpp"><figcaption><span>std-async2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a2 = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::deferred, foo, <span class="string">"a2"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    a2.wait(); <span class="comment">// 印出 a2</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">--2--</span><br><span class="line">a2</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>這個功能在實作爬蟲時特別好用，例如：一次同時爬 n 個網站。  </p>
+<hr>
+<h2 id="範例3-async-default-policy"><a href="#範例3-async-default-policy" class="headerlink" title="範例3. async (default policy)"></a>範例3. async (default policy)</h2><p>以下為 default policy 的範例，default policy 就是 async policy 或 deferred policy 兩種其中一種，基本上 default policy 就是前兩種範例的混合體囉！所以在輸出的結果上也會有兩種情形。<br><figure class="highlight cpp"><figcaption><span>std-async3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a3 = <span class="built_in">std</span>::async(foo, <span class="string">"a3"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a3--1--</span><br><span class="line"></span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>or<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">a3</span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<h2 id="async-與-thread-的差異之處"><a href="#async-與-thread-的差異之處" class="headerlink" title="async 與 thread 的差異之處"></a>async 與 thread 的差異之處</h2><p>要取得運算結果時，使用 thread 要取得運算結果通常是在全域變數宣告一個變數，之後使用 join() 再將得到這個變數值，過程比較繁瑣些，使用 async 的話，可以透過回傳的 future 去取得這個運算結果，非常方便。  </p>
+<p>接下來下篇會介紹實際上什麼情況會需要用到 async 與應用場合及範例。  </p>
+<hr>
+<p>參考<br>[1] std::async - cppreference.com - C++ Reference<br><a href="https://en.cppreference.com/w/cpp/thread/async" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/thread/async</a><br>[2] async - C++ Reference<br><a href="http://www.cplusplus.com/reference/future/async/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/future/async/</a><br>[3] C++11 程式的平行化：async 與 future<br><a href="https://kheresy.wordpress.com/2016/03/14/async-and-future-in-c11/" target="_blank" rel="noopener">https://kheresy.wordpress.com/2016/03/14/async-and-future-in-c11/</a><br>[4] C++ 使用 Async 非同步函數開發平行化計算程式教學<br><a href="https://blog.gtwang.org/programming/cpp-11-async-function-parallel-computing-tutorial/" target="_blank" rel="noopener">https://blog.gtwang.org/programming/cpp-11-async-function-parallel-computing-tutorial/</a><br>[5] C++並發實戰13：std::future、std::async、std::promise、std::packaged_task - wanghualin033的博客 - CSDN博客<br><a href="https://blog.csdn.net/wanghualin033/article/details/89421221" target="_blank" rel="noopener">https://blog.csdn.net/wanghualin033/article/details/89421221</a><br>[6] Futures with std::async<br><a href="http://jakascorner.com/blog/2016/02/futures.html" target="_blank" rel="noopener">http://jakascorner.com/blog/2016/02/futures.html</a><br>[7] std::async 的两个坑 - 知乎<br><a href="https://zhuanlan.zhihu.com/p/39757902" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/39757902</a><br>在 std::future 解構時會 block 直到非同步的執行結束，所以用 lambda expression 時需注意。  </p>
+<hr>
+<p><strong>相關文章</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-async/" data-id="cl4mtdgeh007ez4t0k9m9u8b8" data-title="C++ std::async 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-find" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-find/" class="article-date">
@@ -170,7 +251,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-find/" data-id="cl4kq1n4t007e65t0xdve52zr" data-title="C++ std::find 搜尋用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-find/" data-id="cl4mtdgeg007cz4t0z69k8xi8" data-title="C++ std::find 搜尋用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -239,7 +320,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-mutex/" data-id="cl4kq1n4r007c65t02bhoseru" data-title="std::mutex 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-mutex/" data-id="cl4mtdgeh007dz4t0k7lp1s2z" data-title="std::mutex 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -335,7 +416,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-thread/" data-id="cl4kq1oo000gl65t0138qm7fv" data-title="C++ std::thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-thread/" data-id="cl4mtdhtn00hxz4t0rhwe5jj8" data-title="C++ std::thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -399,7 +480,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-read-yaml-file/" data-id="cl4kq1n4r007b65t014ajyn47" data-title="Python 讀取 yaml 檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-read-yaml-file/" data-id="cl4mtdgef007bz4t03cl8tvgl" data-title="Python 讀取 yaml 檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -485,7 +566,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-write-csv-file/" data-id="cl4kq1n4q007a65t0v06or3jy" data-title="Python 寫入 csv 檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-write-csv-file/" data-id="cl4mtdgee007az4t0wdbp48hd" data-title="Python 寫入 csv 檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -549,7 +630,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-replace/" data-id="cl4kq1n4q007965t0w25yebap" data-title="Python replace 取代字串用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-replace/" data-id="cl4mtdged0079z4t0kllj3in5" data-title="Python replace 取代字串用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -611,7 +692,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-strip/" data-id="cl4kq1n4p007765t0yw3wybkj" data-title="Python strip 去除空白與去除特殊字元用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-strip/" data-id="cl4mtdgec0078z4t0d5lwyhod" data-title="Python strip 去除空白與去除特殊字元用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -673,7 +754,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-join/" data-id="cl4kq1n4p007865t0w30qvpwv" data-title="Python join 連接字串用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-join/" data-id="cl4mtdgec0077z4t0dwwnnpy2" data-title="Python join 連接字串用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -755,76 +836,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-split/" data-id="cl4kq1n4o007665t0jn1t8xuh" data-title="Python split 字串分割用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-split/" data-id="cl4mtdge90074z4t0b8zjpu6c" data-title="Python split 字串分割用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-android-is-not-accessible-for-the-namespace" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/android-is-not-accessible-for-the-namespace/" class="article-date">
-  <time datetime="2020-01-20T14:00:00.000Z" itemprop="datePublished">2020-01-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/android-is-not-accessible-for-the-namespace/">Android開發問題is not accessible for the namespace</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p><a href="https://groups.google.com/g/android-ndk/c/NEJmlH8nOj4?pli=1" target="_blank" rel="noopener">https://groups.google.com/g/android-ndk/c/NEJmlH8nOj4?pli=1</a><br>看到這篇討論覺得很有趣，就順便來關注一下這是怎樣的一個問題，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">load library failed log like these:</span><br><span class="line"></span><br><span class="line">    needed or dlopened by &quot;/system/lib/libnativeloader.so&quot; is not accessible for the namespace:</span><br><span class="line">     [name=&quot;classloader-namespace&quot;, ld_library_paths=&quot;&quot;, default_library_paths=&quot;&quot;, </span><br><span class="line">     permitted_paths=&quot;/data:/mnt/expand&quot;]</span><br></pre></td></tr></table></figure></p>
-<p>貌似在說明在新版的Android不支援非系統的 so 放在 /system/ 下，要放在 <code>default_library_paths</code> 或 <code>permitted_paths</code> 規定的路徑才能被 load 的起來，  </p>
-<p>在 android 原始碼中搜尋 <code>is not accessible for the namespace</code> 字樣<br>結果在 /bionic/linker.cpp 中有加載庫的函數<br>參考 <a href="https://blog.csdn.net/u012459903/article/details/100731487" target="_blank" rel="noopener">https://blog.csdn.net/u012459903/article/details/100731487</a>  </p>
-<p>參考<br>Namespaces for Native Libraries  |  Android Open Source Project<br><a href="https://source.android.com/devices/tech/config/namespaces_libraries#adding-additional-native-libraries" target="_blank" rel="noopener">https://source.android.com/devices/tech/config/namespaces_libraries#adding-additional-native-libraries</a><br>Linker Namespace  |  Android Open Source Project<br><a href="https://source.android.com/devices/architecture/vndk/linker-namespace" target="_blank" rel="noopener">https://source.android.com/devices/architecture/vndk/linker-namespace</a><br>Enabling the VNDK  |  Android Open Source Project<br><a href="https://source.android.com/devices/architecture/vndk/enabling" target="_blank" rel="noopener">https://source.android.com/devices/architecture/vndk/enabling</a></p>
-<p>Android 7.0 行为变更 - NDK 应用链接至平台库  Android Developers<br><a href="https://developer.android.com/about/versions/nougat/android-7.0-changes?hl=zh-cn#ndk" target="_blank" rel="noopener">https://developer.android.com/about/versions/nougat/android-7.0-changes?hl=zh-cn#ndk</a>  </p>
-<p>第三方app加载系统/system/lib下的库–is not accessible for the namespace_Canok-CSDN博客<br><a href="https://blog.csdn.net/u012459903/article/details/100731487" target="_blank" rel="noopener">https://blog.csdn.net/u012459903/article/details/100731487</a>  </p>
-<p>android N : UnsatisfiedLinkError 只能访问设置为公用库的so库- 鸭子船长 …<br><a href="https://www.cnblogs.com/zl1991/p/9409462.html" target="_blank" rel="noopener">https://www.cnblogs.com/zl1991/p/9409462.html</a></p>
-<p>浅谈Android系统编译apk后so文件在dlopen时出现linker权限问题 - CSDN<br><a href="https://blog.csdn.net/yang542397/article/details/88103951" target="_blank" rel="noopener">https://blog.csdn.net/yang542397/article/details/88103951</a></p>
-<p>Android添加自定义公共so库| 码农家园<br><a href="https://www.codenong.com/cs106357975/" target="_blank" rel="noopener">https://www.codenong.com/cs106357975/</a></p>
-<p>Android Native禁止使用系统私有库详解-阿里云开发者社区<br><a href="https://developer.aliyun.com/article/748570" target="_blank" rel="noopener">https://developer.aliyun.com/article/748570</a></p>
-<p>Android : 供應商原生開發套件 (VNDK) - sheldon_blogs - 開發者的網上家園<br><a href="https://www.cnblogs.com/blogs-of-lxl/p/11232754.html" target="_blank" rel="noopener">https://www.cnblogs.com/blogs-of-lxl/p/11232754.html</a>  </p>
-<p><a href="https://developer.android.com/about/versions/nougat/android-7.0-changes.html#ndk" target="_blank" rel="noopener">https://developer.android.com/about/versions/nougat/android-7.0-changes.html#ndk</a><br>根據官方文檔顯示，android-7.0 開始， 你再也不能使用 dlopen 開啟 system libraries，只有官方的白名單內才能，  </p>
-<p>hidl_xiaolli的专栏-CSDN博客<br><a href="https://blog.csdn.net/xiaolli/article/details/79449117" target="_blank" rel="noopener">https://blog.csdn.net/xiaolli/article/details/79449117</a>  </p>
-<p>java - library is not accessible for the namespace “classloader-namespace” - Stack Overflow<br><a href="https://stackoverflow.com/questions/59608865/library-is-not-accessible-for-the-namespace-classloader-namespace" target="_blank" rel="noopener">https://stackoverflow.com/questions/59608865/library-is-not-accessible-for-the-namespace-classloader-namespace</a><br>Modify your Android ROM so that those libraries are considered public. This can be done by adding those libraries to /system/etc/public.libraries.txt.</p>
-<p>相關參考<br>AndroidQ 打通應用層到HAL層—(HIDL服務實現)_qq_34211365的博客-CSDN博客<br><a href="https://blog.csdn.net/qq_34211365/article/details/105556842" target="_blank" rel="noopener">https://blog.csdn.net/qq_34211365/article/details/105556842</a><br>Android L開始 APK 64bit 32bit 運行環境原理及決定運行環境的規則_個人文章 - SegmentFault 思否<br><a href="https://segmentfault.com/a/1190000014161183" target="_blank" rel="noopener">https://segmentfault.com/a/1190000014161183</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-is-not-accessible-for-the-namespace/" data-id="cl4kq1n4n007565t0pnsqtlmw" data-title="Android開發問題is not accessible for the namespace" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
 
     </footer>
   </div>
@@ -868,6 +883,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/gdb/">gdb 除錯教學</a>
+          </li>
+        
+          <li>
             <a href="/vscode-debugging-on-ubuntu/">Ubuntu 使用 VS Code Debugger 除錯教學</a>
           </li>
         
@@ -881,10 +900,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/mac-openssl/">macOS 2 種安裝 OpenSSL 的方法</a>
-          </li>
-        
-          <li>
-            <a href="/ubuntu-spotify/">Ubuntu 安裝 Spotify 的方法</a>
           </li>
         
       </ul>
