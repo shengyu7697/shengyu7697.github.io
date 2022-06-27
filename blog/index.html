@@ -119,7 +119,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/lldb/">lldb 除錯教學</a>
+      <a class="article-title" href="/lldb/">LLDB 除錯教學</a>
     </h1>
   
 
@@ -140,17 +140,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
         <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 lldb 除錯教學，全名為 GNU Debugger，是 GNU 軟體系統中的標準偵錯器 Debugger，在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 lldb 來替 C/C++ 程式偵錯。  </p>
-<p>以下 lldb 除錯教學的內容大概分為這幾部分，  </p>
+        <p>本篇 ShengYu 介紹 LLDB 除錯教學，LLDB Debugger 是 LLVM 專案的除錯元件。在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 LLDB 來替 C/C++ 程式偵錯。  </p>
+<p>以下 LLDB 除錯教學的內容大概分為這幾部分，  </p>
 <ul>
 <li>clang/clang++ 編譯 C/C++ 程式  </li>
-<li>lldb 進行除錯  </li>
+<li>LLDB 進行除錯  </li>
 </ul>
 <p>那我們開始吧！  </p>
-<h2 id="clang-clang-編譯-C-C-程式"><a href="#clang-clang-編譯-C-C-程式" class="headerlink" title="clang/clang++ 編譯 C/C++ 程式"></a>clang/clang++ 編譯 C/C++ 程式</h2><p>我的桌機環境為 Ubuntu 16.04，以下為一個簡單的 C/C++ 程式，使用 <code>clang++ main.cpp -g -o a.out</code> 進行編譯，編譯成功後會產生 a.out 執行檔，<code>-g</code> 表示帶有除錯資訊，這邊當然也可以使用 gcc/g++ 去編譯 C/C++ 程式 (<code>g++ main.cpp -g -o a.out</code>)，gcc/g++ 編譯後的程式 lldb 也可以進行除錯，<br><figure class="highlight cpp"><figcaption><span>main.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// clang++ main.cpp -g -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> s = <span class="string">"hello world"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        sum += i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="clang-clang-編譯-C-C-程式"><a href="#clang-clang-編譯-C-C-程式" class="headerlink" title="clang/clang++ 編譯 C/C++ 程式"></a>clang/clang++ 編譯 C/C++ 程式</h2><p>我的桌機環境為 Ubuntu 16.04，以下為一個簡單的 C/C++ 程式，使用 <code>clang++ main.cpp -g -o a.out</code> 進行編譯，編譯成功後會產生 a.out 執行檔，<code>-g</code> 表示帶有除錯資訊，這邊當然也可以使用 gcc/g++ 去編譯 C/C++ 程式 (<code>g++ main.cpp -g -o a.out</code>)，gcc/g++ 編譯後的程式 LLDB 也可以進行除錯，<br><figure class="highlight cpp"><figcaption><span>main.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// clang++ main.cpp -g -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> s = <span class="string">"hello world"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        sum += i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>程式輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hello world</span><br><span class="line">sum=10</span><br><span class="line">end</span><br></pre></td></tr></table></figure></p>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2 id="lldb-進行除錯"><a href="#lldb-進行除錯" class="headerlink" title="lldb 進行除錯"></a>lldb 進行除錯</h2><p>接著使用 lldb 指令對 a.out 進行除錯，執行 <code>lldb ./a.out</code> 指令進入 lldb 交互介面，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ lldb ./a.out </span><br><span class="line">(lldb) target create <span class="string">"./a.out"</span></span><br><span class="line">Current executable <span class="built_in">set</span> to <span class="string">'./a.out'</span> (x86_64).</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<h2 id="LLDB-進行除錯"><a href="#LLDB-進行除錯" class="headerlink" title="LLDB 進行除錯"></a>LLDB 進行除錯</h2><p>接著使用 lldb 指令對 a.out 進行除錯，執行 <code>lldb ./a.out</code> 指令進入 lldb 交互介面，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ lldb ./a.out </span><br><span class="line">(lldb) target create <span class="string">"./a.out"</span></span><br><span class="line">Current executable <span class="built_in">set</span> to <span class="string">'./a.out'</span> (x86_64).</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <p>輸入 <code>b main.cpp:14</code> 插入中斷點在 main.cpp 的 14 行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b main.cpp:14</span><br><span class="line">Breakpoint 1: <span class="built_in">where</span> = a.out`main + 188 at main.cpp:14, address = 0x0000000000400c2c</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <p>輸入 <code>b</code> 印出目前設定的中斷點，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = &apos;main.cpp&apos;, line = 14, exact_match = 0, locations = 1</span><br><span class="line">  1.1: where = a.out`main + 188 at main.cpp:14, address = a.out[0x0000000000400c2c], unresolved, hit count = 0 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
@@ -159,14 +159,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>接著按 <code>c</code> 繼續執行直到程式結束，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) c</span><br><span class="line">Process 24479 resuming</span><br><span class="line">sum=10</span><br><span class="line">end</span><br><span class="line">Process 24479 exited with status = 0 (0x00000000)</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
 <p>以下為 lldb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>b</code>：印出目前設定的中斷點<br><code>po &lt;變數名稱&gt;</code>：印出目前變數的值，例如：<code>po sum</code><br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
-<p>以上就是 lldb 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
+<p>以上就是 LLDB 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
 <p>其他參考<br>LLDB 玩樂筆記. 最近在寫 uTensor 的 CNN Demo 文章，code 是可以… | by Dboy Liao | Medium<br><a href="https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff" target="_blank" rel="noopener">https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff</a>  </p>
 <p><strong>相關主題</strong><br><a href="/gdb/" title="gdb 除錯教學">gdb 除錯教學</a><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a>  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/lldb/" data-id="cl4wu1ily00hgm1t0rg3eg2m0" data-title="lldb 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/lldb/" data-id="cl4wv30f900hgyht0ip9kpvum" data-title="LLDB 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -221,12 +221,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
 <p>以下為 gdb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>info b</code>：印出目前設定的中斷點<br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
 <p>以上就是 gdbserver 遠端除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
-<p><strong>相關主題</strong><br><a href="/gdb/" title="gdb 除錯教學">gdb 除錯教學</a><br><a href="/lldb/" title="lldb 除錯教學">lldb 除錯教學</a>  </p>
+<p><strong>相關主題</strong><br><a href="/gdb/" title="gdb 除錯教學">gdb 除錯教學</a><br><a href="/lldb/" title="LLDB 除錯教學">LLDB 除錯教學</a>  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gdbserver/" data-id="cl4wu1ilx00hfm1t0g8k2603d" data-title="gdbserver 遠端除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/gdbserver/" data-id="cl4wv30f800hfyht06hjm6yvm" data-title="gdbserver 遠端除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -294,12 +294,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>以下為 gdb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>info b</code>：印出目前設定的中斷點<br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
 <p>以上就是 gdb 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
 <p>其他參考<br>C語言工具使用，GDB個人學習筆記 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天<br><a href="https://ithelp.ithome.com.tw/articles/10257294" target="_blank" rel="noopener">https://ithelp.ithome.com.tw/articles/10257294</a>  </p>
-<p><strong>相關主題</strong><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a><br><a href="/lldb/" title="lldb 除錯教學">lldb 除錯教學</a>  </p>
+<p><strong>相關主題</strong><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a><br><a href="/lldb/" title="LLDB 除錯教學">LLDB 除錯教學</a>  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gdb/" data-id="cl4wu1ilw00hem1t07v36m7zt" data-title="gdb 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/gdb/" data-id="cl4wv30f800heyht0bpmf7zay" data-title="gdb 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -378,7 +378,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-ubuntu/" data-id="cl4wu1jvg00jom1t0vptjjzf0" data-title="Ubuntu 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-ubuntu/" data-id="cl4wv31td00joyht0ngz6zjc0" data-title="Ubuntu 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -437,7 +437,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="cl4wu1ilv00hdm1t0tpewd5uh" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="cl4wv30f700hdyht0abzy7kns" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -530,7 +530,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="cl4wu1jvf00jmm1t0awaldwpr" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="cl4wv31tc00jmyht0b9692he1" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -608,7 +608,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cl4wu1ilu00hcm1t0162j1n4u" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cl4wv30f600hcyht0zvfaudql" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -673,7 +673,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cl4wu1ilt00hbm1t0du4pllas" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cl4wv30f600hbyht0nbnfgmai" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -745,7 +745,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cl4wu1ils00ham1t0tuc2w7xq" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cl4wv30f500hayht0tjcihoyh" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -806,7 +806,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cl4wu1ils00h9m1t04pw0lgb7" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cl4wv30f500h9yht0hdm4yewe" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -853,7 +853,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
-            <a href="/lldb/">lldb 除錯教學</a>
+            <a href="/lldb/">LLDB 除錯教學</a>
           </li>
         
           <li>
