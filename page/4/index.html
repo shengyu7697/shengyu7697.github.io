@@ -105,6 +105,68 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-pthread_attr_setstacksize" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-pthread_attr_setstacksize/" class="article-date">
+  <time datetime="2022-02-21T14:00:00.000Z" itemprop="datePublished">2022-02-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-pthread_attr_setstacksize/">C/C++ Linux pthread_attr_setstacksize 設定執行緒堆疊大小用法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒 <code>pthread_attr_setstacksize()</code> 用法，<code>pthread_attr_setstacksize()</code> 是用來設定該執行緒的堆疊大小。</p>
+<h2 id="pthread-attr-setstacksize-基本用法"><a href="#pthread-attr-setstacksize-基本用法" class="headerlink" title="pthread_attr_setstacksize 基本用法"></a>pthread_attr_setstacksize 基本用法</h2><p>在 <code>pthread_create()</code> 建立執行緒時沒有設定堆疊大小的話會採用 <code>ulimit -s</code> 的預設值，在 shell 下輸入 <code>ulimit -s</code> 就可以看到目前的設定值，單位為 KB，如下所示目前數值為 8192KB，也就是 8M<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ulimit -s</span><br><span class="line">8192</span><br></pre></td></tr></table></figure></p>
+<p>堆疊最小值定義為 PTHREAD_STACK_MIN，也就是 16384bytes，<code>pthread_attr_setstacksize()</code> 設定小於 PTHREAD_STACK_MIN 的話會回傳 0 (表示設定失敗)，  </p>
+<p>以下簡單示範如何使用 <code>pthread_attr_setstacksize()</code>，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_attr_setstacksize.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_attr_setstacksize.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">pthread_attr_t</span> attr;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="keyword">size_t</span> stacksize = <span class="number">20480</span>;</span><br><span class="line"></span><br><span class="line">    ret = pthread_attr_init(&amp;attr);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_attr_init\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ret = pthread_attr_setstacksize(&amp;attr, stacksize);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_attr_setstacksize\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ret = pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    ret = pthread_attr_destroy(&amp;attr);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_attr_destroy\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>補充：若要使用 PTHREAD_STACK_MIN 定義的話，需 <code>include &lt;limits.h&gt;</code>  </p>
+<p>其它參考<br>pthread_attr_setstacksize(3) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man3/pthread_attr_setstacksize.3.html" target="_blank" rel="noopener">https://man7.org/linux/man-pages/man3/pthread_attr_setstacksize.3.html</a><br>线程堆栈大小 pthread_attr_setstacksize 的使用<br><a href="https://blog.csdn.net/godleading/article/details/7997630" target="_blank" rel="noopener">https://blog.csdn.net/godleading/article/details/7997630</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pthread_attr_getstacksize/" title="C/C++ Linux pthread_attr_getstacksize 取得執行緒堆疊大小用法">C/C++ Linux pthread_attr_getstacksize 取得執行緒堆疊大小用法</a><br><a href="/cpp-sched_setaffinity/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-pthread_attr_setstacksize/" data-id="cl4wu1ilj00gpm1t0zwktu29c" data-title="C/C++ Linux pthread_attr_setstacksize 設定執行緒堆疊大小用法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-mac-move-dock-to-other-screen" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/mac-move-dock-to-other-screen/" class="article-date">
@@ -150,7 +212,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-move-dock-to-other-screen/" data-id="cl4vg0jvz00gogvt0o5txcrk1" data-title="mac 雙螢幕延伸模式的 dock 切換方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-move-dock-to-other-screen/" data-id="cl4wu1ili00gom1t0bi5twmu3" data-title="mac 雙螢幕延伸模式的 dock 切換方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Macbook-Pro/">Macbook Pro</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -208,7 +270,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-grep-binary-file-standard-input-matches/" data-id="cl4vg0jvy00gmgvt0sqkuruix" data-title="grep 遇到 binary file (standard input) matches 解決方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-grep-binary-file-standard-input-matches/" data-id="cl4wu1ili00gnm1t0e34vj4f5" data-title="grep 遇到 binary file (standard input) matches 解決方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -273,7 +335,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-check-if-file-exists/" data-id="cl4vg0jvz00gngvt09zzvcmqk" data-title="Shell Script 判斷檔案是否存在" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-check-if-file-exists/" data-id="cl4wu1ilh00gmm1t0or4jjpti" data-title="Shell Script 判斷檔案是否存在" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -343,7 +405,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-string-to-integer-atoi/" data-id="cl4vg0jvy00glgvt04unv3i79" data-title="LeetCode C++ String to Integer (atoi) 字串轉整數" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-string-to-integer-atoi/" data-id="cl4wu1ilh00glm1t0ndmdf36y" data-title="LeetCode C++ String to Integer (atoi) 字串轉整數" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/">LeetCode</a></li></ul>
@@ -416,7 +478,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fclose/" data-id="cl4vg0jtg00bsgvt0f8155ihq" data-title="C/C++ fclose 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-fclose/" data-id="cl4wu1if800bqm1t06oah1bwy" data-title="C/C++ fclose 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -487,7 +549,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fputs/" data-id="cl4vg0jvx00gkgvt0rb3k3yuv" data-title="C/C++ fputs 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-fputs/" data-id="cl4wu1ilh00gkm1t0hi4sniei" data-title="C/C++ fputs 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -561,7 +623,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fwrite/" data-id="cl4vg0jvx00gjgvt0gghjwet8" data-title="C/C++ fwrite 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-fwrite/" data-id="cl4wu1ilg00gjm1t0hxjvzjrs" data-title="C/C++ fwrite 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -639,7 +701,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fgets/" data-id="cl4vg0jvw00gigvt0rqx2b8yx" data-title="C/C++ fgets 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-fgets/" data-id="cl4wu1ilg00gim1t0wwcwv7ly" data-title="C/C++ fgets 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -717,81 +779,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fread/" data-id="cl4vg0jvw00ghgvt0161y37ux" data-title="C/C++ fread 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-fopen" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-fopen/" class="article-date">
-  <time datetime="2022-01-25T14:00:00.000Z" itemprop="datePublished">2022-01-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-fopen/">C/C++ fopen 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ fopen 的用法與範例，C/C++ 不管是文字檔的讀取或寫入都需要先開檔，即使是二進制檔的讀取或寫入也是需要先開檔，詳見本篇範例。  </p>
-<p>C/C++ 要使用 fopen 的話需要引入的標頭檔 <code>&lt;stdio.h&gt;</code>，如果要使用 C++ 的標頭檔則是引入 <code>&lt;cstdio&gt;</code>，<br>fopen 函式原型為<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">FILE * <span class="title">fopen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * filename, <span class="keyword">const</span> <span class="keyword">char</span> * mode)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p>filename：檔案名稱 (可包含路徑)<br>mode：開檔模式，<code>&quot;r&quot;</code> 開檔且讀取文字檔、<code>&quot;w&quot;</code> 開檔且覆蓋寫入文字檔、<code>&quot;a&quot;</code> 開檔且添加文字檔在檔尾、<code>&quot;rb&quot;</code> 開檔且讀取二進制檔、<code>&quot;wb&quot;</code> 開檔且覆蓋寫入二進制檔、<code>&quot;ab&quot;</code> 開檔且添加二進制在檔尾  </p>
-<p>以下 C/C++ fopen 的用法介紹將分為這幾部份，  </p>
-<ul>
-<li>C/C++ fopen 開檔並且一次讀取文字檔全部內容  </li>
-<li>C/C++ fopen 開檔並且一次讀取一行  </li>
-<li>C/C++ fopen 開檔並且一次寫入全部文字到檔案  </li>
-<li>C/C++ fopen 開檔並且一次寫入一行  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2 id="C-C-fopen-開檔並且一次讀取文字檔全部內容"><a href="#C-C-fopen-開檔並且一次讀取文字檔全部內容" class="headerlink" title="C/C++ fopen 開檔並且一次讀取文字檔全部內容"></a>C/C++ fopen 開檔並且一次讀取文字檔全部內容</h2><p>這邊介紹 C/C++ fopen 開檔並且一次讀取文字檔全部內容，一開始要先用 fopen 開檔，要先 fopen 開檔成功才能進行檔案內容讀取，fopen 開檔回傳 NULL 表示開檔失敗，如果不是 NULL 表示開檔成功，之後用 fread 進行文字檔的讀取，<br><figure class="highlight cpp"><figcaption><span>cpp-fopen.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-fopen.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">1024</span>];</span><br><span class="line">    <span class="keyword">size_t</span> numread;</span><br><span class="line"></span><br><span class="line">    fp = fopen(<span class="string">"input.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        numread = fread(buffer, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), <span class="number">1024</span>, fp);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"read %lu bytes\n"</span>, numread);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, buffer);</span><br><span class="line">        fclose(fp);</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"failed to open the file.\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2 id="C-C-fopen-開檔並且一次讀取一行"><a href="#C-C-fopen-開檔並且一次讀取一行" class="headerlink" title="C/C++ fopen 開檔並且一次讀取一行"></a>C/C++ fopen 開檔並且一次讀取一行</h2><p>這邊介紹 C/C++ fopen 開檔並且一次讀取一行，一開始要先用 fopen 開檔，要先 fopen 開檔成功才能進行檔案內容讀取，fopen 開檔回傳 NULL 表示開檔失敗，如果不是 NULL 表示開檔成功，之後用 fgets 進行文字檔的讀取，如果要讀取多行的話可以搭配 for / while 迴圈使用，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-fopen2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">32</span>];</span><br><span class="line"></span><br><span class="line">    fp = fopen(<span class="string">"input.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        fgets(buffer, <span class="number">32</span>, fp);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, buffer);</span><br><span class="line">        fclose(fp);</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"failed to open the file.\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="C-C-fopen-開檔並且一次寫入全部文字到檔案"><a href="#C-C-fopen-開檔並且一次寫入全部文字到檔案" class="headerlink" title="C/C++ fopen 開檔並且一次寫入全部文字到檔案"></a>C/C++ fopen 開檔並且一次寫入全部文字到檔案</h2><p>這邊介紹 C/C++ fopen 開檔並且一次寫入全部文字到檔案，一開始要先用 fopen 開檔，要先 fopen 開檔成功才能對檔案寫入，fopen 開檔回傳 NULL 表示開檔失敗，如果不是 NULL 表示開檔成功，之後用 fwrite 將文字寫入檔案裡，<br><figure class="highlight cpp"><figcaption><span>cpp-fopen3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-fopen3.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">1024</span>] = <span class="string">"hello world\n123456\n"</span>;</span><br><span class="line">    <span class="keyword">size_t</span> numwritten;</span><br><span class="line"></span><br><span class="line">    fp = fopen(<span class="string">"output.txt"</span>, <span class="string">"w"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        numwritten = fwrite(buffer, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), <span class="number">24</span>, fp);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"write %zu bytes\n"</span>, numwritten);</span><br><span class="line">        fclose(fp);</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"failed to open the file.\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2 id="C-C-fopen-開檔並且一次寫入一行"><a href="#C-C-fopen-開檔並且一次寫入一行" class="headerlink" title="C/C++ fopen 開檔並且一次寫入一行"></a>C/C++ fopen 開檔並且一次寫入一行</h2><p>這邊介紹 C/C++ fopen 開檔並且一次寫入一行，一開始要先用 fopen 開檔，要先 fopen 開檔成功才能對檔案寫入，fopen 開檔回傳 NULL 表示開檔失敗，如果不是 NULL 表示開檔成功，之後用 fputs 將文字寫入檔案裡，如果要寫入多行的話可以搭配 for / while 迴圈使用，<br><figure class="highlight cpp"><figcaption><span>cpp-fopen4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-fopen4.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line"></span><br><span class="line">    fp = fopen(<span class="string">"output.txt"</span>, <span class="string">"w"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">fputs</span>(<span class="string">"hello world"</span>, fp);</span><br><span class="line">        fclose(fp);</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"failed to open the file.\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>以上就是 C/C++ fopen 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-fread/" title="C/C++ fread 用法與範例">C/C++ fread 用法與範例</a><br><a href="/cpp-fgets/" title="C/C++ fgets 用法與範例">C/C++ fgets 用法與範例</a><br><a href="/cpp-fwrite/" title="C/C++ fwrite 用法與範例">C/C++ fwrite 用法與範例</a><br><a href="/cpp-fputs/" title="C/C++ fputs 用法與範例">C/C++ fputs 用法與範例</a><br><a href="/cpp-fclose/" title="C/C++ fclose 用法與範例">C/C++ fclose 用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fopen/" data-id="cl4vg0jvw00gggvt0104dtc5y" data-title="C/C++ fopen 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-fread/" data-id="cl4wu1ilf00ghm1t02a72eu2h" data-title="C/C++ fread 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -838,6 +826,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/lldb/">lldb 除錯教學</a>
+          </li>
+        
+          <li>
             <a href="/gdbserver/">gdbserver 遠端除錯教學</a>
           </li>
         
@@ -851,10 +843,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/android-adb-forward/">Android adb forward 通訊埠轉發用法教學</a>
-          </li>
-        
-          <li>
-            <a href="/vscode-debugging-on-mac/">macOS 使用 VS Code Debugger 除錯教學</a>
           </li>
         
       </ul>

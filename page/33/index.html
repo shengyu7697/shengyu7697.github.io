@@ -105,6 +105,115 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-tcp-socket" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-tcp-socket/" class="article-date">
+  <time datetime="2020-06-29T14:00:00.000Z" itemprop="datePublished">2020-06-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-tcp-socket/">Python TCP Socket Server/Client 網路通訊教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹如何寫 Python TCP Socket Server/Client 網路通訊程式，在這個網路盛行的時代，網路通訊已成為基礎，想要精通學習網路通訊必須先了解 TCP/IP 協定，其中又以 TCP 通訊最常被使用，TCP 通訊程式通常分成伺服器端與客戶端的兩部份程式，接下來教學內容將介紹如何使用 socket API 來搭建一個典型的 TCP 通訊程式，甚至可以寫出一個聊天室的程式，或者像 LINE 這樣的通訊程式。  </p>
+<p>以下 Python TCP 內容將分為幾部分，分別為：  </p>
+<ul>
+<li>常見的 Socket API 函式 Overview 總覽  </li>
+<li>Python Socket TCP Server/Client 通訊流程  </li>
+<li>Python TCP Server 伺服器端程式 (Echo Sever)  </li>
+<li>Python TCP Client 客戶端程式 (傳送使用者的輸入)  </li>
+<li>Python TCP Client 客戶端程式 (定時傳送資料)  </li>
+<li>Python TCP 常見問題  </li>
+</ul>
+<p>Python 提供了兩個基本的 socket 模組：<br><code>Socket</code>：標準的 BSD Socket API<br><code>SocketServer</code>：Python 封裝好的 class，簡化了網絡服務器的撰寫開發，共有這4種：TCPServer，UDPServer，UnixStreamServer，UnixDatagramServer<br>本篇先以 <code>Socket</code> 的標準 BSD Socket API 來介紹，下一篇再介紹 <code>SocketServer</code> 的部份。  </p>
+<h2 id="常見的-Socket-API-函式-Overview-總覽"><a href="#常見的-Socket-API-函式-Overview-總覽" class="headerlink" title="常見的 Socket API 函式 Overview 總覽"></a>常見的 Socket API 函式 Overview 總覽</h2><p>Python 的 socket 模組它提供了標準的 BSD Socket API，主要的 socket API 函式如下:<br><code>socket()</code>：建立 socket 與設定使用哪種通訊協定<br><code>socket.bind(address)</code>：將 socket 綁定到地址，在 AF_INET 下，以 tuple(host, port) 的方式傳入，如 socket.bind((host, port))<br><code>socket.listen(backlog)</code>：開始監聽 TCP 傳入連接，backlog 指定在拒絕連線前，操作系統可以掛起的最大連接數，該值最少為1，通常設為5就夠用了<br><code>socket.accept()</code>：等待連線，接受到 TCP 連線後回傳（conn, address），回傳的 conn 是新的 socket 類型，可以用來接收和發送資料，address 是連線客戶端的地址。<br><code>socket.connect(address)</code>：連線到 address 處的 socket，一般 address 的格式為 tuple(host, port)，如果連線出錯，則回傳 socket.error 錯誤<br><code>socket.connect_ex(address)</code>：功能與 socket.connect(address) 相同，但成功回傳0，失敗回傳 errno 的值<br><code>socket.recv(bufsize[, flag])</code>：接收 TCPsocket 的資料，Python3 回傳資料為 byte 類型，Python2 回傳資料為 str 類型，buffsize 指定要接收的最大資料量，flag 提供有關消息的其他訊息，通常可以忽略<br><code>socket.send(string[, flag])</code>：發送 TCP 資料，Python3 是將 byte 發送到已連線的 socket，Python2 是將 str 發送到連線的socket，回傳值是發送的 byte 數<br><code>socket.sendall(string[, flag])</code>：完整發送 TCP 資料，將 str 中的資料發送到已連線的 socket，但在回傳之前嘗試發送所有資料。成功回傳 None，失敗則拋出異常<br><code>socket.close()</code>：關閉 socket  </p>
+<h2 id="Python-Socket-TCP-Server-Client-通訊流程"><a href="#Python-Socket-TCP-Server-Client-通訊流程" class="headerlink" title="Python Socket TCP Server/Client 通訊流程"></a>Python Socket TCP Server/Client 通訊流程</h2><p>以下 ShengYu 講解 Python TCP Server 端與 TCP Client 端的程式流程以及會如何使用這些 socket API，<br>TCP Server 的流程分為以下幾大步驟：  </p>
+<ol>
+<li>建立socket：<code>s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</code>，指定 <code>socket.AF_INET</code> (Internet Protocol) family 的通訊協定，類型使用 socket.SOCK_STREAM (Stream Socket) 也就是 TCP 傳輸方式  </li>
+<li>綁定 socket 到本地 IP 與 port：<code>s.bind()</code>  </li>
+<li>開始監聽：<code>s.listen()</code>  </li>
+<li>等待與接受客戶端的請求連線：<code>s.accept()</code>  </li>
+<li>接收客戶端傳來的資料：<code>s.recv()</code>  </li>
+<li>傳送給對方發送資料：<code>s.send()</code>、<code>s.sendall()</code>  </li>
+<li>傳輸完畢後，關閉 socket：<code>s.close()</code>  </li>
+</ol>
+<p>TCP Client 的流程分為以下幾大步驟：  </p>
+<ol>
+<li>建立 socket：<code>s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</code>  </li>
+<li>連線至遠端地址：<code>s.connect()</code>  </li>
+<li>傳送資料：<code>s.send()</code>、<code>s.sendall()</code>  </li>
+<li>接收資料：<code>s.recv()</code>  </li>
+<li>傳輸完畢後，關閉 socket：<code>s.close()</code>  </li>
+</ol>
+<p>以上是 TCP Server/Client 通訊的重點流程，實際的 Python socket API 用法與範例詳見下列章節，接下來就來看看怎麼寫 TCP Server/Client 通訊程式吧！  </p>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="Python-TCP-Server-伺服器端程式-Echo-Sever"><a href="#Python-TCP-Server-伺服器端程式-Echo-Sever" class="headerlink" title="Python TCP Server 伺服器端程式 (Echo Sever)"></a>Python TCP Server 伺服器端程式 (Echo Sever)</h2><p>這邊 ShengYu 就開始介紹怎麼寫 Python TCP Server 程式，下列範例這是一個典型的 Echo Server，Echo Server 就是收到什麼資料就回覆什麼資料，很簡單吧！<br>跟網路上其他範例不同的是此範例建立連線後不是傳輸一次資料就關閉連線，而是使用迴圈可以一直傳輸資料直到客戶端不想傳關閉連線為止，並且伺服器端再次地等待新的客戶端連線來服務。  </p>
+<p>如下例所示，伺服器端一開始建立 socket，用 <code>bind()</code> 綁定，這裡是使用 <code>0.0.0.0</code>, port 為 <code>7000</code>，<br>使用 <code>listen()</code> 開始監聽，上限連線數為<code>5</code>，之後進入主迴圈，<code>accept()</code> 等待接受客戶端的連線請求，<br>一旦有客戶端連線的話，就會從 <code>accept()</code> 繼續往下執行，<br>之後是另一個迴圈來服務這個連線，不斷地從這個連線 <code>recv</code> 接收資料與 <code>send</code> 傳送資料，<br>如果 <code>recv()</code> 收到的資料長度為0，表示客戶端已斷開連線，此時我們也關閉這個連線，<br>之後回到 <code>accept()</code> 等待新的客戶端連線，等到新的客戶端連線連上便跟之前的流程一樣，這樣便是一個完整的 Python TCP 伺服器程式。  </p>
+<p>本篇範例是以 Python 3 作為示範，另外補充一下 Python 2 與 Python 3 的差異處，<br>Python 2 的 <code>recv()</code> 與 <code>send()</code> 傳入的參數類型為 <code>str</code>，<br>到了 Python 3 的 <code>recv()</code> 與 <code>send()</code> 傳入的參數類型改為 <code>byte</code>，<br>所以 <code>str</code> 要轉成 <code>byte</code> 要透過 <code>decode()</code>，以及使用 <code>decode()</code> 轉回 <code>str</code>，<br><figure class="highlight python"><figcaption><span>python3-tcp-socket-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">'0.0.0.0'</span></span><br><span class="line">PORT = <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, <span class="number">1</span>)</span><br><span class="line">s.bind((HOST, PORT))</span><br><span class="line">s.listen(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">print(<span class="string">'wait for connection...'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    conn, addr = s.accept()</span><br><span class="line">    print(<span class="string">'connected by '</span> + str(addr))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        indata = conn.recv(<span class="number">1024</span>)</span><br><span class="line">        <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">            conn.close()</span><br><span class="line">            print(<span class="string">'client closed connection.'</span>)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">        outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">        conn.send(outdata.encode())</span><br></pre></td></tr></table></figure></p>
+<p>如果 Server 伺服器端不正常關閉後再次啟動時可能會遇到 <code>socket.error: [Errno 98] Address already in use</code> 這種錯誤訊息的話，那麼你可以在 <code>bind()</code> 之前設定 <code>REUSEADDR</code> 可以解決這個問題，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)</span><br></pre></td></tr></table></figure></p>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="Python-TCP-Client-客戶端程式-傳送使用者的輸入"><a href="#Python-TCP-Client-客戶端程式-傳送使用者的輸入" class="headerlink" title="Python TCP Client 客戶端程式 (傳送使用者的輸入)"></a>Python TCP Client 客戶端程式 (傳送使用者的輸入)</h2><p>Python TCP Client 範例如下，這邊要示範的是傳送使用者的輸入訊息，將使用者的輸入訊息傳送給伺服器端，通常應用於一般聊天軟體上，學習之後就可以寫一個簡單的聊天軟體了。  </p>
+<p>如下例所示，客戶端一開始建立 socket，之後 <code>connect()</code> 連線伺服器主機的 host 與 port，<br>之後進入主迴圈，不斷地傳送使用者的輸入，需要注意的是要取得使用者輸入的函式 Python 2 裡是使用 <code>raw_input()</code>，而 Python 3 是使用 <code>input()</code>，<br>使用者輸入完後按下 Enter 便會將資料發送給伺服器端，接著等待伺服器端傳送資料，接收到來自伺服器端的資料就把它印出來，<br><figure class="highlight python"><figcaption><span>python3-tcp-socket-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">'0.0.0.0'</span></span><br><span class="line">PORT = <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">s.connect((HOST, PORT))</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    outdata = input(<span class="string">'please input message: '</span>)</span><br><span class="line">    print(<span class="string">'send: '</span> + outdata)</span><br><span class="line">    s.send(outdata.encode())</span><br><span class="line">    </span><br><span class="line">    indata = s.recv(<span class="number">1024</span>)</span><br><span class="line">    <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">        s.close()</span><br><span class="line">        print(<span class="string">'server closed connection.'</span>)</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    print(<span class="string">'recv: '</span> + indata.decode())</span><br></pre></td></tr></table></figure></p>
+<p>以下示範一下程式的啟動過程，過程中我在客戶端輸入了兩次的訊息，最後按 <code>ctrl+c</code> 結束了程式，<br>客戶端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>client</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-tcp-socket-client.py </span><br><span class="line">please input message: hello</span><br><span class="line">send: hello</span><br><span class="line">recv: <span class="built_in">echo</span> hello</span><br><span class="line">please input message: hello tcp</span><br><span class="line">send: hello tcp</span><br><span class="line">recv: <span class="built_in">echo</span> hello tcp</span><br><span class="line">please input message: ^CTraceback (most recent call last):</span><br><span class="line">  File <span class="string">"python3-tcp-socket-client.py"</span>, line 12, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">    outdata = input(<span class="string">'please input message: '</span>)</span><br><span class="line">KeyboardInterrupt</span><br></pre></td></tr></table></figure></p>
+<p>伺服器端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>server</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-tcp-socket-server.py </span><br><span class="line">server start at: 0.0.0.0:7000</span><br><span class="line"><span class="built_in">wait</span> <span class="keyword">for</span> connection...</span><br><span class="line">connected by (<span class="string">'127.0.0.1'</span>, 57060)</span><br><span class="line">recv: hello</span><br><span class="line">recv: hello tcp</span><br><span class="line">client closed connection.</span><br></pre></td></tr></table></figure></p>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="Python-TCP-Client-客戶端程式-定時傳送資料"><a href="#Python-TCP-Client-客戶端程式-定時傳送資料" class="headerlink" title="Python TCP Client 客戶端程式 (定時傳送資料)"></a>Python TCP Client 客戶端程式 (定時傳送資料)</h2><p>前一章節示範了 Echo Sever 與 Client 通訊程式，這時可以打鐵趁熱，除了前一章節 TCP Client 使用者手動輸入的情形之外，這邊也介紹另一種客戶端會定時地傳送資料給伺服器端，同時這也適用於各種通訊情形。  </p>
+<p>步驟跟前一章節 TCP Client 幾乎相同，傳輸字串為 <code>&#39;heartbeat&#39;</code>，這邊傳送後使用 <code>time.sleep(1)</code> 來讓程式睡眠1秒，之後再繼續傳送資料，進而達成定時傳送的功能，<br><figure class="highlight python"><figcaption><span>python3-tcp-socket-client-heartbeat.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">'0.0.0.0'</span></span><br><span class="line">PORT = <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">s.connect((HOST, PORT))</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    outdata = <span class="string">'heartbeat'</span></span><br><span class="line">    print(<span class="string">'send: '</span> + outdata)</span><br><span class="line">    s.send(outdata.encode())</span><br><span class="line">    </span><br><span class="line">    indata = s.recv(<span class="number">1024</span>)</span><br><span class="line">    <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">        s.close()</span><br><span class="line">        print(<span class="string">'server closed connection.'</span>)</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br></pre></td></tr></table></figure></p>
+<p>客戶端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>client</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-tcp-socket-client-heartbeat.py </span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">^CTraceback (most recent call last):</span><br><span class="line">  File <span class="string">"python3-tcp-socket-client-heartbeat.py"</span>, line 24, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">    time.sleep(1)</span><br><span class="line">KeyboardInterrupt</span><br></pre></td></tr></table></figure></p>
+<p>伺服器端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>server</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-tcp-socket-server.py </span><br><span class="line">server start at: 0.0.0.0:7000</span><br><span class="line"><span class="built_in">wait</span> <span class="keyword">for</span> connection...</span><br><span class="line">connected by (<span class="string">'127.0.0.1'</span>, 50130)</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">client closed connection.</span><br></pre></td></tr></table></figure></p>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="Python-TCP-常見問題"><a href="#Python-TCP-常見問題" class="headerlink" title="Python TCP 常見問題"></a>Python TCP 常見問題</h2><p>在 TCP 的傳輸裡，為什麼伺服器還要回傳給客戶端？<br>因為這只是個示範用的通訊程式，讓你了解通訊的過程，就像打電話或者跟別人對話一樣，你一句我一句的來回互動，你可以根據實際的需求而修改程式，你也可以改成一直傳，例如客戶端一直傳送，伺服器一直接收。  </p>
+<p>為什麼 recv 還沒收到資料前會卡住一直等？<br>因為預設是 blocking 非阻塞模式，recv 還沒收到資料前會卡住一直等，沒法做其他事情，直到 recv 接收到資料才會從 recv 函式返回，解決辦法是改用 Non-blocking 非阻塞模式，Non-blocking 模式是這次沒接收到資料就會從 recv 函式返回，接著繼續往下執行；另一個解決方式是另外建立執行緒去做其他事情。  </p>
+<p>以上就是 Python TCP Socket Server/Client 網路通訊教學，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br>socket — Low-level networking interface — Python 3 documentation<br><a href="https://docs.python.org/3/library/socket.html" target="_blank" rel="noopener">https://docs.python.org/3/library/socket.html</a><br>Python Socket 编程详细介绍<br><a href="https://gist.github.com/kevinkindom/108ffd675cb9253f8f71" target="_blank" rel="noopener">https://gist.github.com/kevinkindom/108ffd675cb9253f8f71</a><br>shengyu7697/PyReportMyIP: This is a program that automatically updates the IP addresses to server.<br><a href="https://github.com/shengyu7697/PyReportMyIP" target="_blank" rel="noopener">https://github.com/shengyu7697/PyReportMyIP</a><br>Socket Programming in Python (Guide) – Real Python<br><a href="https://realpython.com/python-sockets/" target="_blank" rel="noopener">https://realpython.com/python-sockets/</a><br>Python3 网络编程 | 菜鸟教程<br><a href="https://www.runoob.com/python3/python3-socket.html" target="_blank" rel="noopener">https://www.runoob.com/python3/python3-socket.html</a><br>Python中的TCP socket寫法示例 | 程式前沿<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/356876/" target="_blank" rel="noopener">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/356876/</a><br>Python Socket 编程:基于TCP套接字<em>网络</em>错位的梦寐的博客-CSDN博客<br><a href="https://blog.csdn.net/HHG20171226/article/details/93519772" target="_blank" rel="noopener">https://blog.csdn.net/HHG20171226/article/details/93519772</a><br>Python Socket 编程:基于TCP套接字（1）<em>网络</em>错位的梦寐的博客-CSDN博客<br><a href="https://blog.csdn.net/HHG20171226/article/details/93524184" target="_blank" rel="noopener">https://blog.csdn.net/HHG20171226/article/details/93524184</a><br>Python學習：socketserver實現並發<em>網絡</em>錯位的夢寐的博客-CSDN博客<br><a href="https://blog.csdn.net/HHG20171226/article/details/93711478" target="_blank" rel="noopener">https://blog.csdn.net/HHG20171226/article/details/93711478</a><br>Python Socket 编程–基于UDP的套接字<em>网络</em>错位的梦寐的博客-CSDN博客<br><a href="https://blog.csdn.net/HHG20171226/article/details/93590850" target="_blank" rel="noopener">https://blog.csdn.net/HHG20171226/article/details/93590850</a>  </p>
+<p>python tcp socket client / server examples<br><a href="https://gist.github.com/tuxfight3r/bfd95575ce34af6bd3317611dc04006c" target="_blank" rel="noopener">https://gist.github.com/tuxfight3r/bfd95575ce34af6bd3317611dc04006c</a><br>bind_socket.py<br>socket_client.py<br>socket_server.py<br>socket_server_threads.py<br>socket_server_with_select.py  </p>
+<p>其他相關參考<br>c# - Why does my python TCP server need to bind to 0.0.0.0 and not localhost or it’s IP address? - Stack Overflow<br><a href="https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its" target="_blank" rel="noopener">https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its</a><br>Python 3 TypeError: Can’t convert ‘bytes’ object to str implicitly - Mkyong.com<br><a href="https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/" target="_blank" rel="noopener">https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br>下一篇將會介紹如何用 Python 3 提供的 socketserver 來撰寫 server 端的程式，<br><a href="/python-socketserver/" title="Python socketserver 伺服器端網路通訊程式">Python socketserver 伺服器端網路通訊程式</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-tcp-socket/" data-id="cl4wu1jub00i7m1t0bwljsqjo" data-title="Python TCP Socket Server/Client 網路通訊教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-android-adb-logcat" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/android-adb-logcat/" class="article-date">
@@ -175,7 +284,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-logcat/" data-id="cl4vg0js7009bgvt0e2i6uxe0" data-title="Android adb logcat 基本用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-logcat/" data-id="cl4wu1idy009bm1t0cgryd1ll" data-title="Android adb logcat 基本用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -234,7 +343,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-kys-cpp/" data-id="cl4vg0js7009agvt0edsx2gh4" data-title="開源專案-金庸群俠傳" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-kys-cpp/" data-id="cl4wu1idy009am1t03zoire52" data-title="開源專案-金庸群俠傳" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -304,7 +413,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-erode-dilate/" data-id="cl4vg0js60099gvt09rciapra" data-title="Python OpenCV 影像侵蝕 erode 與影像膨脹 dilate" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-erode-dilate/" data-id="cl4wu1idx0099m1t0m7isay73" data-title="Python OpenCV 影像侵蝕 erode 與影像膨脹 dilate" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -369,7 +478,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-save-video/" data-id="cl4vg0js60098gvt0ghrmo97c" data-title="Python OpenCV 儲存寫入video影片到檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-save-video/" data-id="cl4wu1idx0098m1t03xbjw7k8" data-title="Python OpenCV 儲存寫入video影片到檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -427,7 +536,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/rpi-python-3/" data-id="cl4vg0js50097gvt0vih9r41u" data-title="在 Raspbian 上手動安裝 Python 3" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/rpi-python-3/" data-id="cl4wu1idx0097m1t0579atd57" data-title="在 Raspbian 上手動安裝 Python 3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a></li></ul>
@@ -482,7 +591,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-5-15/" data-id="cl4vg0js50096gvt0akc1ecf9" data-title="Qt 5.15 之後不再提供預編譯安裝包" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-5-15/" data-id="cl4wu1idw0096m1t0upz1b8ah" data-title="Qt 5.15 之後不再提供預編譯安裝包" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -546,7 +655,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-video/" data-id="cl4vg0js30095gvt0w856j6gs" data-title="Python OpenCV 讀取播放video影片檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-video/" data-id="cl4wu1idv0095m1t0i3cv4ll6" data-title="Python OpenCV 讀取播放video影片檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -604,7 +713,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/rpi-software-hardware-version/" data-id="cl4vg0js30094gvt0gib17pbz" data-title="在 Raspbian 確認軟體版本與硬體版本" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/rpi-software-hardware-version/" data-id="cl4wu1idu0094m1t0vhg87uec" data-title="在 Raspbian 確認軟體版本與硬體版本" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a></li></ul>
@@ -692,69 +801,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-lambda/" data-id="cl4vg0js30093gvt0rk2tkytt" data-title="Python lambda 運算式用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-lambda/" data-id="cl4wu1idu0093m1t0rkt1fkuz" data-title="Python lambda 運算式用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-github-sdlpal" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/github-sdlpal/" class="article-date">
-  <time datetime="2020-06-01T14:00:00.000Z" itemprop="datePublished">2020-06-01</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Github/">Github</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/github-sdlpal/">開源專案-仙劍奇俠傳</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>今天介紹Github上開源專案的仙劍奇俠傳遊戲，</p>
-<h2 id="sdlpal-sdlpal"><a href="#sdlpal-sdlpal" class="headerlink" title="sdlpal/sdlpal"></a>sdlpal/sdlpal</h2><p><a href="https://github.com/sdlpal/sdlpal" target="_blank" rel="noopener">https://github.com/sdlpal/sdlpal</a><br>星星數：<code>1.1k</code>stars<br>技術：<code>C</code>,<code>SDL</code>,<code>ffmpeg</code><br>使用 SDL 重製的中文經典遊戲「仙劍奇俠傳」，<br>也被移植到 Android 與 iOS 上，亦是你在手機上就能玩「仙劍奇俠傳」，真是有趣，<br>有機會再來分享這裡面的遊戲軟體架構吧～  </p>
-<p>其他參考<br>[1] 當Why 再也不是為什麼: [Note] Linux 下編譯 仙劍奇俠傳 遊戲 (sdlpal)。<br><a href="http://larry-why.blogspot.com/2014/09/note-linux-sdlpal.html" target="_blank" rel="noopener">http://larry-why.blogspot.com/2014/09/note-linux-sdlpal.html</a><br>[2] 仙剑奇侠传（sdlpal源码）联网研究（一） - 知乎<br><a href="https://zhuanlan.zhihu.com/p/62836580" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/62836580</a><br>[3] sdlpal仙剑源码正式研究（二） - 知乎<br><a href="https://zhuanlan.zhihu.com/p/59795137" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/59795137</a><br>[4] sdlpal仙剑源码正式研究（三） - 知乎<br><a href="https://zhuanlan.zhihu.com/p/60136163" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/60136163</a><br>[5] Maemo SDK 軟體移植初步：以 SDLPAL 為範例 | DarkRanger’s Secret Area<br><a href="https://darkranger.no-ip.org/content/maemo-sdk-%E8%BB%9F%E9%AB%94%E7%A7%BB%E6%A4%8D%E5%88%9D%E6%AD%A5%EF%BC%9A%E4%BB%A5-sdlpal-%E7%82%BA%E7%AF%84%E4%BE%8B" target="_blank" rel="noopener">https://darkranger.no-ip.org/content/maemo-sdk-%E8%BB%9F%E9%AB%94%E7%A7%BB%E6%A4%8D%E5%88%9D%E6%AD%A5%EF%BC%9A%E4%BB%A5-sdlpal-%E7%82%BA%E7%AF%84%E4%BE%8B</a></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/github-cursorjail/" title="開源專案CursorJail-滑鼠鎖定工具">開源專案CursorJail-滑鼠鎖定工具</a><br><a href="/github-2048/" title="開源專案-2048">開源專案-2048</a><br><a href="/github-tetris/" title="開源專案-tetris俄羅斯方塊">開源專案-tetris俄羅斯方塊</a><br><a href="/github-sudoku/" title="開源專案-數獨sudoku">開源專案-數獨sudoku</a><br><a href="/github-kys-cpp/" title="開源專案-金庸群俠傳">開源專案-金庸群俠傳</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-sdlpal/" data-id="cl4vg0js20092gvt0xy6ot654" data-title="開源專案-仙劍奇俠傳" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
 
     </footer>
   </div>
@@ -798,6 +848,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/lldb/">lldb 除錯教學</a>
+          </li>
+        
+          <li>
             <a href="/gdbserver/">gdbserver 遠端除錯教學</a>
           </li>
         
@@ -811,10 +865,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/android-adb-forward/">Android adb forward 通訊埠轉發用法教學</a>
-          </li>
-        
-          <li>
-            <a href="/vscode-debugging-on-mac/">macOS 使用 VS Code Debugger 除錯教學</a>
           </li>
         
       </ul>
