@@ -105,6 +105,161 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-opencv-show-image-pyqt" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-opencv-show-image-pyqt/" class="article-date">
+  <time datetime="2020-10-22T14:00:00.000Z" itemprop="datePublished">2020-10-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-opencv-show-image-pyqt/">Python OpenCV 使用 PyQt5 顯示影像圖片</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹如何使用 Python 與 PyQt5 來讀取並顯示 OpenCV 的影像圖片，在本篇將會學習到如何使用 PyQt5 寫一個簡單的視窗程式，<br>並且添加按鈕事件，把圖片影像顯示在視窗上，  </p>
+<p>本篇會學習到的內容有以下幾點，  </p>
+<ul>
+<li>建立一個 PyQt5 的視窗程式  </li>
+<li>新增 <a href="/python-pyqt-qpushbutton/" title="PyQt5 的按鈕事件">PyQt5 的按鈕事件</a>  </li>
+<li>將 OpenCV 的影像顯示在 PyQt5 視窗程式上  </li>
+<li>新增 PyQt5 的滑鼠事件  </li>
+</ul>
+<p>本篇需要的基礎知識有以下幾點，</p>
+<ul>
+<li>Python 的基礎知識，還沒學習過的可以看我之前的<a href="/python-tutorial/" title="文章">文章</a>，</li>
+<li>OpenCV 的基礎知識  </li>
+<li><a href="/python-pyqt-tutorial/" title="PyQt5 的基礎知識">PyQt5 的基礎知識</a>  
+</li>
+</ul>
+<p>以下為我的環境，  </p>
+<ul>
+<li>Ubuntu 16.04  </li>
+<li>Python 3.5.2  </li>
+</ul>
+<p>Ubuntu 用 apt 安裝 PyQt5，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install python3-pyqt5</span><br></pre></td></tr></table></figure></p>
+<p>接下來開始進入主題吧！  </p>
+<h2 id="PyQt5-顯示-OpenCV-影像圖片的視窗程式"><a href="#PyQt5-顯示-OpenCV-影像圖片的視窗程式" class="headerlink" title="PyQt5 顯示 OpenCV 影像圖片的視窗程式"></a>PyQt5 顯示 OpenCV 影像圖片的視窗程式</h2><p>這邊將開始學習怎麼建立一個 PyQt5 的視窗程式，並且在視窗顯示的同時也將影像圖片也顯示出來，<br>首先，建立一個 PyQt5 的 Dialog 視窗程式，這部份在我之前的文章介紹過，所以先跳過不介紹，<br>之後在程式啟動時，使用 <code>cv2.imread()</code> 將影像圖片讀取進來，<br>再把 OpenCV 影像格式轉成 PyQt5 可以顯示的格式，也就是轉成 QImage RGB888，<br>最後再把轉換後的影像顯示在 QLabel 上，  </p>
+<figure class="highlight python"><figcaption><span>python3-opencv-image-pyqt.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtGui <span class="keyword">import</span> QImage, QPixmap</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> QApplication, QDialog, QGridLayout, QLabel</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyDialog</span><span class="params">(QDialog)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line">        self.showImage()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.resize(<span class="number">400</span>, <span class="number">300</span>)</span><br><span class="line">        self.label = QLabel()</span><br><span class="line"></span><br><span class="line">        layout = QGridLayout(self)</span><br><span class="line">        layout.addWidget(self.label, <span class="number">0</span>, <span class="number">0</span>, <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">showImage</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.img = cv2.imread(<span class="string">'lena.jpg'</span>, <span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">if</span> self.img.size == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        height, width, channel = self.img.shape</span><br><span class="line">        bytesPerline = <span class="number">3</span> * width</span><br><span class="line">        self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()</span><br><span class="line">        self.label.setPixmap(QPixmap.fromImage(self.qImg))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    a = QApplication(sys.argv)</span><br><span class="line">    dialog = MyDialog()</span><br><span class="line">    dialog.show()</span><br><span class="line">    sys.exit(a.exec_())</span><br></pre></td></tr></table></figure>
+<p>將這個程式執行起來後，就可以看見 <code>lena.jpg</code> 這張圖片被讀取進來並顯示在視窗上啦，結果如下圖所示，<br><img src="/python-opencv-show-image-pyqt/python3-opencv-image-pyqt.jpg" width="400" title="python3-opencv-image-pyqt">  </p>
+<h2 id="PyQt5-顯示-OpenCV-影像圖片的視窗程式-加入讀取圖片的按鈕事件"><a href="#PyQt5-顯示-OpenCV-影像圖片的視窗程式-加入讀取圖片的按鈕事件" class="headerlink" title="PyQt5 顯示 OpenCV 影像圖片的視窗程式(加入讀取圖片的按鈕事件)"></a>PyQt5 顯示 OpenCV 影像圖片的視窗程式(加入讀取圖片的按鈕事件)</h2><p>上個範例已經學會最基本的顯示圖片的視窗程式囉！但是能不能讓使用者用開啟檔案對話框去選擇要顯示的圖片呢？  </p>
+<p>好！那接下來就來學習看看這功能怎麼作，以上個範例作為延伸來加入按鈕事件，讓使用者按下該按鈕後彈出開啟檔案對話框，<br>讓使用者去要顯示的影像圖片，如果選取的圖片路徑確定有效後，<br>便將該圖片利用 <code>cv2.imread()</code> 讀取進來，最後再顯示出來，<br>來看看程式怎麼寫吧！  </p>
+<figure class="highlight python"><figcaption><span>python3-opencv-image-pyqt-2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtGui <span class="keyword">import</span> QImage, QPixmap</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyDialog</span><span class="params">(QDialog)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.resize(<span class="number">400</span>, <span class="number">300</span>)</span><br><span class="line">        self.label = QLabel()</span><br><span class="line">        self.btnOpen = QPushButton(<span class="string">'Open Image'</span>, self)</span><br><span class="line"></span><br><span class="line">        layout = QGridLayout(self)</span><br><span class="line">        layout.addWidget(self.label, <span class="number">0</span>, <span class="number">0</span>, <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line">        layout.addWidget(self.btnOpen, <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        self.btnOpen.clicked.connect(self.openSlot)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">openSlot</span><span class="params">(self)</span>:</span></span><br><span class="line">        filename, _ = QFileDialog.getOpenFileName(self, <span class="string">'Open Image'</span>, <span class="string">'Image'</span>, <span class="string">'*.png *.jpg *.bmp'</span>)</span><br><span class="line">        <span class="keyword">if</span> filename <span class="keyword">is</span> <span class="string">''</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        self.img = cv2.imread(filename, <span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">if</span> self.img.size == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        self.showImage()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">showImage</span><span class="params">(self)</span>:</span></span><br><span class="line">        height, width, channel = self.img.shape</span><br><span class="line">        bytesPerline = <span class="number">3</span> * width</span><br><span class="line">        self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()</span><br><span class="line">        self.label.setPixmap(QPixmap.fromImage(self.qImg))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    a = QApplication(sys.argv)</span><br><span class="line">    dialog = MyDialog()</span><br><span class="line">    dialog.show()</span><br><span class="line">    sys.exit(a.exec_())</span><br></pre></td></tr></table></figure>
+<p>把程式執行起來，這次我們選別的 <code>fruits.jpg</code> 圖片來顯示看看，結果如下圖所示，<br><img src="/python-opencv-show-image-pyqt/python3-opencv-image-pyqt-2.jpg" width="400" title="python3-opencv-image-pyqt-2">  </p>
+<h2 id="PyQt5-顯示-OpenCV-影像圖片的視窗程式-加入影像處理的按鈕事件"><a href="#PyQt5-顯示-OpenCV-影像圖片的視窗程式-加入影像處理的按鈕事件" class="headerlink" title="PyQt5 顯示 OpenCV 影像圖片的視窗程式(加入影像處理的按鈕事件)"></a>PyQt5 顯示 OpenCV 影像圖片的視窗程式(加入影像處理的按鈕事件)</h2><p>到目前為止已經學會怎麼用開啟檔案對話框來選取想要顯示的圖片了，<br>那是不是可以再加一個按鈕事件來作一些影像處理呢？  </p>
+<p>我們就以影像模糊化這個功能為例，對於 OpenCV 圖片模糊化不熟悉的可以回去看我之前的<a href="/python-opencv-blur/" title="文章">文章</a>，<br>這邊就直接新增好 <code>processSlot</code> 按鈕事件後，並在按鈕事件裡對影像使用 <code>cv2.blur()</code> 模糊化處理，<br>之後再將處理後的影像更新在視窗上，這樣就完成了囉！<br>來看看程式怎麼寫吧！  </p>
+<figure class="highlight python"><figcaption><span>python3-opencv-image-pyqt-3.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtGui <span class="keyword">import</span> QImage, QPixmap</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyDialog</span><span class="params">(QDialog)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.resize(<span class="number">400</span>, <span class="number">300</span>)</span><br><span class="line">        self.label = QLabel()</span><br><span class="line">        self.btnOpen = QPushButton(<span class="string">'Open Image'</span>, self)</span><br><span class="line">        self.btnProcess = QPushButton(<span class="string">'Blur Image'</span>, self)</span><br><span class="line">        self.btnSave = QPushButton(<span class="string">'Save Image'</span>, self)</span><br><span class="line">        self.btnSave.setEnabled(<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">        layout = QGridLayout(self)</span><br><span class="line">        layout.addWidget(self.label, <span class="number">0</span>, <span class="number">0</span>, <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line">        layout.addWidget(self.btnOpen, <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">        layout.addWidget(self.btnProcess, <span class="number">4</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">        layout.addWidget(self.btnSave, <span class="number">4</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        self.btnOpen.clicked.connect(self.openSlot)</span><br><span class="line">        self.btnProcess.clicked.connect(self.processSlot)</span><br><span class="line">        self.btnSave.clicked.connect(self.saveSlot)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">openSlot</span><span class="params">(self)</span>:</span></span><br><span class="line">        filename, _ = QFileDialog.getOpenFileName(self, <span class="string">'Open Image'</span>, <span class="string">'Image'</span>, <span class="string">'*.png *.jpg *.bmp'</span>)</span><br><span class="line">        <span class="keyword">if</span> filename <span class="keyword">is</span> <span class="string">''</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        self.img = cv2.imread(filename, <span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">if</span> self.img.size == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        self.showImage()</span><br><span class="line">        self.btnSave.setEnabled(<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">saveSlot</span><span class="params">(self)</span>:</span></span><br><span class="line">        filename, _ = QFileDialog.getSaveFileName(self, <span class="string">'Save Image'</span>, <span class="string">'Image'</span>, <span class="string">'*.png *.jpg *.bmp'</span>)</span><br><span class="line">        <span class="keyword">if</span> filename <span class="keyword">is</span> <span class="string">''</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        cv2.imwrite(filename, self.img)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">processSlot</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.img = cv2.blur(self.img, (<span class="number">7</span>, <span class="number">7</span>))</span><br><span class="line">        self.showImage()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">showImage</span><span class="params">(self)</span>:</span></span><br><span class="line">        height, width, channel = self.img.shape</span><br><span class="line">        bytesPerline = <span class="number">3</span> * width</span><br><span class="line">        self.qImg = QImage(self.img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()</span><br><span class="line">        self.label.setPixmap(QPixmap.fromImage(self.qImg))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    a = QApplication(sys.argv)</span><br><span class="line">    dialog = MyDialog()</span><br><span class="line">    dialog.show()</span><br><span class="line">    sys.exit(a.exec_())</span><br></pre></td></tr></table></figure>
+<p>把程式執行起來，這次我們一樣選擇水果的圖片來試看看，最後模糊化的結果如下圖顯示，<br><img src="/python-opencv-show-image-pyqt/python3-opencv-image-pyqt-3.jpg" width="400" title="python3-opencv-image-pyqt-3">  </p>
+<h2 id="PyQt5-顯示-OpenCV-影像圖片的視窗程式-加入滑鼠滾輪事件來處理縮放圖片"><a href="#PyQt5-顯示-OpenCV-影像圖片的視窗程式-加入滑鼠滾輪事件來處理縮放圖片" class="headerlink" title="PyQt5 顯示 OpenCV 影像圖片的視窗程式(加入滑鼠滾輪事件來處理縮放圖片)"></a>PyQt5 顯示 OpenCV 影像圖片的視窗程式(加入滑鼠滾輪事件來處理縮放圖片)</h2><p>對圖片作影像處理時，特別常用到縮放大小、裁剪圖片，<br>在圖形gui上常常使用滑鼠來完成這些操作，<br>所以滑鼠事件也是學習的重點之一，這個範例就來示範用滑鼠來縮放大小，<br>對於 OpenCV 縮放大小不熟悉的可以回去看我之前的<a href="/python-opencv-resize/" title="文章">文章</a>，<br>這邊我們直接建立一個<code>ImageLabel</code>類別並繼承<code>QLabel</code>，<br>並且在<code>ImageLabel上</code>覆寫<code>wheelEvent</code>、<code>mouseMoveEvent</code>、<code>mousePressEvent</code>，<br>並且在裡面實作我們自己對圖片縮放大小的邏輯，<br><code>mouseMoveEvent</code>、<code>mousePressEvent</code> 在本範例並沒有使用到，這會在另一篇文章介紹，<br>這邊先關注<code>wheelEvent</code>，也就是滑鼠的滾輪事件，透過一些方法計算出滾輪滾動一格/一步<code>numSteps</code>時，進而對圖片縮放，<br>-1則縮小，1則放大，最後藉由<code>cv2.resize()</code>來完成圖片縮放，再顯示到畫面上，<br>來看看程式怎麼寫吧！  </p>
+<figure class="highlight python"><figcaption><span>python3-opencv-image-pyqt-4.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtGui <span class="keyword">import</span> QImage, QPixmap</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> QApplication, QDialog, QFileDialog, QGridLayout, QLabel, QPushButton</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ImageLabel</span><span class="params">(QLabel)</span>:</span></span><br><span class="line">    scale = <span class="number">1.0</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">showImage</span><span class="params">(self, img)</span>:</span></span><br><span class="line">        height, width, channel = img.shape</span><br><span class="line">        bytesPerline = <span class="number">3</span> * width</span><br><span class="line">        self.qImg = QImage(img.data, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()</span><br><span class="line">        self.setPixmap(QPixmap.fromImage(self.qImg))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">mousePressEvent</span><span class="params">(self,event)</span>:</span></span><br><span class="line">        self.x = event.x()</span><br><span class="line">        self.y = event.y()</span><br><span class="line">        <span class="comment">#print(str(self.x) + ' ' + str(self.y))</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">mouseMoveEvent</span><span class="params">(self, event)</span>:</span></span><br><span class="line">        self.x = event.x()</span><br><span class="line">        self.y = event.y()</span><br><span class="line">        <span class="comment">#print(str(self.x) + ' ' + str(self.y))</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wheelEvent</span><span class="params">(self, event)</span>:</span></span><br><span class="line">        numDegrees = event.angleDelta() / <span class="number">8</span></span><br><span class="line">        numSteps = numDegrees / <span class="number">15</span>       </span><br><span class="line">        <span class="comment">#print(numSteps.y())</span></span><br><span class="line">        height, width, _ = self.img.shape</span><br><span class="line">        <span class="keyword">if</span> numSteps.y() == <span class="number">-1</span>:</span><br><span class="line">            <span class="keyword">if</span> (self.scale &gt;= <span class="number">0.1</span>):</span><br><span class="line">                self.scale -= <span class="number">0.05</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">if</span> (self.scale &lt;= <span class="number">2.0</span>):</span><br><span class="line">                self.scale += <span class="number">0.05</span></span><br><span class="line">        <span class="comment">#print(self.scale)</span></span><br><span class="line">        height2 = int(height * self.scale)</span><br><span class="line">        width2 = int(width * self.scale)</span><br><span class="line">        img2 = cv2.resize(self.img, (width2, height2), interpolation=cv2.INTER_AREA)</span><br><span class="line">        self.showImage(img2)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyDialog</span><span class="params">(QDialog)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.resize(<span class="number">400</span>, <span class="number">300</span>)</span><br><span class="line">        self.label = ImageLabel()</span><br><span class="line">        <span class="comment">#self.label.setMouseTracking(True)</span></span><br><span class="line">        self.btnOpen = QPushButton(<span class="string">'Open Image'</span>, self)</span><br><span class="line">        self.btnProcess = QPushButton(<span class="string">'Blur Image'</span>, self)</span><br><span class="line">        self.btnSave = QPushButton(<span class="string">'Save Image'</span>, self)</span><br><span class="line">        self.btnSave.setEnabled(<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">        layout = QGridLayout(self)</span><br><span class="line">        layout.addWidget(self.label, <span class="number">0</span>, <span class="number">0</span>, <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line">        layout.addWidget(self.btnOpen, <span class="number">4</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">        layout.addWidget(self.btnProcess, <span class="number">4</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">        layout.addWidget(self.btnSave, <span class="number">4</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        self.btnOpen.clicked.connect(self.openSlot)</span><br><span class="line">        self.btnProcess.clicked.connect(self.processSlot)</span><br><span class="line">        self.btnSave.clicked.connect(self.saveSlot)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">openSlot</span><span class="params">(self)</span>:</span></span><br><span class="line">        filename, _ = QFileDialog.getOpenFileName(self, <span class="string">'Open Image'</span>, <span class="string">'Image'</span>, <span class="string">'*.png *.jpg *.bmp'</span>)</span><br><span class="line">        <span class="keyword">if</span> filename <span class="keyword">is</span> <span class="string">''</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        self.label.img = cv2.imread(filename, <span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">if</span> self.label.img.size == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        self.label.showImage(self.label.img)</span><br><span class="line">        height, width, _ = self.label.img.shape</span><br><span class="line">        self.label.setFixedSize(width, height)</span><br><span class="line">        self.btnSave.setEnabled(<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">saveSlot</span><span class="params">(self)</span>:</span></span><br><span class="line">        filename, _ = QFileDialog.getSaveFileName(self, <span class="string">'Save Image'</span>, <span class="string">'Image'</span>, <span class="string">'*.png *.jpg *.bmp'</span>)</span><br><span class="line">        <span class="keyword">if</span> filename <span class="keyword">is</span> <span class="string">''</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        cv2.imwrite(filename, self.label.img)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">processSlot</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.label.img = cv2.blur(self.label.img, (<span class="number">7</span>, <span class="number">7</span>))</span><br><span class="line">        self.label.showImage(self.label.img)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    a = QApplication(sys.argv)</span><br><span class="line">    dialog = MyDialog()</span><br><span class="line">    dialog.show()</span><br><span class="line">    sys.exit(a.exec_())</span><br></pre></td></tr></table></figure>
+<p>把程式執行起來，這次我們一樣選擇水果的圖片來試看看，用滑鼠滾輪來放大縮小，<br>會發現圖片會隨著滑鼠的滾輪轉動而放大或鎖小，放大後的結果如下圖顯示，<br><img src="/python-opencv-show-image-pyqt/python3-opencv-image-pyqt-4.jpg" width="400" title="python3-opencv-image-pyqt-4">  </p>
+<p>參考<br>python - Show an OpenCV image with PyQt5 - Stack Overflow<br><a href="https://stackoverflow.com/questions/57204782/show-an-opencv-image-with-pyqt5" target="_blank" rel="noopener">https://stackoverflow.com/questions/57204782/show-an-opencv-image-with-pyqt5</a><br>QWheelEvent — Qt for Python<br><a href="https://doc.qt.io/qtforpython/PySide2/QtGui/QWheelEvent.html" target="_blank" rel="noopener">https://doc.qt.io/qtforpython/PySide2/QtGui/QWheelEvent.html</a><br>PyQt5番外篇（1）：PyQt5与Opencv的小小融合 - 知乎<br><a href="https://zhuanlan.zhihu.com/p/31810054" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/31810054</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-opencv-rgb-to-gray/" title="Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)">Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)">Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-gray-to-rgb/" title="Python OpenCV 灰階轉彩色(Gray to RGB/BGR)">Python OpenCV 灰階轉彩色(Gray to RGB/BGR)</a><br><a href="/python-opencv-threshold/" title="Python OpenCV 影像二值化 Image Thresholding">Python OpenCV 影像二值化 Image Thresholding</a><br><a href="/python-opencv-blur/" title="Python OpenCV 影像平滑模糊化 blur">Python OpenCV 影像平滑模糊化 blur</a><br><a href="/python-opencv-canny/" title="Python OpenCV 影像邊緣偵測 Canny Edge Detection">Python OpenCV 影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a><br><a href="/python-opencv-rectangle/" title="Python OpenCV 畫矩形 rectangle">Python OpenCV 畫矩形 rectangle</a><br><a href="/python-opencv-polylines/" title="Python OpenCV 畫多邊形 polylines">Python OpenCV 畫多邊形 polylines</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-opencv-show-image-pyqt/" data-id="cl56wi3qc00ibaat0mvhw3iry" data-title="Python OpenCV 使用 PyQt5 顯示影像圖片" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-chatroom" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-chatroom/" class="article-date">
+  <time datetime="2020-10-19T14:00:00.000Z" itemprop="datePublished">2020-10-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-chatroom/">Python chatroom 多人聊天室</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹如何使用 Python 來撰寫 chatroom 多人聊天室的程式，在上一篇介紹了<a href="/python-tcp-socket/" title="怎麼撰寫一個基本的 TCP socket 通訊程式">怎麼撰寫一個基本的 TCP socket 通訊程式</a>，本篇開始介紹如何使用先前幾篇學習到的 python tcp socket 基礎來打造一個多人聊天室，  </p>
+<p>在多人聊天室的通訊程式設計上，通常有多執行緒(muti-threading)與多路復用(select)的兩種設計方式，以下將會介紹，  </p>
+<h2 id="server-多人聊天室伺服器端-多執行緒版本"><a href="#server-多人聊天室伺服器端-多執行緒版本" class="headerlink" title="server 多人聊天室伺服器端 (多執行緒版本)"></a>server 多人聊天室伺服器端 (多執行緒版本)</h2><p>使用多執行緒來寫多人聊天室伺服器端，每連上一個客戶端便開一個執行緒服務 <code>clientthread()</code> 這個客戶連線，  </p>
+<figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    conn, addr = server.accept()</span><br><span class="line"></span><br><span class="line">    list_of_clients.append(conn)</span><br><span class="line"></span><br><span class="line">    print(addr[<span class="number">0</span>] + <span class="string">" connected"</span>)</span><br><span class="line"></span><br><span class="line">    threading.Thread(target = clientthread, args = (conn, addr))</span><br><span class="line"></span><br><span class="line">conn.close()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure>
+<p>以下為 <code>clientthread()</code> 函式內容，簡單說就是將收到的訊息廣播給已連線的所有客戶端，<br>如果有人離線的話則處理離線的邏輯，<br><figure class="highlight python"><figcaption><span>python-chatroom-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clientthread</span><span class="params">(conn, addr)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># sends a message to the client whose user object is conn</span></span><br><span class="line">    conn.send(<span class="string">"Welcome to this chatroom!"</span>.encode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            message = conn.recv(<span class="number">2048</span>)</span><br><span class="line">            <span class="keyword">if</span> len(message) != <span class="number">0</span>:</span><br><span class="line">                print(<span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line"></span><br><span class="line">                <span class="comment"># Calls broadcast function to send message to all</span></span><br><span class="line">                message_to_send = <span class="string">"&lt;"</span> + addr[<span class="number">0</span>] + <span class="string">"&gt; "</span> + message.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">                broadcast(message_to_send, conn)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                print(<span class="string">'server closed connection.'</span>)</span><br><span class="line">                remove(conn)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            <span class="keyword">continue</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="client-多人聊天室客戶端-select版本"><a href="#client-多人聊天室客戶端-select版本" class="headerlink" title="client 多人聊天室客戶端 (select版本)"></a>client 多人聊天室客戶端 (select版本)</h2><p>使用 select，不但能同時接收訊息外，也能接收到鍵盤的輸入訊息，並把鍵盤輸入的訊息傳輸出去，<br>這兩個一收一送的動作，透過多路復用 select() 函式可以達到同時運作的功效，<br><figure class="highlight python"><figcaption><span>python-chatroom-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> socks <span class="keyword">in</span> read_sockets:</span><br><span class="line">        <span class="keyword">if</span> socks == server:</span><br><span class="line">            message = socks.recv(<span class="number">2048</span>)</span><br><span class="line">            print(message.decode(<span class="string">"utf-8"</span>))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            message = sys.stdin.readline()</span><br><span class="line">            server.send(message.encode(<span class="string">"utf-8"</span>))</span><br><span class="line">            sys.stdout.write(<span class="string">"&lt;You&gt;"</span>)</span><br><span class="line">            sys.stdout.write(message)</span><br><span class="line">            sys.stdout.flush()</span><br><span class="line">server.close()</span><br></pre></td></tr></table></figure></p>
+<p><strong>其它相關文章推薦</strong><br>下一篇會介紹如何打造一個gui圖形介面的多人聊天室<br><a href="/python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊程式">Python TCP Socket Server/Client 網路通訊程式</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-chatroom/" data-id="cl56wi2bf00a6aat0gob1nil6" data-title="Python chatroom 多人聊天室" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-check-list-empty" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-check-list-empty/" class="article-date">
@@ -155,7 +310,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-check-list-empty/" data-id="cl4wv30bf00a5yht0itlncazm" data-title="Python 檢查 list 列表是否為空" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-check-list-empty/" data-id="cl56wi2bf00a5aat0883e7lz3" data-title="Python 檢查 list 列表是否為空" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -217,7 +372,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-socketserver/" data-id="cl4wv30bf00a4yht0orh9irda" data-title="Python socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-socketserver/" data-id="cl56wi2be00a4aat0kwa8m8g5" data-title="Python socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -283,7 +438,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-integer-multiplication-overflow/" data-id="cl4wv30be00a3yht00wjie5fm" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-integer-multiplication-overflow/" data-id="cl56wi2be00a3aat0v0k3nhdy" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -344,7 +499,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-vim-ctags-cscope/" data-id="cl4wv30be00a2yht0br0r57nz" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-vim-ctags-cscope/" data-id="cl56wi2bd00a2aat0bt3bx3s1" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -434,7 +589,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-vim-shortcuts/" data-id="cl4wv30bd00a1yht0sgkqs727" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-vim-shortcuts/" data-id="cl56wi2bd00a1aat06h1kz92e" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -500,7 +655,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multiple-inheritance/" data-id="cl4wv30bd00a0yht0bh38kcuv" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-multiple-inheritance/" data-id="cl56wi2bc00a0aat00738sdmo" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -555,7 +710,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="cl4wv30bc009zyht0mzrh0dun" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="cl56wi2bc009zaat0j8p30wgu" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -622,175 +777,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="cl4wv30bc009yyht07fyo3k58" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="cl56wi2bb009yaat0486kr2d9" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-qt-shortcuts" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/qt-shortcuts/" class="article-date">
-  <time datetime="2020-09-14T14:00:00.000Z" itemprop="datePublished">2020-09-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/qt-shortcuts/">Qt Creator 常用快捷鍵</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇記錄一下 Qt 常用快捷鍵，在trace code時善用快捷鍵會快很多，效率大幅提升。  </p>
-<p>以下快捷鍵以 Qt 5.12.2 為主，其他版本應該大同小異，  </p>
-<table>
-<thead>
-<tr>
-<th>名稱</th>
-<th>Windows</th>
-<th>macOS</th>
-<th>Linux</th>
-<th>備註</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>跳至定義處 (Follow Symbol Under Cursor)</td>
-<td><code>F2</code></td>
-<td><code>F2</code></td>
-<td><code>F2</code></td>
-<td>Go to Definition</td>
-</tr>
-<tr>
-<td>返回 (Go Back)</td>
-<td><code>Alt</code>+ <code>←</code></td>
-<td><code>Alt</code>+ <code>←</code>試不出來</td>
-<td><code>Alt</code>+ <code>←</code></td>
-<td></td>
-</tr>
-<tr>
-<td>前進 (Go Forward)</td>
-<td><code>Alt</code> +<code>→</code></td>
-<td><code>Alt</code> +<code>→</code></td>
-<td><code>Alt</code> +<code>→</code></td>
-<td></td>
-</tr>
-<tr>
-<td>查看誰有使用到它 (Find References to Symbol Under Cursor</td>
-<td><code>Ctrl</code>+<code>Shift</code>+<code>U</code></td>
-<td></td>
-<td><code>Ctrl</code>+<code>Shift</code>+<code>U</code></td>
-<td>舊版叫Find Usage</td>
-</tr>
-<tr>
-<td>左右括號之間跳轉 (Go to Bracket)</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<p>透過下列路徑可以搜尋查詢更多的快捷鍵或更換，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Tools &gt; Options &gt; Environment &gt; Keyboard &gt; Keyboard Shortcuts</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/linux-vim-shortcuts/" title="vim 常用快捷鍵">vim 常用快捷鍵</a><br><a href="/qt-read-text-file/" title="[Qt] 讀檔，讀取 txt 文字檔">[Qt] 讀檔，讀取 txt 文字檔</a><br><a href="/qt-write-text-file/" title="[Qt] 寫檔，寫入 txt 文字檔">[Qt] 寫檔，寫入 txt 文字檔</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-shortcuts/" data-id="cl4wv30bb009xyht05rpudj6u" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-kill-by-name" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-kill-by-name/" class="article-date">
-  <time datetime="2020-09-10T14:00:00.000Z" itemprop="datePublished">2020-09-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-kill-by-name/">Linux kill 指令砍掉指定的 process name</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹如何使用 kill 指令來砍掉特定的應用程式名稱 process name，<br>kill 指令用法是後面是接 process id，例如：<code>kill &lt;pid&gt;</code>，或者<code>kill -9 &lt;pid&gt;</code>，<br>但通常我們都只知道應用程式的名稱，所以通常一般直接使用<code>killall &lt;process_name&gt;</code>或<code>pkill -f &lt;process_name&gt;</code>就可砍掉 process，  </p>
-<h2 id="但假設今天有個情況非得要用-kill-來砍-process-name-要怎麼做？"><a href="#但假設今天有個情況非得要用-kill-來砍-process-name-要怎麼做？" class="headerlink" title="但假設今天有個情況非得要用 kill 來砍 process name 要怎麼做？"></a>但假設今天有個情況非得要用 kill 來砍 process name 要怎麼做？</h2><p>所以通常會用先用 ps 列出所有 process 再 grep 該 process name 才知道 pid 是多少，<br>今天來個組合技搭配 awk 讓這件事在一行指令就完成，假設我們要砍的應用程式名稱為 a.out，<br>最後要串接<code>kill &lt;pid&gt;</code>指令如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps -A | grep a.out | awk &apos;&#123;print $2&#125;&apos; | xargs kill</span><br></pre></td></tr></table></figure></p>
-<p>或者使用<code>kill -9 &lt;pid&gt;</code>的形式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps -A | grep a.out | awk &apos;&#123;print $2&#125;&apos; | xargs kill -9</span><br></pre></td></tr></table></figure></p>
-<p>其他參考<br>Linux 使用 應用程式名稱 來砍掉 Process | Tsung’s Blog<br><a href="https://blog.longwin.com.tw/2012/06/linux-kill-process-by-name-2012/" target="_blank" rel="noopener">https://blog.longwin.com.tw/2012/06/linux-kill-process-by-name-2012/</a><br>linux - How can I kill a process by name instead of PID? - Stack Overflow<br><a href="https://stackoverflow.com/questions/160924/how-can-i-kill-a-process-by-name-instead-of-pid" target="_blank" rel="noopener">https://stackoverflow.com/questions/160924/how-can-i-kill-a-process-by-name-instead-of-pid</a><br>在 Linux 中使用 kill、killall 與 xkill 等指令強迫關閉程式 - G. T. Wang<br><a href="https://blog.gtwang.org/linux/linux-kill-killall-xkill/" target="_blank" rel="noopener">https://blog.gtwang.org/linux/linux-kill-killall-xkill/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-sed/" title="Linux sed 字串取代用法與範例">Linux sed 字串取代用法與範例</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a><br><a href="/linux-ag/" title="Linux ag 搜尋字串用法與範例(比 grep 還快)">Linux ag 搜尋字串用法與範例(比 grep 還快)</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-kill-by-name/" data-id="cl4wv30bb009wyht0fk1k60md" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -834,6 +824,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/shell-script-check-if-directory-exists/">Shell Script 判斷目錄資料夾是否存在</a>
+          </li>
+        
+          <li>
+            <a href="/android-adb-reverse/">Android adb reverse 通訊埠轉發用法教學</a>
+          </li>
+        
+          <li>
             <a href="/lldb/">LLDB 除錯教學</a>
           </li>
         
@@ -843,14 +841,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/gdb/">gdb 除錯教學</a>
-          </li>
-        
-          <li>
-            <a href="/vscode-debugging-on-ubuntu/">Ubuntu 使用 VS Code Debugger 除錯教學</a>
-          </li>
-        
-          <li>
-            <a href="/android-adb-forward/">Android adb forward 通訊埠轉發用法教學</a>
           </li>
         
       </ul>

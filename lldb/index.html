@@ -35,7 +35,7 @@
 <meta property="og:site_name" content="ShengYu Talk">
 <meta property="og:description" content="本篇 ShengYu 介紹 LLDB 除錯教學，LLDB Debugger 是 LLVM 專案的除錯元件。在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 LLDB 來替 C/C++ 程式偵錯。   以下 LLDB 除錯教學的內容大概分為這幾部分，    clang/clang++ 編">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2022-06-27T14:54:39.490Z">
+<meta property="og:updated_time" content="2022-07-01T01:16:06.418Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LLDB 除錯教學">
 <meta name="twitter:description" content="本篇 ShengYu 介紹 LLDB 除錯教學，LLDB Debugger 是 LLVM 專案的除錯元件。在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 LLDB 來替 C/C++ 程式偵錯。   以下 LLDB 除錯教學的內容大概分為這幾部分，    clang/clang++ 編">
@@ -152,13 +152,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
 <h2 id="LLDB-進行除錯"><a href="#LLDB-進行除錯" class="headerlink" title="LLDB 進行除錯"></a>LLDB 進行除錯</h2><p>接著使用 lldb 指令對 a.out 進行除錯，執行 <code>lldb ./a.out</code> 指令進入 lldb 交互介面，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ lldb ./a.out </span><br><span class="line">(lldb) target create <span class="string">"./a.out"</span></span><br><span class="line">Current executable <span class="built_in">set</span> to <span class="string">'./a.out'</span> (x86_64).</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <p>輸入 <code>b main.cpp:14</code> 插入中斷點在 main.cpp 的 14 行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b main.cpp:14</span><br><span class="line">Breakpoint 1: <span class="built_in">where</span> = a.out`main + 188 at main.cpp:14, address = 0x0000000000400c2c</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<p>輸入 <code>b</code> 印出目前設定的中斷點，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = &apos;main.cpp&apos;, line = 14, exact_match = 0, locations = 1</span><br><span class="line">  1.1: where = a.out`main + 188 at main.cpp:14, address = a.out[0x0000000000400c2c], unresolved, hit count = 0 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<p>輸入 <code>b</code> 印出目前設定的中斷點，這個指令跟 gdb 有所不同，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = &apos;main.cpp&apos;, line = 14, exact_match = 0, locations = 1</span><br><span class="line">  1.1: where = a.out`main + 188 at main.cpp:14, address = a.out[0x0000000000400c2c], unresolved, hit count = 0 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
 <p>按下 <code>r</code> 開始執行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(lldb) r</span><br><span class="line">Process 24479 launched: <span class="string">'./a.out'</span> (x86_64)</span><br><span class="line">hello world</span><br><span class="line">Process 24479 stopped</span><br><span class="line">* thread <span class="comment">#1, name = 'a.out', stop reason = breakpoint 1.1</span></span><br><span class="line">    frame <span class="comment">#0: 0x0000000000400c2c a.out`main at main.cpp:14</span></span><br><span class="line">   11       &#125;</span><br><span class="line">   12  </span><br><span class="line">   13       std::cout &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">-&gt; 14       std::cout &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">   15       std::cout &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line">   16  </span><br><span class="line">   17       <span class="built_in">return</span> 0;</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <p>再次輸入 <code>b</code> 印出目前設定的中斷點，可以看到中斷點被觸發幾次，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = <span class="string">'main.cpp'</span>, line = 14, exact_match = 0, locations = 1, resolved = 1, hit count = 1</span><br><span class="line">  1.1: <span class="built_in">where</span> = a.out`main + 188 at main.cpp:14, address = 0x0000000000400c2c, resolved, hit count = 1 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <p>接著按 <code>c</code> 繼續執行直到程式結束，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) c</span><br><span class="line">Process 24479 resuming</span><br><span class="line">sum=10</span><br><span class="line">end</span><br><span class="line">Process 24479 exited with status = 0 (0x00000000)</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以下為 lldb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>b</code>：印出目前設定的中斷點<br><code>po &lt;變數名稱&gt;</code>：印出目前變數的值，例如：<code>po sum</code><br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
+<p>以下為 lldb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>b</code>：印出目前設定的中斷點（這個指令跟 gdb 有所不同）<br><code>po &lt;變數名稱&gt;</code>：印出目前變數的值，例如：<code>po sum</code><br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
 <p>以上就是 LLDB 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
 <p>其他參考<br>LLDB 玩樂筆記. 最近在寫 uTensor 的 CNN Demo 文章，code 是可以… | by Dboy Liao | Medium<br><a href="https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff" target="_blank" rel="noopener">https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff</a>  </p>
 <p><strong>相關主題</strong><br><a href="/gdb/" title="gdb 除錯教學">gdb 除錯教學</a><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a>  </p>
@@ -166,7 +166,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/lldb/" data-id="cl4wv30f900hgyht0ip9kpvum" data-title="LLDB 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/lldb/" data-id="cl56wi2f500hhaat07ign3o0y" data-title="LLDB 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -188,6 +188,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- ads-2 -->
     
 <nav id="article-nav">
+  
+    <a href="/android-adb-reverse/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android adb reverse 通訊埠轉發用法教學
+        
+      </div>
+    </a>
   
   
     <a href="/gdbserver/" id="article-nav-older" class="article-nav-link-wrap">
@@ -228,6 +237,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/shell-script-check-if-directory-exists/">Shell Script 判斷目錄資料夾是否存在</a>
+          </li>
+        
+          <li>
+            <a href="/android-adb-reverse/">Android adb reverse 通訊埠轉發用法教學</a>
+          </li>
+        
+          <li>
             <a href="/lldb/">LLDB 除錯教學</a>
           </li>
         
@@ -237,14 +254,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/gdb/">gdb 除錯教學</a>
-          </li>
-        
-          <li>
-            <a href="/vscode-debugging-on-ubuntu/">Ubuntu 使用 VS Code Debugger 除錯教學</a>
-          </li>
-        
-          <li>
-            <a href="/android-adb-forward/">Android adb forward 通訊埠轉發用法教學</a>
           </li>
         
       </ul>
