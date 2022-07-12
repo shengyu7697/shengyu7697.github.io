@@ -105,6 +105,177 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-vscode-debugging-on-mac" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/vscode-debugging-on-mac/" class="article-date">
+  <time datetime="2022-06-06T14:00:00.000Z" itemprop="datePublished">2022-06-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/vscode-debugging-on-mac/">macOS 使用 VS Code Debugger 除錯教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹在 macOS 使用 Visual Studio Code(VS Code) 設定 C/C++ 除錯的環境，  </p>
+<p>以下 macOS 使用 VS Code 設定除錯環境的內容大概分為  </p>
+<ul>
+<li>VS Code 除錯環境設定  </li>
+<li>VS Code 安裝 CodeLLDB extension  </li>
+<li>VS Code 偵錯前先編譯  </li>
+<li>VS Code 開啟 make 專案  </li>
+<li>VS Code 開啟 cmake 專案  </li>
+<li>VS Code 錯誤排除  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2 id="VS-Code-除錯環境設定"><a href="#VS-Code-除錯環境設定" class="headerlink" title="VS Code 除錯環境設定"></a>VS Code 除錯環境設定</h2><p>我的 VS Code 版本為 1.67.2，macOS 版本為 10.13.4，<br>在新專案下按下 F5 時如果沒有 <code>.vscode/launch.json</code> 設定檔的話，會跳出一些選項讓你選擇，如圖中的 C++ (GDB/LLDB)<br><img src="/vscode-debugging-on-mac/vscode-debugging-1.png" title="vscode lldb debugging">  </p>
+<p>新專案下沒有 <code>.vscode/tasks.json</code> 設定檔的話，也會跳出選項讓你選擇，由於 macOS 早就已經棄用 gcc，所以這邊是選擇使用 clang，<br><img src="/vscode-debugging-on-mac/vscode-debugging-2.png" title="vscode lldb debugging">  </p>
+<p>會在資料夾下產生 .vscode/launch.json 設定如下，如果沒有的話自己手動新增也可以，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"(lldb) Launch"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppdbg"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>編譯 C/C++ 時記得加上 <code>-g</code> 選項，按 F5 執行 Start Debugging 後，<br>出現 <code>Unable to start debugging. LLDB exited unexpectedly with exit code 137 (0x89).</code> 如下圖所示，<br><img src="/vscode-debugging-on-mac/vscode-debugging-3.png" title="vscode lldb debugging">  </p>
+<p>看到<a href="https://blog.csdn.net/weixin_42147726/article/details/112537822" target="_blank" rel="noopener">這篇文章</a>分享將 <code>.vscode/launch.json</code> 的 type 從原本的 <code>cppdbg</code> 改成 <code>lldb</code> 就可以使用了，type 改成 <code>lldb</code> 後像這樣，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"(lldb) Launch"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>將 <code>.vscode/launch.json</code> 的 type 改成 <code>lldb</code> 後，再按 F5 執行 Start Debugging 後，<br>出現 <code>Configured debug type &#39;lldb&#39; is not supported.</code> 如下圖所示，<br><img src="/vscode-debugging-on-mac/vscode-debugging-4.png" title="vscode lldb debugging">  </p>
+<p>看到<a href="https://github.com/vknabel/vscode-swift-development-environment/issues/29" target="_blank" rel="noopener">這篇 troyibm 這位網友</a>他也遇到同樣的問題，結果是安裝了 CodeLLDB 擴充套件就可以使用了！那我們來安裝 CodeLLDB 擴充套件吧。  </p>
+<h2 id="VS-Code-安裝-CodeLLDB-extension"><a href="#VS-Code-安裝-CodeLLDB-extension" class="headerlink" title="VS Code 安裝 CodeLLDB extension"></a>VS Code 安裝 CodeLLDB extension</h2><p>接下來就安裝<a href="https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb" target="_blank" rel="noopener">CodeLLDB</a>擴充套件，<br>網頁有寫支援的平台，  </p>
+<ul>
+<li>Linux with glibc 2.18+ for x86_64, aarch64 or armhf,  </li>
+<li>MacOS X 10.10+ for x86_64 and 11.0+ for arm64,  </li>
+<li>Windows 10 for x86_64.  </li>
+</ul>
+<p>看起來三大平台都有支援。  </p>
+<p>接著再次 F5 執行 Start Debugging 終於成功了！<br><img src="/vscode-debugging-on-mac/vscode-debugging-5.png" title="vscode lldb debugging">  </p>
+<p>經過這次安裝 CodeLLDB extension 後，之後在新專案要 按 F5 時會有 LLDB 新的選項，可以直接選擇 LLDB，<br><img src="/vscode-debugging-on-mac/vscode-debugging-6.png" title="vscode lldb debugging">  </p>
+<p>選擇 LLDB 後產生的 launch.json 如下，然後記得修改 program 裡的名稱，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Debug"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/&lt;your program&gt;"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceFolder&#125;"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="VS-Code-偵錯前先編譯"><a href="#VS-Code-偵錯前先編譯" class="headerlink" title="VS Code 偵錯前先編譯"></a>VS Code 偵錯前先編譯</h2><p>VS Code 按下 F5 要先編譯再啟動偵錯的話，要在 launch.json 加上 preLaunchTask，如下範例，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Debug"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceFolder&#125;"</span>,</span><br><span class="line">            <span class="attr">"preLaunchTask"</span>: <span class="string">"C/C++: clang++ build"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>launch.json 的 <code>&quot;preLaunchTask&quot;: &quot;C/C++: clang++ build&quot;</code> 是對應到 tasks.json 的 label 名稱，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppbuild"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: clang++ build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"/usr/bin/clang++"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [</span><br><span class="line">                <span class="string">"-fdiagnostics-color=always"</span>,</span><br><span class="line">                <span class="string">"-g"</span>,</span><br><span class="line">                <span class="string">"$&#123;file&#125;"</span>,</span><br><span class="line">                <span class="string">"-o"</span>,</span><br><span class="line">                <span class="string">"$&#123;fileDirname&#125;/a.out"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"options"</span>: &#123;</span><br><span class="line">                <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>這樣按 F5 啟動偵錯前會先編譯，成功編譯才會啟動偵錯。  </p>
+<p>詳細的 <code>.vscode</code> 設定可以參考 <a href="https://github.com/shengyu7697/vscode-debugging/tree/master/mac-lldb" target="_blank" rel="noopener">https://github.com/shengyu7697/vscode-debugging/tree/master/mac-lldb</a>  </p>
+<p>其他參考<br><a href="https://code.visualstudio.com/docs/cpp/launch-json-reference" target="_blank" rel="noopener">launch.json 參數說明</a><br><a href="https://blog.csdn.net/ZCShouCSDN/article/details/60466707" target="_blank" rel="noopener">Visual Studio Code （VSCode） 之 C/C++ 调试配置详解</a><br><a href="https://ithelp.ithome.com.tw/articles/10190238" target="_blank" rel="noopener">[VSCode] Visual Studio Code 執行 C++ (2) - IntelliSense + Building + Debugging</a>  </p>
+<h2 id="make-專案"><a href="#make-專案" class="headerlink" title="make 專案"></a>make 專案</h2><p>make 專案編譯時會使用 Makefile 來執行裡面的腳本，所以 <code>.vscode/tasks.json</code> 不能在使用 <code>cppbuild</code> type 要換成 <code>shell</code> 來執行 make 這個指令，  </p>
+<p>然後 command 換成 <code>cd ${workspaceFolder}; /usr/bin/make</code>，如下所示，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: make build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;; /usr/bin/make"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"options"</span>: &#123;</span><br><span class="line">                <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>這邊也可以參考 <a href="https://stackoverflow.com/questions/57808398/using-visual-studio-code-tasks-to-automate-c-makefiles-in-multiple-folders" target="_blank" rel="noopener">Stack Overflow</a> 跟 <a href="https://gist.github.com/mattmc3/c021236c92c03b61d92c0ff233940643" target="_blank" rel="noopener">github gist</a> 兩篇的其他種做法。  </p>
+<h2 id="cmake-專案"><a href="#cmake-專案" class="headerlink" title="cmake 專案"></a>cmake 專案</h2><p>cmake 專案在 generate 時，要使用 <code>cmake -DCMAKE_BUILD_TYPE=Debug ..</code> 給定編譯 Debug 版本，之後編譯出來的執行檔才有除錯的資訊，或者在 CMakeLists.txt 直接寫死是 Debug 版本，<br><figure class="highlight cmake"><figcaption><span>CMakeLists.txt</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(CMAKE_BUILD_TYPE <span class="string">"Debug"</span>)</span><br></pre></td></tr></table></figure></p>
+<p><code>.vscode/tasks.json</code> 這邊可以參考<a href="https://blog.csdn.net/u012372584/article/details/123010410" target="_blank" rel="noopener">這篇</a>的寫法，將 cmake generate 與 cmake build 分成兩個 task，再用 C/C++: cmake build 這個 task 將前兩者串起來，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: cmake build"</span>,</span><br><span class="line">            <span class="attr">"dependsOrder"</span>: <span class="string">"sequence"</span>,</span><br><span class="line">            <span class="attr">"dependsOn"</span>:[<span class="string">"cmake generate"</span>, <span class="string">"cmake build"</span>]</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"cmake generate"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;/build; /usr/bin/env cmake .."</span>,</span><br><span class="line">            <span class="attr">"args"</span>: []</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"cmake build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;/build; /usr/bin/env cmake --build ."</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line"></span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"options"</span>: &#123;</span><br><span class="line">        <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceRoot&#125;/build"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="VS-Code-錯誤排除"><a href="#VS-Code-錯誤排除" class="headerlink" title="VS Code 錯誤排除"></a>VS Code 錯誤排除</h2><p>如果在除錯的過程中逐步執行發現跳不到原始碼遇到 <code>Could not load source ... &#39;SourceRequest&#39; not supported</code> 這樣的錯誤訊息的話，可能就是找不到原始碼的路徑，可能就是因為執行檔跟原始碼擺放路徑不同，解決方式就是在 launch.json 使用 <code>sourceFileMap</code> 將正確的路徑對應好，再次啟動就可以正確找到了～～  </p>
+<p>以上就是 macOS 使用 VS Code Debugger 除錯介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br><a href="https://www.youtube.com/watch?v=G9gnSGKYIg4" target="_blank" rel="noopener">Debug a C++ project in VS Code - Youtube</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/vscode-debugging-on-ubuntu/" title="Ubuntu 使用 VS Code Debugger 除錯教學">Ubuntu 使用 VS Code Debugger 除錯教學</a><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/vscode-add-cpp-include-path/" title="VS Code 新增 C++ 標頭檔路徑">VS Code 新增 C++ 標頭檔路徑</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="cl5ial06m00jqt5t06n2lslhs" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-mac-openssl" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/mac-openssl/" class="article-date">
+  <time datetime="2022-06-02T14:00:00.000Z" itemprop="datePublished">2022-06-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/mac-openssl/">macOS 2 種安裝 OpenSSL 的方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇紀錄 macOS 下 2 種安裝 OpenSSL 的方法，第一種為使用 homebrew 安裝，第二種為下載 OpenSSL 原始碼編譯安裝。  </p>
+<p>我的使用環境為 macOS 10.13.4，Xcode 9.1。  </p>
+<ul>
+<li>使用 homebrew 安裝 OpenSSL  </li>
+<li>下載 OpenSSL 3 原始碼編譯與安裝 OpenSSL  </li>
+<li>OpenSSL 3 原始碼編譯失敗解決方法  </li>
+<li>下載 OpenSSL 1.1.1 原始碼編譯與安裝 OpenSSL  </li>
+</ul>
+<h2 id="使用-homebrew-安裝-OpenSSL"><a href="#使用-homebrew-安裝-OpenSSL" class="headerlink" title="使用 homebrew 安裝 OpenSSL"></a>使用 homebrew 安裝 OpenSSL</h2><p>以下為 macOS homebrew 安裝 OpenSSL 的指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install openssl</span><br></pre></td></tr></table></figure></p>
+<p>或者指定 OpenSSL 安裝的版本，例如：指定安裝 OpenSSL 1.1.1，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install openssl@1.1.1o</span><br></pre></td></tr></table></figure></p>
+<p>或者指定安裝 OpenSSL 3，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install openssl@3</span><br></pre></td></tr></table></figure></p>
+<p>brew 安裝 OpenSSL 3 會編譯失敗的可以參考<a href="https://github.com/openssl/openssl/issues/15937" target="_blank" rel="noopener">這篇</a>，在 <a href="https://github.com/Homebrew/homebrew-core/blob/master/Formula/openssl%403.rb" target="_blank" rel="noopener">openssl@3.rb</a> 的 configure_args 函式裡的 args 新增 no-asm 選項，然後再次安裝 <code>brew install openssl@3</code>，<br><figure class="highlight ruby"><figcaption><span>/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/openssl@3.rb</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">configure_args</span></span></span><br><span class="line">  args = <span class="string">%W[</span></span><br><span class="line"><span class="string">    --prefix=<span class="subst">#&#123;prefix&#125;</span></span></span><br><span class="line"><span class="string">    --openssldir=<span class="subst">#&#123;openssldir&#125;</span></span></span><br><span class="line"><span class="string">    --libdir=<span class="subst">#&#123;lib&#125;</span></span></span><br><span class="line"><span class="string">    no-ssl3</span></span><br><span class="line"><span class="string">    no-ssl3-method</span></span><br><span class="line"><span class="string">    no-zlib</span></span><br><span class="line"><span class="string">    no-asm</span></span><br><span class="line"><span class="string">  ]</span></span><br></pre></td></tr></table></figure></p>
+<p>或者改裝 OpenSSL 1.1.1 的版本。</p>
+<h2 id="下載-OpenSSL-3-原始碼編譯與安裝-OpenSSL"><a href="#下載-OpenSSL-3-原始碼編譯與安裝-OpenSSL" class="headerlink" title="下載 OpenSSL 3 原始碼編譯與安裝 OpenSSL"></a>下載 OpenSSL 3 原始碼編譯與安裝 OpenSSL</h2><p>這邊介紹 OpenSSL 3 的編譯安裝方式，使用下列指令下載 OpenSSL 3.0.3 原始碼並且解壓縮，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.openssl.org/source/openssl-3.0.3.tar.gz</span><br><span class="line">tar xvf openssl-3.0.3.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，如果不用 shared 的方式則 <code>./config no-shared</code> 即可，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-3.0.3</span><br><span class="line">./config shared</span><br><span class="line">#./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">make -j4</span><br><span class="line">make test</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<h2 id="OpenSSL-3-原始碼編譯失敗解決方法"><a href="#OpenSSL-3-原始碼編譯失敗解決方法" class="headerlink" title="OpenSSL 3 原始碼編譯失敗解決方法"></a>OpenSSL 3 原始碼編譯失敗解決方法</h2><p>我的 macOS 10.13.4 會出現這樣的編譯錯誤訊息，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">crypto/bn/rsaz-3k-avx512.s:1283:12: error: register %ymm20 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm20,320(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1284:12: error: register %ymm21 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm21,352(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1285:12: error: register %ymm22 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm22,384(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1286:12: error: register %ymm23 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm23,416(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1287:12: error: register %ymm24 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm24,448(%rdi)</span><br><span class="line">           ^~~~~~</span><br><span class="line">crypto/bn/rsaz-3k-avx512.s:1288:12: error: register %ymm25 is only available with AVX512</span><br><span class="line"> vmovdqu64 %ymm25,480(%rdi)</span><br><span class="line">           ^~~~~~</span><br></pre></td></tr></table></figure></p>
+<p>檢查 Xcode 版本，我的是 Xcode 9.1，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ xcodebuild -version</span><br><span class="line">Xcode 9.1</span><br><span class="line">Build version 9B55</span><br></pre></td></tr></table></figure></p>
+<p><a href="https://github.com/openssl/openssl/issues/15937" target="_blank" rel="noopener">這篇</a>下面的網友提供了一個解決方法 workaround，<br>就是在 configure 時加入 <code>no-asm</code> 的選項，這樣就可以編譯過了，但是似乎這個方法就沒法得到好的效能，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./config shared no-asm</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure></p>
+<p>使用 <code>make test</code> 進行測試，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make test</span><br></pre></td></tr></table></figure></p>
+<p>在 <code>make install</code> 安裝到系統之前，使用 <code>openssl version</code> 指令測試執行 openssl 是否成功，出現找不到 libssl.3.dylib 動態函式庫的錯誤訊息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./apps/openssl version</span><br><span class="line">dyld: Library not loaded: /usr/local/lib/libssl.3.dylib</span><br><span class="line">  Referenced from: /Users/sheng/Desktop/github/openssl/./apps/openssl</span><br><span class="line">  Reason: image not found</span><br><span class="line">Abort trap: 6</span><br></pre></td></tr></table></figure></p>
+<p>設定 DYLD_LIBRARY_PATH 要載入動態函式庫的路徑，因為 libssl.3.dylib 在這個編譯的目錄下，所以就設定一下 libssl.3.dylib 目錄的路徑(相對路徑或絕對路徑都可)，這樣就成功執行起來了，macOS 的 DYLD_LIBRARY_PATH 是對應到 linux 的 LD_LIBRARY_PATH，在 macOS 下使用 LD_LIBRARY_PATH 是無效的，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ DYLD_LIBRARY_PATH=&quot;./&quot; ./apps/openssl version</span><br><span class="line"># or</span><br><span class="line">$ DYLD_LIBRARY_PATH=&quot;/Users/shengyu/openssl-3.0.3&quot; ./apps/openssl version</span><br><span class="line">OpenSSL 3.1.0-dev  (Library: OpenSSL 3.1.0-dev )</span><br></pre></td></tr></table></figure></p>
+<h2 id="下載-OpenSSL-1-1-1-原始碼編譯與安裝-OpenSSL"><a href="#下載-OpenSSL-1-1-1-原始碼編譯與安裝-OpenSSL" class="headerlink" title="下載 OpenSSL 1.1.1 原始碼編譯與安裝 OpenSSL"></a>下載 OpenSSL 1.1.1 原始碼編譯與安裝 OpenSSL</h2><p>這邊也順便介紹一下的 OpenSSL 1.1.1x 的編譯安裝方式，基本上跟 OpenSSL 3 沒什麼太大差異，使用下列指令下載 OpenSSL 1.1.1o 原始碼並且解壓縮，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz</span><br><span class="line">tar xvf openssl-1.1.1o.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，如果不用 shared 的方式則 <code>./config no-shared</code> 即可，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-1.1.1o</span><br><span class="line">./config shared</span><br><span class="line">#./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">make -j4</span><br><span class="line">make test</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>OpenSSL 1.1.1o 我可以順利編譯過沒有遇到 OpenSSL 3 的 AVX512 的問題。  </p>
+<p>其他參考<br>OpenSSL master (and 3.0 branch) won’t build on MacOS 10.11 (El Capitan) · Issue #16670 · openssl/openssl<br><a href="https://github.com/openssl/openssl/issues/16670" target="_blank" rel="noopener">https://github.com/openssl/openssl/issues/16670</a>  </p>
+<p>DYLD_LIBRARY_PATH 的相關討論<br>language agnostic - Is it OK to use DYLD_LIBRARY_PATH on Mac OS X? And, what’s the dynamic library search algorithm with it? - Stack Overflow<br><a href="https://stackoverflow.com/questions/3146274/is-it-ok-to-use-dyld-library-path-on-mac-os-x-and-whats-the-dynamic-library-s" target="_blank" rel="noopener">https://stackoverflow.com/questions/3146274/is-it-ok-to-use-dyld-library-path-on-mac-os-x-and-whats-the-dynamic-library-s</a><br>How do I configure the LD_LIBRARY_PATH on Linux and DYLD_LIBRARY_PATH on MAC OS X to point to MCR?<br><a href="https://www.mathworks.com/matlabcentral/answers/473971-how-do-i-configure-the-ld_library_path-on-linux-and-dyld_library_path-on-mac-os-x-to-point-to-mcr" target="_blank" rel="noopener">https://www.mathworks.com/matlabcentral/answers/473971-how-do-i-configure-the-ld_library_path-on-linux-and-dyld_library_path-on-mac-os-x-to-point-to-mcr</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/ubuntu-openssl/" title="Ubuntu 2 種安裝 OpenSSL 的方法">Ubuntu 2 種安裝 OpenSSL 的方法</a><br><a href="/openssl-aes-encryption/" title="OpenSSL AES encryption 對稱式加密指令用法與範例">OpenSSL AES encryption 對稱式加密指令用法與範例</a><br><a href="/cpp-openssl-aes/" title="C/C++ OpenSSL AES encryption/decryption 加密解密範例">C/C++ OpenSSL AES encryption/decryption 加密解密範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cl5iakyxx00hbt5t0mwtf4yvl" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ubuntu-spotify" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/ubuntu-spotify/" class="article-date">
@@ -158,7 +329,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cl56wi2f100haaat0ilpf07yv" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cl5iakyxx00hat5t08eho5iw1" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -230,7 +401,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cl56wi2f100h9aat0dy985ron" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cl5iakyxw00h9t5t0i1fng40j" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -291,7 +462,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cl56wi2f000h8aat0xyfkr3vi" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cl5iakyxv00h8t5t0bbqb18mp" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -353,7 +524,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cl56wi2f000h7aat065uzauhi" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cl5iakyxu00h7t5t06e0v09mt" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -424,7 +595,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cl56wi2f000h6aat0vhbddz3q" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cl5iakyxu00h6t5t04ordiek0" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -491,7 +662,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-snprintf/" data-id="cl56wi2ez00h5aat0bu3qjvbq" data-title="C/C++ snprintf 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-snprintf/" data-id="cl5iakyxt00h5t5t0xs56xgny" data-title="C/C++ snprintf 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -558,7 +729,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sprintf/" data-id="cl56wi2ez00h4aat0mdm0wn8k" data-title="C/C++ sprintf 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sprintf/" data-id="cl5iakyxp00h4t5t0tvnffkp2" data-title="C/C++ sprintf 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -624,156 +795,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-memcmp/" data-id="cl56wi2ey00h2aat0z8jxgza9" data-title="C/C++ memcmp 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-memcmp/" data-id="cl5iakyxp00h3t5t0pzcjd15r" data-title="C/C++ memcmp 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-strncmp" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-strncmp/" class="article-date">
-  <time datetime="2022-04-21T14:00:00.000Z" itemprop="datePublished">2022-04-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-strncmp/">C/C++ strncmp 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ strncmp 用法與範例，strncmp 是用來作字串比較的函式，除了可以用來判斷兩個字串是否相同以外，還可以判斷兩字串前 n 個字元是否相等，以下介紹如何使用 strncmp 函式。  </p>
-<p>C/C++ 要判斷 c-style 字串前 n 個字元是否相同可以使用 strncmp，要使用 strncmp 的話需要引入的標頭檔 <code>&lt;string.h&gt;</code>，如果要使用 C++ 的標頭檔則是引入 <code>&lt;cstring&gt;</code>，<br>strncmp 函式原型為<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">strncmp</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * str1, <span class="keyword">const</span> <span class="keyword">char</span> * str2, <span class="keyword">size_t</span> num)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p><code>strncmp()</code> 如果判斷兩字串相同的話會回傳 0，這必須牢記因為很容易混搖，很多程式 bug 就是這樣產生的，所以 <code>if (strncmp(str1, str2, strlen(str1))) printf(&quot;not equal\n&quot;);</code> 這樣寫的話結果會是 not equal 唷！來看看下面的 strncmp 用法範例吧！<br><figure class="highlight cpp"><figcaption><span>cpp-strncmp.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strncmp.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str1 = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str2 = <span class="string">"hello world"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">strncmp</span>(str1, str2, <span class="built_in">strlen</span>(str1)) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"equal\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"not equal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">equal</span><br></pre></td></tr></table></figure></p>
-<p>再來看看字串不相同的例子，strncmp 是大小寫都判斷不同的，<br><figure class="highlight cpp"><figcaption><span>cpp-strncmp2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strncmp2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str1 = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str2 = <span class="string">"HELLO WORLD"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> ret = <span class="built_in">strncmp</span>(str1, str2, <span class="built_in">strlen</span>(str1));</span><br><span class="line">    <span class="keyword">if</span> (ret &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"str1 is greater than str2\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"str1 is less than str2\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123; <span class="comment">// ret == 0</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"str1 is equal to str2\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">str1 is greater than str2</span><br></pre></td></tr></table></figure></p>
-<p>再來判斷兩字串前 n 個字元是否相同，以下範例是判斷兩字串前 6 個字元是否相同，<br><figure class="highlight cpp"><figcaption><span>cpp-strncmp3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strncmp3.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str1 = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str2 = <span class="string">"hello WORLD"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">strncmp</span>(str1, str2, <span class="number">6</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"equal\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"not equal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">equal</span><br></pre></td></tr></table></figure></p>
-<p>以上就是 C/C++ strncmp 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
-<p>其它參考<br>strncmp - C++ Reference<br><a href="https://www.cplusplus.com/reference/cstring/strncmp/" target="_blank" rel="noopener">https://www.cplusplus.com/reference/cstring/strncmp/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-string-compare/" title="C/C++ 字串比較的3種方法">C/C++ 字串比較的3種方法</a><br><a href="/cpp-strcmp/" title="C/C++ strcmp 用法與範例">C/C++ strcmp 用法與範例</a><br><a href="/cpp-memcmp/" title="C/C++ memcmp 用法與範例">C/C++ memcmp 用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strncmp/" data-id="cl56wi2ey00h3aat0k8mmrwxy" data-title="C/C++ strncmp 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-openssl-aes" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-openssl-aes/" class="article-date">
-  <time datetime="2022-04-07T14:00:00.000Z" itemprop="datePublished">2022-04-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-openssl-aes/">C/C++ OpenSSL AES encryption/decryption 加密解密範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard) 演算法，AES 是目前主流的加密演算法，常見對稱式加密演算法的應用像是將檔案壓成壓縮時 (zip/7-zip) 如果要設定密碼加密就會使用到。  </p>
-<h2 id="C-C-OpenSSL-AES-256-CBC"><a href="#C-C-OpenSSL-AES-256-CBC" class="headerlink" title="C/C++ OpenSSL AES-256 CBC"></a>C/C++ OpenSSL AES-256 CBC</h2><p>AES 提供了幾種模式，分別為 ECB、CBC、CFB、CTR、OFB 五種模式，這邊介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，在 openssl 可以常看到 encrypt 與 decrypt 關鍵字，encrypt 表示加密，decrypt 表示解密，在本範例中我們會使用 <code>AES_cbc_encrypt()</code> 做加密，解密的話則是使用 <code>aes_cbc_decrypt()</code>。  </p>
-<p>AES 的區塊長度固定為 128 bits (16 bytes)，即多輪且每次對 128 bits 明文區塊作加密，而不是一次對整個明文作加密，明文長度不是 128 bits 的整數倍的話，剩餘不足 128 bits 的區塊會用填充 (Padding) 的方式，填充 (Padding) 的方式有好幾種，最簡單就是用零填充 ZeroBytePadding，常用填充方式為 PKCS5Padding 或 PKCS7Padding，需要注意的是加密用哪一種填充方式，解密時也要同用一種填充方式。  </p>
-<p>key 就是加密過程中會用到的金鑰，AES 的 key 金鑰長度則可以是 128、192 或 256 bits，也就是平常大家說的 AES-128、AES-192 或 AES-256，以安全性來說 AES-256 安全性最高。  </p>
-<p>iv 就是初始向量 (Initialization Vector)，在加密過程中，原本相同明文區塊使用相同金鑰加密後的密文會相同，加入 iv 可讓每次的相同明文區塊使用相同金鑰加密後的密文不同，<br>用來防止同樣的內容產生同樣的加密資料，解密時用的 iv 必須跟加密的 iv 內容一樣，長度必須為 16 bytes (128 bits)，在使用 <code>AES_cbc_encrypt()</code> 加密時會修改 iv 的數值，所以在 <code>aes_cbc_decrypt()</code> 解密時務必確認是用相同的 iv。  </p>
-<p>另外 openssl command 還提供了 salt 的選項，salt 就是加鹽的意思，是個隨機產生的資料，在密碼 password 推導成金鑰 key 時可以使用，使用 salt 的話相同的密碼 password 就不會每次都推導成相同的金鑰 key 了。  </p>
-<p>以下的範例是直接設定金鑰 key 與 iv，沒有使用 salt，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;openssl/aes.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; key = from_hex_string(<span class="string">"2B7E151628AED2A6ABF7158809CF4F3C"</span>);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv = from_hex_string(<span class="string">"000102030405060708090A0B0C0D0E0F"</span>);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; plain = from_hex_string(<span class="string">"6BC1BEE22E409F96E93D7E117393172A"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; cipher = aes_128_cbc_encrypt(plain, key, iv);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"plain  : "</span> &lt;&lt; to_hex_string(plain) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"cipher : "</span> &lt;&lt; to_hex_string(cipher) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"iv     : "</span> &lt;&lt; to_hex_string(iv) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; decrypt_text = aes_128_cbc_decrypt(cipher, key, iv);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"decrypt: "</span> &lt;&lt; to_hex_string(decrypt_text) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>加密的函式，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; aes_128_cbc_encrypt(<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;plain,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;key,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv) &#123;</span><br><span class="line">    </span><br><span class="line">    AES_KEY ctx;</span><br><span class="line">    AES_set_encrypt_key(key.data(), <span class="number">128</span>, &amp;ctx);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; cipher(<span class="number">16</span>);</span><br><span class="line">    AES_cbc_encrypt(plain.data(), cipher.data(), <span class="number">16</span>, &amp;ctx, iv.data(), AES_ENCRYPT);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> cipher;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>解密的函式，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; aes_128_cbc_decrypt(<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;cipher,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;key,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv) &#123;</span><br><span class="line"></span><br><span class="line">    AES_KEY ctx;</span><br><span class="line">    AES_set_decrypt_key(key.data(), <span class="number">128</span>, &amp;ctx);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; plain(<span class="number">16</span>);</span><br><span class="line">    AES_cbc_encrypt(cipher.data(), plain.data(), <span class="number">16</span>, &amp;ctx, iv.data(), AES_DECRYPT);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> plain;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">plain  : 6BC1BEE22E409F96E93D7E117393172A</span><br><span class="line">cipher : 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">iv     : 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">decrypt: 6BC1BEE22E409F96E93D7E117393172A</span><br></pre></td></tr></table></figure></p>
-<p>這邊列出一些網路上一些 AES 的 Test Vectors 測試向量可以測試看看加密後資料是否一致，這邊使用 <a href="https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html" target="_blank" rel="noopener">Apple</a> 提供的 4 組 AES-128-CBC Test Vectors，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 000102030405060708090A0B0C0D0E0F</span><br><span class="line">Plaintext = 6BC1BEE22E409F96E93D7E117393172A</span><br><span class="line">Ciphertext = 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">Plaintext = AE2D8A571E03AC9C9EB76FAC45AF8E51</span><br><span class="line">Ciphertext = 5086CB9B507219EE95DB113A917678B2</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 5086CB9B507219EE95DB113A917678B2</span><br><span class="line">Plaintext = 30C81C46A35CE411E5FBC1191A0A52EF</span><br><span class="line">Ciphertext = 73BED6B8E3C1743B7116E69E22229516</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 73BED6B8E3C1743B7116E69E22229516</span><br><span class="line">Plaintext = F69F2445DF4F9B17AD2B417BE66C3710</span><br><span class="line">Ciphertext = 3FF1CAA1681FAC09120ECA307586E1A7</span><br></pre></td></tr></table></figure></p>
-<p>將這些 Key、IV、Plaintext 替換程式中的值，再看看程式執行完的 Ciphertext 是否一致。  </p>
-<p>加密前，計算原始明文長度如果使用 strlen 的話會有個缺點，strlen 是計算到 <code>&#39;\0&#39;</code> 結束字元為止，如果原始明文資料中間就有包含 <code>&#39;\0&#39;</code> 的話就會被 strlen 給截斷，那麼結果就是只會加密 <code>&#39;\0&#39;</code> 前面這一段，所以通常還是要傳入真正的原始明文資料長度，而不是使用 strlen  去計算明文長度。  </p>
-<h2 id="Padding-填充"><a href="#Padding-填充" class="headerlink" title="Padding 填充"></a>Padding 填充</h2><p>以 PKCS5Padding 或 PKCS7Padding 為例，假設 block size 為 16 byte，那麼明文資料長度不足 16 的倍數就需要填充，如果明文資料長度是 15/31/47 byte 的話就填充 1 byte，填充的數值為 1，如果明文資料長度是 14/30/46 byte 的話就填充 2 byte，填充的數值為 2，如果明文資料長度是 13/29/45 byte 的話就填充 3 byte，填充的數值為 3，等等依此類推。  </p>
-<p>如果明文資料長度剛好是 16 的整數倍就額外填充 16 byte，填充的數值為 16，這一步很重要而且是必須的！為什麼明文資料長度為 16 整數倍時還要多填充 16 byte 呢？因為這樣解密出來明文才能區分最後的 byte 資料是填充的資料而不是原始明文資料的一部分。舉個例子，假設我原始明文資料長度為 16 且最後 1 個 byte 為 1，如果不填充的話，經過加密再解密回來時，那要怎麼知道資料的最後 1 個 byte 的 1 是填充還是原始明文資料呢？解決方法就是明文長度是整數倍時還是進行填充。  </p>
-<p>以下以 block size 為 4 byte 為例，那麼填充的各種結果會是這樣，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DD DD DD DD | DD DD DD 01</span><br><span class="line">DD DD DD DD | DD DD 02 02</span><br><span class="line">DD DD DD DD | DD 03 03 03</span><br><span class="line">DD DD DD DD | 04 04 04 04</span><br></pre></td></tr></table></figure></p>
-<p>PKCS5Padding 與 PKCS7Padding 在實作中基本上是完全相同的，只是 PKCS5Padding 是用來處理 block size 長度為 8 byte (64 bit)，所以 AES block size 為 16 的話是要使用 PKCS7Padding 才比較正確。  </p>
-<h2 id="C-C-OpenSSL-AES-256-CBC-使用-EVP-API"><a href="#C-C-OpenSSL-AES-256-CBC-使用-EVP-API" class="headerlink" title="C/C++ OpenSSL AES-256 CBC 使用 EVP API"></a>C/C++ OpenSSL AES-256 CBC 使用 EVP API</h2><p>後來 openssl 還有推出了 EVP 的 API，EVP 的 API 提供了所有對稱式加密演算法的統一介面，對開發者來說就可以很輕易的就換成其他演算法，另外 EVP API 還有硬體加速的部分，關於 EVP API 的討論可以看看<a href="https://stackoverflow.com/questions/9889492/how-to-do-encryption-using-aes-in-openssl" target="_blank" rel="noopener">這篇</a>與<a href="https://stackoverflow.com/questions/10366950/openssl-using-evp-vs-algorithm-api-for-symmetric-crypto" target="_blank" rel="noopener">這篇</a>，下一篇就介紹怎麼用 EVP API 來寫 AES-256 CBC。  </p>
-<p>C++ class that interfaces to OpenSSL ciphers – Joe’s Blog<br><a href="https://joelinoff.com/blog/?p=664" target="_blank" rel="noopener">https://joelinoff.com/blog/?p=664</a><br><a href="https://github.com/jlinoff/openssl-aes-cipher" target="_blank" rel="noopener">https://github.com/jlinoff/openssl-aes-cipher</a><br>這個人寫了一個 C++ Cipher class for OpenSSL AES-256-CBC，</p>
-<hr>
-<p>其他參考<br>進階加密標準 - 維基百科，自由的百科全書<br><a href="https://zh.wikipedia.org/wiki/%E9%AB%98%E7%BA%A7%E5%8A%A0%E5%AF%86%E6%A0%87%E5%87%86" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E9%AB%98%E7%BA%A7%E5%8A%A0%E5%AF%86%E6%A0%87%E5%87%86</a><br>高級加密標准AES的工作模式（ECB、CBC、CFB、OFB）_天天向上99的博客-CSDN博客_aes cfb<br><a href="https://blog.csdn.net/charleslei/article/details/48710293" target="_blank" rel="noopener">https://blog.csdn.net/charleslei/article/details/48710293</a><br><a href="https://mp.weixin.qq.com/s?__biz=MzI1MTIzMzI2MA==&amp;mid=2650561454&amp;idx=1&amp;sn=dd91cdd8f3853fe07e1f2d02f4f126a9&amp;chksm=f1feed2dc689643bc143bc9462cc36315843a96e1babe372216375808148c43258278723749a&amp;scene=21#wechat_redirect" target="_blank" rel="noopener">漫画：什么是 AES 算法？</a><br><a href="https://mp.weixin.qq.com/s/zayzFr1h5HIIcWq9xGefkQ?" target="_blank" rel="noopener">漫画：AES 算法的底层原理</a>  </p>
-<p>填充模式<br>Padding (cryptography) - Wikipedia<br><a href="https://en.wikipedia.org/wiki/Padding_(cryptography" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Padding_(cryptography</a>)<br>Day 22. 加密演算法要注意的那些毛 (二) - 填充模式 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天<br><a href="https://ithelp.ithome.com.tw/articles/10250386" target="_blank" rel="noopener">https://ithelp.ithome.com.tw/articles/10250386</a><br>(瞭解 PKCS#5 的 PKCS#7 的差別)<br>cryptography - How does PKCS7 not lose data? - Stack Overflow<br><a href="https://stackoverflow.com/questions/7447242/how-does-pkcs7-not-lose-data" target="_blank" rel="noopener">https://stackoverflow.com/questions/7447242/how-does-pkcs7-not-lose-data</a>  </p>
-<p>Salt and IV 的差異<br>encryption - Passphrase, Salt and IV, do I need all of these? - Stack Overflow<br><a href="https://stackoverflow.com/questions/1905112/passphrase-salt-and-iv-do-i-need-all-of-these" target="_blank" rel="noopener">https://stackoverflow.com/questions/1905112/passphrase-salt-and-iv-do-i-need-all-of-these</a><br>encryption - Why would you need a salt for AES-CBS when IV is already randomly generated and stored with the encrypted data? - Information Security Stack Exchange<br><a href="https://security.stackexchange.com/questions/48000/why-would-you-need-a-salt-for-aes-cbs-when-iv-is-already-randomly-generated-and" target="_blank" rel="noopener">https://security.stackexchange.com/questions/48000/why-would-you-need-a-salt-for-aes-cbs-when-iv-is-already-randomly-generated-and</a>  </p>
-<p>AES Test Vectors 測試向量<br><a href="https://const.net.cn/682.html" target="_blank" rel="noopener">aes 加密算法 测试向量(Test Vectors)示例 - 天行常</a><br><a href="https://github.com/Anexsoft/Bolt-CMS/blob/master/vendor/passwordlib/passwordlib/test/Data/Vectors/aes-ofb.test-vectors" target="_blank" rel="noopener">https://github.com/Anexsoft/Bolt-CMS/blob/master/vendor/passwordlib/passwordlib/test/Data/Vectors/aes-ofb.test-vectors</a><br><a href="https://boringssl.googlesource.com/boringssl/+/2490/crypto/cipher/test/cipher_test.txt" target="_blank" rel="noopener">https://boringssl.googlesource.com/boringssl/+/2490/crypto/cipher/test/cipher_test.txt</a><br><a href="https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html" target="_blank" rel="noopener">https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/openssl-aes-encryption/" title="OpenSSL AES encryption 對稱式加密指令用法與範例">OpenSSL AES encryption 對稱式加密指令用法與範例</a><br><a href="/ubuntu-openssl/" title="Ubuntu 2 種安裝 OpenSSL 的方法">Ubuntu 2 種安裝 OpenSSL 的方法</a><br><a href="/mac-openssl/" title="macOS 2 種安裝 OpenSSL 的方法">macOS 2 種安裝 OpenSSL 的方法</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-openssl-aes/" data-id="cl56wi3rb00jmaat0nn45romj" data-title="C/C++ OpenSSL AES encryption/decryption 加密解密範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
 
     </footer>
   </div>
@@ -786,7 +811,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/67/">67</a><a class="extend next" rel="next" href="/page/3/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/68/">68</a><a class="extend next" rel="next" href="/page/3/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -817,6 +842,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-vector-char-to-string/">C++ std::vector&lt;char&gt; 轉 std::string 的 2 種方法</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-string-to-vector-char/">C++ std::string 轉 std::vector&lt;char&gt; 的 2 種方法</a>
+          </li>
+        
+          <li>
             <a href="/shell-script-check-if-directory-exists/">Shell Script 判斷目錄資料夾是否存在</a>
           </li>
         
@@ -826,14 +859,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/lldb/">LLDB 除錯教學</a>
-          </li>
-        
-          <li>
-            <a href="/gdbserver/">gdbserver 遠端除錯教學</a>
-          </li>
-        
-          <li>
-            <a href="/gdb/">gdb 除錯教學</a>
           </li>
         
       </ul>
@@ -852,7 +877,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">139</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">224</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">141</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">224</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
