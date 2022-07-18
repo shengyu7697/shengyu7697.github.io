@@ -105,6 +105,237 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-async" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-async/" class="article-date">
+  <time datetime="2020-02-08T14:00:00.000Z" itemprop="datePublished">2020-02-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-async/">C++ std::async 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::async 非同步函式的用法教學，並提供一些入門常用的範例程式碼。  </p>
+<p>首先介紹 std::async 的兩種模式，分為 async 與 deferred，白話一點的解釋如下：<br>std::launch::async：非同步模式，當下就建立執行緒去運算生成資料，當別人來跟我要資料時我可能已經運算完這些資料了(在呼叫 std::async 時建立新執行緒去執行運算)。<br>std::launch::deferred：拖延/懶惰模式，別人來跟我要資料時，我才去建立執行緒運算生成這些資料(在呼叫 std::async 時還不會建立新執行緒，而是呼叫 std::future 的函式時才開始建立新執行緒去運算執行）。<br><strong>需要引入的標頭檔</strong>：<code>&lt;future&gt;</code>  </p>
+<p>本篇內容將分為：  </p>
+<ul>
+<li><strong>範例1. async (async policy)</strong>  </li>
+<li><strong>範例2. async (deferred policy)</strong>  </li>
+<li><strong>範例3. async (default policy)</strong>  </li>
+<li><strong>async 與 thread 的差異之處</strong>  </li>
+</ul>
+<h2 id="範例1-async-async-policy"><a href="#範例1-async-async-policy" class="headerlink" title="範例1. async (async policy)"></a>範例1. async (async policy)</h2><p>以下範例為 async policy 的示範，中譯叫非同步策略，意思是同時進行，main() 主執行緒呼叫 std::async 建構子立即返回後即繼續執行，std::async 會將這個 foo() 丟到另外的執行緒去執行，所以以下的範例輸出將會有兩種情形，一種是主執行緒很快的就印出 <code>--1--</code>，另一種情形是先印出 <code>a3</code> 再印出 <code>--1--</code>。<br><figure class="highlight cpp"><figcaption><span>std-async1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async1.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a1 = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::async, foo, <span class="string">"a1"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    a1.get();</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a1--1--</span><br><span class="line"></span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>or<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">a1</span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="範例2-async-deferred-policy"><a href="#範例2-async-deferred-policy" class="headerlink" title="範例2. async (deferred policy)"></a>範例2. async (deferred policy)</h2><p>以下範例是 async 使用 deferred policy 這個策略，什麼是deferred policy 呢？deferred policy 就是拖延/懶惰模式，簡單說就是別人來跟我要資料時，我才去運算生產/運算這些資料，這裡的 wait() 或者 get() 就是別人來跟我要資料的比喻。<br>當 a2.get() or a2.wait() 被呼叫時，才去同步執行 foo() 印出 “a2”。<br>future 的結果有三種方式：<br><code>get()</code>：等待非同步執行結束並回傳結果。<br><code>wait()</code>：等待非同步執行結束，沒有回傳值。<br><code>wait_for()</code>：超過等待時間回傳結果。<br><figure class="highlight cpp"><figcaption><span>std-async2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a2 = <span class="built_in">std</span>::async(<span class="built_in">std</span>::launch::deferred, foo, <span class="string">"a2"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    a2.wait(); <span class="comment">// 印出 a2</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">--2--</span><br><span class="line">a2</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>這個功能在實作爬蟲時特別好用，例如：一次同時爬 n 個網站。  </p>
+<hr>
+<h2 id="範例3-async-default-policy"><a href="#範例3-async-default-policy" class="headerlink" title="範例3. async (default policy)"></a>範例3. async (default policy)</h2><p>以下為 default policy 的範例，default policy 就是 async policy 或 deferred policy 兩種其中一種，基本上 default policy 就是前兩種範例的混合體囉！所以在輸出的結果上也會有兩種情形。<br><figure class="highlight cpp"><figcaption><span>std-async3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-async3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; str &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> a3 = <span class="built_in">std</span>::async(foo, <span class="string">"a3"</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--1--\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--2--\n"</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"--3--\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a3--1--</span><br><span class="line"></span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<p>or<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--1--</span><br><span class="line">a3</span><br><span class="line">--2--</span><br><span class="line">--3--</span><br></pre></td></tr></table></figure></p>
+<h2 id="async-與-thread-的差異之處"><a href="#async-與-thread-的差異之處" class="headerlink" title="async 與 thread 的差異之處"></a>async 與 thread 的差異之處</h2><p>要取得運算結果時，使用 thread 要取得運算結果通常是在全域變數宣告一個變數，之後使用 join() 再將得到這個變數值，過程比較繁瑣些，使用 async 的話，可以透過回傳的 future 去取得這個運算結果，非常方便。  </p>
+<p>接下來下篇會介紹實際上什麼情況會需要用到 async 與應用場合及範例。  </p>
+<hr>
+<p>參考<br>[1] std::async - cppreference.com - C++ Reference<br><a href="https://en.cppreference.com/w/cpp/thread/async" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/thread/async</a><br>[2] async - C++ Reference<br><a href="http://www.cplusplus.com/reference/future/async/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/future/async/</a><br>[3] C++11 程式的平行化：async 與 future<br><a href="https://kheresy.wordpress.com/2016/03/14/async-and-future-in-c11/" target="_blank" rel="noopener">https://kheresy.wordpress.com/2016/03/14/async-and-future-in-c11/</a><br>[4] C++ 使用 Async 非同步函數開發平行化計算程式教學<br><a href="https://blog.gtwang.org/programming/cpp-11-async-function-parallel-computing-tutorial/" target="_blank" rel="noopener">https://blog.gtwang.org/programming/cpp-11-async-function-parallel-computing-tutorial/</a><br>[5] C++並發實戰13：std::future、std::async、std::promise、std::packaged_task - wanghualin033的博客 - CSDN博客<br><a href="https://blog.csdn.net/wanghualin033/article/details/89421221" target="_blank" rel="noopener">https://blog.csdn.net/wanghualin033/article/details/89421221</a><br>[6] Futures with std::async<br><a href="http://jakascorner.com/blog/2016/02/futures.html" target="_blank" rel="noopener">http://jakascorner.com/blog/2016/02/futures.html</a><br>[7] std::async 的两个坑 - 知乎<br><a href="https://zhuanlan.zhihu.com/p/39757902" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/39757902</a><br>在 std::future 解構時會 block 直到非同步的執行結束，所以用 lambda expression 時需注意。  </p>
+<hr>
+<p><strong>相關文章</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-async/" data-id="cl5qucs39007e1rt0drv7ep2j" data-title="C++ std::async 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-std-find" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-find/" class="article-date">
+  <time datetime="2020-02-06T14:00:00.000Z" itemprop="datePublished">2020-02-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-find/">C++ std::find 搜尋用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::find 搜尋/尋找的用法教學，C++ find 常用於容器裡搜尋，例如：傳統陣列 array 或 vector 等其他容器，<br>在使用 C++ STL 容器時需要搜尋/尋找就可以使 std::find，學習後可以說是方便許多，C++ 最常用到的就是在 vector 裡 find 搜尋，這邊把常用到的用法與範例紀錄一下。  </p>
+<p>以下內容將分為這幾部分，  </p>
+<ul>
+<li>範例1. 在傳統陣列尋找  </li>
+<li>範例2. 在 C++ STL vector 容器尋找  </li>
+<li>範例3. 使用 std::find_if 函式來尋找  </li>
+</ul>
+<p><strong>需要引入的標頭檔</strong>：<code>&lt;algorithm&gt;</code></p>
+<h2 id="範例1-在傳統陣列尋找"><a href="#範例1-在傳統陣列尋找" class="headerlink" title="範例1. 在傳統陣列尋找"></a>範例1. 在傳統陣列尋找</h2><p>這邊示範 c++ 使用 std::find 在傳統陣列裡搜尋目標數值，例如我要搜尋整數 3 有沒有在這個陣列裡，<br><figure class="highlight cpp"><figcaption><span>std-find1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-find1.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> arr[] = &#123;<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> *p = <span class="built_in">std</span>::find(arr, arr+<span class="number">4</span>, <span class="number">3</span>); <span class="comment">// find 3</span></span><br><span class="line">    <span class="keyword">if</span> (p == arr+<span class="number">4</span>) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"not find\n"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"found "</span> &lt;&lt; *p &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">found 3</span><br></pre></td></tr></table></figure></p>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="範例2-在-C-STL-vector-容器尋找"><a href="#範例2-在-C-STL-vector-容器尋找" class="headerlink" title="範例2. 在 C++ STL vector 容器尋找"></a>範例2. 在 C++ STL vector 容器尋找</h2><p>這邊示範 c++ 使用 std::find 在 std::vector 容器裡搜尋目標數值，使用 std::find 傳入 vector 後，在 std::find 的第一個參數與第二個參數指定搜尋範圍後，第三個參數為欲搜尋的數值，  </p>
+<p>最後判斷一下，如果迭代到 vector 最後一個元素的話代表沒有搜尋找到該數值，  </p>
+<p>例如我要搜尋整數 10 有沒有在這個 vector 裡，<br><figure class="highlight cpp"><figcaption><span>std-find2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-find2.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v = &#123;<span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">10</span>, <span class="number">12</span>, <span class="number">14</span>, <span class="number">16</span>, <span class="number">18</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator it = <span class="built_in">std</span>::find(v.begin(), v.end(), <span class="number">10</span>); <span class="comment">// find 10</span></span><br><span class="line">    <span class="keyword">if</span> (it != v.end())</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"found "</span> &lt;&lt; *it &lt;&lt; <span class="string">", index: "</span> &lt;&lt; <span class="built_in">std</span>::distance(v.begin(), it) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"not find\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">found 10, index: 4</span><br></pre></td></tr></table></figure></p>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="範例3-使用-std-find-if-函式來尋找"><a href="#範例3-使用-std-find-if-函式來尋找" class="headerlink" title="範例3. 使用 std::find_if 函式來尋找"></a>範例3. 使用 std::find_if 函式來尋找</h2><p>這個範例是使用 std::find_if 在 std::vector 容器搜尋目標數值，功能跟 std::find 很像所以這邊也介紹一下，差別在 std::find_if 的第三的參數是放入謂詞(pred)，  </p>
+<p>例如我要搜尋整數 5 有沒有在這個 vector 裡，這裡我們示範自己寫的 <code>equal_5</code> 謂詞，<br><figure class="highlight cpp"><figcaption><span>std-find3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-find3.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">smallthan_5</span><span class="params">(T value)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> value &lt; <span class="number">5</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">equal_5</span><span class="params">(T value)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> value == <span class="number">5</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v;</span><br><span class="line">    v.push_back(<span class="number">2</span>);</span><br><span class="line">    v.push_back(<span class="number">4</span>);</span><br><span class="line">    v.push_back(<span class="number">3</span>);</span><br><span class="line">    v.push_back(<span class="number">5</span>);</span><br><span class="line">    v.push_back(<span class="number">6</span>);</span><br><span class="line">	</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator it = find_if(v.begin(), v.end(), equal_5&lt;<span class="keyword">int</span>&gt;);</span><br><span class="line">    <span class="keyword">if</span> (it != v.end())</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"found "</span> &lt;&lt; *it &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"not find\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">found 5</span><br></pre></td></tr></table></figure></p>
+<p>不想自己寫謂詞，你也可以使用內建的 <code>equal_to&lt;type&gt;()</code> 謂詞像這樣寫，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::placeholders::_1;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator it = find_if(v.begin(), v.end(), bind(equal_to&lt;&gt;(), _1, <span class="number">5</span>));</span><br></pre></td></tr></table></figure></p>
+<p>或這樣寫，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator it = find_if(v.begin(), v.end(), bind2nd(equal_to&lt;<span class="keyword">int</span>&gt;(), <span class="number">5</span>));</span><br></pre></td></tr></table></figure></p>
+<p>你還可以使用 lambda 表達式像這樣寫，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator it = find_if(v.begin(), v.end(), [](<span class="keyword">int</span> value) &#123; <span class="keyword">return</span> value == <span class="number">5</span>; &#125;);</span><br></pre></td></tr></table></figure></p>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>以上就是 C++ std::find 搜尋用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br>[1] std::find, std::find_if, std::find_if_not - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/algorithm/find" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/algorithm/find</a><br>[2] find - C++ Reference<br><a href="http://www.cplusplus.com/reference/algorithm/find/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/algorithm/find/</a><br>[3] std::find in C++ - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/std-find-in-cpp/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/std-find-in-cpp/</a><br>[4] C++ find()函数用法(一般用于vector的查找)<br><a href="https://blog.csdn.net/zhangweijiqn/article/details/9107571" target="_blank" rel="noopener">https://blog.csdn.net/zhangweijiqn/article/details/9107571</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/std-unordered_map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-random_shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/std-shared_ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/std-async/" title="std::async 用法與範例">std::async 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-find/" data-id="cl5qucs38007d1rt0m9msa849" data-title="C++ std::find 搜尋用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-std-mutex" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-mutex/" class="article-date">
+  <time datetime="2020-02-05T14:00:00.000Z" itemprop="datePublished">2020-02-05</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-mutex/">std::mutex 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8106207149031244"
+     data-ad-slot="4194519399"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::mutex 的用法教學，並提供一些入門的 std::mutex C++ 範例程式碼，std::mutex 算是多執行緒中常用到的基本功能，mutex 用來上鎖一段多執行緒會交互存取的程式區塊，確保同一時間內只有一個執行緒能夠存取這段程式區塊，避免程式發生不預期的意外狀況，這裡把常用到的用法與範例在這邊紀錄一下，建議閱讀以下文章前需先對<a href="/std-thread/" title="建立 std::thread 多執行緒">建立 std::thread 多執行緒</a>有一定程度的熟悉。  </p>
+<p>std::mutex 通常不單獨使用而是搭配使用，例如：std::lock_guard、std::unique_lock、std::scoped_lock(C++17)，其中最常搭配 std::lock_guard 一起使用。  </p>
+<p><strong>需要引入的標頭檔</strong>：<code>&lt;mutex&gt;</code>  </p>
+<h2 id="範例-多執行緒呼叫同一個函式-沒有-mutex-鎖"><a href="#範例-多執行緒呼叫同一個函式-沒有-mutex-鎖" class="headerlink" title="範例. 多執行緒呼叫同一個函式(沒有 mutex 鎖)"></a>範例. 多執行緒呼叫同一個函式(沒有 mutex 鎖)</h2><p>以下範例是多執行緒最基本也是最常遇見的情形，main 建立了兩個執行緒並且會同時存取 print 函式的資源，<br>print 會將帶入的參數 c 字元印 n 次，且每次印完會將 g_count 全域變數的次數加1，print 函式最後再將這 g_count 全域變數印出來。<br>第一個執行緒為 t1 執行緒，會印出 10 個 A，<br>第二個執行緒為 t2 執行緒，會印出 5 個 B，<br>如果我們今天想讓 print 某一時間只能某個執行緒來執行存取的話，<br>我們來看看如果沒有 mutex 的保護臨界區，這個程式的輸出會是怎樣。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> g_count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">print</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; c;</span><br><span class="line">        g_count++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"count="</span> &lt;&lt; g_count &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(print, <span class="number">10</span>, <span class="string">'A'</span>)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(print, <span class="number">5</span>, <span class="string">'B'</span>)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果沒上鎖的話，可能造成不預期的輸出，如下<code>count=5A</code>所示，t2 執行緒的 g_count 還沒來得及印完<code>\n</code>，另一個執行緒 t1 已經開始搶著印了。<br>另外補充一下，t1 與 t2 誰先執行並沒有一定誰先誰後，每次執行的結果都有可能不同。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BBBBB</span><br><span class="line">count=5A</span><br><span class="line">AAAAAAAAA</span><br><span class="line">count=15</span><br></pre></td></tr></table></figure></p>
+<h2 id="範例-多執行緒呼叫同一個函式-有-mutex-鎖"><a href="#範例-多執行緒呼叫同一個函式-有-mutex-鎖" class="headerlink" title="範例. 多執行緒呼叫同一個函式(有 mutex 鎖)"></a>範例. 多執行緒呼叫同一個函式(有 mutex 鎖)</h2><p>根據上面的範例進行延伸修改，因為這兩個執行緒都共同存取 g_count 這個全域變數，如果要讓執行結果符合預期的話，這邊需要上鎖，<br>已確保同一時間內只有一個執行緒能夠存取這個 g_count 全域變數，當有執行緒占用時，其它執行緒要存取該資源時，就會被擋住，<br>直到該資源被執行緒釋放後，才能被其它執行緒存取。</p>
+<p>這裡我們在 print 函式裡使用 <code>g_mutex.lock()</code> 手動上鎖，<br>並且在 print 函式最後尾巴使用 <code>g_mutex.unlock()</code> 手動解鎖，</p>
+<figure class="highlight cpp"><figcaption><span>std-mutex.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-mutex.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::mutex g_mutex;</span><br><span class="line"><span class="keyword">int</span> g_count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">print</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// critical section (exclusive access to std::cout signaled by locking mtx):</span></span><br><span class="line">    g_mutex.lock();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; c;</span><br><span class="line">        g_count++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"count="</span> &lt;&lt; g_count &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    g_mutex.unlock();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(print, <span class="number">10</span>, <span class="string">'A'</span>)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(print, <span class="number">5</span>, <span class="string">'B'</span>)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出如下，這樣就達成我們的目的，符合我們預期的輸出了。<br>下個範例會介紹更智慧的寫法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AAAAAAAAAA</span><br><span class="line">count=10</span><br><span class="line">BBBBB</span><br><span class="line">count=15</span><br></pre></td></tr></table></figure></p>
+<h2 id="範例-使用-lock-guard-來上鎖與解鎖"><a href="#範例-使用-lock-guard-來上鎖與解鎖" class="headerlink" title="範例. 使用 lock_guard 來上鎖與解鎖"></a>範例. 使用 lock_guard 來上鎖與解鎖</h2><p>直接使用 std::mutex 的成員函式 lock/unlock 來上鎖是可以的，只是要注意 lock 要有對應的 unlock ，一旦沒有解鎖到程式很可能就會發生死鎖，<br>那有沒有比較智慧的寫法來避免這種忘記解鎖而照成死鎖的問題發生呢？<br>有的！答案就是配合 std::lock_guard 使用，學會用 std::lock_guard 就可以避免手動上鎖解鎖，進而減少在寫程式上出現死鎖的機會，<br>以下就來介紹 mutex 配合 lock_guard 來上鎖與解鎖，<br>根據前一個範例進行修改，將原本使用 g_mutex 上鎖與解鎖的動作，換成了 lock_guard，如下範例所示，<br>在 lock_guard 建構時帶入一個 mutex，就會自動將其 mutex 上鎖，而在 lock_guard 解構時會對其 mutex 解鎖，<br>簡單說就是「lock_guard 建構時對 mutex 上鎖，解構時對 mutex 解鎖」，<br>lock_guard 利用生命週期這概念來進行上鎖與解鎖，lock_guard 本身並不管理 mutex 的生命週期，也就是 lock_guard 生命週期結束不代表 mutex 生命週期也結束，<br>以下面這個例子為例，在進入 print 後將 g_mutex 帶入 lock_guard 建構時上鎖，之後離開 print 函式時，lock_guard 生命週期也隨之結束，lock_guard 進行解構時對 g_mutex 解鎖<br>lock_guard 詳細介紹與實作原理請看這篇。<br><figure class="highlight cpp"><figcaption><span>std-mutex2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-mutex2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::mutex g_mutex;</span><br><span class="line"><span class="keyword">int</span> g_count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">print</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// critical section (exclusive access to std::cout signaled by locking mtx):</span></span><br><span class="line">    <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(g_mutex);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; c;</span><br><span class="line">        g_count++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"count="</span> &lt;&lt; g_count &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(print, <span class="number">10</span>, <span class="string">'A'</span>)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(print, <span class="number">5</span>, <span class="string">'B'</span>)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，效果跟前一個範例一樣<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AAAAAAAAAA</span><br><span class="line">count=10</span><br><span class="line">BBBBB</span><br><span class="line">count=15</span><br></pre></td></tr></table></figure></p>
+<p>下一篇介紹 <a href="/std-condition_variable/" title="std::condition_variable 的用法">std::condition_variable 的用法</a>，以及 std::unique_lock 怎麼跟 condition_variable 搭配使用<br>同時也介紹怎麼跟 queue 的結合應用，也是設計模式中常見的生產者消費者模式。  </p>
+<p>參考<br>[1] std::mutex - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/thread/mutex" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/thread/mutex</a><br>[2] mutex - C++ Reference<br><a href="http://www.cplusplus.com/reference/mutex/mutex/" target="_blank" rel="noopener">http://www.cplusplus.com/reference/mutex/mutex/</a><br>[3] C++11 併發指南三(std::mutex 詳解) - IT閱讀<br><a href="https://www.itread01.com/content/1546128929.html" target="_blank" rel="noopener">https://www.itread01.com/content/1546128929.html</a><br>完整且複雜的一篇  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-condition_variable/" title="std::condition_variable 用法與範例">std::condition_variable 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-mutex/" data-id="cl5qucs38007c1rt0rfevwpf5" data-title="std::mutex 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-thread" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-thread/" class="article-date">
@@ -189,7 +420,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-thread/" data-id="cl5ial05c00i4t5t0vey10qv4" data-title="C++ std::thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-thread/" data-id="cl5quctjf00i71rt0beo7foz0" data-title="C++ std::thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -253,7 +484,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-read-yaml-file/" data-id="cl5iakysn007et5t0safb9ovw" data-title="Python 讀取 yaml 檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-read-yaml-file/" data-id="cl5qucs38007b1rt07kgy6a53" data-title="Python 讀取 yaml 檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -339,7 +570,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-write-csv-file/" data-id="cl5iakysl007at5t0kzaei1wu" data-title="Python 寫入 csv 檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-write-csv-file/" data-id="cl5qucs37007a1rt0aur1s228" data-title="Python 寫入 csv 檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -413,7 +644,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-replace/" data-id="cl5iakysl0079t5t05w4ogvf9" data-title="Python replace 取代字串用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-replace/" data-id="cl5qucs3700791rt06puzwa6f" data-title="Python replace 取代字串用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -475,7 +706,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-strip/" data-id="cl5iakysj0076t5t0cpycv05e" data-title="Python strip 去除空白與去除特殊字元用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-strip/" data-id="cl5qucs3600781rt02bi1q2ze" data-title="Python strip 去除空白與去除特殊字元用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -537,7 +768,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-join/" data-id="cl5iakysk0078t5t01zsuw6kt" data-title="Python join 連接字串用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-join/" data-id="cl5qucs3600771rt0d54kt19k" data-title="Python join 連接字串用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -619,193 +850,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-split/" data-id="cl5iakysk0077t5t0aumbpjau" data-title="Python split 字串分割用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-split/" data-id="cl5qucs3500761rt02j721kbl" data-title="Python split 字串分割用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-android-is-not-accessible-for-the-namespace" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/android-is-not-accessible-for-the-namespace/" class="article-date">
-  <time datetime="2020-01-20T14:00:00.000Z" itemprop="datePublished">2020-01-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/android-is-not-accessible-for-the-namespace/">Android開發問題is not accessible for the namespace</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p><a href="https://groups.google.com/g/android-ndk/c/NEJmlH8nOj4?pli=1" target="_blank" rel="noopener">https://groups.google.com/g/android-ndk/c/NEJmlH8nOj4?pli=1</a><br>看到這篇討論覺得很有趣，就順便來關注一下這是怎樣的一個問題，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">load library failed log like these:</span><br><span class="line"></span><br><span class="line">    needed or dlopened by &quot;/system/lib/libnativeloader.so&quot; is not accessible for the namespace:</span><br><span class="line">     [name=&quot;classloader-namespace&quot;, ld_library_paths=&quot;&quot;, default_library_paths=&quot;&quot;, </span><br><span class="line">     permitted_paths=&quot;/data:/mnt/expand&quot;]</span><br></pre></td></tr></table></figure></p>
-<p>貌似在說明在新版的Android不支援非系統的 so 放在 /system/ 下，要放在 <code>default_library_paths</code> 或 <code>permitted_paths</code> 規定的路徑才能被 load 的起來，  </p>
-<p>在 android 原始碼中搜尋 <code>is not accessible for the namespace</code> 字樣<br>結果在 /bionic/linker.cpp 中有加載庫的函數<br>參考 <a href="https://blog.csdn.net/u012459903/article/details/100731487" target="_blank" rel="noopener">https://blog.csdn.net/u012459903/article/details/100731487</a>  </p>
-<p>參考<br>Namespaces for Native Libraries  |  Android Open Source Project<br><a href="https://source.android.com/devices/tech/config/namespaces_libraries#adding-additional-native-libraries" target="_blank" rel="noopener">https://source.android.com/devices/tech/config/namespaces_libraries#adding-additional-native-libraries</a><br>Linker Namespace  |  Android Open Source Project<br><a href="https://source.android.com/devices/architecture/vndk/linker-namespace" target="_blank" rel="noopener">https://source.android.com/devices/architecture/vndk/linker-namespace</a><br>Enabling the VNDK  |  Android Open Source Project<br><a href="https://source.android.com/devices/architecture/vndk/enabling" target="_blank" rel="noopener">https://source.android.com/devices/architecture/vndk/enabling</a></p>
-<p>Android 7.0 行为变更 - NDK 应用链接至平台库  Android Developers<br><a href="https://developer.android.com/about/versions/nougat/android-7.0-changes?hl=zh-cn#ndk" target="_blank" rel="noopener">https://developer.android.com/about/versions/nougat/android-7.0-changes?hl=zh-cn#ndk</a>  </p>
-<p>第三方app加载系统/system/lib下的库–is not accessible for the namespace_Canok-CSDN博客<br><a href="https://blog.csdn.net/u012459903/article/details/100731487" target="_blank" rel="noopener">https://blog.csdn.net/u012459903/article/details/100731487</a>  </p>
-<p>android N : UnsatisfiedLinkError 只能访问设置为公用库的so库- 鸭子船长 …<br><a href="https://www.cnblogs.com/zl1991/p/9409462.html" target="_blank" rel="noopener">https://www.cnblogs.com/zl1991/p/9409462.html</a></p>
-<p>浅谈Android系统编译apk后so文件在dlopen时出现linker权限问题 - CSDN<br><a href="https://blog.csdn.net/yang542397/article/details/88103951" target="_blank" rel="noopener">https://blog.csdn.net/yang542397/article/details/88103951</a></p>
-<p>Android添加自定义公共so库| 码农家园<br><a href="https://www.codenong.com/cs106357975/" target="_blank" rel="noopener">https://www.codenong.com/cs106357975/</a></p>
-<p>Android Native禁止使用系统私有库详解-阿里云开发者社区<br><a href="https://developer.aliyun.com/article/748570" target="_blank" rel="noopener">https://developer.aliyun.com/article/748570</a></p>
-<p>Android : 供應商原生開發套件 (VNDK) - sheldon_blogs - 開發者的網上家園<br><a href="https://www.cnblogs.com/blogs-of-lxl/p/11232754.html" target="_blank" rel="noopener">https://www.cnblogs.com/blogs-of-lxl/p/11232754.html</a>  </p>
-<p><a href="https://developer.android.com/about/versions/nougat/android-7.0-changes.html#ndk" target="_blank" rel="noopener">https://developer.android.com/about/versions/nougat/android-7.0-changes.html#ndk</a><br>根據官方文檔顯示，android-7.0 開始， 你再也不能使用 dlopen 開啟 system libraries，只有官方的白名單內才能，  </p>
-<p>hidl_xiaolli的专栏-CSDN博客<br><a href="https://blog.csdn.net/xiaolli/article/details/79449117" target="_blank" rel="noopener">https://blog.csdn.net/xiaolli/article/details/79449117</a>  </p>
-<p>java - library is not accessible for the namespace “classloader-namespace” - Stack Overflow<br><a href="https://stackoverflow.com/questions/59608865/library-is-not-accessible-for-the-namespace-classloader-namespace" target="_blank" rel="noopener">https://stackoverflow.com/questions/59608865/library-is-not-accessible-for-the-namespace-classloader-namespace</a><br>Modify your Android ROM so that those libraries are considered public. This can be done by adding those libraries to /system/etc/public.libraries.txt.</p>
-<p>相關參考<br>AndroidQ 打通應用層到HAL層—(HIDL服務實現)_qq_34211365的博客-CSDN博客<br><a href="https://blog.csdn.net/qq_34211365/article/details/105556842" target="_blank" rel="noopener">https://blog.csdn.net/qq_34211365/article/details/105556842</a><br>Android L開始 APK 64bit 32bit 運行環境原理及決定運行環境的規則_個人文章 - SegmentFault 思否<br><a href="https://segmentfault.com/a/1190000014161183" target="_blank" rel="noopener">https://segmentfault.com/a/1190000014161183</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-is-not-accessible-for-the-namespace/" data-id="cl5iakysj0075t5t0tfwa7niu" data-title="Android開發問題is not accessible for the namespace" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-nm" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-nm/" class="article-date">
-  <time datetime="2020-01-16T14:00:00.000Z" itemprop="datePublished">2020-01-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-nm/">nm 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>nm 用法與範例  </p>
-<h2 id="範例-顯示符號表symbols"><a href="#範例-顯示符號表symbols" class="headerlink" title="範例. 顯示符號表symbols"></a>範例. 顯示符號表symbols</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nm -gC &lt;BIN|LIB&gt;</span><br></pre></td></tr></table></figure>
-<p>-g<br>–extern-only<br>  僅顯示外部符號。<br>  Display only external symbols.  </p>
-<p>-C<br>–demangle[=style]<br>  將低階符號名稱解碼成用戶級名稱，除了去掉所開頭的下劃線之外，還使得C++函式名稱以可理解的方式顯示出來。<br>  Decode (demangle) low-level symbol names into user-level names.  Besides removing any initial underscore prepended by the system, this makes C++ function names readable. Different compilers have different mangling styles. The optional demangling style argument can be used to choose an appropriate demangling style for your compiler.  </p>
-<p>參考<br>nm命令_Linux nm 命令用法详解：显示二进制目标文件的符号表<br><a href="https://man.linuxde.net/nm" target="_blank" rel="noopener">https://man.linuxde.net/nm</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-objdump/" title="objdump 用法與範例">objdump 用法與範例</a><br><a href="/linux-readelf/" title="readelf 用法與範例">readelf 用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-nm/" data-id="cl5iakysi0074t5t0e6jad54u" data-title="nm 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-readelf" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-readelf/" class="article-date">
-  <time datetime="2020-01-14T14:00:00.000Z" itemprop="datePublished">2020-01-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-readelf/">readelf 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8106207149031244"
-     data-ad-slot="4194519399"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-        <!-- ads-1 -->
-        <p>本篇介紹如何使用 Linux readelf 指令用法，並附上 Linux readelf 範例。  </p>
-<p>Linux readelf 指令用來顯示 elf 檔案格式裡的資訊，常用於顯示 symbols、headers、sections、segments，這在分析編譯器如何從原始碼生成二進制檔案時非常實用。  </p>
-<p>Linux readelf 有一些跟 <a href="/linux-objdump/" title="objdump">objdump</a> 指令相似的功能，但 readelf 能顯示更多細節。  </p>
-<h2 id="範例-readelf-顯示符號表-symbols"><a href="#範例-readelf-顯示符號表-symbols" class="headerlink" title="範例. readelf 顯示符號表 symbols"></a>範例. readelf 顯示符號表 symbols</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -Ws &lt;LIB&gt;</span><br></pre></td></tr></table></figure>
-<p>-s<br>–syms<br>–symbols<br>  顯示符號表（如果有的話）。<br>  Displays the entries in symbol table section of the file, if it has one.  </p>
-<p>-W<br>–wide 寬行輸出。<br>Don’t break output lines to fit into 80 columns.  </p>
-<h2 id="readelf-搭配-c-filt-解析-c-符號"><a href="#readelf-搭配-c-filt-解析-c-符號" class="headerlink" title="readelf 搭配 c++filt 解析 c++ 符號"></a>readelf 搭配 c++filt 解析 c++ 符號</h2><p>用 c++filt 把 symbol name 轉換 demangle 成看得懂的 symbol name.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -Ws &lt;LIB&gt; | c++filt</span><br></pre></td></tr></table></figure></p>
-<p>參考<br><a href="https://man7.org/linux/man-pages/man1/readelf.1.html" target="_blank" rel="noopener">https://man7.org/linux/man-pages/man1/readelf.1.html</a><br><a href="https://linux.die.net/man/1/readelf" target="_blank" rel="noopener">https://linux.die.net/man/1/readelf</a><br>readelf命令_Linux readelf 命令用法详解：用于显示elf格式文件的信息<br><a href="https://man.linuxde.net/readelf" target="_blank" rel="noopener">https://man.linuxde.net/readelf</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-objdump/" title="objdump 用法與範例">objdump 用法與範例</a><br><a href="/linux-nm/" title="nm 用法與範例">nm 用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-readelf/" data-id="cl5iakysd0072t5t0x1665hwk" data-title="readelf 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
 
     </footer>
   </div>
@@ -849,23 +897,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-strrchr/">C/C++ strrchr 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-strchr/">C/C++ strchr 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/hexo-special-symbol/">Hexo 特殊符號轉義問題</a>
+          </li>
+        
+          <li>
             <a href="/cpp-vector-char-to-string/">C++ std::vector&lt;char&gt; 轉 std::string 的 2 種方法</a>
           </li>
         
           <li>
             <a href="/cpp-string-to-vector-char/">C++ std::string 轉 std::vector&lt;char&gt; 的 2 種方法</a>
-          </li>
-        
-          <li>
-            <a href="/shell-script-check-if-directory-exists/">Shell Script 判斷目錄資料夾是否存在</a>
-          </li>
-        
-          <li>
-            <a href="/android-adb-reverse/">Android adb reverse 通訊埠轉發用法教學</a>
-          </li>
-        
-          <li>
-            <a href="/lldb/">LLDB 除錯教學</a>
           </li>
         
       </ul>
@@ -884,7 +932,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">141</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">224</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">143</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">224</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
