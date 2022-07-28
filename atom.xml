@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://shengyu7697.github.io/"/>
-  <updated>2022-07-25T14:13:25.115Z</updated>
+  <updated>2022-07-28T14:02:03.714Z</updated>
   <id>https://shengyu7697.github.io/</id>
   
   <author>
@@ -15,6 +15,57 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>C/C++ 實作 atoi 的方法</title>
+    <link href="https://shengyu7697.github.io/cpp-implement-atoi/"/>
+    <id>https://shengyu7697.github.io/cpp-implement-atoi/</id>
+    <published>2022-07-28T14:00:00.000Z</published>
+    <updated>2022-07-28T14:02:03.714Z</updated>
+    
+    <content type="html"><![CDATA[<p>本篇 ShengYu 介紹 C/C++ 實作 atoi 字串轉數字的方法，標準函式庫已經有提供 atoi，如果是要自己實作 atoi 可以參考這篇的做法，有時候面試考題也會考實作 atoi，所以多學一些是好事，另外要注意的是 atoi 可能會與標準函式庫提供的同名重複定義，要確認輸入型別是否不一樣，否則的話就換個名字，避免衝突。  </p><p>以下的 myatoi 字串轉數字實作方法為先判斷正負號，如果是負號開頭的話就在 sign 變數設定為 -1 記錄一下，最後的數字再乘上 sign 即可，主要邏輯為一個 while 迴圈去使用 isdigit 判斷每個字元是不是數字，該字元是數字的話就將字元減去 <code>&#39;0&#39;</code> 就可以得到數字，然後將該數字再加上之前的 sum * 10，最後整個 while 迴圈會遇到 <code>&#39;\0&#39;</code> 結束字元時 isdigit 會判斷成不是數字進而終止 while 迴圈，最後再將 sum 乘上 sign 變數就可以回傳最終結果。  </p><p>這邊有對數字前有多餘的空格作處理，有多餘的空格的話可以使用 isspace 來跳過該空格，另外還有針對 32 bit 整數邊界進行處理，大於 2147483647 回傳 2147483647，小於 -2147483648 則回傳 -2147483648，另外輸入是超長的數字字串是 long 存不下的話，也會針對 len 長度太長進行邊界處理。<br><figure class="highlight cpp"><figcaption><span>cpp-implement-atoi.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-implement-atoi.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ctype.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myatoi</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> sign = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">isspace</span>(s[i])) &#123; i++; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (s[i] == <span class="string">'-'</span>) &#123;</span><br><span class="line">        sign = <span class="number">-1</span>;</span><br><span class="line">        i++;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s[i] == <span class="string">'+'</span>) &#123;</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">isdigit</span>(s[i])) &#123;</span><br><span class="line">        sum = sum * <span class="number">10</span> + s[i] - <span class="string">'0'</span>;</span><br><span class="line">        i++;</span><br><span class="line">        len++;</span><br><span class="line">        <span class="keyword">if</span> (len &gt; <span class="number">10</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sum = sum * sign;</span><br><span class="line">    <span class="keyword">if</span> (sum &gt; <span class="number">2147483647</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2147483647</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (sum &lt; <span class="number">-2147483648</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-2147483648</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"123"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"0032"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"4193 with words"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"   -42"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"-91283472332"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"+1"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"20000000000000000000"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"00000-42a1234"</span>));</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">atoi: 123</span><br><span class="line">atoi: 32</span><br><span class="line">atoi: 4193</span><br><span class="line">atoi: -42</span><br><span class="line">atoi: -2147483648</span><br><span class="line">atoi: 1</span><br><span class="line">atoi: 2147483647</span><br><span class="line">atoi: 0</span><br></pre></td></tr></table></figure></p><p>atoi 同時也是 LeetCode 的題目，可以看看 <a href="https://leetcode.com/problems/string-to-integer-atoi/" target="_blank" rel="noopener">LeetCode 8. String to Integer (atoi)</a>，可以看看我之前的 <a href="/cpp-string-to-integer-atoi/" title="解題">解題</a>。  </p><p>以上就是 C++ C/C++ 實作 atoi 的方法介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p><p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-integer-to-string/" title="C/C++ 整數轉字串的方法與範例">C/C++ 整數轉字串的方法與範例</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a>  </p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;本篇 ShengYu 介紹 C/C++ 實作 atoi 字串轉數字的方法，標準函式庫已經有提供 atoi，如果是要自己實作 atoi 可以參考這篇的做法，有時候面試考題也會考實作 atoi，所以多學一些是好事，另外要注意的是 atoi 可能會與標準函式庫提供的同名重複定義，
+      
+    
+    </summary>
+    
+      <category term="C/C++教學" scheme="https://shengyu7697.github.io/categories/C-C-%E6%95%99%E5%AD%B8/"/>
+    
+    
+      <category term="C/C++" scheme="https://shengyu7697.github.io/tags/C-C/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Visual Studio Code 存檔自動排版的2種方式</title>
+    <link href="https://shengyu7697.github.io/vscode-enable-format-on-save/"/>
+    <id>https://shengyu7697.github.io/vscode-enable-format-on-save/</id>
+    <published>2022-07-25T14:00:00.000Z</published>
+    <updated>2022-07-28T14:02:03.686Z</updated>
+    
+    <content type="html"><![CDATA[<p>本篇介紹 Visual Studio Code 存檔自動排版 format，開啟 Visual Studio Code 存檔自動排版有兩種方式，  </p><p>VS Code 存檔自動排版的方法分為這兩種方式，  </p><ul><li>從 UI 介面開啟存檔自動排版  </li><li>從 setting.json 設定檔開啟存檔自動排版  </li></ul><h2 id="從-UI-介面開啟存檔自動排版"><a href="#從-UI-介面開啟存檔自動排版" class="headerlink" title="從 UI 介面開啟存檔自動排版"></a>從 UI 介面開啟存檔自動排版</h2><p>用 <code>Ctrl + ,</code> 快捷鍵打開設定 setting，macOS 快捷鍵是 <code>Cmd + ,</code><br><img src="/vscode-enable-format-on-save/vscode-enable-format-on-save-1.png" title="vscode enable format on save">  </p><p>選擇 <code>Text Editor &gt; Formatting</code>，將 <code>Format On Save</code> 勾選起來，這樣就會存檔時自動排版了，中文介面的話是選擇 <code>文字編輯器 &gt; 格式化</code>，<br><img src="/vscode-enable-format-on-save/vscode-enable-format-on-save-2.png" title="vscode enable format on save">  </p><h2 id="從-setting-json-設定檔開啟存檔自動排版"><a href="#從-setting-json-設定檔開啟存檔自動排版" class="headerlink" title="從 setting.json 設定檔開啟存檔自動排版"></a>從 setting.json 設定檔開啟存檔自動排版</h2><p>從 setting.json 設定檔開啟存檔自動排版的方法就是在 setting.json 加上 <code>&quot;editor.formatOnSave&quot;: true</code> 就是存檔時進行自動排版，也可以關閉另外使用 Alt + Shift + F 手動執行自動排版，<br><figure class="highlight json"><figcaption><span>setting.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"editor.formatOnSave"</span>: <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>以上就是 Visual Studio Code 存檔自動排版的2種方式介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p><p>其他參考<br>vscode settings - How do you format code on save in VS Code - Stack Overflow<br><a href="https://stackoverflow.com/questions/39494277/how-do-you-format-code-on-save-in-vs-code" target="_blank" rel="noopener">https://stackoverflow.com/questions/39494277/how-do-you-format-code-on-save-in-vs-code</a><br><a href="https://linuxpip.org/vscode-format-on-save/" target="_blank" rel="noopener">https://linuxpip.org/vscode-format-on-save/</a>  </p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;本篇介紹 Visual Studio Code 存檔自動排版 format，開啟 Visual Studio Code 存檔自動排版有兩種方式，  &lt;/p&gt;
+&lt;p&gt;VS Code 存檔自動排版的方法分為這兩種方式，  &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;從 UI 介面開啟存檔自動排
+      
+    
+    </summary>
+    
+    
+      <category term="Visual Studio Code" scheme="https://shengyu7697.github.io/tags/Visual-Studio-Code/"/>
+    
+  </entry>
   
   <entry>
     <title>C/C++ __FILENAME__ macros 巨集</title>
@@ -472,56 +523,6 @@
       <category term="Ubuntu" scheme="https://shengyu7697.github.io/tags/Ubuntu/"/>
     
       <category term="openssl" scheme="https://shengyu7697.github.io/tags/openssl/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Ubuntu 休眠指令</title>
-    <link href="https://shengyu7697.github.io/ubuntu-suspend-command/"/>
-    <id>https://shengyu7697.github.io/ubuntu-suspend-command/</id>
-    <published>2022-05-23T14:00:00.000Z</published>
-    <updated>2022-06-05T12:17:13.692Z</updated>
-    
-    <content type="html"><![CDATA[<p>本篇 ShengYu 要介紹在 Ubuntu 下休眠的指令，Ubuntu 裡 Systemd 工具提供了睡眠管理的高階命令，分別有 <code>systemctl suspend</code>、<code>systemctl hibernate</code>、<code>systemctl hybrid-sleep</code></p><h2 id="Suspend-掛起模式"><a href="#Suspend-掛起模式" class="headerlink" title="Suspend 掛起模式"></a>Suspend 掛起模式</h2><p>掛起時系統的執行資料仍然儲存在記憶體，所以會以較低的功耗消耗電量。掛起模式喚醒系統恢復非常快速，<br>Ubuntu 桌面版的選單只有 Suspend 掛起模式，要用其他模式可以用輸入指令的方式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl suspend # 需要權限</span><br></pre></td></tr></table></figure></p><p>Suspend 模式使用範例如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl suspend</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.set-wall-message ===</span><br><span class="line">Authentication is required to set a wall message</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.suspend ===</span><br><span class="line">Authentication is required for suspending the system.</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br></pre></td></tr></table></figure></p><h2 id="Hibernate-休眠模式"><a href="#Hibernate-休眠模式" class="headerlink" title="Hibernate 休眠模式"></a>Hibernate 休眠模式</h2><p>Hibernate 模式，字面上的意思是休眠，將記憶體內容寫入硬碟後完全關閉電源，等同 Windows 的休眠模式。完全不耗電，恢復速度比掛起慢。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hibernate # 需要權限</span><br></pre></td></tr></table></figure></p><p>Hibernate 模式使用範例如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl hibernate</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.set-wall-message ===</span><br><span class="line">Authentication is required to set a wall message</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.hibernate ===</span><br><span class="line">Authentication is required for hibernating the system.</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br></pre></td></tr></table></figure></p><h2 id="Hybird-Sleep-混合睡眠模式"><a href="#Hybird-Sleep-混合睡眠模式" class="headerlink" title="Hybird Sleep 混合睡眠模式"></a>Hybird Sleep 混合睡眠模式</h2><p>Hybird Sleep 模式，混合睡眠，只供應電源給記憶體，其餘零件全部切斷電源供給，等同 Windows 的睡眠模式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hybrid-sleep # 需要權限</span><br></pre></td></tr></table></figure></p><p>Hybird Sleep 模式使用範例如下，我是桌機安裝 Ubuntu 桌面版，看起來應該沒有啟用 Hybird Sleep 混合睡眠模式而是會去執行 Hibernate 休眠模式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl hybrid-sleep</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.set-wall-message ===</span><br><span class="line">Authentication is required to set a wall message</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.hibernate ===</span><br><span class="line">Authentication is required for hibernating the system.</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br></pre></td></tr></table></figure></p><p>以上指令會需要輸入兩次密碼，覺得麻煩可以前面加 sudo，但也不會出現任何提示訊息。  </p><p>其它參考<br><a href="https://caloskao.org/ubuntu-hibernate-and-sleep-mode/" target="_blank" rel="noopener">https://caloskao.org/ubuntu-hibernate-and-sleep-mode/</a><br><a href="https://blog.csdn.net/HermitSun/article/details/113791114" target="_blank" rel="noopener">https://blog.csdn.net/HermitSun/article/details/113791114</a><br><a href="https://www.gushiciku.cn/pl/gvWd/zh-tw" target="_blank" rel="noopener">https://www.gushiciku.cn/pl/gvWd/zh-tw</a><br><a href="https://codertw.com/%E4%BC%BA%E6%9C%8D%E5%99%A8/380170/" target="_blank" rel="noopener">https://codertw.com/%E4%BC%BA%E6%9C%8D%E5%99%A8/380170/</a>  </p><p><strong>其它相關文章推薦</strong><br><a href="/windows-joystick-tool/" title="Windows 10 測試搖桿的工具">Windows 10 測試搖桿的工具</a>  </p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;本篇 ShengYu 要介紹在 Ubuntu 下休眠的指令，Ubuntu 裡 Systemd 工具提供了睡眠管理的高階命令，分別有 &lt;code&gt;systemctl suspend&lt;/code&gt;、&lt;code&gt;systemctl hibernate&lt;/code&gt;、&lt;code&gt;s
-      
-    
-    </summary>
-    
-    
-      <category term="Ubuntu" scheme="https://shengyu7697.github.io/tags/Ubuntu/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>macOS 查詢 Xcode 版本的 3 種方法</title>
-    <link href="https://shengyu7697.github.io/mac-xocde-version/"/>
-    <id>https://shengyu7697.github.io/mac-xocde-version/</id>
-    <published>2022-05-19T14:00:00.000Z</published>
-    <updated>2022-06-05T12:17:13.689Z</updated>
-    
-    <content type="html"><![CDATA[<p>本篇 ShengYu 介紹 macOS 如何查詢 Xcode 版本的 3 種方法，查詢 Xcode 版本資訊的方法分為以下這幾種方法，  </p><ul><li>Xcode Welcome 視窗查看版本  </li><li>Xcode 選單查看版本  </li><li>用 xcodebuild 指令查看 Xcode 版本  </li></ul><h2 id="Xcode-Welcome-視窗查看版本"><a href="#Xcode-Welcome-視窗查看版本" class="headerlink" title="Xcode Welcome 視窗查看版本"></a>Xcode Welcome 視窗查看版本</h2><p>啟動 Xcode 後，可以看到 Welcome to Xcode 的視窗，下方就有 Xcode 版本資訊囉！<br><img src="/mac-xocde-version/xcode-version-1.png" title="xcode version">  </p><h2 id="Xcode-選單查看版本"><a href="#Xcode-選單查看版本" class="headerlink" title="Xcode 選單查看版本"></a>Xcode 選單查看版本</h2><p>啟動 Xcode 後，如果已經關閉 Welcome to Xcode 視窗的話，還可以從 Xcode 選單裡查看版本資訊，從選單的 <code>Xcode &gt; About Xcode</code> 就可以看到 Xcode 版本資訊視窗囉！  </p><img src="/mac-xocde-version/xcode-version-2.png" title="xcode version">  <p>Xcode 版本資訊視窗<br><img src="/mac-xocde-version/xcode-version-3.png" title="xcode version">  </p><h2 id="用-xcodebuild-指令查看-Xcode-版本"><a href="#用-xcodebuild-指令查看-Xcode-版本" class="headerlink" title="用 xcodebuild 指令查看 Xcode 版本"></a>用 xcodebuild 指令查看 Xcode 版本</h2><p>這邊介紹在命令列下可以使用 <code>xcodebuild</code> 指令查看 Xcode 版本的方法，<code>xcodebuild</code> 指令用法如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ xcodebuild -version</span><br><span class="line">Xcode 9.1</span><br><span class="line">Build version 9B55</span><br></pre></td></tr></table></figure></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;本篇 ShengYu 介紹 macOS 如何查詢 Xcode 版本的 3 種方法，查詢 Xcode 版本資訊的方法分為以下這幾種方法，  &lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Xcode Welcome 視窗查看版本  &lt;/li&gt;
-&lt;li&gt;Xcode 選單查看版本  &lt;/li&gt;
-&lt;l
-      
-    
-    </summary>
-    
-    
-      <category term="macOS" scheme="https://shengyu7697.github.io/tags/macOS/"/>
     
   </entry>
   
