@@ -148,7 +148,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
         <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ ftell 的用法與範例，C/C++ 可以使用 ftell 回傳從頭到當前位置的 byte 數，例如在讀檔時想知道這個檔案裡面有多少個文字時就可以使用 ftell，ftell 用法詳見本篇範例。  </p>
+        <p>本篇 ShengYu 介紹 C/C++ ftell 的用法與範例，C/C++ 可以使用 ftell 回傳從檔案頭到當前位置的 byte 數，例如在讀檔時想知道這個檔案裡面有多少個文字時就可以使用 ftell，ftell 用法詳見本篇範例。  </p>
 <p>C/C++ 要使用 ftell 的話需要引入的標頭檔 <code>&lt;stdio.h&gt;</code>，如果要使用 C++ 的標頭檔則是引入 <code>&lt;cstdio&gt;</code>，<br>ftell 函式原型為<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">ftell</span><span class="params">(FILE * stream)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>stream：指向 FILE 物件的指標  </p>
 <p>以下 C/C++ ftell 的用法介紹將分為這幾部份，  </p>
@@ -158,7 +158,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <li>C/C++ ftell 計算檔案全部文字再 malloc 配置記憶體  </li>
 </ul>
 <p>那我們開始吧！  </p>
-<h2 id="C-C-ftell-基本用法"><a href="#C-C-ftell-基本用法" class="headerlink" title="C/C++ ftell 基本用法"></a>C/C++ ftell 基本用法</h2><p>這邊介紹 C/C++ ftell 基本用法，以下為 ftell 搭配 fseek 移動檔案指標的各種情況範例，了解這些情況更能幫助了解怎麼使用 ftell，剛開完檔後使用 ftell 會回傳 0，使用 fseek 與 SEEK_SET 參數移動 5 個 bytes 再用 tellg 會回傳 5，再次使用 fseek 與 SEEK_SET 參數移動 5 個 bytes 再用 tellg 還是會回傳 5，說明 SEEK_SET 參數這是移動到一個從檔頭開始的絕對位置而不是前一次的相對位置，移動相對位置的話則要 fseek 搭配 SEEK_CUR 參數就會以當前的位置再開始移動，最後兩個範例分別是移到檔尾跟移到檔頭，<br><figure class="highlight cpp"><figcaption><span>cpp-ftell.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-ftell.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp = fopen(<span class="string">"input.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"failed to open the file.\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> pos = ftell(fp);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, pos);</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">5</span>, SEEK_SET);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">5</span>, SEEK_SET);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">5</span>, SEEK_CUR);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">0</span>, SEEK_END); <span class="comment">// 移到檔尾</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">0</span>, SEEK_SET); <span class="comment">// 移到檔頭</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fclose(fp);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="C-C-ftell-基本用法"><a href="#C-C-ftell-基本用法" class="headerlink" title="C/C++ ftell 基本用法"></a>C/C++ ftell 基本用法</h2><p>這邊介紹 C/C++ ftell 基本用法，以下為 ftell 搭配 fseek 移動檔案指標的各種情況範例，了解這些情況更能幫助了解怎麼使用 ftell，剛開完檔後使用 ftell 會回傳 0，使用 fseek 與 SEEK_SET 參數移動 5 個 bytes 再用 ftell 會回傳 5，再次使用 fseek 與 SEEK_SET 參數移動 5 個 bytes 再用 ftell 還是會回傳 5，說明 SEEK_SET 參數這是移動到一個從檔頭開始的絕對位置而不是前一次的相對位置，移動相對位置的話則要 fseek 搭配 SEEK_CUR 參數就會以當前的位置再開始移動，最後兩個範例分別是移到檔尾跟移到檔頭，<br><figure class="highlight cpp"><figcaption><span>cpp-ftell.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-ftell.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp = fopen(<span class="string">"input.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"failed to open the file.\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> pos = ftell(fp);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, pos);</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">5</span>, SEEK_SET);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">5</span>, SEEK_SET);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">5</span>, SEEK_CUR);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">0</span>, SEEK_END); <span class="comment">// 移到檔尾</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">0</span>, SEEK_SET); <span class="comment">// 移到檔頭</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"position: %ld\n"</span>, ftell(fp));</span><br><span class="line"></span><br><span class="line">    fclose(fp);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>假設我的 input.txt 檔案大小是 44 bytes，程式執行結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">position: 0</span><br><span class="line">position: 5</span><br><span class="line">position: 5</span><br><span class="line">position: 10</span><br><span class="line">position: 44</span><br><span class="line">position: 0</span><br></pre></td></tr></table></figure></p>
 <h2 id="C-C-ftell-計算檔案大小"><a href="#C-C-ftell-計算檔案大小" class="headerlink" title="C/C++ ftell 計算檔案大小"></a>C/C++ ftell 計算檔案大小</h2><p>這邊介紹一下如何利用 ftell 來計算檔案大小，我們可以藉由 fseek 移動檔案指標到檔尾，然後 ftell 取得 size，藉此來知道檔案大小，這種情形通常是在使用 new 或 malloc 動態配置記憶體時需要知道總大小是多少的情況會使用到，<br><figure class="highlight cpp"><figcaption><span>cpp-ftell2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-ftell2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp = fopen(<span class="string">"input.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">    <span class="keyword">if</span> (fp == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"failed to open the file.\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fseek(fp, <span class="number">0</span>, SEEK_END); <span class="comment">// 移到檔尾</span></span><br><span class="line">    <span class="keyword">long</span> fsize = ftell(fp);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file size: %ld\n"</span>, fsize);</span><br><span class="line">    fclose(fp);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file size: 44</span><br></pre></td></tr></table></figure></p>
@@ -169,7 +169,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ftell/" data-id="clbp5grsl00k7pnt0fl6dhw8t" data-title="C/C++ ftell 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ftell/" data-id="clbraovk700kksat0tie8fl1t" data-title="C/C++ ftell 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -237,7 +237,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/google-sheet-add-alternating-colors/" data-id="clbp5grsm00k8pnt0j6jccj0d" data-title="Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/google-sheet-add-alternating-colors/" data-id="clbraovk500kisat0kgjc381g" data-title="Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Sheet/">Google Sheet</a></li></ul>
@@ -294,7 +294,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/js-get-screen-width/" data-id="clbp5grsl00k6pnt048nltfav" data-title="JavaScript 取得螢幕寬度的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/js-get-screen-width/" data-id="clbraovk300kgsat0nhc17zwd" data-title="JavaScript 取得螢幕寬度的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/">JavaScript</a></li></ul>
@@ -353,7 +353,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-head/" data-id="clbp5grsk00k5pnt053f9opg1" data-title="Linux head 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-head/" data-id="clbraovk300kfsat0q6svvpn6" data-title="Linux head 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -428,7 +428,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-ifstream-seekg/" data-id="clbp5grsk00k4pnt0ioess8f3" data-title="C++ std::ifstream::seekg 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-ifstream-seekg/" data-id="clbraovk000kcsat01emil7tm" data-title="C++ std::ifstream::seekg 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -507,7 +507,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-personal-access-token/" data-id="clbp5grsk00k3pnt0zyswnvt9" data-title="Github 如何使用 Personal Access Token" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-personal-access-token/" data-id="clbraovk000kbsat09htgu4q9" data-title="Github 如何使用 Personal Access Token" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -565,7 +565,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/js-get-browser-width/" data-id="clbp5grsj00k2pnt0w5c2mkqx" data-title="JavaScript 取得瀏覽器寬度的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/js-get-browser-width/" data-id="clbraovjy00k8sat0xdmzpv5j" data-title="JavaScript 取得瀏覽器寬度的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/">JavaScript</a></li></ul>
@@ -640,7 +640,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-ifstream-tellg/" data-id="clbp5grsj00k1pnt000jbcdvs" data-title="C++ std::ifstream::tellg 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-ifstream-tellg/" data-id="clbraovjs00k4sat0h7uvh37q" data-title="C++ std::ifstream::tellg 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -700,7 +700,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/convert-webp-to-png/" data-id="clbp5grsj00k0pnt0gxyhl6ul" data-title="webp 轉換 png 的 command line 指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/convert-webp-to-png/" data-id="clbraovjx00k7sat0j3jhg522" data-title="webp 轉換 png 的 command line 指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -776,7 +776,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-split/" data-id="clbp5grsi00jypnt084ur1ifp" data-title="Linux split 分割檔案用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-split/" data-id="clbraovjn00k0sat05uxph6xg" data-title="Linux split 分割檔案用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
