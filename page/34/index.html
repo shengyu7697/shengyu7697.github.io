@@ -107,6 +107,154 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-static_assert" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-static_assert/" class="article-date">
+  <time datetime="2021-01-06T14:00:00.000Z" itemprop="datePublished">2021-01-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-static_assert/">C++ static_assert 與 assert 的差異</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 來介紹 C++ static_assert 與 assert 的差異，assert 是 C/C++ 都有的巨集，static_assert 是 C++11 才新增的，  </p>
+<h2 id="assert-的用法"><a href="#assert-的用法" class="headerlink" title="assert 的用法"></a>assert 的用法</h2><p>assert 會在執行時間測試判斷陳述句，這邊來複習一下 assert 的用法，<code>assert()</code> 是如果它的條件陳述句回傳 false 的話會輸出錯誤訊息到 stderr 然後呼叫 abort 結束程式執行，  </p>
+<p>assert 最常是使用在檢查空指標 <code>assert(p != NULL)</code>，<br>這邊我們示範是檢查 n 變數數值的大小，用來確保程式執行到這個時間點時數值應該是我們所預期的範圍，  </p>
+<p>C 要用 assert 需引用 <code>&lt;assert.h&gt;</code>，C++ 要用 assert 請引用 <code>&lt;cassert&gt;</code>，<br>要關閉 assert 的話，在引用 <code>&lt;cassert&gt;</code> 前定義 <code>#define NDEBUG</code>，assert 就會被關閉，<br><figure class="highlight cpp"><figcaption><span>cpp-assert.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-assert.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cassert&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">5</span>;</span><br><span class="line">    assert(n &gt; <span class="number">10</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行時期的錯誤輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cpp-assert: cpp-assert.cpp:9: int main(): Assertion `n &gt; 10&apos; failed.</span><br><span class="line">Aborted (core dumped)</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="在-C-11-前靜態檢查的作法"><a href="#在-C-11-前靜態檢查的作法" class="headerlink" title="在 C++ 11 前靜態檢查的作法"></a>在 C++ 11 前靜態檢查的作法</h2><p>這邊舉個最常會用到靜態檢查的例子，就是檢查 struct 的大小，就是我要確保程式在別的平台下 struct AAA 的大小也要是 8，但是用 assert 的話是執行到 assert 這一行才判斷的，如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-assert2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cassert&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">AAA</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> a; <span class="comment">// 4 bytes</span></span><br><span class="line">    <span class="keyword">int</span> b; <span class="comment">// 4 bytes</span></span><br><span class="line">&#125;; <span class="comment">// 8 bytes</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    assert(<span class="keyword">sizeof</span>(struct AAA) == <span class="number">8</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(struct AAA) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可是 struct 的大小這件事是在編譯時期就可以知道的事，為什麼不能在編譯時期檢查提早發現呢？   </p>
+<p>所以這邊利用了前置處理器的技巧來達成這件事，在 C++ 11 之前就會是這樣子寫，<br><figure class="highlight cpp"><figcaption><span>cpp-assert3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-assert3.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">AAA</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> a; <span class="comment">// 4 bytes</span></span><br><span class="line">    <span class="keyword">int</span> b; <span class="comment">// 4 bytes</span></span><br><span class="line">&#125;; <span class="comment">// 8 bytes</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    C_ASSERT(<span class="keyword">sizeof</span>(struct AAA) == <span class="number">8</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(struct AAA) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>看見上方的 <code>#define C_ASSERT</code> 的範例，我們可以瞭解在前置處理階段時先來判斷陳述句，  </p>
+<p>如果改成 <code>C_ASSERT(sizeof(struct AAA) == 10)</code> 的話，就會出現下面這樣的編譯錯誤訊息，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cpp-assert3.cpp: In function ‘int main()’:</span><br><span class="line">cpp-assert3.cpp:3:55: error: size of array ‘__C_ASSERT__’ is negative</span><br><span class="line"> #define C_ASSERT(e) typedef char __C_ASSERT__[(e)?1:-1]</span><br><span class="line">                                                       ^</span><br><span class="line">cpp-assert3.cpp:11:5: note: in expansion of macro ‘C_ASSERT’</span><br><span class="line">     C_ASSERT(sizeof(struct AAA) == 10);</span><br><span class="line">     ^</span><br></pre></td></tr></table></figure></p>
+<p>這樣就達成了編譯時期的靜態檢查，除了上述的使用場合，也常使用來  </p>
+<ul>
+<li>檢查兩個 struct <code>C_ASSERT(sizeof(struct_a) == sizeof(struct_b))</code>  </li>
+<li>檢查兩個 array <code>C_ASSERT(sizeof(arrar1) == sizeof(array2))</code>  </li>
+<li>宣告的緩衝大小是否超過路徑的最大長度 <code>C_ASSERT(buffer_size &lt;= MAX_PATH)</code><br>等等這些情形。  </li>
+</ul>
+<p>C++11 把 static_assert 納入標準後，我們就不需要使用各平台或各函式庫各自實作的 static assert，使得更容易地跨平台開發。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="C-11-static-assert-的用法"><a href="#C-11-static-assert-的用法" class="headerlink" title="C++ 11 static_assert 的用法"></a>C++ 11 static_assert 的用法</h2><p>C++11 的 static_assert 宣告會在編譯時期測試判斷陳述句，<br>由於編譯器已知 <code>struct AAA</code> 結構的大小，因此會立即計算運算式的值。<br><figure class="highlight cpp"><figcaption><span>cpp-static_assert.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-static_assert.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">AAA</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> a; <span class="comment">// 4 bytes</span></span><br><span class="line">    <span class="keyword">int</span> b; <span class="comment">// 4 bytes</span></span><br><span class="line">&#125;; <span class="comment">// 8 bytes</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static_assert</span>(<span class="keyword">sizeof</span>(struct AAA) == <span class="number">8</span>, <span class="string">"struct AAA size is not 8 bytes"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(struct AAA) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行結果為，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">8</span><br></pre></td></tr></table></figure></p>
+<p>如果把改成 <code>sizeof(struct AAA) == 10</code>呢？編譯時期就會報錯，錯誤輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cpp-static_assert.cpp: In function ‘int main()’:</span><br><span class="line">cpp-static_assert.cpp:10:5: error: static assertion failed: struct AAA size is not 8 bytes</span><br><span class="line">     static_assert(sizeof(struct AAA) == 10, &quot;struct AAA size is not 8 bytes&quot;);</span><br><span class="line">     ^</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p>總結一下，static_assert 是 compile time 編譯時期來檢查陳述句 statement，而 assert 是 run time 執行時期來檢查陳述句 statement。  </p>
+<p>以上就是 C++ static_assert 與 assert 的差異介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" target="_blank" rel="noopener">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-string-to-integer/" title="C/C++ 字串轉數字的4種方法">C/C++ 字串轉數字的4種方法</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-static_assert/" data-id="cldcbo6qn00beqvt0u1unzuts" data-title="C++ static_assert 與 assert 的差異" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-write-yaml-file" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-write-yaml-file/" class="article-date">
+  <time datetime="2021-01-05T14:00:00.000Z" itemprop="datePublished">2021-01-05</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-write-yaml-file/">Python 寫入 yaml 檔案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何用 Python 寫入 yaml 檔案，yaml 檔案格式是常用設定檔格式，以下將示範如何用 python 搭配 yaml 套件的 <code>yaml.dump()</code> 來寫入 yaml 檔案。  </p>
+<p>PyPI：<a href="https://pypi.org/project/PyYAML/" target="_blank" rel="noopener">https://pypi.org/project/PyYAML/</a><br>Github：<a href="https://github.com/yaml/pyyaml/" target="_blank" rel="noopener">https://github.com/yaml/pyyaml/</a>  </p>
+<h2 id="安裝方式"><a href="#安裝方式" class="headerlink" title="安裝方式"></a>安裝方式</h2><p>透過 pip 安裝 pyyaml，注意在程式裡是 <code>import yaml</code>，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install pyyaml</span><br></pre></td></tr></table></figure></p>
+<h2 id="寫入-yaml-檔案"><a href="#寫入-yaml-檔案" class="headerlink" title="寫入 yaml 檔案"></a>寫入 yaml 檔案</h2><p>以下示範寫入 yaml 檔案，首先要準備好資料存放在字典 dict 裡，之後在使用 <code>yaml.dump()</code> 寫入檔案，<br>程式碼如下：<br><figure class="highlight python"><figcaption><span>python3-yaml-write.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> yaml</span><br><span class="line"></span><br><span class="line">d = &#123;<span class="string">'name'</span>:<span class="string">'Amy'</span>, <span class="string">'age'</span>:<span class="string">'20'</span>, <span class="string">'languages'</span>:[<span class="string">'English'</span>, <span class="string">'French'</span>]&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'output.yaml'</span>, <span class="string">'w'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    yaml.dump(d, f)</span><br></pre></td></tr></table></figure></p>
+<p>輸出的 output.yaml 如下，<br><figure class="highlight yaml"><figcaption><span>output.yaml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">age:</span> <span class="string">'20'</span></span><br><span class="line"><span class="attr">languages:</span> <span class="string">[English,</span> <span class="string">French]</span></span><br><span class="line"><span class="attr">name:</span> <span class="string">Amy</span></span><br></pre></td></tr></table></figure></p>
+<p>下一篇介紹 <a href="/python-read-yaml-file/" title="讀取 yaml 檔案">讀取 yaml 檔案</a>  </p>
+<p>其他參考<br>PyYAML Documentation<br><a href="https://pyyaml.org/wiki/PyYAMLDocumentation" target="_blank" rel="noopener">https://pyyaml.org/wiki/PyYAMLDocumentation</a>  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-write-text-file/" title="Python 寫檔，寫入 txt 文字檔">Python 寫檔，寫入 txt 文字檔</a><br><a href="/python-read-csv-file/" title="Python 讀取 csv 檔案">Python 讀取 csv 檔案</a><br><a href="/python-write-csv-file/" title="Python 寫入 csv 檔案">Python 寫入 csv 檔案</a><br><a href="/python-split/" title="Python 字串分割 split">Python 字串分割 split</a><br><a href="/python-replace/" title="Python 取代字元或取代字串 replace">Python 取代字元或取代字串 replace</a><br><a href="/python-how-to-use-sleep-function/" title="Python 讓程式 sleep 延遲暫停時間">Python 讓程式 sleep 延遲暫停時間</a><br><a href="/python-generate-non-repeating-random-numbers/" title="Python 產生 random 隨機不重複的數字 list">Python 產生 random 隨機不重複的數字 list</a><br><a href="/python-pyautogui/" title="Python PyAutoGUI 使用教學">Python PyAutoGUI 使用教學</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-write-yaml-file/" data-id="cldcbo6qn00bdqvt0ealsqd4u" data-title="Python 寫入 yaml 檔案" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-max_element" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-max_element/" class="article-date">
@@ -163,7 +311,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-max_element/" data-id="cld2w7k6500bc1zt0vhmgmmmn" data-title="std::max_element 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-max_element/" data-id="cldcbo6qm00bcqvt0jbbht2fp" data-title="std::max_element 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -231,7 +379,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-while/" data-id="cld2w7k6500bb1zt0txyax66l" data-title="Python while 迴圈用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-while/" data-id="cldcbo6qm00bbqvt0tokwm74u" data-title="Python while 迴圈用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -298,7 +446,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-selection-sort/" data-id="cld2w7k6400ba1zt0hww1mmc5" data-title="Python selection sort 選擇排序法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-selection-sort/" data-id="cldcbo6ql00baqvt0s7ykw8a5" data-title="Python selection sort 選擇排序法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -366,7 +514,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-bubble-sort/" data-id="cld2w7k6300b71zt0g919mrj0" data-title="Python bubble sort 泡沫排序法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-bubble-sort/" data-id="cldcbo6ql00b9qvt0gyiivqbj" data-title="Python bubble sort 泡沫排序法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -435,7 +583,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-max/" data-id="cld2w7k6300b81zt0iqygbvmr" data-title="std::max 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-max/" data-id="cldcbo6qk00b8qvt0x9xk0yvj" data-title="std::max 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -519,7 +667,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-sleep/" data-id="cld2w7k6400b91zt03d5vs15i" data-title="Shell Script sleep 延遲執行" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-sleep/" data-id="cldcbo6qk00b7qvt0yz6rqj8k" data-title="Shell Script sleep 延遲執行" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -600,7 +748,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-string-to-integer/" data-id="cld2w7k6200b61zt0i5fvp927" data-title="C/C++ 字串轉數字的4種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-string-to-integer/" data-id="cldcbo6qj00b6qvt0kcaxyefd" data-title="C/C++ 字串轉數字的4種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -665,136 +813,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-variable-length-argument/" data-id="cld2w7k6200b51zt0havma0ap" data-title="C/C++ 不定長度參數" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-variable-length-argument/" data-id="cldcbo6qi00b5qvt06j2tstkd" data-title="C/C++ 不定長度參數" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-getpid" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-getpid/" class="article-date">
-  <time datetime="2020-12-17T14:00:00.000Z" itemprop="datePublished">2020-12-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-getpid/">C/C++ getpid 取得行程 pid</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹 C/C++ 在 Linux 下取得行程的方法，在 Linux 下要取得 pid 的話要使用 getpid 這個函式，以下為 Linux getpid 函式用法與範例。  </p>
-<p>getpid 函式適用 Linux / macOS，但 Windows 不適用  </p>
-<hr>
-<p>要使用 Linux getpid 取得行程 pid 的話，需要引入的標頭檔: <code>&lt;unistd.h&gt;</code><br>另外 pid_t 這個變數類型定義會需要引入 <code>&lt;sys/types.h&gt;</code> 標頭檔  </p>
-<h2 id="Linux-getpid-使用範例"><a href="#Linux-getpid-使用範例" class="headerlink" title="Linux getpid 使用範例"></a>Linux getpid 使用範例</h2><p>以下為 getpid 的使用範例，要用 pid_t 這個變數類型來儲存 getpid 的回傳結果，<br>pid_t 這個變數類型在 x64 上定義為 int，<br>之後用 printf 將這個 pid 印出來，這個 pid 就是這個小程式的 process id 了，<br><figure class="highlight cpp"><figcaption><span>cpp-getpid.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-getpid.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">pid_t</span> pid = getpid();</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"pid: %d\n"</span>, pid);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pid: 11564</span><br></pre></td></tr></table></figure></p>
-<h2 id="補充"><a href="#補充" class="headerlink" title="補充"></a>補充</h2><p>如果你只是單純的印出 pid 的話，可以不用引用<code>&lt;sys/types.h&gt;</code> 標頭檔<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">"pid: %d\n"</span>, getpid());</span><br></pre></td></tr></table></figure></p>
-<p>其他參考<br>getpid(2) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man2/getpid.2.html" target="_blank" rel="noopener">https://man7.org/linux/man-pages/man2/getpid.2.html</a><br>C语言getpid()函数：获取进程识别码_C语言中文网<br><a href="http://c.biancheng.net/cpp/html/280.html" target="_blank" rel="noopener">http://c.biancheng.net/cpp/html/280.html</a><br>How to get the running process’ pid in C / C++? - SysTutorials<br><a href="https://www.systutorials.com/how-to-get-the-running-process-pid-in-c-c/" target="_blank" rel="noopener">https://www.systutorials.com/how-to-get-the-running-process-pid-in-c-c/</a><br>Code Snippets for .NET and Linux: Get process id by name in Linux using C++<br><a href="http://proswdev.blogspot.com/2012/02/get-process-id-by-name-in-linux-using-c.html" target="_blank" rel="noopener">http://proswdev.blogspot.com/2012/02/get-process-id-by-name-in-linux-using-c.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-getpid/" data-id="cld2w7k6100b31zt0o72q5hxi" data-title="C/C++ getpid 取得行程 pid" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-proc-memory-status" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-proc-memory-status/" class="article-date">
-  <time datetime="2020-12-14T14:00:00.000Z" itemprop="datePublished">2020-12-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-proc-memory-status/">Linux Android 行程記憶體使用量</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹在Linux下檢查行程記憶體使用量，本文介紹的方法同樣適用於 Android，  </p>
-<p>要確認行程的記憶體使用量可以透過 top 指令或者查看 <code>/proc/[pid]/status</code> 檔案內容，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/[pid]/status</span><br></pre></td></tr></table></figure></p>
-<p>或者使用<code>pidof</code>指令來查詢程式的 pid<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/$(pidof &lt;progname&gt;)/status</span><br></pre></td></tr></table></figure></p>
-<p>可以 <a href="https://man7.org/linux/man-pages/man5/proc.5.html" target="_blank" rel="noopener">man proc</a> 查詢一下 VmSize 的說明  </p>
-<p>VmPeak：行程所使用的虛擬記憶體的峰值<br>VmSize：行程目前使用的虛擬記憶體的大小<br>VmLck：已經鎖定的物理記憶體的大小 (鎖定的物理記憶體不能交換到硬盤)<br>VmHWM：行程所使用的物理記憶體的峰值<br>VmRSS：行程目前使用的物理記憶體的大小 (對應top &amp; procrank指令的RSS欄位)<br>VmData：行程佔用的資料段大小<br>VmStk：行程佔用的堆疊大小<br>VmExe：行程佔用的程式指令碼段大小<br>VmLib：行程所加載的動態庫所佔用的記憶體大小<br>VmPTE：行程佔用的頁表大小<br>VmSwap：行程所使用的交換區的大小  </p>
-<p>參考<br>查看Linux &amp; Android中内存占用方法_MyArrow的专栏-CSDN博客<br><a href="https://blog.csdn.net/myarrow/article/details/7703296" target="_blank" rel="noopener">https://blog.csdn.net/myarrow/article/details/7703296</a><br>Linux中查看进程占用内存的情况 - 胡桃夹子<br><a href="http://hutaow.com/blog/2014/08/28/display-process-memory-in-linux/" target="_blank" rel="noopener">http://hutaow.com/blog/2014/08/28/display-process-memory-in-linux/</a><br>linux查看某个进程内存占用情况以及/proc/pid/status解释 - youxin - 博客园<br><a href="https://www.cnblogs.com/youxin/p/5976194.html" target="_blank" rel="noopener">https://www.cnblogs.com/youxin/p/5976194.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-sed/" title="Linux sed 字串取代用法與範例">Linux sed 字串取代用法與範例</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-kill-by-name/" title="Linux kill 指令砍掉指定的 process name">Linux kill 指令砍掉指定的 process name</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a>  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-proc-memory-status/" data-id="cld2w7k6100b41zt0irw2lic2" data-title="Linux Android 行程記憶體使用量" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -838,6 +860,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-rand/">C/C++ rand 產生亂數用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-linux-shared-memory-mmap/">C/C++ Linux shared memory 與 mmap 用法範例</a>
+          </li>
+        
+          <li>
             <a href="/windows-xampp/">Windows XAMPP 攜帶版安裝教學</a>
           </li>
         
@@ -847,14 +877,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-windows-tcp-socket/">C/C++ Windows Socket (Winsock) TCP Socket Server/Client 網路通訊教學</a>
-          </li>
-        
-          <li>
-            <a href="/linux-su/">Linux su 切換使用者指令用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-linux-tcp-socket/">C/C++ Linux TCP Socket Server/Client 網路通訊教學</a>
           </li>
         
       </ul>
@@ -873,7 +895,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">163</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">226</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">165</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">226</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
