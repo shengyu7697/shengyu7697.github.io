@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <!-- Google Adsense -->
+  <script async data-ad-client="ca-pub-8106207149031244" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- End Google Adsense -->
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>Android adb shell input 事件用法 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇教學介紹如何在 Android 下使用 adb shell input 指令，adb shell input 最常用到 keyevent，可以很方便地模擬按鍵輸入，讓開發除錯或自動化測試上變得方便許多。   以下 adb shell input 內容大概分為這幾部分，    adb shell input keyevent 模擬按鍵   adb shell input keyevent 常用的">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android adb shell input 事件用法">
+<meta property="og:url" content="https://shengyu7697.github.io/android-adb-shell-input/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇教學介紹如何在 Android 下使用 adb shell input 指令，adb shell input 最常用到 keyevent，可以很方便地模擬按鍵輸入，讓開發除錯或自動化測試上變得方便許多。   以下 adb shell input 內容大概分為這幾部分，    adb shell input keyevent 模擬按鍵   adb shell input keyevent 常用的">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2022-05-22T14:52:31.143Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android adb shell input 事件用法">
+<meta name="twitter:description" content="本篇教學介紹如何在 Android 下使用 adb shell input 指令，adb shell input 最常用到 keyevent，可以很方便地模擬按鍵輸入，讓開發除錯或自動化測試上變得方便許多。   以下 adb shell input 內容大概分為這幾部分，    adb shell input keyevent 模擬按鍵   adb shell input keyevent 常用的">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-android-adb-shell-input" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-adb-shell-input/" class="article-date">
+  <time datetime="2022-03-14T14:00:00.000Z" itemprop="datePublished">2022-03-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android adb shell input 事件用法
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇教學介紹如何在 Android 下使用 adb shell input 指令，adb shell input 最常用到 keyevent，可以很方便地模擬按鍵輸入，讓開發除錯或自動化測試上變得方便許多。  </p>
+<p>以下 adb shell input 內容大概分為這幾部分，  </p>
+<ul>
+<li>adb shell input keyevent 模擬按鍵  </li>
+<li>adb shell input keyevent 常用的 keycode 值  </li>
+<li>adb shell input keyevent 完整的 keycode 值  </li>
+<li>adb shell input text 模擬輸入文字  </li>
+<li>adb shell input tap 模擬觸控螢幕  </li>
+<li>adb shell input swipe 模擬滑動螢幕  </li>
+</ul>
+<p>adb 指令的安裝方式可以參考<a href="/android-adb/" title="這篇">這篇</a>。<br>那我們開始吧！  </p>
+<h2><span id="adb-shell-input-keyevent-模擬按鍵">adb shell input keyevent 模擬按鍵</span></h2><p>如果要模擬 <code>A</code> 按鍵你可以下這 adb 指令， <code>B</code> 按鍵碼則是 30<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell input keyevent 29</span><br><span class="line">或者</span><br><span class="line">adb shell input keyevent KEYCODE_A</span><br></pre></td></tr></table></figure></p>
+<p>如果要模擬按下 HOME 你可以下這 adb 指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell input keyevent 3</span><br><span class="line">或者</span><br><span class="line">adb shell input keyevent KEYCODE_HOME</span><br></pre></td></tr></table></figure></p>
+<p>如果要模擬按下音量鍵變大聲，你可以下這 adb 指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell input keyevent 24</span><br><span class="line">或者</span><br><span class="line">adb shell input keyevent KEYCODE_VOLUME_UP</span><br></pre></td></tr></table></figure></p>
+<h2><span id="adb-shell-input-keyevent-常用的-keycode-值">adb shell input keyevent 常用的 keycode 值</span></h2><p>這邊整理 input keyevent 常用的 keycode 值，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">3  -&gt; // Home 回到主畫面</span><br><span class="line">4  -&gt; // Back 返回</span><br><span class="line">19 -&gt; // Up 上</span><br><span class="line">20 -&gt; // Down 下</span><br><span class="line">21 -&gt; // Left 左</span><br><span class="line">22 -&gt; // Right 右</span><br><span class="line">23 -&gt; // Select/Ok 確定選取</span><br><span class="line">24 -&gt; // Volume Up 音量上</span><br><span class="line">25 -&gt; // Volume Down 音量下</span><br><span class="line">82 -&gt; // Menu 選單</span><br></pre></td></tr></table></figure></p>
+<h2><span id="adb-shell-input-keyevent-完整的-keycode-值">adb shell input keyevent 完整的 keycode 值</span></h2><p>這邊列出所有的 keyevent 跟對應的 key code，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><span class="line">0  -&gt; &quot;KEYCODE_UNKNOWN&quot;</span><br><span class="line">1  -&gt; &quot;KEYCODE_MENU&quot;</span><br><span class="line">2  -&gt; &quot;KEYCODE_SOFT_RIGHT&quot;</span><br><span class="line">3  -&gt; &quot;KEYCODE_HOME&quot; // 回到主畫面</span><br><span class="line">4  -&gt; &quot;KEYCODE_BACK&quot; // 返回</span><br><span class="line">5  -&gt; &quot;KEYCODE_CALL&quot; // 打電話介面</span><br><span class="line">6  -&gt; &quot;KEYCODE_ENDCALL&quot; // 關閉螢幕</span><br><span class="line">7  -&gt; &quot;KEYCODE_0&quot;</span><br><span class="line">8  -&gt; &quot;KEYCODE_1&quot;</span><br><span class="line">9  -&gt; &quot;KEYCODE_2&quot;</span><br><span class="line">10 -&gt; &quot;KEYCODE_3&quot;</span><br><span class="line">11 -&gt; &quot;KEYCODE_4&quot;</span><br><span class="line">12 -&gt; &quot;KEYCODE_5&quot;</span><br><span class="line">13 -&gt; &quot;KEYCODE_6&quot;</span><br><span class="line">14 -&gt; &quot;KEYCODE_7&quot;</span><br><span class="line">15 -&gt; &quot;KEYCODE_8&quot;</span><br><span class="line">16 -&gt; &quot;KEYCODE_9&quot;</span><br><span class="line">17 -&gt; &quot;KEYCODE_STAR&quot;</span><br><span class="line">18 -&gt; &quot;KEYCODE_POUND&quot;</span><br><span class="line">19 -&gt; &quot;KEYCODE_DPAD_UP&quot; // 上</span><br><span class="line">20 -&gt; &quot;KEYCODE_DPAD_DOWN&quot; // 下</span><br><span class="line">21 -&gt; &quot;KEYCODE_DPAD_LEFT&quot; // 左</span><br><span class="line">22 -&gt; &quot;KEYCODE_DPAD_RIGHT&quot;  // 右</span><br><span class="line">23 -&gt; &quot;KEYCODE_DPAD_CENTER&quot; // 確定選取</span><br><span class="line">24 -&gt; &quot;KEYCODE_VOLUME_UP&quot; // 音量上</span><br><span class="line">25 -&gt; &quot;KEYCODE_VOLUME_DOWN&quot; // 音量下</span><br><span class="line">26 -&gt; &quot;KEYCODE_POWER&quot; // 電源鍵</span><br><span class="line">27 -&gt; &quot;KEYCODE_CAMERA&quot; // 拍照鍵</span><br><span class="line">28 -&gt; &quot;KEYCODE_CLEAR&quot;</span><br><span class="line">29 -&gt; &quot;KEYCODE_A&quot;</span><br><span class="line">30 -&gt; &quot;KEYCODE_B&quot;</span><br><span class="line">31 -&gt; &quot;KEYCODE_C&quot;</span><br><span class="line">32 -&gt; &quot;KEYCODE_D&quot;</span><br><span class="line">33 -&gt; &quot;KEYCODE_E&quot;</span><br><span class="line">34 -&gt; &quot;KEYCODE_F&quot;</span><br><span class="line">35 -&gt; &quot;KEYCODE_G&quot;</span><br><span class="line">36 -&gt; &quot;KEYCODE_H&quot;</span><br><span class="line">37 -&gt; &quot;KEYCODE_I&quot;</span><br><span class="line">38 -&gt; &quot;KEYCODE_J&quot;</span><br><span class="line">39 -&gt; &quot;KEYCODE_K&quot;</span><br><span class="line">40 -&gt; &quot;KEYCODE_L&quot;</span><br><span class="line">41 -&gt; &quot;KEYCODE_M&quot;</span><br><span class="line">42 -&gt; &quot;KEYCODE_N&quot;</span><br><span class="line">43 -&gt; &quot;KEYCODE_O&quot;</span><br><span class="line">44 -&gt; &quot;KEYCODE_P&quot;</span><br><span class="line">45 -&gt; &quot;KEYCODE_Q&quot;</span><br><span class="line">46 -&gt; &quot;KEYCODE_R&quot;</span><br><span class="line">47 -&gt; &quot;KEYCODE_S&quot;</span><br><span class="line">48 -&gt; &quot;KEYCODE_T&quot;</span><br><span class="line">49 -&gt; &quot;KEYCODE_U&quot;</span><br><span class="line">50 -&gt; &quot;KEYCODE_V&quot;</span><br><span class="line">51 -&gt; &quot;KEYCODE_W&quot;</span><br><span class="line">52 -&gt; &quot;KEYCODE_X&quot;</span><br><span class="line">53 -&gt; &quot;KEYCODE_Y&quot;</span><br><span class="line">54 -&gt; &quot;KEYCODE_Z&quot;</span><br><span class="line">55 -&gt; &quot;KEYCODE_COMMA&quot;</span><br><span class="line">56 -&gt; &quot;KEYCODE_PERIOD&quot;</span><br><span class="line">57 -&gt; &quot;KEYCODE_ALT_LEFT&quot;</span><br><span class="line">58 -&gt; &quot;KEYCODE_ALT_RIGHT&quot;</span><br><span class="line">59 -&gt; &quot;KEYCODE_SHIFT_LEFT&quot;</span><br><span class="line">60 -&gt; &quot;KEYCODE_SHIFT_RIGHT&quot;</span><br><span class="line">61 -&gt; &quot;KEYCODE_TAB&quot;</span><br><span class="line">62 -&gt; &quot;KEYCODE_SPACE&quot;</span><br><span class="line">63 -&gt; &quot;KEYCODE_SYM&quot;</span><br><span class="line">64 -&gt; &quot;KEYCODE_EXPLORER&quot;</span><br><span class="line">65 -&gt; &quot;KEYCODE_ENVELOPE&quot;</span><br><span class="line">66 -&gt; &quot;KEYCODE_ENTER&quot;</span><br><span class="line">67 -&gt; &quot;KEYCODE_DEL&quot;</span><br><span class="line">68 -&gt; &quot;KEYCODE_GRAVE&quot;</span><br><span class="line">69 -&gt; &quot;KEYCODE_MINUS&quot;</span><br><span class="line">70 -&gt; &quot;KEYCODE_EQUALS&quot;</span><br><span class="line">71 -&gt; &quot;KEYCODE_LEFT_BRACKET&quot;</span><br><span class="line">72 -&gt; &quot;KEYCODE_RIGHT_BRACKET&quot;</span><br><span class="line">73 -&gt; &quot;KEYCODE_BACKSLASH&quot;</span><br><span class="line">74 -&gt; &quot;KEYCODE_SEMICOLON&quot;</span><br><span class="line">75 -&gt; &quot;KEYCODE_APOSTROPHE&quot;</span><br><span class="line">76 -&gt; &quot;KEYCODE_SLASH&quot;</span><br><span class="line">77 -&gt; &quot;KEYCODE_AT&quot;</span><br><span class="line">78 -&gt; &quot;KEYCODE_NUM&quot;</span><br><span class="line">79 -&gt; &quot;KEYCODE_HEADSETHOOK&quot;</span><br><span class="line">80 -&gt; &quot;KEYCODE_FOCUS&quot; // 拍照對焦鍵</span><br><span class="line">81 -&gt; &quot;KEYCODE_PLUS&quot;</span><br><span class="line">82 -&gt; &quot;KEYCODE_MENU&quot; // 解鎖滑屏/Menu 選單</span><br><span class="line">83 -&gt; &quot;KEYCODE_NOTIFICATION&quot; // 通知鍵</span><br><span class="line">84 -&gt; &quot;KEYCODE_SEARCH&quot; // 搜尋鍵</span><br><span class="line">85 -&gt; &quot;KEYCODE_MEDIA_PLAY_PAUSE&quot; 多媒體鍵 播放/暫停</span><br><span class="line">86 -&gt; &quot;KEYCODE_MEDIA_STOP&quot; // 多媒體鍵 停止</span><br><span class="line">87 -&gt; &quot;KEYCODE_MEDIA_NEXT&quot; // 多媒體鍵 下一首</span><br><span class="line">88 -&gt; &quot;KEYCODE_MEDIA_PREVIOUS&quot; // 多媒體鍵 上一首</span><br><span class="line">89 -&gt; &quot;KEYCODE_MEDIA_REWIND&quot; // 多媒體鍵 快退</span><br><span class="line">90 -&gt; &quot;KEYCODE_MEDIA_FAST_FORWARD&quot; // 多媒體鍵 快進</span><br><span class="line">91 -&gt; &quot;KEYCODE_MUTE&quot; // 靜音</span><br><span class="line">92 -&gt; &quot;KEYCODE_PAGE_UP&quot;</span><br><span class="line">93 -&gt; &quot;KEYCODE_PAGE_DOWN&quot;</span><br><span class="line">94 -&gt; &quot;KEYCODE_PICTSYMBOLS&quot;</span><br><span class="line">...</span><br><span class="line">122 -&gt; &quot;KEYCODE_MOVE_HOME&quot;</span><br><span class="line">123 -&gt; &quot;KEYCODE_MOVE_END&quot;</span><br><span class="line">126 -&gt; &quot;KEYCODE_MEDIA_PLAY&quot; // 多媒體鍵 播放</span><br><span class="line">127 -&gt; &quot;KEYCODE_MEDIA_PAUSE&quot; // 多媒體鍵 暫停</span><br><span class="line">...</span><br><span class="line">187 -&gt; &quot;KEYCODE_APP_SWITCH&quot; // 所有任務視窗</span><br></pre></td></tr></table></figure></p>
+<p>更完整的列表可以查詢 <a href="https://developer.android.com/reference/android/view/KeyEvent.html" rel="noopener external nofollow noreferrer" target="_blank">android 開發者網站的 KeyEvent</a>  </p>
+<h2><span id="adb-shell-input-text-模擬輸入文字">adb shell input text 模擬輸入文字</span></h2><p>這邊介紹 adb shell input text 模擬輸入文字，如果要模擬輸入 <code>android</code> 字串的話，可以下這 adb 指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell input text &quot;android&quot;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="adb-shell-input-tap-模擬觸控螢幕">adb shell input tap 模擬觸控螢幕</span></h2><p>這邊介紹 adb shell input tap 模擬觸控螢幕，例如模擬觸控點擊(600,800)位置，其中X座標是600，Y座標是800，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell input tap 600 800</span><br></pre></td></tr></table></figure></p>
+<h2><span id="adb-shell-input-swipe-模擬滑動螢幕">adb shell input swipe 模擬滑動螢幕</span></h2><p>這邊介紹 adb shell input swipe 模擬滑動螢幕，例如模擬在螢幕上從(600,800)向左滑動到(300,800)，就會看到畫面右滑動，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell input swipe 600 800 300 800</span><br></pre></td></tr></table></figure></p>
+<p>完整的用法為 <code>input swipe &lt;x1&gt; &lt;y1&gt; &lt;x2&gt; &lt;y2&gt; [duration(ms)]</code>。<br>要模擬長按的話，在最後多加一個參數，例如 250 表示長按 250 ms。  </p>
+<p>其他參考<br>android - ADB Shell Input Events - Stack Overflow<br><a href="https://stackoverflow.com/questions/7789826/adb-shell-input-events" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/7789826/adb-shell-input-events</a><br>[android-developers] Re: correct usage of “adb shell input”<br><a href="https://www.mail-archive.com/android-developers@googlegroups.com/msg14587.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.mail-archive.com/android-developers@googlegroups.com/msg14587.html</a><br>adb shell 命令整理 | IT人<br><a href="https://iter01.com/476261.html" rel="noopener external nofollow noreferrer" target="_blank">https://iter01.com/476261.html</a><br>adb shell input keyevent 控制按鍵輸入的數值<br><a href="https://www.796t.com/content/1549161557.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.796t.com/content/1549161557.html</a>  </p>
+<h2><span id="其他技巧推薦">其他技巧推薦</span></h2><p>如果你是常常在Android adb shell下做事情的話，尤其是需要使用到vi，建議安裝<a href="/android-install-busybox/" title="busybox">busybox</a>，使用<a href="/android-install-busybox/" title="busybox附帶的vi">busybox附帶的vi</a>會方便很多，<br>如果還想知道busybox支援哪些指令或busybox基本用法的話請看<a href="/busybox/" title="這篇">這篇</a>。<br>其他的 Android 系列文章可以看<a href="/android-tutorial/" title="這篇">這篇</a>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-adb-shell-input/" data-id="clfp6983j00mw5rs1tydg779w" data-title="Android adb shell input 事件用法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <!-- <div id="ads-2">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="1792535573"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+ -->
+    <!-- ads-2 -->
+    <!-- ads-4 -->
+    <div id="ads-4">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-format="autorelaxed"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="5600353687"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <!-- ads-4 -->
+    
+<nav id="article-nav">
+  
+    <a href="/mac-pip-install-opencv/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          macOS 使用 pip 安裝 opencv
+        
+      </div>
+    </a>
+  
+  
+    <a href="/python-pip-install-specific-version/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Python pip install 如何安裝指定版本的套件</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-sqlite-tutorial/">Python SQLite 資料庫教學與範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-emulator-image-size-in-ubuntu/">Ubuntu Android Emulator 模擬器的 image 大小</a>
+          </li>
+        
+          <li>
+            <a href="/java-file/">Java File 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/js-submit-form/">JavaScript onclick event submit form 用法範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-java-build-date/">Android Java 取得 build date 當下編譯日期時間</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">166</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">227</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!-- ads-3 -->
+  <div id="ads-3">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="8896181732"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+  <!-- ads-3 -->
+</div>
+<script>
+  function setSidebarHeight(sidebar) {
+    let ad1h = document.getElementById("ads-1").clientHeight; // 280
+    //let ad2h = document.getElementById("ads-2").clientHeight; // 280
+    let ad3h = document.getElementById("ads-3").clientHeight; // 600
+    let ad4h = 0;
+    let elem = document.getElementById("ads-4");
+    if (elem != null) {
+      ad4h = elem.clientHeight; // 447
+    }
+    let mainh = document.getElementById("main").clientHeight;
+    let sidebarh = mainh + ad1h + ad4h - ad3h;
+    sidebar.style.height = sidebarh+"px";
+    console.log("set sidebar height = " + sidebarh + "px (" + mainh + "+" + ad1h + "+" + ad4h + "-" + ad3h + ")");
+  }
+
+  function fixSidebarHeight() {
+    let sidebar = document.getElementById("sidebar");
+    console.log("sidebar height is " + sidebar.style.height);
+
+    if (sidebar.style.height == "auto") {
+      console.log("sidebar height is auto !, fix it.");
+      setSidebarHeight(sidebar);
+    }
+
+    const observer = new MutationObserver(function (mutations, observer) {
+      console.log("observer sidebar height is " + sidebar.style.height);
+      if (sidebar.style.height == "auto") {
+        setSidebarHeight(sidebar);
+      }
+    });
+
+    observer.observe(sidebar, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+
+  console.log("width = " + window.innerWidth);
+  if (window.innerWidth >= 768) {
+    console.log("width >= 768");
+    fixSidebarHeight();
+  } else {
+    console.log("width < 768");
+  }
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

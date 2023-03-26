@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <!-- Google Adsense -->
+  <script async data-ad-client="ca-pub-8106207149031244" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- End Google Adsense -->
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>OpenSSL AES encryption 對稱式加密指令用法與範例 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇 ShengYu 介紹 OpenSSL AES encryption and decryption 對稱式加密解密指令用法與範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard)">
+<meta name="keywords" content="openssl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenSSL AES encryption 對稱式加密指令用法與範例">
+<meta property="og:url" content="https://shengyu7697.github.io/openssl-aes-encryption/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇 ShengYu 介紹 OpenSSL AES encryption and decryption 對稱式加密解密指令用法與範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard)">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2022-06-22T12:49:12.387Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OpenSSL AES encryption 對稱式加密指令用法與範例">
+<meta name="twitter:description" content="本篇 ShengYu 介紹 OpenSSL AES encryption and decryption 對稱式加密解密指令用法與範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard)">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-openssl-aes-encryption" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/openssl-aes-encryption/" class="article-date">
+  <time datetime="2022-04-04T14:00:00.000Z" itemprop="datePublished">2022-04-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      OpenSSL AES encryption 對稱式加密指令用法與範例
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 OpenSSL AES encryption and decryption 對稱式加密解密指令用法與範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard) 演算法，AES 是目前主流的加密演算法，常見對稱式加密演算法的應用像是將檔案壓成壓縮時 (zip/7-zip) 如果要設定密碼加密就會使用到。  </p>
+<p>以下 OpenSSL AES 加密解密的指令用法介紹將分為這幾部份，  </p>
+<ul>
+<li>檢查 OpenSSL 版本  </li>
+<li>OpenSSL AES encryption 加密/解密檔案  </li>
+<li>OpenSSL AES encryption 加密/解密文字  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2><span id="檢查-openssl-版本">檢查 OpenSSL 版本</span></h2><p>在使用 OpenSSL 之前，要先檢查確認 OpenSSL 版本，輸入 <code>openssl version</code> 指令可以顯示 OpenSSL 的版本，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ openssl version</span><br><span class="line">OpenSSL 1.1.1n  15 Mar 2022</span><br></pre></td></tr></table></figure></p>
+<p>目前來說是比較建議使用 OpenSSL 1.1.1 之後的版本，之前的版本有一些安全性 bug 不建議使用，建議要裝有 -pbkdf2 選項的 OpenSSL 版本。<br>有些平台會使用 <a href="https://zh.wikipedia.org/wiki/LibreSSL" rel="noopener external nofollow noreferrer" target="_blank">LibreSSL</a>，LibreSSL 是從 OpenSSL 1.0.1g 分支出來的，那麼可能有些選項跟 openssl 不一樣。  </p>
+<h2><span id="openssl-aes-encryption-加密解密檔案">OpenSSL AES encryption 加密/解密檔案</span></h2><p>這邊介紹 OpenSSL AES-256 encryption 加密與解密檔案指令的用法，使用 <code>openssl list-cipher-commands</code> 選項可以列出有哪些加密模式可以選擇，在本範例我們使用 aes-256-cbc 選項，AES-256 表示 key 金鑰長度使用 256 bits，目前有 128、192 或 256 bits 可以選擇，而其中以 AES-256 安全性最高，CBC 是 AES 的其中一種模式，</p>
+<p>openssl 對稱式加密有兩種使用方式，一種是直接指定要用的加密演算法，例如直接指定 AES-256 CBC：<code>openssl aes-256-cbc</code> ，另外一種是使用 enc 的方式，在 <code>openssl enc</code> 後面參數再指定要使用的加密演算法，例如：<code>openssl enc -aes-256-cbc</code>，enc 是將 openssl 提供多個對稱式加密演算法集成到一個指令中，而且 enc 可以指定對稱式加密演算法指令沒有提供的選項，所以建議使用 <code>openssl enc</code> 這種方式，openssl AES 解密檔案指令如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ openssl enc -aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plain.txt -out encrypted.txt</span><br><span class="line"><span class="comment"># 或者</span></span><br><span class="line">$ openssl aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plain.txt -out encrypted.txt</span><br></pre></td></tr></table></figure></p>
+<p><code>openssl enc -aes-256-cbc</code> 常見選項有：<br>-in: 輸入檔案<br>-out: 輸出檔案<br>-e: 加密(預設)<br>-d: 解密<br>-a: 文字格式輸出，base64<br>-md: Openssl 1.1.0 才從 md5 改為 sha-256，目前 sha-256 為預設<br>-pass pass:<password>: 指定加密/解密密碼，否則會顯示提示訊息讓你輸入密碼<br>-salt: 加鹽(預設)，用於 password 推導成 key 的過程中<br>-nosalt: 不加鹽，除非測試才時使用<br>-S salt: 指定鹽<br>-p: 印出 salt, key and IV<br>-P: 印出 salt, key and IV 且立即結束程式，不做任何加解密<br>-pbkdf2: Openssl 1.1.1 才有，建議使用此選項<br>-iter: password 推導成 key 的迭代次數<br>-z: 在加密前壓縮，使用zlib，前提是這個openssl在編譯時有加入zlib選項。  </password></p>
+<p>執行後會要你輸入 password，並且重新輸入 password 一次確認，之後就會進行加密，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ openssl enc -aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plain.txt -out encrypted.txt</span><br><span class="line">enter aes-256-cbc encryption password:</span><br><span class="line">Verifying - enter aes-256-cbc encryption password:</span><br></pre></td></tr></table></figure></p>
+<p>openssl AES 解密檔案的話就使用下列指令，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ openssl enc -aes-256-cbc -pbkdf2 -d -<span class="keyword">in</span> encrypted.txt -out plain.txt</span><br><span class="line"><span class="comment"># 或者</span></span><br><span class="line">$ openssl aes-256-cbc -pbkdf2 -d -<span class="keyword">in</span> encrypted.txt -out plain.txt</span><br></pre></td></tr></table></figure></p>
+<h2><span id="openssl-aes-encryption-加密解密文字">OpenSSL AES encryption 加密/解密文字</span></h2><p>這邊介紹 OpenSSL AES-256 encryption 加密與解密文字指令的用法，openssl AES 加密文字指令如下，<code>-a</code> 表示以文字格式輸出 (base64格式)，預設不指定 <code>-pass</code> 帶入密碼的話，他會跳出提示訊息讓你輸入密碼，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"Hello World"</span> | openssl aes-256-cbc -pbkdf2 -a</span><br><span class="line">enter aes-256-cbc encryption password:</span><br><span class="line">Verifying - enter aes-256-cbc encryption password:</span><br><span class="line">U2FsdGVkX19X1Q1t2NbuTdc4xjRr21ZGQ0BZ4rYy8qs=</span><br></pre></td></tr></table></figure></p>
+<p>openssl AES 解密文字的話就使用下列指令，加密時有加 <code>-a</code> 選項的話解密也要有 <code>-a</code> 選項，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"U2FsdGVkX19X1Q1t2NbuTdc4xjRr21ZGQ0BZ4rYy8qs="</span> | openssl enc -aes-256-cbc -pbkdf2 -a -d</span><br><span class="line">enter aes-256-cbc decryption password:</span><br><span class="line">Hello World</span><br></pre></td></tr></table></figure></p>
+<p>加入 <code>-pass</code> 選項的話可以設定密碼，以下範例密碼為 “shengyutalk”，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"Hello World"</span> | openssl enc -aes-256-cbc -pbkdf2 -a -pass pass:shengyutalk</span><br><span class="line">U2FsdGVkX19M0vfdhjcNiBW0OHrwdQYWMnOUJ6UvOL0=</span><br></pre></td></tr></table></figure></p>
+<p>解密時也可以加入 <code>-pass</code> 參數設定解密密碼，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"U2FsdGVkX19M0vfdhjcNiBW0OHrwdQYWMnOUJ6UvOL0="</span> | openssl enc -aes-256-cbc -pbkdf2 -a -d -pass pass:shengyutalk</span><br><span class="line">Hello World</span><br></pre></td></tr></table></figure></p>
+<p>以上就是 OpenSSL AES encryption 對稱式加密指令用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br><a href="https://www.openssl.org/docs/man1.0.2/man1/openssl-enc.html" rel="noopener external nofollow noreferrer" target="_blank">openssl-enc man 1.0.2</a><br><a href="https://www.openssl.org/docs/man1.1.1/man1/openssl-enc.html" rel="noopener external nofollow noreferrer" target="_blank">openssl-enc man 1.1.1</a><br><a href="https://www.openssl.org/docs/man3.0/man1/openssl-enc.html" rel="noopener external nofollow noreferrer" target="_blank">openssl-enc man 3.0</a><br>encryption - How to use OpenSSL to encrypt/decrypt files? - Stack Overflow<br><a href="https://stackoverflow.com/questions/16056135/how-to-use-openssl-to-encrypt-decrypt-files" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/16056135/how-to-use-openssl-to-encrypt-decrypt-files</a><br>encryption - OpenSSL 1.1.1b warning: Using -iter or -pbkdf2 would be better while decrypting a file encrypted using OpenSSL 1.1.0g - Unix &amp; Linux Stack Exchange<br><a href="https://unix.stackexchange.com/questions/507131/openssl-1-1-1b-warning-using-iter-or-pbkdf2-would-be-better-while-decrypting" rel="noopener external nofollow noreferrer" target="_blank">https://unix.stackexchange.com/questions/507131/openssl-1-1-1b-warning-using-iter-or-pbkdf2-would-be-better-while-decrypting</a><br>(討論 OpenSSL 1.1.1 之前舊版本的 bug，建議要裝有 -pbkdf2 選項的 OpenSSL 版本。)<br>OpenSSL 對稱式、非對稱式加密檔案指令教學與範例<br><a href="https://officeguide.cc/linux-openssl-file-symmetic-asymmetric-encryption-commands-tutorial-examples/" rel="noopener external nofollow noreferrer" target="_blank">https://officeguide.cc/linux-openssl-file-symmetic-asymmetric-encryption-commands-tutorial-examples/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-openssl-aes/" title="C/C++ OpenSSL AES encryption/decryption 加密解密範例">C/C++ OpenSSL AES encryption/decryption 加密解密範例</a><br><a href="/mac-openssl/" title="macOS 2 種安裝 OpenSSL 的方法">macOS 2 種安裝 OpenSSL 的方法</a><br><a href="/ubuntu-openssl/" title="Ubuntu 2 種安裝 OpenSSL 的方法">Ubuntu 2 種安裝 OpenSSL 的方法</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/openssl-aes-encryption/" data-id="clfp6983s00n85rs114u8lyu5" data-title="OpenSSL AES encryption 對稱式加密指令用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <!-- <div id="ads-2">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="1792535573"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+ -->
+    <!-- ads-2 -->
+    <!-- ads-4 -->
+    <div id="ads-4">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-format="autorelaxed"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="5600353687"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <!-- ads-4 -->
+    
+<nav id="article-nav">
+  
+    <a href="/cpp-openssl-aes/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          C/C++ OpenSSL AES encryption/decryption 加密解密範例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/python-opencv-medianblur/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Python OpenCV cv2.medianBlur 中值濾波</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-sqlite-tutorial/">Python SQLite 資料庫教學與範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-emulator-image-size-in-ubuntu/">Ubuntu Android Emulator 模擬器的 image 大小</a>
+          </li>
+        
+          <li>
+            <a href="/java-file/">Java File 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/js-submit-form/">JavaScript onclick event submit form 用法範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-java-build-date/">Android Java 取得 build date 當下編譯日期時間</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">166</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">227</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!-- ads-3 -->
+  <div id="ads-3">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="8896181732"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+  <!-- ads-3 -->
+</div>
+<script>
+  function setSidebarHeight(sidebar) {
+    let ad1h = document.getElementById("ads-1").clientHeight; // 280
+    //let ad2h = document.getElementById("ads-2").clientHeight; // 280
+    let ad3h = document.getElementById("ads-3").clientHeight; // 600
+    let ad4h = 0;
+    let elem = document.getElementById("ads-4");
+    if (elem != null) {
+      ad4h = elem.clientHeight; // 447
+    }
+    let mainh = document.getElementById("main").clientHeight;
+    let sidebarh = mainh + ad1h + ad4h - ad3h;
+    sidebar.style.height = sidebarh+"px";
+    console.log("set sidebar height = " + sidebarh + "px (" + mainh + "+" + ad1h + "+" + ad4h + "-" + ad3h + ")");
+  }
+
+  function fixSidebarHeight() {
+    let sidebar = document.getElementById("sidebar");
+    console.log("sidebar height is " + sidebar.style.height);
+
+    if (sidebar.style.height == "auto") {
+      console.log("sidebar height is auto !, fix it.");
+      setSidebarHeight(sidebar);
+    }
+
+    const observer = new MutationObserver(function (mutations, observer) {
+      console.log("observer sidebar height is " + sidebar.style.height);
+      if (sidebar.style.height == "auto") {
+        setSidebarHeight(sidebar);
+      }
+    });
+
+    observer.observe(sidebar, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+
+  console.log("width = " + window.innerWidth);
+  if (window.innerWidth >= 768) {
+    console.log("width >= 768");
+    fixSidebarHeight();
+  } else {
+    console.log("width < 768");
+  }
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <!-- Google Adsense -->
+  <script async data-ad-client="ca-pub-8106207149031244" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- End Google Adsense -->
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>C/C++ OpenSSL AES encryption/decryption 加密解密範例 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇 ShengYu 介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standar">
+<meta name="keywords" content="C&#x2F;C++,openssl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C&#x2F;C++ OpenSSL AES encryption&#x2F;decryption 加密解密範例">
+<meta property="og:url" content="https://shengyu7697.github.io/cpp-openssl-aes/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇 ShengYu 介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standar">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2022-10-18T14:40:32.888Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C&#x2F;C++ OpenSSL AES encryption&#x2F;decryption 加密解密範例">
+<meta name="twitter:description" content="本篇 ShengYu 介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standar">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cpp-openssl-aes" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-openssl-aes/" class="article-date">
+  <time datetime="2022-04-07T14:00:00.000Z" itemprop="datePublished">2022-04-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C/C++ OpenSSL AES encryption/decryption 加密解密範例
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard) 演算法，AES 是目前主流的加密演算法，常見對稱式加密演算法的應用像是將檔案壓成壓縮時 (zip/7-zip) 如果要設定密碼加密就會使用到。  </p>
+<h2><span id="cc-openssl-aes-256-cbc">C/C++ OpenSSL AES-256 CBC</span></h2><p>AES 提供了幾種模式，分別為 ECB、CBC、CFB、CTR、OFB 五種模式，這邊介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，在 openssl 可以常看到 encrypt 與 decrypt 關鍵字，encrypt 表示加密，decrypt 表示解密，在本範例中我們會使用 <code>AES_cbc_encrypt()</code> 做加密，解密的話則是使用 <code>aes_cbc_decrypt()</code>。  </p>
+<p>AES 的區塊長度固定為 128 bits (16 bytes)，即多輪且每次對 128 bits 明文區塊作加密，而不是一次對整個明文作加密，明文長度不是 128 bits 的整數倍的話，剩餘不足 128 bits 的區塊會用填充 (Padding) 的方式，填充 (Padding) 的方式有好幾種，最簡單就是用零填充 ZeroBytePadding，常用填充方式為 PKCS5Padding 或 PKCS7Padding，需要注意的是加密用哪一種填充方式，解密時也要同用一種填充方式。  </p>
+<p>key 就是加密過程中會用到的金鑰，AES 的 key 金鑰長度則可以是 128、192 或 256 bits，也就是平常大家說的 AES-128、AES-192 或 AES-256，以安全性來說 AES-256 安全性最高。  </p>
+<p>iv 就是初始向量 (Initialization Vector)，在加密過程中，原本相同明文區塊使用相同金鑰加密後的密文會相同，加入 iv 可讓每次的相同明文區塊使用相同金鑰加密後的密文不同，<br>用來防止同樣的內容產生同樣的加密資料，解密時用的 iv 必須跟加密的 iv 內容一樣，長度必須為 16 bytes (128 bits)，在使用 <code>AES_cbc_encrypt()</code> 加密時會修改 iv 的數值，所以在 <code>aes_cbc_decrypt()</code> 解密時務必確認是用相同的 iv。  </p>
+<p>另外 openssl command 還提供了 salt 的選項，salt 就是加鹽的意思，是個隨機產生的資料，在密碼 password 推導成金鑰 key 時可以使用，使用 salt 的話相同的密碼 password 就不會每次都推導成相同的金鑰 key 了。  </p>
+<p>以下的範例是直接設定金鑰 key 與 iv，沒有使用 salt，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;openssl/aes.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; key = from_hex_string(<span class="string">"2B7E151628AED2A6ABF7158809CF4F3C"</span>);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv = from_hex_string(<span class="string">"000102030405060708090A0B0C0D0E0F"</span>);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; plain = from_hex_string(<span class="string">"6BC1BEE22E409F96E93D7E117393172A"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; cipher = aes_128_cbc_encrypt(plain, key, iv);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"plain  : "</span> &lt;&lt; to_hex_string(plain) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"cipher : "</span> &lt;&lt; to_hex_string(cipher) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"iv     : "</span> &lt;&lt; to_hex_string(iv) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; decrypt_text = aes_128_cbc_decrypt(cipher, key, iv);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"decrypt: "</span> &lt;&lt; to_hex_string(decrypt_text) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>加密的函式，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; aes_128_cbc_encrypt(<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;plain,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;key,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv) &#123;</span><br><span class="line">    </span><br><span class="line">    AES_KEY ctx;</span><br><span class="line">    AES_set_encrypt_key(key.data(), <span class="number">128</span>, &amp;ctx);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; cipher(<span class="number">16</span>);</span><br><span class="line">    AES_cbc_encrypt(plain.data(), cipher.data(), <span class="number">16</span>, &amp;ctx, iv.data(), AES_ENCRYPT);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> cipher;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>解密的函式，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; aes_128_cbc_decrypt(<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;cipher,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;key,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv) &#123;</span><br><span class="line"></span><br><span class="line">    AES_KEY ctx;</span><br><span class="line">    AES_set_decrypt_key(key.data(), <span class="number">128</span>, &amp;ctx);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; plain(<span class="number">16</span>);</span><br><span class="line">    AES_cbc_encrypt(cipher.data(), plain.data(), <span class="number">16</span>, &amp;ctx, iv.data(), AES_DECRYPT);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> plain;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">plain  : 6BC1BEE22E409F96E93D7E117393172A</span><br><span class="line">cipher : 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">iv     : 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">decrypt: 6BC1BEE22E409F96E93D7E117393172A</span><br></pre></td></tr></table></figure></p>
+<p>這邊列出一些網路上一些 AES 的 Test Vectors 測試向量可以測試看看加密後資料是否一致，這邊使用 <a href="https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html" rel="noopener external nofollow noreferrer" target="_blank">Apple</a> 提供的 4 組 AES-128-CBC Test Vectors，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 000102030405060708090A0B0C0D0E0F</span><br><span class="line">Plaintext = 6BC1BEE22E409F96E93D7E117393172A</span><br><span class="line">Ciphertext = 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">Plaintext = AE2D8A571E03AC9C9EB76FAC45AF8E51</span><br><span class="line">Ciphertext = 5086CB9B507219EE95DB113A917678B2</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 5086CB9B507219EE95DB113A917678B2</span><br><span class="line">Plaintext = 30C81C46A35CE411E5FBC1191A0A52EF</span><br><span class="line">Ciphertext = 73BED6B8E3C1743B7116E69E22229516</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 73BED6B8E3C1743B7116E69E22229516</span><br><span class="line">Plaintext = F69F2445DF4F9B17AD2B417BE66C3710</span><br><span class="line">Ciphertext = 3FF1CAA1681FAC09120ECA307586E1A7</span><br></pre></td></tr></table></figure></p>
+<p>將這些 Key、IV、Plaintext 替換程式中的值，再看看程式執行完的 Ciphertext 是否一致。  </p>
+<p>加密前，計算原始明文長度如果使用 strlen 的話會有個缺點，strlen 是計算到 <code>&#39;\0&#39;</code> 結束字元為止，如果原始明文資料中間就有包含 <code>&#39;\0&#39;</code> 的話就會被 strlen 給截斷，那麼結果就是只會加密 <code>&#39;\0&#39;</code> 前面這一段，所以通常還是要傳入真正的原始明文資料長度，而不是使用 strlen  去計算明文長度。  </p>
+<h2><span id="padding-填充">Padding 填充</span></h2><p>以 PKCS5Padding 或 PKCS7Padding 為例，假設 block size 為 16 byte，那麼明文資料長度不足 16 的倍數就需要填充，如果明文資料長度是 15/31/47 byte 的話就填充 1 byte，填充的數值為 1，如果明文資料長度是 14/30/46 byte 的話就填充 2 byte，填充的數值為 2，如果明文資料長度是 13/29/45 byte 的話就填充 3 byte，填充的數值為 3，等等依此類推。  </p>
+<p>如果明文資料長度剛好是 16 的整數倍就額外填充 16 byte，填充的數值為 16，這一步很重要而且是必須的！為什麼明文資料長度為 16 整數倍時還要多填充 16 byte 呢？因為這樣解密出來明文才能區分最後的 byte 資料是填充的資料而不是原始明文資料的一部分。舉個例子，假設我原始明文資料長度為 16 且最後 1 個 byte 為 1，如果不填充的話，經過加密再解密回來時，那要怎麼知道資料的最後 1 個 byte 的 1 是填充還是原始明文資料呢？解決方法就是明文長度是整數倍時還是進行填充。  </p>
+<p>以下以 block size 為 4 byte 為例，那麼填充的各種結果會是這樣，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DD DD DD DD | DD DD DD 01</span><br><span class="line">DD DD DD DD | DD DD 02 02</span><br><span class="line">DD DD DD DD | DD 03 03 03</span><br><span class="line">DD DD DD DD | 04 04 04 04</span><br></pre></td></tr></table></figure></p>
+<p>PKCS5Padding 與 PKCS7Padding 在實作中基本上是完全相同的，只是 PKCS5Padding 是用來處理 block size 長度為 8 byte (64 bit)，所以 AES block size 為 16 的話是要使用 PKCS7Padding 才比較正確。  </p>
+<h2><span id="cc-openssl-aes-256-cbc-使用-evp-api">C/C++ OpenSSL AES-256 CBC 使用 EVP API</span></h2><p>後來 openssl 還有推出了 EVP 的 API，EVP 的 API 提供了所有對稱式加密演算法的統一介面，對開發者來說就可以很輕易的就換成其他演算法，另外 EVP API 還有硬體加速的部分，關於 EVP API 的討論可以看看<a href="https://stackoverflow.com/questions/9889492/how-to-do-encryption-using-aes-in-openssl" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>與<a href="https://stackoverflow.com/questions/10366950/openssl-using-evp-vs-algorithm-api-for-symmetric-crypto" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>，下一篇就介紹怎麼用 EVP API 來寫 AES-256 CBC。  </p>
+<p>C++ class that interfaces to OpenSSL ciphers – Joe’s Blog<br><a href="https://joelinoff.com/blog/?p=664" rel="noopener external nofollow noreferrer" target="_blank">https://joelinoff.com/blog/?p=664</a><br><a href="https://github.com/jlinoff/openssl-aes-cipher" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/jlinoff/openssl-aes-cipher</a><br>這個人寫了一個 C++ Cipher class for OpenSSL AES-256-CBC，</p>
+<hr>
+<p>其他參考<br>進階加密標準 - 維基百科，自由的百科全書<br><a href="https://zh.wikipedia.org/wiki/%E9%AB%98%E7%BA%A7%E5%8A%A0%E5%AF%86%E6%A0%87%E5%87%86" rel="noopener external nofollow noreferrer" target="_blank">https://zh.wikipedia.org/wiki/%E9%AB%98%E7%BA%A7%E5%8A%A0%E5%AF%86%E6%A0%87%E5%87%86</a><br>高級加密標准AES的工作模式（ECB、CBC、CFB、OFB）_天天向上99的博客-CSDN博客_aes cfb<br><a href="https://blog.csdn.net/charleslei/article/details/48710293" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/charleslei/article/details/48710293</a><br><a href="https://mp.weixin.qq.com/s?__biz=MzI1MTIzMzI2MA==&amp;mid=2650561454&amp;idx=1&amp;sn=dd91cdd8f3853fe07e1f2d02f4f126a9&amp;chksm=f1feed2dc689643bc143bc9462cc36315843a96e1babe372216375808148c43258278723749a&amp;scene=21#wechat_redirect" rel="noopener external nofollow noreferrer" target="_blank">漫画：什么是 AES 算法？</a><br><a href="https://mp.weixin.qq.com/s/zayzFr1h5HIIcWq9xGefkQ?" rel="noopener external nofollow noreferrer" target="_blank">漫画：AES 算法的底层原理</a>  </p>
+<p>填充模式<br>Padding (cryptography) - Wikipedia<br><a href="https://en.wikipedia.org/wiki/Padding_(cryptography" rel="noopener external nofollow noreferrer" target="_blank">https://en.wikipedia.org/wiki/Padding_(cryptography</a>)<br>Day 22. 加密演算法要注意的那些毛 (二) - 填充模式 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天<br><a href="https://ithelp.ithome.com.tw/articles/10250386" rel="noopener external nofollow noreferrer" target="_blank">https://ithelp.ithome.com.tw/articles/10250386</a><br>(瞭解 PKCS#5 的 PKCS#7 的差別)<br>cryptography - How does PKCS7 not lose data? - Stack Overflow<br><a href="https://stackoverflow.com/questions/7447242/how-does-pkcs7-not-lose-data" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/7447242/how-does-pkcs7-not-lose-data</a>  </p>
+<p>Salt and IV 的差異<br>encryption - Passphrase, Salt and IV, do I need all of these? - Stack Overflow<br><a href="https://stackoverflow.com/questions/1905112/passphrase-salt-and-iv-do-i-need-all-of-these" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1905112/passphrase-salt-and-iv-do-i-need-all-of-these</a><br>encryption - Why would you need a salt for AES-CBS when IV is already randomly generated and stored with the encrypted data? - Information Security Stack Exchange<br><a href="https://security.stackexchange.com/questions/48000/why-would-you-need-a-salt-for-aes-cbs-when-iv-is-already-randomly-generated-and" rel="noopener external nofollow noreferrer" target="_blank">https://security.stackexchange.com/questions/48000/why-would-you-need-a-salt-for-aes-cbs-when-iv-is-already-randomly-generated-and</a>  </p>
+<p>AES Test Vectors 測試向量<br><a href="https://const.net.cn/682.html" rel="noopener external nofollow noreferrer" target="_blank">aes 加密算法 测试向量(Test Vectors)示例 - 天行常</a><br><a href="https://github.com/Anexsoft/Bolt-CMS/blob/master/vendor/passwordlib/passwordlib/test/Data/Vectors/aes-ofb.test-vectors" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/Anexsoft/Bolt-CMS/blob/master/vendor/passwordlib/passwordlib/test/Data/Vectors/aes-ofb.test-vectors</a><br><a href="https://boringssl.googlesource.com/boringssl/+/2490/crypto/cipher/test/cipher_test.txt" rel="noopener external nofollow noreferrer" target="_blank">https://boringssl.googlesource.com/boringssl/+/2490/crypto/cipher/test/cipher_test.txt</a><br><a href="https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html" rel="noopener external nofollow noreferrer" target="_blank">https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/openssl-aes-encryption/" title="OpenSSL AES encryption 對稱式加密指令用法與範例">OpenSSL AES encryption 對稱式加密指令用法與範例</a><br><a href="/ubuntu-openssl/" title="Ubuntu 2 種安裝 OpenSSL 的方法">Ubuntu 2 種安裝 OpenSSL 的方法</a><br><a href="/mac-openssl/" title="macOS 2 種安裝 OpenSSL 的方法">macOS 2 種安裝 OpenSSL 的方法</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-openssl-aes/" data-id="clfp6983u00na5rs1dp9hamu4" data-title="C/C++ OpenSSL AES encryption/decryption 加密解密範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <!-- <div id="ads-2">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="1792535573"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+ -->
+    <!-- ads-2 -->
+    <!-- ads-4 -->
+    <div id="ads-4">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-format="autorelaxed"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="5600353687"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <!-- ads-4 -->
+    
+<nav id="article-nav">
+  
+    <a href="/cpp-strncmp/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          C/C++ strncmp 用法與範例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/openssl-aes-encryption/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">OpenSSL AES encryption 對稱式加密指令用法與範例</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-sqlite-tutorial/">Python SQLite 資料庫教學與範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-emulator-image-size-in-ubuntu/">Ubuntu Android Emulator 模擬器的 image 大小</a>
+          </li>
+        
+          <li>
+            <a href="/java-file/">Java File 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/js-submit-form/">JavaScript onclick event submit form 用法範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-java-build-date/">Android Java 取得 build date 當下編譯日期時間</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">166</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">227</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!-- ads-3 -->
+  <div id="ads-3">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="8896181732"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+  <!-- ads-3 -->
+</div>
+<script>
+  function setSidebarHeight(sidebar) {
+    let ad1h = document.getElementById("ads-1").clientHeight; // 280
+    //let ad2h = document.getElementById("ads-2").clientHeight; // 280
+    let ad3h = document.getElementById("ads-3").clientHeight; // 600
+    let ad4h = 0;
+    let elem = document.getElementById("ads-4");
+    if (elem != null) {
+      ad4h = elem.clientHeight; // 447
+    }
+    let mainh = document.getElementById("main").clientHeight;
+    let sidebarh = mainh + ad1h + ad4h - ad3h;
+    sidebar.style.height = sidebarh+"px";
+    console.log("set sidebar height = " + sidebarh + "px (" + mainh + "+" + ad1h + "+" + ad4h + "-" + ad3h + ")");
+  }
+
+  function fixSidebarHeight() {
+    let sidebar = document.getElementById("sidebar");
+    console.log("sidebar height is " + sidebar.style.height);
+
+    if (sidebar.style.height == "auto") {
+      console.log("sidebar height is auto !, fix it.");
+      setSidebarHeight(sidebar);
+    }
+
+    const observer = new MutationObserver(function (mutations, observer) {
+      console.log("observer sidebar height is " + sidebar.style.height);
+      if (sidebar.style.height == "auto") {
+        setSidebarHeight(sidebar);
+      }
+    });
+
+    observer.observe(sidebar, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+
+  console.log("width = " + window.innerWidth);
+  if (window.innerWidth >= 768) {
+    console.log("width >= 768");
+    fixSidebarHeight();
+  } else {
+    console.log("width < 768");
+  }
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

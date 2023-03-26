@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <!-- Google Adsense -->
+  <script async data-ad-client="ca-pub-8106207149031244" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- End Google Adsense -->
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114035046-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114035046-1');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學 | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本篇 ShengYu 介紹 Android 使用 gdb 與 gdbserver 以及搭配 Visual Studio Code(VS Code) 來遠端除錯，gdb 可以透過網路對遠端的程式進行除錯，需要遠端執行 gdbserver 以及搭配本地端 gdb 一起使用，而 gdbserver 是 server 的角色，而 gdb 是 client 的角色，一旦 gdb 連上遠端的 gdbserve">
+<meta name="keywords" content="C&#x2F;C++,Visual Studio Code,Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學">
+<meta property="og:url" content="https://shengyu7697.github.io/android-debugging-with-vscode/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="本篇 ShengYu 介紹 Android 使用 gdb 與 gdbserver 以及搭配 Visual Studio Code(VS Code) 來遠端除錯，gdb 可以透過網路對遠端的程式進行除錯，需要遠端執行 gdbserver 以及搭配本地端 gdb 一起使用，而 gdbserver 是 server 的角色，而 gdb 是 client 的角色，一旦 gdb 連上遠端的 gdbserve">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2022-10-18T14:40:32.888Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學">
+<meta name="twitter:description" content="本篇 ShengYu 介紹 Android 使用 gdb 與 gdbserver 以及搭配 Visual Studio Code(VS Code) 來遠端除錯，gdb 可以透過網路對遠端的程式進行除錯，需要遠端執行 gdbserver 以及搭配本地端 gdb 一起使用，而 gdbserver 是 server 的角色，而 gdb 是 client 的角色，一旦 gdb 連上遠端的 gdbserve">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-android-debugging-with-vscode" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-debugging-with-vscode/" class="article-date">
+  <time datetime="2022-06-13T14:00:00.000Z" itemprop="datePublished">2022-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 Android 使用 gdb 與 gdbserver 以及搭配 Visual Studio Code(VS Code) 來遠端除錯，gdb 可以透過網路對遠端的程式進行除錯，需要遠端執行 gdbserver 以及搭配本地端 gdb 一起使用，而 gdbserver 是 server 的角色，而 gdb 是 client 的角色，一旦 gdb 連上遠端的 gdbserver 後，之後就使用 gdb 進行除錯，跟平常的 gdb 使用上沒有差異，我的桌機環境為 Ubuntu 16.04，  </p>
+<p>以下 Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學內容大概分為這幾部分，  </p>
+<ul>
+<li>adb forward 轉發通訊埠  </li>
+<li>Android 下 gdb 與 gdbserver 使用方法  </li>
+<li>VS Code 遠端偵錯設定  </li>
+<li>VS Code 錯誤排除  </li>
+</ul>
+<h2><span id="adb-forward-轉發通訊埠">adb forward 轉發通訊埠</span></h2><p>用 <a href="/android-adb-forward/" title="adb forward">adb forward</a> 將 PC 的 port 20001 對應到 Android Device 的 port 20002，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb forward tcp:20001 tcp:20002</span><br></pre></td></tr></table></figure></p>
+<p>可以使用 <code>adb forward --list</code> 檢查目前的轉發列表。  </p>
+<h2><span id="android-下-gdb-與-gdbserver-使用方法">Android 下 gdb 與 gdbserver 使用方法</span></h2><p>將編譯好的執行檔推到 Android Device，假設這個執行檔名稱叫 samplehello，在編譯時要確保有 <code>-g</code> 選項以及 <code>-O0</code> 不使用最佳化，以便提供足夠的偵錯資訊，  </p>
+<p>gdb 與 gdbserver 不用自己編譯，直接拿 Android 預編譯好的執行檔即可，以 <a href="https://github.com/android/ndk/wiki/Unsupported-Downloads" rel="noopener external nofollow noreferrer" target="_blank">NDK r13b</a> 為例的話，也可以使用<a href="https://github.com/android/ndk/wiki" rel="noopener external nofollow noreferrer" target="_blank">最新的 NDK</a>，要注意的是 NDK r24 就移除 gdb/gdbserver 改用 lldb 了，所以 NDK r24 之後的版本改用 lldb，<br>gdb 執行檔路徑如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android-ndk-r13b-windows-x86_64.zip -&gt; android-ndk-r13b/prebuilt/windows-x86_64/bin/gdb.exe</span><br><span class="line">android-ndk-r13b-linux-x86_64.zip   -&gt; android-ndk-r13b/prebuilt/linux-x86_64/bin/gdb</span><br><span class="line">android-ndk-r13b-darwin-x86_64.zip  -&gt; android-ndk-r13b/prebuilt/darwin-x86_64/bin/gdb</span><br></pre></td></tr></table></figure></p>
+<p>gdbserver 執行檔路徑如下，gdbserver 是在 Android Device 端執行的程式，視你要除錯的執行檔類型選擇對應架構的 gdbserver，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">android-ndk-r13b-windows-x86_64.zip -&gt; android-ndk-r13b/prebuilt/android-arm/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-windows-x86_64.zip -&gt; android-ndk-r13b/prebuilt/android-arm64/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-linux-x86_64.zip   -&gt; android-ndk-r13b/prebuilt/android-arm/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-linux-x86_64.zip   -&gt; android-ndk-r13b/prebuilt/android-arm64/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-darwin-x86_64.zip  -&gt; android-ndk-r13b/prebuilt/android-arm/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-darwin-x86_64.zip  -&gt; android-ndk-r13b/prebuilt/android-arm64/gdbserver/gdbserver</span><br></pre></td></tr></table></figure></p>
+<p>或者使用 Android BSP / AOSP source code 裡附帶的也可以，預編譯好的 gdb 與 gdbserver 就在 prebuilts 目錄下。  </p>
+<p><strong>Android Device 端</strong><br>在 Android Device 端執行 gdbserver 或 gdbserver64，假使要除錯的執行檔 (samplehello) 是 64bit 架構的就使用 gdbserver64，反之使用 gdbserver，使用錯誤的話到時 gdb 端會顯示錯誤訊息，執行 gdbserver 後面參數加上 <code>&lt;ip:port&gt;</code> 監聽的ip位址與port通訊埠以及要偵錯的執行檔路徑，這邊範例使用 port 20002，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gdbserver64 :20002 /vendor/bin/samplehello</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">gdbserver64 127.0.0.1:20002 /vendor/bin/samplehello</span><br></pre></td></tr></table></figure></p>
+<p>gdbserver 要使用 attach 的方式的話，後面接上程式的 pid 即可，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdbserver64 :20002 --attach &lt;pid&gt;</span><br></pre></td></tr></table></figure></p>
+<p><strong>PC 端</strong><br>在 PC 端執行 gdb，後面參數接上執行檔(debug 版本，no striped)，這裡使用 codebase 預編譯好的 gdb，執行 gdb 後使用 <code>target remote &lt;ip:port&gt;</code> 來連上遠端的 gdbserver，這邊範例是連上本地端的 port 20001，因為稍早的 adb forward 設定會將 PC 本地端的 port 20001 轉發到 Android Device 遠端的 port 20002，使得 Android Device 上的 gdbserver 收到連線請求，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./prebuilts/gdb/linux-x86/bin/gdb ./out/target/product/&lt;product_name&gt;/symbols/vendor/bin/samplehello</span><br><span class="line">(gdb) target remote :20001</span><br><span class="line"># or</span><br><span class="line">(gdb) target remote 127.0.0.1:20001</span><br></pre></td></tr></table></figure></p>
+<p>一般 gdb 除錯時是使用 r 開始執行程式。不過遠端除錯時，遠端的 gdbserver 已經 run 了，所以 gdb 要用 c 來繼續執行，不能用 r。  </p>
+<p>以下為 gdb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b samplehello.cpp:14</code>：設定中斷點<br><code>info b</code>：印出目前設定的中斷點<br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
+<p>確定基本的 gdbserver 與 gdb 都可以正常地遠端偵錯後，我們就來開始進行 VS Code 遠端偵錯的設定吧！</p>
+<h2><span id="vs-code-遠端偵錯設定">VS Code 遠端偵錯設定</span></h2><p>VS Code 的 <code>.vscode/launch.json</code> 設定檔資訊如下，其中重點是 <code>miDebuggerServerAddress</code> 要設定對，例如本範例的 PC 本地端 port 20001 (轉發到 Android Device 遠端的 port 20002)，<code>miDebuggerPath</code> 是 gdb 執行檔的路徑，最後是 <code>program</code> 要除錯的執行檔路徑，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Remote GDB"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppdbg"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/out/target/product/&lt;product_name&gt;/symbols/vendor/bin/samplehello"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceFolder&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"gdb"</span>,</span><br><span class="line">            <span class="attr">"setupCommands"</span>: [</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="attr">"description"</span>: <span class="string">"Enable pretty-printing for gdb"</span>,</span><br><span class="line">                    <span class="attr">"text"</span>: <span class="string">"-enable-pretty-printing"</span>,</span><br><span class="line">                    <span class="attr">"ignoreFailures"</span>: <span class="literal">true</span></span><br><span class="line">                &#125;</span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"miDebuggerServerAddress"</span>: <span class="string">"localhost:20001"</span>,</span><br><span class="line">            <span class="attr">"miDebuggerPath"</span>: <span class="string">"$&#123;workspaceFolder&#125;/prebuilts/gdb/linux-x86/bin/gdb"</span></span><br><span class="line">            //<span class="string">"miDebuggerPath"</span>: <span class="string">"/opt/android-ndk-r13b/prebuilt/linux-x86_64/bin/gdb"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="vs-code-錯誤排除">VS Code 錯誤排除</span></h2><p>如果在除錯的過程中逐步執行發現跳不到原始碼遇到 <code>Could not load source ... &#39;SourceRequest&#39; not supported</code> 這樣的錯誤訊息的話，可能就是找不到原始碼的路徑，可能就是因為執行檔跟原始碼擺放路徑不同，解決方式就是在 launch.json 使用 <code>sourceFileMap</code> 將正確的路徑對應好，再次啟動就可以正確找到了～～  </p>
+<p>類似的狀況與解法可以在<a href="https://medium.com/@fengyu214/v8-playbook-1ac3b4b83cb1" rel="noopener external nofollow noreferrer" target="_blank">medium這篇</a>與<a href="https://github.com/microsoft/vscode-cpptools/issues/3831" rel="noopener external nofollow noreferrer" target="_blank">vscode-cpptools issues</a>這兩篇中發現。  </p>
+<p>其他參考<br>Android Debugging with Visual Studio Code - General and Gameplay Programming - Tutorials - GameDev.net<br><a href="https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/android-debugging-with-visual-studio-code-r4820/" rel="noopener external nofollow noreferrer" target="_blank">https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/android-debugging-with-visual-studio-code-r4820/</a><br>GDBServer on Android<br><a href="https://appleapplecat.pixnet.net/blog/post/32464205" rel="noopener external nofollow noreferrer" target="_blank">https://appleapplecat.pixnet.net/blog/post/32464205</a><br>Using Debuggers  |  Android Open Source Project 官方最新文件<br><a href="https://source.android.google.cn/devices/tech/debug/gdb" rel="noopener external nofollow noreferrer" target="_blank">https://source.android.google.cn/devices/tech/debug/gdb</a><br>Debugging with GDB | Android Open Source 很舊的文件<br><a href="https://wladimir-tm4pda.github.io/porting/debugging_gdb.html" rel="noopener external nofollow noreferrer" target="_blank">https://wladimir-tm4pda.github.io/porting/debugging_gdb.html</a><br>(在 Android 6 及更低版本，gdbclient 的 shell 腳本，Android 6 以上是 gdbclient.py 的 python 腳本)<br>使用GDB在VS Code調試Android C/C++代碼（無需Android源碼）_陳六生的博客-CSDN博客<br><a href="https://blog.csdn.net/u011057800/article/details/108094858" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/u011057800/article/details/108094858</a><br>(launch.json 使用 <code>${env:ANDROID_NDK}</code> 取得環境變數的設定值)  </p>
+<p><strong>相關主題</strong><br><a href="/android-adb-forward/" title="Android adb forward 通訊埠轉發用法教學">Android adb forward 通訊埠轉發用法教學</a><br><a href="/vscode-debugging-on-mac/" title="macOS 使用 VS Code Debugger 除錯">macOS 使用 VS Code Debugger 除錯</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-debugging-with-vscode/" data-id="clfp6984l00o65rs109joz94z" data-title="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <!-- <div id="ads-2">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="1792535573"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+ -->
+    <!-- ads-2 -->
+    <!-- ads-4 -->
+    <div id="ads-4">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-format="autorelaxed"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="5600353687"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <!-- ads-4 -->
+    
+<nav id="article-nav">
+  
+    <a href="/vscode-debugging-on-ubuntu/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Ubuntu 使用 VS Code Debugger 除錯教學
+        
+      </div>
+    </a>
+  
+  
+    <a href="/android-adb-forward/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android adb forward 通訊埠轉發用法教學</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/python-sqlite-tutorial/">Python SQLite 資料庫教學與範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-emulator-image-size-in-ubuntu/">Ubuntu Android Emulator 模擬器的 image 大小</a>
+          </li>
+        
+          <li>
+            <a href="/java-file/">Java File 用法與範例</a>
+          </li>
+        
+          <li>
+            <a href="/js-submit-form/">JavaScript onclick event submit form 用法範例</a>
+          </li>
+        
+          <li>
+            <a href="/android-java-build-date/">Android Java 取得 build date 當下編譯日期時間</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=240&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="240" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">166</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">227</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!-- ads-3 -->
+  <div id="ads-3">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="8896181732"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+  <!-- ads-3 -->
+</div>
+<script>
+  function setSidebarHeight(sidebar) {
+    let ad1h = document.getElementById("ads-1").clientHeight; // 280
+    //let ad2h = document.getElementById("ads-2").clientHeight; // 280
+    let ad3h = document.getElementById("ads-3").clientHeight; // 600
+    let ad4h = 0;
+    let elem = document.getElementById("ads-4");
+    if (elem != null) {
+      ad4h = elem.clientHeight; // 447
+    }
+    let mainh = document.getElementById("main").clientHeight;
+    let sidebarh = mainh + ad1h + ad4h - ad3h;
+    sidebar.style.height = sidebarh+"px";
+    console.log("set sidebar height = " + sidebarh + "px (" + mainh + "+" + ad1h + "+" + ad4h + "-" + ad3h + ")");
+  }
+
+  function fixSidebarHeight() {
+    let sidebar = document.getElementById("sidebar");
+    console.log("sidebar height is " + sidebar.style.height);
+
+    if (sidebar.style.height == "auto") {
+      console.log("sidebar height is auto !, fix it.");
+      setSidebarHeight(sidebar);
+    }
+
+    const observer = new MutationObserver(function (mutations, observer) {
+      console.log("observer sidebar height is " + sidebar.style.height);
+      if (sidebar.style.height == "auto") {
+        setSidebarHeight(sidebar);
+      }
+    });
+
+    observer.observe(sidebar, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+
+  console.log("width = " + window.innerWidth);
+  if (window.innerWidth >= 768) {
+    console.log("width >= 768");
+    fixSidebarHeight();
+  } else {
+    console.log("width < 768");
+  }
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
