@@ -107,6 +107,473 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-android-adb-logcat" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-adb-logcat/" class="article-date">
+  <time datetime="2020-06-24T14:00:00.000Z" itemprop="datePublished">2020-06-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/android-adb-logcat/">Android adb logcat 基本用法教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇教學介紹如何在 Android 下使用 adb logcat 指令，adb logcat command line tool 是開發 Android 時常常用到的工具，使用 adb logcat 指令會 dump 出系統的 log 日誌訊息，包含 stack traces，當 andorid 裝置噴出錯誤訊息時，你可以使用 adb logcat 即時地觀看系統訊息，以便輔助開發除錯。  </p>
+<p>adb 指令的安裝方式可以參考<a href="/android-adb/" title="這篇">這篇</a>。  </p>
+<h2><span id="使用-adb-logcat-前先開啟-usb-偵錯模式">使用 adb logcat 前，先開啟 USB 偵錯模式</span></h2><p>使用 adb logcat 功能時，通常要將 android 裝置開啟 USB 偵錯模式，中文介面的路徑如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">設定 &gt; 開發人員選項 &gt; USB 偵錯</span><br></pre></td></tr></table></figure></p>
+<p>英文介面的路徑如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Settings &gt; Advanced &gt; Developer options &gt; USB debugging</span><br></pre></td></tr></table></figure></p>
+<p>如果找不到<code>開發人員選項</code>需要另外開啟這功能，中文介面的路徑如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Settings &gt; 關於手機 &gt; 版本號碼 (連續快速7點次)</span><br></pre></td></tr></table></figure></p>
+<p>英文介面的路徑如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Settings &gt; About Phone &gt; Build number (連續快速7點次)</span><br></pre></td></tr></table></figure></p>
+<p>點完之後它會提示你已經是開發人員了，之後就會顯示<code>開發人員選項</code>了<br>也可參考<a href="http://blog.pulipuli.info/2019/01/adbfastbootandroid-sdk-platform-tools.html" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>。  </p>
+<h2><span id="adb-logcat-指令基本教學">adb logcat 指令基本教學</span></h2><p>使用 adb logcat 的方式有兩種，一種是直接執行 adb logcat,<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ adb logcat</span><br></pre></td></tr></table></figure></p>
+<p>另一種是先進入 android 的 shell 模式再輸入logcat。<br>通常是使用 adb logcat 發現 log 會遺失掉(使用無線傳輸)，就會使用這種方式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ adb shell</span><br><span class="line">$ logcat</span><br></pre></td></tr></table></figure></p>
+<h2><span id="adb-logcat-指令選項">adb logcat 指令選項</span></h2><p>以下為常用的 adb logcat 指令，有想到在陸續增加吧！<br><code>adb logcat -c</code>: 清除緩衝區，截至目前的log都會被清除<br><code>adb logcat -s</code>: 設定過濾器，<br>例如，<code>adb logcat -s MyActivity:W</code> 表示顯示單一 tag MyActivity 且 log 等級不低於 Warning  <code>adb logcat -s MyActivity:V ActivityManager:V</code> 表示顯示多重 tag MyActivity 且 log 等級不低於 Verbose 與 ActivityManager 且 log 等級不低於 Verbose，以下為各種 log 等級縮寫與全名，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">V: Verbose (lowest priority)</span><br><span class="line">D: Debug</span><br><span class="line">I: Info</span><br><span class="line">W: Warning</span><br><span class="line">E: Error</span><br><span class="line">F: Fatal</span><br><span class="line">S: Silent (highest priority, on which nothing is ever printed)</span><br></pre></td></tr></table></figure></p>
+<p><code>adb logcat -f</code>: 將log輸出到指定的檔案<br><code>adb logcat -D</code>: 在不同的log之間加上分隔線<br><code>adb logcat -g</code>: 取得目前緩衝區的大小<br><code>adb logcat -G &lt;size&gt;</code>: 設定緩衝區的大小<br><code>adb logcat -t &lt;count&gt;</code>:<br><code>adb logcat -t &lt;time&gt;</code>:<br><code>adb logcat -T &lt;count&gt;</code>:<br><code>adb logcat -T &lt;time&gt;</code>:<br><code>adb logcat -v &lt;format&gt;</code>: 設定日誌輸出格式，預設的是threadtime格式，可用的選項如下，  </p>
+<ul>
+<li><code>brief</code>: 顯示優先順序,標籤和程式PID  </li>
+<li><code>long</code>: 顯示所有的metadata欄位並且用空行分隔訊息內容  </li>
+<li><code>process</code>: 只顯示程式PID  </li>
+<li><code>raw</code>: 顯示原始的日誌資訊，沒有其他的metadata欄位  </li>
+<li><code>tag</code>: 只顯示優先順序與標籤  </li>
+<li><code>thread</code>: 顯示程式PID與執行緒TID  </li>
+<li><code>threadtime (預設)</code>: 顯示日期,時間,優先順序,標籤,程式PID, 執行緒TID  </li>
+<li><code>time</code>: 顯示日期,時間,優先順序,標記,程式PID  </li>
+</ul>
+<p>例如: <code>adb logcat -v time</code> 表示使用 time 輸出格式，只能指定一種格式。  </p>
+<h2><span id="adb-logcat-常用進階技巧">adb logcat 常用進階技巧</span></h2><p>將 adb logcat 輸出重新導到指定的檔案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat &gt; aaa.log</span><br></pre></td></tr></table></figure></p>
+<p>將 adb logcat 輸出導到 <a href="/linux-grep-ack-ag/" title="grep">grep</a> 來搜尋特定關鍵字，<br>詳細的 grep 用法可以參考<a href="/linux-grep-ack-ag/" title="這篇">這篇</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat | grep xxx</span><br></pre></td></tr></table></figure></p>
+<p>Windows 下請改用 findstr<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat | findstr xxx</span><br></pre></td></tr></table></figure></p>
+<p>將 adb logcat 輸出導到 <a href="/linux-grep-ack-ag/" title="grep">grep</a> 來搜尋多重關鍵字，<br>詳細的 grep 用法可以參考<a href="/linux-grep-ack-ag/" title="這篇">這篇</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat | grep -E &apos;aaa|bbb|ccc&apos;</span><br></pre></td></tr></table></figure></p>
+<p>將 adb logcat 輸出用 <a href="/linux-tee/" title="tee">tee</a> 導到指定的檔案也同時使用 <a href="/linux-grep-ack-ag/" title="grep">grep</a> 來搜尋特定關鍵字，<br>詳細的 tee 用法可以參考<a href="/linux-tee/" title="這篇">這篇</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat | tee aaa.log | grep xxx</span><br></pre></td></tr></table></figure></p>
+<h2><span id="adb-logcat-lines-missing-的原因">adb logcat lines missing 的原因</span></h2><p>當 android adb logcat 出現 identical 5 lines 這種訊息時表示 adb logcat 發現相鄰的 log 內容完全相同，<br>為了增進 log 的效能，從 Android O 開始 Log 的 chatty 機制會把重複內容去掉換成是 identical 5 lines 這樣的 log，告訴開發者省略了 5 行內容。<br>如下所示，代表 AAA 行程的 log 被省略了 5 行。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2020-06-24 22:00:00.000 10123-10123 I/chatty: uid=10500 AAA identical 5 lines</span><br></pre></td></tr></table></figure></p>
+<p>關掉這個功能的方法：目前還沒找到方法可以關掉它。  </p>
+<p>參考<br>Logcat command-line tool  |  Android Developers<br><a href="https://developer.android.com/studio/command-line/logcat" rel="noopener external nofollow noreferrer" target="_blank">https://developer.android.com/studio/command-line/logcat</a><br>adb logcat 指北_敲鍵盤的呼倫貝爾人-CSDN博客_logcat -l<br><a href="https://blog.csdn.net/kennethyo/article/details/76603228" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/kennethyo/article/details/76603228</a><br>Appdome | Gathering Android Device Logs Using ADB - Appdome<br><a href="https://www.appdome.com/no-code-mobile-integration-knowledge-base/gathering-android-device-logs-using-adb/" rel="noopener external nofollow noreferrer" target="_blank">https://www.appdome.com/no-code-mobile-integration-knowledge-base/gathering-android-device-logs-using-adb/</a><br>西加加 Android: [Android] adb logcat使用方法<br><a href="http://pianovv510.blogspot.com/2013/07/android-adb-logcat.html" rel="noopener external nofollow noreferrer" target="_blank">http://pianovv510.blogspot.com/2013/07/android-adb-logcat.html</a><br>Android logcat lines missing原因分析 - 庚拓天下 - 博客園<br><a href="https://www.cnblogs.com/genggeng/p/10706379.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/genggeng/p/10706379.html</a>  </p>
+<h2><span id="其他技巧推薦">其他技巧推薦</span></h2><p>如果你是常常在Android adb shell下做事情的話，尤其是需要使用到vi，建議安裝<a href="/android-install-busybox/" title="busybox">busybox</a>，使用<a href="/android-install-busybox/" title="busybox附帶的vi">busybox附帶的vi</a>會方便很多，<br>如果還想知道busybox支援哪些指令或busybox基本用法的話請看<a href="/busybox/" title="這篇">這篇</a>。<br>其他的 Android 系列文章可以看<a href="/android-tutorial/" title="這篇">這篇</a>，<br>下一篇來介紹<a href="/android-fastboot/" title="Android fastboot指令的安裝與用法教學">Android fastboot指令的安裝與用法教學</a>吧～</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-adb-logcat/" data-id="clxhd8awy009olrs1tyhxfb15" data-title="Android adb logcat 基本用法教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-github-kys-cpp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/github-kys-cpp/" class="article-date">
+  <time datetime="2020-06-22T14:00:00.000Z" itemprop="datePublished">2020-06-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Github/">Github</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/github-kys-cpp/">開源專案-金庸群俠傳</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>今天介紹Github上開源專案的金庸群俠傳遊戲，</p>
+<h2><span id="scarstykys-cpp">scarsty/kys-cpp</span></h2><p><a href="https://github.com/scarsty/kys-cpp" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/scarsty/kys-cpp</a><br>星星數：<code>168</code>stars<br>技術：<code>Cpp</code>,<code>SDL</code>,<code>sqlite3</code>,<code>boost asio</code><br>使用 C++ 與 SDL2 的「金庸群俠傳」復刻版。<br>小時候常玩的金庸群俠傳，印象很深刻當時野球拳練得很辛苦，沒想到長大後竟然發現有網友的重製開源版本，<br>有機會再來分享這裡面的遊戲軟體架構吧～  </p>
+<p>其他參考<br>[1] 写一个《金庸群侠传》——完结开源<br><a href="https://zhuanlan.zhihu.com/p/30449554" rel="noopener external nofollow noreferrer" target="_blank">https://zhuanlan.zhihu.com/p/30449554</a><br>[2] [C++复刻] 《金庸群侠传》C++复刻版正式发布！<br><a href="https://www.dawuxia.net/thread-1034211-1-1.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.dawuxia.net/thread-1034211-1-1.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/github-cursorjail/" title="開源專案CursorJail-滑鼠鎖定工具">開源專案CursorJail-滑鼠鎖定工具</a><br><a href="/github-2048/" title="開源專案-2048">開源專案-2048</a><br><a href="/github-tetris/" title="開源專案-tetris俄羅斯方塊">開源專案-tetris俄羅斯方塊</a><br><a href="/github-sudoku/" title="開源專案-數獨sudoku">開源專案-數獨sudoku</a><br><a href="/github-sdlpal/" title="開源專案-仙劍奇俠傳">開源專案-仙劍奇俠傳</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/github-kys-cpp/" data-id="clxhd8awy009nlrs1qr06m1ua" data-title="開源專案-金庸群俠傳" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-opencv-erode-dilate" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-opencv-erode-dilate/" class="article-date">
+  <time datetime="2020-06-21T14:00:00.000Z" itemprop="datePublished">2020-06-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-opencv-erode-dilate/">Python OpenCV 影像侵蝕 erode 與影像膨脹 dilate</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何用 Python 搭配 OpenCV 模組來作影像侵蝕 cv2.erode 與影像膨脹 cv2.dilate，影像的侵蝕 Erosion 與膨脹 Dilation 是型態學的兩種基本運算，形態學主要是用來處理二值化後的影像，趕緊來學習吧。  </p>
+<h2><span id="erosion-影像侵蝕">Erosion 影像侵蝕</span></h2><p>這篇要介紹影像處理中的型態變換，首先先介紹 Erosion 影像侵蝕。<br>用途1：Erosion 影像侵蝕對於移除影像中的小白雜點很有幫助，可用來去噪，例如影像中的小雜點，雜訊。<br>用途2：細化影像，消除毛刺。  </p>
+<p>影像侵蝕的概念就是將影像中白色區域(或高亮)進行細化或縮減，運算完的結果圖比原圖的白色區域更小，也可想像成讓該物體瘦一圈，而這一圈的寬度是由捲積 kernel 的大小所決定的，<br>實際上捲積 kernel 沿著影樣滑動並計算，如果捲積 kernel m x n 範圍內所有像素值都是1，那麼新的像素值就保持原來的值，<br>否則新的像素值為0，這表示捲積 kernel 掃過的所有像素都會被腐蝕或侵蝕掉(變為0)，所以整張影像的白色區域會變少。  </p>
+<p><a href="https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#erode" rel="noopener external nofollow noreferrer" target="_blank"><code>cv2.erode()</code></a> 的第一個參數為二值化的影像， 第二個參數為使用的捲積 kernel，第三個參數為迭代次數(預設為1)，<br>範例中的 kernel 捲積大小為 3x3，可以改成 5x5 或 7x7 較為常見，預設值為 3x3  </p>
+<figure class="highlight python"><figcaption><span>opencv-erode.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'LinuxLogo.jpg'</span>, <span class="number">0</span>)</span><br><span class="line">kernel = np.ones((<span class="number">3</span>,<span class="number">3</span>), np.uint8)</span><br><span class="line">erosion = cv2.erode(image, kernel, iterations = <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">cv2.imshow(<span class="string">'Input'</span>, image)</span><br><span class="line">cv2.imshow(<span class="string">'Result'</span>, erosion)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>結果圖如下所示：<br>可以發現右邊影像的線條明顯地變細了<br><img src="/python-opencv-erode-dilate/opencv-erode.png" width="640" title="結果圖"></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="dilation-影像膨脹">Dilation 影像膨脹</span></h2><p>再來介紹 Dilation 影像膨脹，<br>用途1：Dilation 影像膨脹通常是配合著影像侵蝕 Erosion 使用，先使用侵蝕的方式使影像中的線條變窄，同時也去除雜訊，之後再透過 Dilation 將影像膨脹回來。<br>用途2：用來連接兩個很靠近但分開的物體。  </p>
+<p>影像膨脹的概念就是將影像中白色區域(或高亮)進行擴張，運算完的結果圖比原圖的白色區域更大，也可想像成讓該物體胖一圈，而這一圈的寬度是由捲積 kernel 的大小所決定的，<br>在實際上捲積 kernel 沿著影樣滑動並計算，如果捲積 kernel m x n 範圍內只要有一個像素值是1，那麼新的像素值就為1，<br>否則新的像素值保持原來的像素值，這表示捲積 kernel 掃過的所有像素都會被擴張或膨脹(變為1)，所以整張影像的白色區域會變多。  </p>
+<p><a href="https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate" rel="noopener external nofollow noreferrer" target="_blank"><code>cv2.dilate()</code></a> 的第一個參數為二值化的影像， 第二個參數為使用的捲積 kernel，第三個參數為迭代次數(預設為1)，<br>範例中的 kernel 捲積大小為 3x3，可以改成 5x5 或 7x7 較為常見，預設值為 3x3  </p>
+<figure class="highlight python"><figcaption><span>opencv-dilate.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'LinuxLogo.jpg'</span>, <span class="number">0</span>)</span><br><span class="line">kernel = np.ones((<span class="number">3</span>,<span class="number">3</span>), np.uint8)</span><br><span class="line">dilation = cv2.dilate(image, kernel, iterations = <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">cv2.imshow(<span class="string">'Input'</span>, image)</span><br><span class="line">cv2.imshow(<span class="string">'Result'</span>, dilation)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>結果圖如下所示：<br><img src="/python-opencv-erode-dilate/opencv-dilate.png" width="640" title="結果圖"></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>參考<br>Morphological Transformations — OpenCV-Python Tutorials beta documentation<br><a href="https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_morphological_ops/py_morphological_ops.html" rel="noopener external nofollow noreferrer" target="_blank">https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_morphological_ops/py_morphological_ops.html</a><br>opencv-python中的腐蝕與膨脹函數<br><a href="https://blog.csdn.net/hjxu2016/article/details/77837765" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/hjxu2016/article/details/77837765</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-opencv-rgb-to-gray/" title="Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)">Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-hsv/" title="Python OpenCV 彩色轉HSV(RGB/BGR to HSV)">Python OpenCV 彩色轉HSV(RGB/BGR to HSV)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)">Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-gray-to-rgb/" title="Python OpenCV 灰階轉彩色(Gray to RGB/BGR)">Python OpenCV 灰階轉彩色(Gray to RGB/BGR)</a><br><a href="/python-opencv-threshold/" title="Python OpenCV 影像二值化 Image Thresholding">Python OpenCV 影像二值化 Image Thresholding</a><br><a href="/python-opencv-blur/" title="Python OpenCV 影像平滑模糊化 blur">Python OpenCV 影像平滑模糊化 blur</a><br><a href="/python-opencv-canny/" title="Python OpenCV 影像邊緣偵測 Canny Edge Detection">Python OpenCV 影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-vconcat-hconcat/" title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接">Python OpenCV 垂直vconcat 和水平hconcat 影像拼接</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-opencv-img2char/" title="小專案 Python OpenCV 圖片轉字元圖畫">小專案 Python OpenCV 圖片轉字元圖畫</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-opencv-erode-dilate/" data-id="clxhd8awy009mlrs11ac6w260" data-title="Python OpenCV 影像侵蝕 erode 與影像膨脹 dilate" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-opencv-save-video" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-opencv-save-video/" class="article-date">
+  <time datetime="2020-06-15T14:00:00.000Z" itemprop="datePublished">2020-06-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-opencv-save-video/">Python OpenCV 儲存寫入video影片到檔案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何用 Python 搭配 OpenCV 模組的 cv2.VideoCapture 將來源的影像(攝影機或串流影片)，儲存寫入video影片到檔案裡。  </p>
+<h2><span id="使用範例">使用範例</span></h2><p>如果遇到 <code>ImportError: No module named &#39;cv2&#39;</code> 這個錯誤訊息的話，請安裝 python 的 OpenCV 模組，參考<a href="/python-install-opencv/" title="這篇">這篇</a>安裝吧！。  </p>
+<p>先前的文章我們學習了<a href="/python-opencv-video/" title="如何讀取播放影片">如何讀取播放影片</a>，那這篇要來學習如何儲存影片，<br>如果要將來源影片(不論來源是攝影機影像還是影片)要存成圖片的話只要使用 <code>cv2.imwrite()</code> 就可以了，<br>那如果想要存成影片檔的話，我們可以使用 <code>VideoWriter</code> 這個 class，<br><code>cv2.VideoWriter()</code> 的第一個參數是指定輸出的檔名，例如：下列範例中的 output.avi，<br>第二個參數為指定 <code>FourCC</code>，<br>第三個參數為 fps 影像偵率，<br>第四個參數為 frameSize 影像大小，<br>最後參數代表是否要存彩色，否則就存灰階，預設為 true，  </p>
+<p>FourCC 是 4-byte 大小的碼，用來指定影像編碼方式，<br>如同下列範例的 fourcc 變數，它可以由 <code>cv2.VideoWriter_fourcc()</code> 來產生，<br><code>cv2.VideoWriter_fourcc()</code> 的參數是傳入四個字元就會回傳該 fourcc，可使用的編碼列表可以參考<a href="http://www.fourcc.org/codecs.php" rel="noopener external nofollow noreferrer" target="_blank">www.fourcc.org</a>，同時也要看該平台有沒有支援。  </p>
+<p>常見的編碼格式有，以使用MJPG為例子的話，可以用這兩種寫法都一樣，<br>cv2.VideoWriter_fourcc(‘M’,’J’,’P’,’G’) 或者是 cv2.VideoWriter_fourcc(*’MJPG’)。  </p>
+<figure class="highlight python"><figcaption><span>opencv-save-video.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">cap = cv2.VideoCapture(<span class="number">0</span>)</span><br><span class="line"><span class="comment"># Define the codec and create VideoWriter object</span></span><br><span class="line">fourcc = cv2.VideoWriter_fourcc(*<span class="string">'XVID'</span>)</span><br><span class="line">out = cv2.VideoWriter(<span class="string">'output.avi'</span>, fourcc, <span class="number">20.0</span>, (<span class="number">640</span>,  <span class="number">480</span>))</span><br><span class="line"><span class="keyword">while</span> cap.isOpened():</span><br><span class="line">    ret, frame = cap.read()</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> ret:</span><br><span class="line">        print(<span class="string">"Can't receive frame (stream end?). Exiting ..."</span>)</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    <span class="comment"># 水平上下翻轉影像</span></span><br><span class="line">    <span class="comment">#frame = cv2.flip(frame, 0)</span></span><br><span class="line">    <span class="comment"># write the flipped frame</span></span><br><span class="line">    out.write(frame)</span><br><span class="line">    cv2.imshow(<span class="string">'frame'</span>, frame)</span><br><span class="line">    <span class="keyword">if</span> cv2.waitKey(<span class="number">1</span>) == ord(<span class="string">'q'</span>):</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line"><span class="comment"># Release everything if job is finished</span></span><br><span class="line">cap.release()</span><br><span class="line">out.release()</span><br><span class="line">cv2.destroyAllWindows()</span><br></pre></td></tr></table></figure>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>如果要輸出附檔名為 mp4 可用下列寫法的其中一種，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">fourcc = cv2.VideoWriter_fourcc(<span class="string">'m'</span>, <span class="string">'p'</span>, <span class="string">'4'</span>, <span class="string">'v'</span>)</span><br><span class="line">fourcc = cv2.VideoWriter_fourcc(<span class="string">'M'</span>, <span class="string">'P'</span>, <span class="string">'4'</span>, <span class="string">'V'</span>)</span><br><span class="line">fourcc = cv2.VideoWriter_fourcc(*<span class="string">'MP4V'</span>)</span><br><span class="line">fourcc = cv2.VideoWriter_fourcc(*<span class="string">'mp4v'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>其他參考<br>OpenCV: Getting Started with Videos<br><a href="https://docs.opencv.org/master/dd/d43/tutorial_py_video_display.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.opencv.org/master/dd/d43/tutorial_py_video_display.html</a><br>OpenCV 擷取網路攝影機串流影像，處理並寫入影片檔案教學 - G. T. Wang<br><a href="https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/" rel="noopener external nofollow noreferrer" target="_blank">https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-opencv-rgb-to-gray/" title="Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)">Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-hsv/" title="Python OpenCV 彩色轉HSV(RGB/BGR to HSV)">Python OpenCV 彩色轉HSV(RGB/BGR to HSV)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)">Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-gray-to-rgb/" title="Python OpenCV 灰階轉彩色(Gray to RGB/BGR)">Python OpenCV 灰階轉彩色(Gray to RGB/BGR)</a><br><a href="/python-opencv-threshold/" title="Python OpenCV 影像二值化 Image Thresholding">Python OpenCV 影像二值化 Image Thresholding</a><br><a href="/python-opencv-blur/" title="Python OpenCV 影像平滑模糊化 blur">Python OpenCV 影像平滑模糊化 blur</a><br><a href="/python-opencv-canny/" title="Python OpenCV 影像邊緣偵測 Canny Edge Detection">Python OpenCV 影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-vconcat-hconcat/" title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接">Python OpenCV 垂直vconcat 和水平hconcat 影像拼接</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-opencv-save-video/" data-id="clxhd8awx009llrs1e5a3fetp" data-title="Python OpenCV 儲存寫入video影片到檔案" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-rpi-python-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/rpi-python-3/" class="article-date">
+  <time datetime="2020-06-11T14:00:00.000Z" itemprop="datePublished">2020-06-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/rpi-python-3/">在 Raspbian 上手動安裝 Python 3</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>Raspberry Pi 上可以灌很多 OS, 其中常見的 OS 就是 Raspbian，現在改名叫 Raspberry Pi OS，<br>是基於 Debian 開發的 OS，今天我們要在這裡面安裝 Python 3。  </p>
+<h1><span id="在-raspbian-上手動編譯安裝-python-36">在 Raspbian 上手動編譯安裝 Python 3.6</span></h1><p>如果想要確認樹梅派安裝的 OS 是不是 Raspbian，可以看看<a href="/rpi-software-hardware-version/" title="這篇">這篇</a><br>我自己樹梅派安裝的 OS 版本為 <code>raspbian-jessie</code>  </p>
+<p>我是看參考這篇做的，這篇是教手動編譯 Python-3.6.5  但我也成功。<br><a href="https://gist.github.com/dschep/24aa61672a2092246eaca2824400d37f" rel="noopener external nofollow noreferrer" target="_blank">https://gist.github.com/dschep/24aa61672a2092246eaca2824400d37f</a>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install build-essential tk-dev libncurses5-dev libncursesw5-dev libreadline6-dev libdb5.3-dev libgdbm-dev libsqlite3-dev libssl-dev libbz2-dev libexpat1-dev liblzma-dev zlib1g-dev</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz</span><br><span class="line">$ tar xf Python-3.6.5.tar.xz</span><br><span class="line">$ cd Python-3.6.5</span><br><span class="line">$ ./configure</span><br><span class="line">$ make</span><br><span class="line">$ sudo make altinstall</span><br></pre></td></tr></table></figure>
+<p>之後我是使用 python3.6 這個指令，pip 使用 pip3.6 這個指令。<br>當時用 apt 安裝是安裝3.4，輸入 python3 也是軟連結執行 python3.4，<br>用 <code>sudo apt purge python3</code> + <code>sudo apt autoremove</code> 完全移除 python3 後發現 python3 軟連結不見了，<br>除非自己建立一個 <code>/usr/bin/python -&gt; python 3.6</code> 的軟連結，<br>不知道有沒有其他更高招的方式。還是其實手動編譯 <code>sudo make install</code> 會建立軟連結？  </p>
+<p>其他參考<br><a href="http://www.knight-of-pi.org/installing-python3-6-on-a-raspberry-pi/" rel="noopener external nofollow noreferrer" target="_blank">http://www.knight-of-pi.org/installing-python3-6-on-a-raspberry-pi/</a><br>這篇也是差不多，他是手動編譯 Python-3.6.3 稍微舊一點</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/rpi-python-3/" data-id="clxhd8awx009klrs1w6o6i5gf" data-title="在 Raspbian 上手動安裝 Python 3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-qt-5-15" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/qt-5-15/" class="article-date">
+  <time datetime="2020-06-10T14:00:00.000Z" itemprop="datePublished">2020-06-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/qt-5-15/">Qt 5.15 之後不再提供預編譯安裝包</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>根據 5.15.0 的文件指出<br><a href="http://download.qt.io/official_releases/qt/5.15/5.15.0/OFFLINE_REAMDE.txt" rel="noopener external nofollow noreferrer" target="_blank">http://download.qt.io/official_releases/qt/5.15/5.15.0/OFFLINE_REAMDE.txt</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Due to The Qt Company offering changes, open source offline installers are not available any more since Qt 5.15. Read more about offering changes in the https://www.qt.io/blog/qt-offering-changes-2020 blog.</span><br><span class="line"></span><br><span class="line">If you need offline installers, please consider our new Qt for Small Business offering: https://www.qt.io/blog/available-now-qt-for-small-businesses</span><br></pre></td></tr></table></figure></p>
+<p>由於Qt公司的政策改變，以後不再提供預先編譯好的離線獨立安裝包，只能線上安裝了，<br>要離線安裝包，要購買 Qt for Small Business 產品。</p>
+<p>其他參考<br>歷代的離線安裝包下載網址<br><a href="https://download.qt.io/archive/qt/" rel="noopener external nofollow noreferrer" target="_blank">https://download.qt.io/archive/qt/</a><br><a href="http://download.qt.io/official_releases/qt/" rel="noopener external nofollow noreferrer" target="_blank">http://download.qt.io/official_releases/qt/</a><br>Qt 線上安裝器下載網址<br><a href="http://download.qt.io/official_releases/online_installers/" rel="noopener external nofollow noreferrer" target="_blank">http://download.qt.io/official_releases/online_installers/</a><br>【Qt】 Qt 5.15 在线安装_风语留痕-CSDN博客<br><a href="https://blog.csdn.net/kingkee/article/details/106424024" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/kingkee/article/details/106424024</a></p>
+<p><strong>其它相關文章推薦</strong><br><a href="/qt-read-text-file/" title="[Qt] 讀檔，讀取 txt 文字檔">[Qt] 讀檔，讀取 txt 文字檔</a><br><a href="/qt-write-text-file/" title="[Qt] 寫檔，寫入 txt 文字檔">[Qt] 寫檔，寫入 txt 文字檔</a><br><a href="/install-qt-on-windows-use-msvc/" title="安裝 Qt 在 Windows 7 (使用MSVC)">安裝 Qt 在 Windows 7 (使用MSVC)</a><br><a href="/qt-deploy-exe/" title="Qt產生的exe發布方式">Qt產生的exe發布方式</a><br><a href="/qt-translator/" title="Qt 新增多國語言.ts翻譯檔案">Qt 新增多國語言.ts翻譯檔案</a><br><a href="/qt-chinese-garbled-problem/" title="Qt5的中文亂碼問題如何解決">Qt5的中文亂碼問題如何解決</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/qt-5-15/" data-id="clxhd8aww009jlrs1wi5tas9w" data-title="Qt 5.15 之後不再提供預編譯安裝包" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-opencv-video" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-opencv-video/" class="article-date">
+  <time datetime="2020-06-09T14:00:00.000Z" itemprop="datePublished">2020-06-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-opencv-video/">Python OpenCV 讀取播放video影片檔案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何用 Python 搭配 OpenCV 模組的 cv2.VideoCapture 讀取影片檔案並播放顯示影片串流的畫面。  </p>
+<h2><span id="使用範例">使用範例</span></h2><p>如果遇到 <code>ImportError: No module named &#39;cv2&#39;</code> 這個錯誤訊息的話，請安裝 python 的 OpenCV 模組，參考<a href="/python-install-opencv/" title="這篇">這篇</a>安裝吧！。  </p>
+<p>用 VideoCapture 來播放video影片跟<a href="/python-opencv-camera/" title="播放camera攝影機串流影像">播放camera攝影機串流影像</a>是一樣的，只是將參數中的攝影機代號換成影片的檔案名稱，<br>在顯示 frame 影像時，如果影像播放的很快的話，可以藉由調整 <code>cv2.waitKey()</code> 的參數來控制 frame 與 frame 之前的延遲，<br>如果 <code>cv2.waitKey()</code> 參數調的太小，那麼影片就會播的很快，<br>反之 <code>cv2.waitKey()</code> 參數調的太大，那麼影片就會播的很慢，<br>正常情況下 25 ms(milliseconds) 會是剛剛好的預設值。  </p>
+<figure class="highlight python"><figcaption><span>opencv-video.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">cap = cv2.VideoCapture(<span class="string">'vtest.avi'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> cap.isOpened():</span><br><span class="line">    ret, frame = cap.read()</span><br><span class="line">    <span class="comment"># if frame is read correctly ret is True</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> ret:</span><br><span class="line">        print(<span class="string">"Can't receive frame (stream end?). Exiting ..."</span>)</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)</span><br><span class="line">    cv2.imshow(<span class="string">'frame'</span>, gray)</span><br><span class="line">    <span class="keyword">if</span> cv2.waitKey(<span class="number">1</span>) == ord(<span class="string">'q'</span>):</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">cap.release()</span><br><span class="line">cv2.destroyAllWindows()</span><br></pre></td></tr></table></figure>
+<p>播放中的截圖如下所示：<br>原本影片是彩色影像的，我們透過<code>cv2.cvtColor()</code> 將影像從<a href="/python-opencv-rgb-to-gray/" title="彩色轉成灰階">彩色轉成灰階</a>再顯示出來。<br><img src="/python-opencv-video/opencv-camera.png" width="640" title="結果圖">  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>下一篇教學是<a href="/python-opencv-save-video/" title="如何儲存寫入video影片到檔案">如何儲存寫入video影片到檔案</a>。  </p>
+<p>其他參考<br>OpenCV: Getting Started with Videos<br><a href="https://docs.opencv.org/master/dd/d43/tutorial_py_video_display.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.opencv.org/master/dd/d43/tutorial_py_video_display.html</a><br>OpenCV 擷取網路攝影機串流影像，處理並寫入影片檔案教學 - G. T. Wang<br><a href="https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/" rel="noopener external nofollow noreferrer" target="_blank">https://blog.gtwang.org/programming/opencv-webcam-video-capture-and-file-write-tutorial/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-opencv-rgb-to-gray/" title="Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)">Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-hsv/" title="Python OpenCV 彩色轉HSV(RGB/BGR to HSV)">Python OpenCV 彩色轉HSV(RGB/BGR to HSV)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)">Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-gray-to-rgb/" title="Python OpenCV 灰階轉彩色(Gray to RGB/BGR)">Python OpenCV 灰階轉彩色(Gray to RGB/BGR)</a><br><a href="/python-opencv-threshold/" title="Python OpenCV 影像二值化 Image Thresholding">Python OpenCV 影像二值化 Image Thresholding</a><br><a href="/python-opencv-blur/" title="Python OpenCV 影像平滑模糊化 blur">Python OpenCV 影像平滑模糊化 blur</a><br><a href="/python-opencv-canny/" title="Python OpenCV 影像邊緣偵測 Canny Edge Detection">Python OpenCV 影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-vconcat-hconcat/" title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接">Python OpenCV 垂直vconcat 和水平hconcat 影像拼接</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-opencv-img2char/" title="小專案 Python OpenCV 圖片轉字元圖畫">小專案 Python OpenCV 圖片轉字元圖畫</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-opencv-video/" data-id="clxhd8aww009ilrs125xgw4db" data-title="Python OpenCV 讀取播放video影片檔案" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rpi-software-hardware-version" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/rpi-software-hardware-version/" class="article-date">
@@ -155,7 +622,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/rpi-software-hardware-version/" data-id="clx4r7431009gejs17mnw5efr" data-title="在 Raspbian 確認軟體版本與硬體版本" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/rpi-software-hardware-version/" data-id="clxhd8aww009hlrs10cdfljpq" data-title="在 Raspbian 確認軟體版本與硬體版本" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Raspberry-Pi/">Raspberry Pi</a></li></ul>
@@ -245,7 +712,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-lambda/" data-id="clx4r7431009fejs1cegdbsrx" data-title="Python lambda 運算式用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-lambda/" data-id="clxhd8awv009glrs1g0ox8eyc" data-title="Python lambda 運算式用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -306,464 +773,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-sdlpal/" data-id="clx4r7430009eejs14imr1vev" data-title="開源專案-仙劍奇俠傳" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-sdlpal/" data-id="clxhd8awv009flrs1q2dxphka" data-title="開源專案-仙劍奇俠傳" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-github-sudoku" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/github-sudoku/" class="article-date">
-  <time datetime="2020-05-26T14:00:00.000Z" itemprop="datePublished">2020-05-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Github/">Github</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/github-sudoku/">開源專案-數獨sudoku</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>今天介紹Github上開源專案的數獨sudoku遊戲，</p>
-<h2><span id="jubalhnudoku">jubalh/nudoku</span></h2><p><a href="https://github.com/jubalh/nudoku" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/jubalh/nudoku</a><br>星星數：<code>168</code>stars<br>技術：<code>C</code>,<code>ncurses</code>,<code>Makefile</code><br>網站：<a href="http://jubalh.github.io/nudoku/" rel="noopener external nofollow noreferrer" target="_blank">http://jubalh.github.io/nudoku/</a><br>在 console 上玩數獨，<br>Ubuntu 還能透過 apt 安裝，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install nudoku</span><br></pre></td></tr></table></figure></p>
-<p>macOS 還能透過 brew 安裝，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install nudoku</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h2><span id="mayeruisudoku">mayerui/sudoku</span></h2><p><a href="https://github.com/mayerui/sudoku" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/mayerui/sudoku</a><br>星星數：<code>140</code>stars<br>技術：<code>C++</code>,<code>CMake</code><br>C++ 實現的跨平台數獨遊戲，console 操作易上手。  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/github-cursorjail/" title="開源專案CursorJail-滑鼠鎖定工具">開源專案CursorJail-滑鼠鎖定工具</a><br><a href="/github-2048/" title="開源專案-2048">開源專案-2048</a><br><a href="/github-tetris/" title="開源專案-tetris俄羅斯方塊">開源專案-tetris俄羅斯方塊</a><br><a href="/github-kys-cpp/" title="開源專案-金庸群俠傳">開源專案-金庸群俠傳</a><br><a href="/github-sdlpal/" title="開源專案-仙劍奇俠傳">開源專案-仙劍奇俠傳</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-sudoku/" data-id="clx4r7430009dejs12ievl539" data-title="開源專案-數獨sudoku" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-numpy-mean" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-numpy-mean/" class="article-date">
-  <time datetime="2020-05-25T14:00:00.000Z" itemprop="datePublished">2020-05-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-numpy-mean/">Python numpy 計算平均值 mean/average</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇紀錄如何使用 python numpy 的 np.mean 來計算平均值 mean/average 的方法。  </p>
-<h2><span id="範例-用-numpy-計算平均值">範例. 用 numpy 計算平均值</span></h2><p>以下 python 範例使用 numpy 來計算平均值 mean/average，使用 np.array 帶入 python list，接著再使用 np.mean 計算平均值。<br><figure class="highlight python"><figcaption><span>python-numpy-mean.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">arr = np.array([<span class="number">5</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">9</span>])</span><br><span class="line">print(np.mean(arr))</span><br></pre></td></tr></table></figure></p>
-<p>輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7.0</span><br></pre></td></tr></table></figure></p>
-<h2><span id="範例-python-內建的-statisticsmean-計算平均值">範例. Python 內建的 statistics.mean 計算平均值</span></h2><p>這個範例是使用 Python 內建的 statistics 來計算平均值 mean。<br><figure class="highlight python"><figcaption><span>python-mean.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> statistics</span><br><span class="line"></span><br><span class="line">arr = [<span class="number">5</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">9</span>]</span><br><span class="line">print(statistics.mean(arr))</span><br></pre></td></tr></table></figure></p>
-<p>輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>numpy.mean() in Python - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/numpy-mean-in-python/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/numpy-mean-in-python/</a><br><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.mean.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.scipy.org/doc/numpy/reference/generated/numpy.mean.html</a><br><a href="https://blog.csdn.net/taotiezhengfeng/article/details/72397282" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/taotiezhengfeng/article/details/72397282</a><br><a href="https://www.geeksforgeeks.org/python-statistics-mean-function/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/python-statistics-mean-function/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-numpy-std/" title="Python numpy 計算標準差 standard deviation">Python numpy 計算標準差 standard deviation</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-str/" title="Python str 字串用法與範例">Python str 字串用法與範例</a><br><a href="/python-list/" title="Python list 串列用法與範例">Python list 串列用法與範例</a><br><a href="/python-set/" title="Python set 集合用法與範例">Python set 集合用法與範例</a><br><a href="/python-dict/" title="Python dict 字典用法與範例">Python dict 字典用法與範例</a><br><a href="/python-tuple/" title="Python tuple 元組用法與範例">Python tuple 元組用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-numpy-mean/" data-id="clx4r7430009cejs1isngbjgq" data-title="Python numpy 計算平均值 mean/average" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-set-length" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-set-length/" class="article-date">
-  <time datetime="2020-05-22T14:00:00.000Z" itemprop="datePublished">2020-05-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-set-length/">Python 計算 set 集合長度</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Python 計算 set 集合長度，Python 計算集合長度的用法與範例如下，  </p>
-<p>用 <code>len()</code> 計算集合的元素個數，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">s1 = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;</span><br><span class="line">print(len(s1))</span><br><span class="line"></span><br><span class="line">s2 = &#123;<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">3</span>&#125;</span><br><span class="line">print(len(s2))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5</span><br><span class="line">3</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-set/" title="Python set 集合用法與範例">Python set 集合用法與範例</a><br><a href="/python-str-length/" title="Python 計算 str 字串長度">Python 計算 str 字串長度</a><br><a href="/python-list-length/" title="Python 計算 list 串列長度">Python 計算 list 串列長度</a><br><a href="/python-dict-length/" title="Python 計算 dict 字典長度">Python 計算 dict 字典長度</a><br><a href="/python-tuple-length/" title="Python 計算 tuple 元組長度">Python 計算 tuple 元組長度</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-read-text-file/" title="Python 讀檔，讀取 txt 文字檔">Python 讀檔，讀取 txt 文字檔</a><br><a href="/python-split/" title="Python 字串分割 split">Python 字串分割 split</a><br><a href="/python-replace/" title="Python 取代字元或取代字串 replace">Python 取代字元或取代字串 replace</a><br><a href="/python-generate-non-repeating-random-numbers/" title="Python 產生 random 隨機不重複的數字 list">Python 產生 random 隨機不重複的數字 list</a><br><a href="/python-print/" title="Python print 格式化輸出與排版">Python print 格式化輸出與排版</a><br><a href="/python-pil-read-image-and-show-image/" title="Python PIL 讀取圖片並顯示">Python PIL 讀取圖片並顯示</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-set-length/" data-id="clx4r742z009bejs1wnscbv3b" data-title="Python 計算 set 集合長度" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-github-create-pull-request" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/github-create-pull-request/" class="article-date">
-  <time datetime="2020-05-18T14:00:00.000Z" itemprop="datePublished">2020-05-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Github/">Github</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/github-create-pull-request/">Github 提交你的修改貢獻到開源專案</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇紀錄一下怎麼在 Github 上提交你的修改貢獻到開源專案(發 pull request)。  </p>
-<ol>
-<li>在 Github 上 fork 別人的專案.  </li>
-<li>git clone 下載剛剛 fork 的專案.  </li>
-<li>從主線建立一個分支 <code>git checkout support-python3</code> ，分支名稱叫做 <code>support-python3</code> 用來添加 python3 的修改.  </li>
-<li>修改完成 commit 後推上自己的 github <code>git push origin support-python3</code>，<br>這時在自己的github上的專案頁面會顯示出有個 <code>support-python3</code> 的分支.  </li>
-<li>在自己的github專案頁面按 <code>Compare &amp; pull request</code> 提交修改, 填好內容後按<code>create pull request</code>，  <img src="/github-create-pull-request/compare-and-pull-request.png" title="Compare & pull request">  
-之後就會在原作者的github專案頁面的 Pull requests 分頁出現你的 pull request，接下來就等原作者同意按 merge 進去吧！  </li>
-</ol>
-<p>參考<br>[1] GitHub 該如何發 PR(pull request) | Welcome.Web.World<br><a href="https://hsiangfeng.github.io/git/20190615/4143994266/" rel="noopener external nofollow noreferrer" target="_blank">https://hsiangfeng.github.io/git/20190615/4143994266/</a><br>這個是超詳細的圖文解說，已經作過一次的可以不用看這篇。<br>[2] Git - 參與一個專案<br><a href="https://git-scm.com/book/zh-tw/v2/GitHub-%E5%8F%83%E8%88%87%E4%B8%80%E5%80%8B%E5%B0%88%E6%A1%88" rel="noopener external nofollow noreferrer" target="_blank">https://git-scm.com/book/zh-tw/v2/GitHub-%E5%8F%83%E8%88%87%E4%B8%80%E5%80%8B%E5%B0%88%E6%A1%88</a><br>[3] Creating a pull request - GitHub Docs<br><a href="https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request" rel="noopener external nofollow noreferrer" target="_blank">https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request</a><br>[4] 什麼是 Pull Request?. Github/Bitbucket… | by SC Tuan | Medium<br><a href="https://medium.com/@shoujhengduan/%E4%BB%80%E9%BA%BC%E6%98%AF-pull-request-b476ee3e0217" rel="noopener external nofollow noreferrer" target="_blank">https://medium.com/@shoujhengduan/%E4%BB%80%E9%BA%BC%E6%98%AF-pull-request-b476ee3e0217</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/github-update-forked-repository/" title="Github 如何更新已經 fork 的專案與原專案紀錄同步">Github 如何更新已經 fork 的專案與原專案紀錄同步</a><br><a href="/github-update-pull-request/" title="Github 如何更新 pull request">Github 如何更新 pull request</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-create-pull-request/" data-id="clx4r742z009aejs1w0kw7517" data-title="Github 提交你的修改貢獻到開源專案" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-tuple-length" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-tuple-length/" class="article-date">
-  <time datetime="2020-05-15T14:00:00.000Z" itemprop="datePublished">2020-05-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-tuple-length/">Python 計算 tuple 元組長度</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Python 計算 tuple 元組長度，Python 計算元組長度的用法與範例如下，  </p>
-<p>用 <code>len()</code> 計算字元元組的元素個數，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">t = (<span class="string">'hello'</span>, <span class="string">'world'</span>)</span><br><span class="line">print(len(t))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2</span><br></pre></td></tr></table></figure></p>
-<p>用 <code>len()</code> 計算數字元組的元素個數，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">t = (<span class="number">123</span>, <span class="number">456</span>, <span class="number">789</span>)</span><br><span class="line">print(len(t))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3</span><br></pre></td></tr></table></figure></p>
-<p>用 <code>len()</code> 計算元組的元素個數，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">t = (<span class="number">123</span>, <span class="number">456</span>, <span class="number">789</span>, <span class="string">'hello'</span>, <span class="string">'world'</span>)</span><br><span class="line">print(len(t))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">5</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-tuple/" title="Python tuple 元組用法與範例">Python tuple 元組用法與範例</a><br><a href="/python-str-length/" title="Python 計算 str 字串長度">Python 計算 str 字串長度</a><br><a href="/python-list-length/" title="Python 計算 list 串列長度">Python 計算 list 串列長度</a><br><a href="/python-dict-length/" title="Python 計算 dict 字典長度">Python 計算 dict 字典長度</a><br><a href="/python-set-length/" title="Python 計算 set 集合長度">Python 計算 set 集合長度</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-read-text-file/" title="Python 讀檔，讀取 txt 文字檔">Python 讀檔，讀取 txt 文字檔</a><br><a href="/python-split/" title="Python 字串分割 split">Python 字串分割 split</a><br><a href="/python-replace/" title="Python 取代字元或取代字串 replace">Python 取代字元或取代字串 replace</a><br><a href="/python-generate-non-repeating-random-numbers/" title="Python 產生 random 隨機不重複的數字 list">Python 產生 random 隨機不重複的數字 list</a><br><a href="/python-print/" title="Python print 格式化輸出與排版">Python print 格式化輸出與排版</a><br><a href="/python-pil-read-image-and-show-image/" title="Python PIL 讀取圖片並顯示">Python PIL 讀取圖片並顯示</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tuple-length/" data-id="clx4r742y0099ejs138febdvz" data-title="Python 計算 tuple 元組長度" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-qt-translator" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/qt-translator/" class="article-date">
-  <time datetime="2020-05-13T14:00:00.000Z" itemprop="datePublished">2020-05-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/qt-translator/">Qt 新增多國語言.ts翻譯檔案</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇要介紹如何使用 Qt 新增多國語言.ts翻譯檔案，Qt 有自己的工具對 GUI 的語言進行翻譯，對於開發多國語言的開發者來說是一個實用的功能。</p>
-<p>下面開始介紹怎麼製作和使用Qt的翻譯檔案，  </p>
-<h2><span id="步驟1-新增ts翻譯檔案">步驟1. 新增.ts翻譯檔案</span></h2><p>Qt 的<code>.ts</code>翻譯檔案是文字格式的翻譯檔案(XML格式)，而<code>.qm</code>檔案是<code>.ts</code>轉檔後的二進制檔案，<br>假設你現在沒有<code>.ts</code>翻譯檔案，那請看以下步驟產生一個<code>.ts</code>翻譯檔案，<br>如果已經有<code>.ts</code>翻譯檔案，要轉成<code>.qm</code>檔案請看步驟3，  </p>
-<p>使用文字編輯器打開Qt的<code>.pro</code>專案檔案，添加 <code>TRANSLATIONS += myproject_zh-tw.ts</code>，如果是要同時支援繁中與英文的話就<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TRANSLATIONS += myproject_en.ts \</span><br><span class="line">                myproject_zh-tw.ts</span><br></pre></td></tr></table></figure></p>
-<p>等號右邊的名字可以自己取，中文的就用後綴<code>_zh.ts</code>, 繁體中文的就用後綴<code>_zh-tw.ts</code>, 簡體中文的就用後綴<code>_zh-cn.ts</code>, 英文的就用 <code>_en.ts</code>  </p>
-<p>然後啟動Qt的<code>lupdate</code>命令行工具，Windows在 <code>開始 -&gt; 程序-&gt; Qt5.12.2 -&gt; Qt5.12.2 commond prompt</code>，<br>Ubuntu 的話直接在命令行輸入即可，<br>切換目錄到專案目錄，執行 <code>lupdate</code> 來產生相應的.ts 檔案，<br>它會看你在<code>.pro</code>專案檔案加了什麼在<code>TRANSLATIONS</code>裡就會產生對應的<code>.ts</code>檔<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ lupdate -verbose myproject.pro</span><br></pre></td></tr></table></figure></p>
-<h2><span id="步驟2-編輯-ts-檔案-開始翻譯">步驟2. 編輯 .ts 檔案, 開始翻譯</span></h2><p>有<code>.ts</code>檔案後就可以接著翻譯的工作，啟動<code>linguist</code>語言翻譯工具，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ linguist</span><br></pre></td></tr></table></figure></p>
-<p>選單中的<code>File &gt; Open...</code>，打開所需的 <code>.ts</code> 檔案<br>翻譯界面中找到的翻譯欄的兩行，<br><code>第一行</code>：Source Text<br><code>第二行</code>：Translation<br>在第二行進行相應字串的翻譯即可，接著就把每一條 Source Text 慢慢翻譯，<br>翻譯完後存檔即可。  </p>
-<h2><span id="步驟3-產生qm檔案">步驟3. 產生.qm檔案</span></h2><p><code>.qm</code>檔是經過<code>.ts</code>轉換而成的二進制機器語言的檔案，<br>接著我們透過 <code>lrelease</code> 指令來將翻譯好的<code>.ts</code>檔案產生<code>.qm</code>檔案<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ lrelease -verbose myproject.pro</span><br></pre></td></tr></table></figure></p>
-<h2><span id="修改或新加入界面部件時">修改或新加入界面部件時</span></h2><p>只需執行 <code>lupdate -verbose</code> 即可，<br>然後把產生的<code>.qm</code>檔案放到正確的目錄中，即可實現翻譯的效果，  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ lupdate linguist</span><br></pre></td></tr></table></figure>
-<p>如果是安裝了插件的 visual studio ,也可以右擊解決方案，實現 lupdate 和 lrelease 命令同樣的功能。  </p>
-<p>參考<br>qt中制作添加 .ts 翻译文件 - 舟折不是周折 - 博客园<br><a href="https://www.cnblogs.com/wangjz/p/4894545.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/wangjz/p/4894545.html</a><br>qt中制作添加 .ts 翻译文件_linux-CSDN博客<br><a href="https://blog.csdn.net/hpu11/article/details/79222657" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/hpu11/article/details/79222657</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/qt-read-text-file/" title="[Qt] 讀檔，讀取 txt 文字檔">[Qt] 讀檔，讀取 txt 文字檔</a><br><a href="/qt-write-text-file/" title="[Qt] 寫檔，寫入 txt 文字檔">[Qt] 寫檔，寫入 txt 文字檔</a><br><a href="/install-qt-on-windows-use-msvc/" title="安裝 Qt 在 Windows 7 (使用MSVC)">安裝 Qt 在 Windows 7 (使用MSVC)</a><br><a href="/qt-deploy-exe/" title="Qt產生的exe發布方式">Qt產生的exe發布方式</a><br><a href="/qt-chinese-garbled-problem/" title="Qt5的中文亂碼問題如何解決">Qt5的中文亂碼問題如何解決</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-translator/" data-id="clx4r742y0098ejs1rxpbsfg6" data-title="Qt 新增多國語言.ts翻譯檔案" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-numpy-std" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-numpy-std/" class="article-date">
-  <time datetime="2020-05-12T14:00:00.000Z" itemprop="datePublished">2020-05-12</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-numpy-std/">Python numpy 計算標準差 standard deviation</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇紀錄如何使用 python numpy 的 np.std 來計算陣列標準差 standard deviation 的方法。  </p>
-<p>以下例子為簡單的無偏標準差計算, 1/n，<br>[1, 2, 3] mean=2，std=1<br>[5,6,8,9] mean=7，std=1.58114<br>[0.8, 0.4, 1.2, 3.7, 2.6, 5.8] mean=2.4166666666666665，std=2.0634114147853952  </p>
-<h2><span id="範例-用-numpy-計算標準差">範例. 用 numpy 計算標準差</span></h2><p>以下範例使用 numpy 來計算標準差，使用 np.array 帶入 python list [5,6,8,9]，<br>接著再使用 np.std 計算標準差。  </p>
-<p>使用 <code>np.std()</code> 可以指定 ddof 參數，全名為 Delta Degree of Freedom，<code>np.std()</code> 預設的 ddof 是 0  </p>
-<p>ddof=0，回傳 population standard deviation 母體標準差，分母(n)，有偏估計<br>ddof=1，回傳 sample standard deviation 樣本標準差，分母(n-1)，無偏估計  </p>
-<figure class="highlight python"><figcaption><span>python-numpy-std.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">arr = np.array([<span class="number">5</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">9</span>])</span><br><span class="line">print(np.std(arr, ddof=<span class="number">1</span>))</span><br></pre></td></tr></table></figure>
-<p>ddof=1 輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1.8257418583505538</span><br></pre></td></tr></table></figure></p>
-<p>ddof=0 輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1.5811388300841898</span><br></pre></td></tr></table></figure></p>
-<p>關於這兩種差異可以看參考[5]，<br>簡單說，如果要由樣本去估計整體實際的標準差，就應該使用 ddof=1。  </p>
-<h2><span id="範例-python-內建的-statisticsstdev-計算標準差">範例. Python 內建的 statistics.stdev 計算標準差</span></h2><p>這個範例是使用 Python 內建的 statistics 來計算標準差 stdev。<br><figure class="highlight python"><figcaption><span>python-std.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> statistics</span><br><span class="line"></span><br><span class="line">arr = [<span class="number">5</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">9</span>]</span><br><span class="line">print(statistics.stdev(arr))</span><br></pre></td></tr></table></figure></p>
-<p>輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1.8257418583505538</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] numpy.std() in Python - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/numpy-std-in-python/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/numpy-std-in-python/</a><br>[2] python 标准差计算（std）_Python_Gooooa的博客-CSDN博客<br><a href="https://blog.csdn.net/Gooooa/article/details/78923469" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/Gooooa/article/details/78923469</a><br>[3] 標準差 - 維基百科，自由的百科全書<br><a href="https://zh.m.wikipedia.org/zh-tw/%E6%A8%99%E6%BA%96%E5%B7%AE" rel="noopener external nofollow noreferrer" target="_blank">https://zh.m.wikipedia.org/zh-tw/%E6%A8%99%E6%BA%96%E5%B7%AE</a><br>[4] python - Standard deviation in numpy - Stack Overflow<br><a href="https://stackoverflow.com/questions/34050491/standard-deviation-in-numpy" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/34050491/standard-deviation-in-numpy</a><br>[5] 為什麼統計的樣本標準差計算要除(n-1)而母體標準差則除n？ | 電子製造，工作狂人(ResearchMFG)<br><a href="https://www.researchmfg.com/2016/07/sigma-n-1/" rel="noopener external nofollow noreferrer" target="_blank">https://www.researchmfg.com/2016/07/sigma-n-1/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-numpy-mean/" title="Python numpy 計算平均值 mean/average">Python numpy 計算平均值 mean/average</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-str/" title="Python str 字串用法與範例">Python str 字串用法與範例</a><br><a href="/python-list/" title="Python list 串列用法與範例">Python list 串列用法與範例</a><br><a href="/python-set/" title="Python set 集合用法與範例">Python set 集合用法與範例</a><br><a href="/python-dict/" title="Python dict 字典用法與範例">Python dict 字典用法與範例</a><br><a href="/python-tuple/" title="Python tuple 元組用法與範例">Python tuple 元組用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-numpy-std/" data-id="clx4r742y0097ejs1gbznxydh" data-title="Python numpy 計算標準差 standard deviation" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
 
     </footer>
   </div>
@@ -776,7 +789,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/46/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/45/">45</a><a class="page-number" href="/page/46/">46</a><span class="page-number current">47</span><a class="page-number" href="/page/48/">48</a><a class="page-number" href="/page/49/">49</a><span class="space">&hellip;</span><a class="page-number" href="/page/80/">80</a><a class="extend next" rel="next" href="/page/48/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/46/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/45/">45</a><a class="page-number" href="/page/46/">46</a><span class="page-number current">47</span><a class="page-number" href="/page/48/">48</a><a class="page-number" href="/page/49/">49</a><span class="space">&hellip;</span><a class="page-number" href="/page/81/">81</a><a class="extend next" rel="next" href="/page/48/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -807,23 +820,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
-            <a href="/python-assert/">Python assert 語句用法與範例</a>
+            <a href="/php-mysqli/">使用 PHP 和 MySQLi 進行資料庫操作的簡單指南</a>
           </li>
         
           <li>
-            <a href="/chatgpt-alternatives/">ChatGPT 的 2 個替代工具：Google Gemini與Microsoft Copilot</a>
+            <a href="/python-subprocess.call/">Python subprocess.call 用法與範例解析</a>
           </li>
         
           <li>
-            <a href="/python-subprocess.popen/">Python subprocess.Popen 用法與範例</a>
+            <a href="/python-sqlite/">如何在Python中使用SQLite：完整指南與實用範例</a>
           </li>
         
           <li>
-            <a href="/why-programmers-should-utilize-chatgpt/">善用ChatGPT：程式人員提升效率和技能的必備工具</a>
+            <a href="/what-is-pdca/">什麼是PDCA循環？了解持續改進的管理利器</a>
           </li>
         
           <li>
-            <a href="/python-subprocess/">深入了解 Python subprocess 模組用法與實用範例</a>
+            <a href="/python-mongodb/">Python 與 MongoDB 的完美結合：詳細指南與範例</a>
           </li>
         
       </ul>
@@ -842,7 +855,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">189</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">231</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">189</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">235</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

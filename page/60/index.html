@@ -107,6 +107,568 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-shared_ptr" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-shared_ptr/" class="article-date">
+  <time datetime="2019-11-21T14:00:00.000Z" itemprop="datePublished">2019-11-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-shared_ptr/">C++ std::shared_ptr 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹 C++ 的 std::shared_ptr 用法，std::shared_ptr 是可以讓多個 std::shared_ptr 共享一份記憶體，並且在最後一個 std::shared_ptr 生命週期結束時時自動釋放記憶體，本篇一開始會先介紹原始指標與智慧型指標寫法上的差異，再來介紹如何開始使用智慧型指標，並提供一些範例參考。  </p>
+<p><strong>需要引入的標頭檔</strong>：<code>&lt;memory&gt;</code>，編譯需要支援 C++11  </p>
+<h2><span id="範例1-原始指標宣告與智慧型指標宣告的比較">範例1. 原始指標宣告與智慧型指標宣告的比較</span></h2><p>我們先來看看原始指標是怎麼寫跟怎麼用，如 <code>UseRawPointer()</code> 內容所示，<br>另外有的對應的智慧型指標的版本，如 <code>UseSmartPointer()</code> 內容所示，  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">UseRawPointer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 使用原始指標</span></span><br><span class="line">    Song* pSong = <span class="keyword">new</span> Song(<span class="string">"Just The Way You Are"</span>, <span class="string">"Bruno Mars"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Use pSong...</span></span><br><span class="line">    pSong-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 別忘了要 delete!</span></span><br><span class="line">    <span class="keyword">delete</span> pSong;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">UseSmartPointer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 使用智慧型指標</span></span><br><span class="line">    <span class="built_in">shared_ptr</span>&lt;Song&gt; song2(<span class="keyword">new</span> Song(<span class="string">"Just The Way You Are"</span>, <span class="string">"Bruno Mars"</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Use song2...</span></span><br><span class="line">    song2-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">&#125; <span class="comment">// song2 在這裡自動地被 deleted</span></span><br></pre></td></tr></table></figure>
+<h2><span id="範例2-開始使用智慧型指標">範例2. 開始使用智慧型指標</span></h2><p>以下為 C++ shared_ptr 幾種初始化寫法，盡可能地使用 <code>make_shared</code> 而不是用 new，範例如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 盡可能地使用 make_shared</span></span><br><span class="line"><span class="keyword">auto</span> sp1 = make_shared&lt;Song&gt;(<span class="string">"The Beatles"</span>, <span class="string">"Hey Jude"</span>);</span><br><span class="line"><span class="comment">// 或者不使用 auto 像這樣寫</span></span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; sp1 = make_shared&lt;Song&gt;(<span class="string">"The Beatles"</span>, <span class="string">"Hey Jude"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面這樣的寫法也可以，但會有一些副作用，記憶體配置上不連續，以及分開記憶體配置效能相對低弱</span></span><br><span class="line"><span class="comment">// Note: Using new expression as constructor argument</span></span><br><span class="line"><span class="comment">// creates no named variable for other code to access.</span></span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; sp2(<span class="keyword">new</span> Song(<span class="string">"Lady Gaga"</span>, <span class="string">"Poker Face"</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// When initialization must be separate from declaration, e.g. class members,</span></span><br><span class="line"><span class="comment">// initialize with nullptr to make your programming intent explicit.</span></span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; sp5(<span class="literal">nullptr</span>);</span><br><span class="line"><span class="comment">//等於: shared_ptr&lt;Song&gt; sp5;</span></span><br><span class="line">sp5 = make_shared&lt;Song&gt;(<span class="string">"Avril Lavigne"</span>, <span class="string">"What The Hell"</span>);</span><br></pre></td></tr></table></figure></p>
+<p>在 Scott Meyers 大神的《<a href="https://shengyu7697.github.io/book-effective-modern-cpp/">Effective Modern C++</a>》書裡的條款 21 也提到：「盡量用 std::make_shared 取代直接使用 new」  </p>
+<h2><span id="範例3-手動釋放記憶體">範例3. 手動釋放記憶體</span></h2><p>std::shared_ptr 如果需要手動釋放記憶體的話，可以使用智慧型指標裡的 reset() 函式，這邊要注意的是使用”<strong>點</strong>“來存取   <code>std::shared_ptr.reset()</code>，範例如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SmartPointerDemo2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Create the object and pass it to a smart pointer</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;LargeObject&gt; pLarge(<span class="keyword">new</span> LargeObject());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Call a method on the object</span></span><br><span class="line">    pLarge-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在離開函式前手動釋放記憶體</span></span><br><span class="line">    pLarge.reset();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="重複釋放記憶體問題">重複釋放記憶體問題</span></h2><p>不建議使用下列這種寫法，用原始指標變數(下例中的p)去建立 shared_ptr 這種寫法容易造成重複釋放記憶體問題，因為 new Object 完後有個原始指標變數 p 指向這個物件，容易造成其它地方再把 p 建立 shared_ptr，<br>之後 sp 釋放完該物件後(delete)，sp2 又再次釋放完該物件，造成重複釋放記憶體，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    Object *p = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Object&gt; sp(p);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Object&gt; sp2(p);</span><br><span class="line">&#125; <span class="comment">// sp 釋放，表示 delete 該物件，再換 sp2 釋放，造成釋放重複記憶體</span></span><br></pre></td></tr></table></figure></p>
+<p>應該改成下列這種寫法，直接在 shared_ptr 建構子裡 new Object，而避免用原始指標變數去建立 shared_ptr，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Object&gt; sp(<span class="keyword">new</span> Object());</span><br><span class="line">&#125; <span class="comment">// sp 釋放</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="範例4-存取-stdshared_ptr-的原始指標">範例4. 存取 std::shared_ptr 的原始指標</span></h2><p>透過<code>std::shared_ptr.get()</code>可以取得原始指標，大概有兩種情況會使用到，一種是需要呼叫傳統的api，會需要傳遞原始指標，另一種是直接用原始指標，範例如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-shared-ptr.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LargeObject</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">DoSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"DoSomething\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LegacyLargeObjectFunction</span><span class="params">(LargeObject *lo)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"LegacyLargeObjectFunction\n"</span>);</span><br><span class="line">    lo-&gt;DoSomething();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===1===\n"</span>);</span><br><span class="line">    <span class="comment">// Create the object and pass it to a smart pointer</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;LargeObject&gt; pLarge(<span class="keyword">new</span> LargeObject());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===2===\n"</span>);</span><br><span class="line">    <span class="comment">// Call a method on the object</span></span><br><span class="line">    pLarge-&gt;DoSomething();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===3===\n"</span>);</span><br><span class="line">    <span class="comment">// 傳遞原始指標給 legacy API</span></span><br><span class="line">    LegacyLargeObjectFunction(pLarge.get());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===4===\n"</span>);</span><br><span class="line">    <span class="comment">// 用原始指標去接</span></span><br><span class="line">    LargeObject *p = pLarge.get();</span><br><span class="line">    LegacyLargeObjectFunction(p);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===5===\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">===1===</span><br><span class="line">===2===</span><br><span class="line">DoSomething</span><br><span class="line">===3===</span><br><span class="line">LegacyLargeObjectFunction</span><br><span class="line">DoSomething</span><br><span class="line">===4===</span><br><span class="line">LegacyLargeObjectFunction</span><br><span class="line">DoSomething</span><br><span class="line">===5===</span><br></pre></td></tr></table></figure></p>
+<h2><span id="shengyu-探索實驗1-生命週期">ShengYu 探索實驗1. 生命週期</span></h2><p>看看生命週期以及印出這兩種的記憶體位置<br><figure class="highlight cpp"><figcaption><span>std-shared-ptr-exp1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-shared-ptr-exp1.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LargeObject</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    LargeObject() &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"LargeObject::LargeObject()\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~LargeObject() &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"LargeObject::~LargeObject()\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">DoSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"DoSomething, x=%d\n"</span>, x);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> x = <span class="number">10</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===1===\n"</span>);</span><br><span class="line">    LargeObject *p = <span class="keyword">new</span> LargeObject();</span><br><span class="line">    p-&gt;DoSomething();</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%p\n"</span>, p);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===2===\n"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;LargeObject&gt; pLarge(p);</span><br><span class="line">    pLarge-&gt;DoSomething();</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%p\n"</span>, pLarge.get());</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%p\n"</span>, p);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===3===\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//delete p; // double free or corruption</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"===4===\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">===1===</span><br><span class="line">LargeObject::LargeObject()</span><br><span class="line">DoSomething, x=10</span><br><span class="line">0x1524030</span><br><span class="line">===2===</span><br><span class="line">DoSomething, x=10</span><br><span class="line">0x1524030</span><br><span class="line">0x1524030</span><br><span class="line">===3===</span><br><span class="line">===4===</span><br><span class="line">LargeObject::~LargeObject()</span><br></pre></td></tr></table></figure></p>
+<h2><span id="範例5-判斷兩個-shared_ptr-是不是都是指到同一個物件">範例5. 判斷兩個 shared_ptr 是不是都是指到同一個物件</span></h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> song1 = <span class="keyword">new</span> Song(<span class="string">"Village People"</span>, <span class="string">"YMCA"</span>);</span><br><span class="line"><span class="keyword">auto</span> song2 = <span class="keyword">new</span> Song(<span class="string">"Village People"</span>, <span class="string">"YMCA"</span>);</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; p1(song1);</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; p2(song2);</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;Song&gt; p3(p2);</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; <span class="string">"p1 == p2 = "</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; (p1 == p2) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"><span class="built_in">cout</span> &lt;&lt; <span class="string">"p3 == p2 = "</span> &lt;&lt; <span class="built_in">std</span>::boolalpha &lt;&lt; (p3 == p2) &lt;&lt; <span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
+<h2><span id="unique_ptr-轉-shared_ptr">unique_ptr 轉 shared_ptr</span></h2><p>shared_ptr 轉換成 unique_ptr 是不允許的，但是可以反過來 unique_ptr 轉成 shared_ptr，<br>unique_ptr 轉 shared_ptr 有兩種方式，一種是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shared_ptr&lt;Point&gt; p = make_unique&lt;Point&gt;();</span><br></pre></td></tr></table></figure></p>
+<p>另一種是使用 move，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">unique_ptr&lt;Point&gt; p1 = make_unique&lt;Point&gt;();</span><br><span class="line">shared_ptr&lt;Point&gt; p2 = move(p1);</span><br></pre></td></tr></table></figure></p>
+<p>下一篇將會介紹 <a href="/std-unique_ptr/" title="std::unique_ptr 用法">std::unique_ptr 用法</a>  </p>
+<p>參考<br>[1] std::shared_ptr - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/memory/shared_ptr" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/memory/shared_ptr</a><br>[2] How to: Create and Use shared_ptr instances<br><a href="https://docs.microsoft.com/zh-tw/cpp/cpp/how-to-create-and-use-shared-ptr-instances?view=vs-2019" rel="noopener external nofollow noreferrer" target="_blank">https://docs.microsoft.com/zh-tw/cpp/cpp/how-to-create-and-use-shared-ptr-instances?view=vs-2019</a><br>圖表一與圖表二把 “參考計數器 ref count” 解釋地很好<br>[3] 智慧型指標 (新式 C++)<br><a href="https://docs.microsoft.com/zh-tw/cpp/cpp/smart-pointers-modern-cpp?view=vs-2019" rel="noopener external nofollow noreferrer" target="_blank">https://docs.microsoft.com/zh-tw/cpp/cpp/smart-pointers-modern-cpp?view=vs-2019</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-unique_ptr/" title="std::unique_ptr 用法與範例">std::unique_ptr 用法與範例</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/std-unordered_map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-random_shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/std-async/" title="std::async 用法與範例">std::async 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-shared_ptr/" data-id="clxhd8av00062lrs177pr0lt1" data-title="C++ std::shared_ptr 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-std-atomic_flag" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-atomic_flag/" class="article-date">
+  <time datetime="2019-11-20T14:00:00.000Z" itemprop="datePublished">2019-11-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-atomic_flag/">std::atomic_flag 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::atomic_flag 用法，並提供一些範例。  </p>
+<p>atomic_flag 一個原子 bool 類型，只支援兩種函式呼叫，test-and-set 和 clear。std::atomic_flag 它保證是 lock-free 無鎖的。atomic_flag 跟 std::atomic<bool> 不同的地方在於 std::atomic_flag 不提供讀取與儲存的操作。  </bool></p>
+<p>std::atomic_flag 請使用 ATOMIC_FLAG_INIT 定義來進行初始化，這樣可以保證 std::atomic_flag 處於 clear 的狀態。  </p>
+<h2><span id="stdatomic_flagtest_and_set-介紹">std::atomic_flag::test_and_set() 介紹</span></h2><p>std::atomic_flag::test_and_set() 會原子地設定 flag 的旗標為 true，並回傳 flag 之前的設定值。  </p>
+<h2><span id="stdatomic_flagclear-介紹">std::atomic_flag::clear() 介紹</span></h2><p>std::atomic_flag::clear() 會原子地清除 flag 旗標，設定旗標為 false，這樣會使得下一次呼叫 std::atomic_flag::test_and_set 回傳 false。  </p>
+<h2><span id="使用範例">使用範例</span></h2><p>以下範例是開3個執行緒，內部迴圈各跑15次，每次都試圖去索取 lock（atomic_flag），如果索取到的話印出該執行緒號碼與cnt第幾次，<br>如果沒有索取到的話，進入自旋狀態，一直 while 迴圈嘗試索取到 lock 成功為止，<br>test_and_set 上鎖成功會回傳 false<br>test_and_set 上鎖失敗會回傳 true<br><figure class="highlight cpp"><figcaption><span>std-atomic_flag.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-atomic_flag.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::atomic_flag lock = ATOMIC_FLAG_INIT;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> cnt = <span class="number">0</span>; cnt &lt; <span class="number">15</span>; ++cnt) &#123;</span><br><span class="line">        <span class="keyword">while</span> (lock.test_and_set(<span class="built_in">std</span>::memory_order_acquire))  <span class="comment">// acquire lock</span></span><br><span class="line">             ; <span class="comment">// spin 自旋</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Output from thread "</span> &lt;&lt; n &lt;&lt; <span class="string">", cnt = "</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        lock.clear(<span class="built_in">std</span>::memory_order_release);               <span class="comment">// release lock</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::thread&gt; v;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> n = <span class="number">0</span>; n &lt; <span class="number">3</span>; ++n) &#123;</span><br><span class="line">        v.emplace_back(f, n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; t : v) &#123;</span><br><span class="line">        t.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，每次執行結果不同：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">Output from thread 0, cnt = 0</span><br><span class="line">Output from thread 2, cnt = 0</span><br><span class="line">Output from thread 0, cnt = 1</span><br><span class="line">Output from thread 1, cnt = 0</span><br><span class="line">Output from thread 2, cnt = 1</span><br><span class="line">Output from thread 1, cnt = 1</span><br><span class="line">Output from thread 2, cnt = 2</span><br><span class="line">Output from thread 1, cnt = 2</span><br><span class="line">Output from thread 2, cnt = 3</span><br><span class="line">Output from thread 1, cnt = 3</span><br><span class="line">Output from thread 2, cnt = 4</span><br><span class="line">Output from thread 0, cnt = 2</span><br><span class="line">Output from thread 1, cnt = 4</span><br><span class="line">Output from thread 2, cnt = 5</span><br><span class="line">Output from thread 0, cnt = 3</span><br><span class="line">Output from thread 1, cnt = 5</span><br><span class="line">Output from thread 2, cnt = 6</span><br><span class="line">Output from thread 0, cnt = 4</span><br><span class="line">Output from thread 2, cnt = 7</span><br><span class="line">Output from thread 1, cnt = 6</span><br><span class="line">Output from thread 0, cnt = 5</span><br><span class="line">Output from thread 2, cnt = 8</span><br><span class="line">Output from thread 0, cnt = 6</span><br><span class="line">Output from thread 1, cnt = 7</span><br><span class="line">Output from thread 2, cnt = 9</span><br><span class="line">Output from thread 0, cnt = 7</span><br><span class="line">Output from thread 2, cnt = 10</span><br><span class="line">Output from thread 1, cnt = 8</span><br><span class="line">Output from thread 2, cnt = 11</span><br><span class="line">Output from thread 0, cnt = 8</span><br><span class="line">Output from thread 2, cnt = 12</span><br><span class="line">Output from thread 1, cnt = 9</span><br><span class="line">Output from thread 2, cnt = 13</span><br><span class="line">Output from thread 1, cnt = 10</span><br><span class="line">Output from thread 2, cnt = 14</span><br><span class="line">Output from thread 0, cnt = 9</span><br><span class="line">Output from thread 1, cnt = 11</span><br><span class="line">Output from thread 0, cnt = 10</span><br><span class="line">Output from thread 1, cnt = 12</span><br><span class="line">Output from thread 0, cnt = 11</span><br><span class="line">Output from thread 1, cnt = 13</span><br><span class="line">Output from thread 0, cnt = 12</span><br><span class="line">Output from thread 1, cnt = 14</span><br><span class="line">Output from thread 0, cnt = 13</span><br><span class="line">Output from thread 0, cnt = 14</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>std::atomic_flag - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/atomic/atomic_flag" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/atomic/atomic_flag</a><br>C++11 並發指南六(atomic 類型詳解一 atomic_flag 介紹) - Haippy - 博客園<br><a href="https://www.cnblogs.com/haippy/p/3252056.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/haippy/p/3252056.html</a><br>C++11中的atomic | YuanguoBlog<br><a href="http://www.yuanguohuo.com/2019/07/08/cpp11-atomic/" rel="noopener external nofollow noreferrer" target="_blank">http://www.yuanguohuo.com/2019/07/08/cpp11-atomic/</a><br>並行編程中的lock free技術<br><a href="https://blog.csdn.net/pmt123456/article/details/72844029" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/pmt123456/article/details/72844029</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread/" title="std::thread 用法與範例">std::thread 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/std-unordered_map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-random_shuffle/" title="std::random_shuffle 產生不重複的隨機亂數">std::random_shuffle 產生不重複的隨機亂數</a><br><a href="/std-shared_ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a><br><a href="/std-async/" title="std::async 用法與範例">std::async 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-atomic_flag/" data-id="clxhd8av00061lrs1c60cy1xm" data-title="std::atomic_flag 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-if" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-if/" class="article-date">
+  <time datetime="2019-11-19T14:00:00.000Z" itemprop="datePublished">2019-11-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-if/">Python if else elif 條件判斷用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹如何使用 Python if 條件判斷用法與範例，以下教學將介紹 python if else 單一條件判斷用法與 if elif else 多重條件判斷的用法，並提供一些範例。  </p>
+<p>以下內容分為這個部份，  </p>
+<ul>
+<li>Python if else 單一條件判斷  </li>
+<li>Python if elif else 多重條件判斷  </li>
+<li>Python if 條件式範例練習  </li>
+</ul>
+<h2><span id="python-if-else-單一條件判斷">Python if else 單一條件判斷</span></h2><p>跟 C 和 Java 語言不同，Python 判斷式都不用加括號，判斷式後也不用用大括弧包起，而是用冒號跟縮排決定。  </p>
+<p>Python if 用法範例如下，如果 if 條件判斷判斷結果為 True 則執行程式碼區塊，如果判斷結果為 False 則不執行程式碼區塊A，接著離開條件判斷繼續執行程式碼區塊B，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> 條件判斷:</span><br><span class="line">    <span class="comment">#程式碼區塊A</span></span><br><span class="line"><span class="comment">#程式碼區塊B</span></span><br></pre></td></tr></table></figure></p>
+<p>Python 使用內縮方式來區分 if 語句的程式碼區塊，你可以使用 tab 或者 4 個空白字元來內縮，告訴 Python 直譯器這是 if 語句的程式碼區塊，同一份 Python 原始碼裡 tab 與 4 個空白字元請二擇一統一使用，不要一下用 tab 一下用 4 個空白字元。  </p>
+<p>Python if else 用法範例如下，如果 if 條件判斷判斷結果為 True 則執行程式碼區塊A，如果判斷結果為 False 則執行程式碼區塊B，接著離開條件判斷繼續執行程式碼區塊C，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> 條件判斷:</span><br><span class="line">    <span class="comment">#程式碼區塊A</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="comment">#程式碼區塊B</span></span><br><span class="line"><span class="comment">#程式碼區塊C</span></span><br></pre></td></tr></table></figure></p>
+<p>數字比對<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">num = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> num == <span class="number">1</span>:</span><br><span class="line">    print(<span class="string">'num is 1'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>字串比對<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">string = <span class="string">'ok'</span></span><br><span class="line"><span class="keyword">if</span> string == <span class="string">'ok'</span>:</span><br><span class="line">    print(<span class="string">'match'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'not match'</span>)</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="python-if-elif-else-多重條件判斷">Python if elif else 多重條件判斷</span></h2><p>Python if elif else 用法範例如下，如果 if 條件判斷1判斷結果為 True 則執行程式碼區塊A，接著離開條件判斷繼續執行程式碼區塊D，<br>否則執行 elif 條件判斷2判斷結果為 True 則執行程式碼區塊B，接著離開條件判斷繼續執行程式碼區塊D，<br>否則 else 執行程式碼區塊C，接著離開條件判斷繼續執行程式碼區塊D，<br>這邊的 elif 條件判斷是可以一直擴充的，依照實際程式的需求自行發揮，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> 條件判斷<span class="number">1</span>:</span><br><span class="line">    <span class="comment">#程式碼區塊A</span></span><br><span class="line"><span class="keyword">elif</span> 條件判斷<span class="number">2</span>:</span><br><span class="line">    <span class="comment">#程式碼區塊B</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="comment">#程式碼區塊C</span></span><br><span class="line"><span class="comment">#程式碼區塊D</span></span><br></pre></td></tr></table></figure></p>
+<p>數字比對的多重條件<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">grade = <span class="number">60</span></span><br><span class="line"><span class="keyword">if</span> grade &gt;= <span class="number">90</span>:</span><br><span class="line">    print(<span class="string">'great'</span>)</span><br><span class="line"><span class="keyword">elif</span> grade &gt;= <span class="number">60</span>:</span><br><span class="line">    print(<span class="string">'good'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'bad'</span>)</span><br></pre></td></tr></table></figure></p>
+<h2><span id="python-if-條件式範例練習">Python if 條件式範例練習</span></h2><p>綜合上述的介紹，以下為 Python if 條件式完整範例，<br><figure class="highlight python"><figcaption><span>python-if.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line">num = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> num == <span class="number">1</span>:</span><br><span class="line">    print(<span class="string">'num is 1'</span>)</span><br><span class="line"></span><br><span class="line">string = <span class="string">'ok'</span></span><br><span class="line"><span class="keyword">if</span> string == <span class="string">'ok'</span>:</span><br><span class="line">    print(<span class="string">'match'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'not match'</span>)</span><br><span class="line"></span><br><span class="line">grade = <span class="number">60</span></span><br><span class="line"><span class="keyword">if</span> grade &gt;= <span class="number">90</span>:</span><br><span class="line">    print(<span class="string">'great'</span>)</span><br><span class="line"><span class="keyword">elif</span> grade &gt;= <span class="number">60</span>:</span><br><span class="line">    print(<span class="string">'good'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'bad'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">num is 1</span><br><span class="line">match</span><br><span class="line">good</span><br></pre></td></tr></table></figure></p>
+<p>下一篇將介紹 <a href="/python-for/" title="for 迴圈的用法">for 迴圈的用法</a>  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>以上就是 Python if else elif 條件判斷用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-input/" title="Python 取得鍵盤輸入 input">Python 取得鍵盤輸入 input</a><br><a href="/python-for/" title="Python for 迴圈">Python for 迴圈</a><br><a href="/python-str/" title="Python str 字串用法與範例">Python str 字串用法與範例</a><br><a href="/python-list/" title="Python list 串列用法與範例">Python list 串列用法與範例</a><br><a href="/python-set/" title="Python set 集合用法與範例">Python set 集合用法與範例</a><br><a href="/python-dict/" title="Python dict 字典用法與範例">Python dict 字典用法與範例</a><br><a href="/python-tuple/" title="Python tuple 元組用法與範例">Python tuple 元組用法與範例</a><br><a href="/python-sort/" title="Python sort 排序">Python sort 排序</a><br><a href="/python-multi-thread/" title="Python 建立多執行緒 thread">Python 建立多執行緒 thread</a><br><a href="/python-read-text-file/" title="Python 讀檔，讀取 txt 文字檔">Python 讀檔，讀取 txt 文字檔</a><br><a href="/python-pil-read-image-and-show-image/" title="Python PIL 讀取圖片並顯示">Python PIL 讀取圖片並顯示</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-if/" data-id="clxhd8auz0060lrs1fp0rjkct" data-title="Python if else elif 條件判斷用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp11-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp11-how/" class="article-date">
+  <time datetime="2019-11-18T14:00:00.000Z" itemprop="datePublished">2019-11-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp11-how/">C++11 在各平台下如何實現？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇簡單介紹 C++11 在各平台下如何實現，<br>C++11其實它是個標準，定義出通用標準的api接口，在各平台下各編譯器各自實作，以答到標準，</p>
+<p>類似工業標準 大家制定好規範，各家去實現該功能，</p>
+<p>由於該標準的一些功能在各平台下，大多有已經有各自的實作了，例如：std::thread, std::mutex, std::condition_variable，所以基本只是將這些接口在各平台下轉換成該平台的對應的接口就可以了，</p>
+<p>舉例，在 LLVM 原始碼裡頭可以發現 std::thread 建立一條 thread 在 unix 平台下是靠 pthread 的 pthread_create 去實作，在 windows 平台下則是靠 _beginthreadex<br>所以其實可以想成 C++11 的 thread 是多了一層封裝，當然還有加上一些 C++ 好用的特性，</p>
+<p>以下整理出各平台的對應api，對於 LLVM 原始碼是如何在各平台實作可以參考下方的相關連結。</p>
+<table>
+<thead>
+<tr>
+<th><strong>std::thread</strong></th>
+<th><strong>unix</strong></th>
+<th><strong>windows</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>std::thread</code></td>
+<td><code>pthread_create</code></td>
+<td><code>_beginthreadex</code></td>
+</tr>
+<tr>
+<td><code>std::thread::join</code></td>
+<td><code>pthread_join</code></td>
+<td><code>WaitForSingleObjectEx</code></td>
+</tr>
+<tr>
+<td><code>std::thread::detach</code></td>
+<td><code>pthread_detach</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::thread::get_id</code></td>
+<td><code>pthread_self</code></td>
+<td><code>GetCurrentThreadId</code></td>
+</tr>
+<tr>
+<td><code>std::thread::yield</code></td>
+<td><code>sched_yield</code></td>
+<td><code>SwitchToThread</code></td>
+</tr>
+<tr>
+<td><code>std::this_thread::sleep_for</code></td>
+<td><code>nanosleep</code></td>
+<td><code>Sleep</code></td>
+</tr>
+<tr>
+<td><strong>std::mutex</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::mutex::lock</code></td>
+<td><code>pthread_mutex_lock</code></td>
+<td><code>AcquireSRWLockExclusive</code></td>
+</tr>
+<tr>
+<td><code>std::mutex::unlock</code></td>
+<td><code>pthread_mutex_unlock</code></td>
+<td><code>LeaveCriticalSection</code></td>
+</tr>
+<tr>
+<td><strong>std::condition_variable</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::condition_variable::notify_one</code></td>
+<td><code>pthread_cond_signal</code></td>
+<td><code>WakeConditionVariable</code></td>
+</tr>
+<tr>
+<td><code>std::condition_variable::notify_all</code></td>
+<td><code>pthread_cond_broadcast</code></td>
+<td><code>WakeAllConditionVariable</code></td>
+</tr>
+<tr>
+<td><code>std::condition_variable::wait</code></td>
+<td><code>pthread_cond_wait</code></td>
+<td><code>SleepConditionVariableSRW</code></td>
+</tr>
+</tbody>
+</table>
+<p>參考資源<br>從 pthread 轉換到 std::thread<br><a href="https://www.cntofu.com/book/46/linux_system/cong_pthread_zhuan_huan_dao_std__thread.md" rel="noopener external nofollow noreferrer" target="_blank">https://www.cntofu.com/book/46/linux_system/cong_pthread_zhuan_huan_dao_std__thread.md</a><br>C++ 11是如何封裝Thread庫的？<br><a href="https://www.zhihu.com/question/30553807" rel="noopener external nofollow noreferrer" target="_blank">https://www.zhihu.com/question/30553807</a><br>C++並發編程實戰-讀書簡記<br><a href="http://lanbing510.info/2017/09/29/Cpp-Concurrency-In-Action.html" rel="noopener external nofollow noreferrer" target="_blank">http://lanbing510.info/2017/09/29/Cpp-Concurrency-In-Action.html</a><br>第 7 章 並行與並發 - 現代 C++ 教程: 高速上手 C++ 11/14/17/20<br><a href="https://changkun.de/modern-cpp/zh-cn/07-thread/index.html" rel="noopener external nofollow noreferrer" target="_blank">https://changkun.de/modern-cpp/zh-cn/07-thread/index.html</a></p>
+<p><strong>相關主題</strong><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-condition_variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp11-how/" data-id="clxhd8auz005zlrs1xv3eu03n" data-title="C++11 在各平台下如何實現？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-std-mutex-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-mutex-how/" class="article-date">
+  <time datetime="2019-11-17T14:00:00.000Z" itemprop="datePublished">2019-11-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-mutex-how/">std::mutex 怎麼實作的？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::mutex 的。  </p>
+<p>接下來我們來 trace llvm 的 libc++ 是怎麼實作 std::mutex 的。  </p>
+<h2><span id="1-stdmutexlock-的實作">1. std::mutex::lock 的實作</span></h2><p><code>lock</code> 轉換成內部的 <code>__libcpp_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/mutex.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::lock()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_lock(&amp;__m_);</span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"mutex lock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-1-stdmutexlock-在-unix-平台的實作內容">1-1. std::mutex::lock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 unix 平台是呼叫 <code>pthread_mutex_lock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_lock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-2-stdmutexlock-在-windows-平台的實作內容">1-2. std::mutex::lock 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_lock</code> 在 windows 平台是呼叫 <code>AcquireSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/support/win32/thread_win32.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_lock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  AcquireSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="2-stdmutexunlock-的實作">2. std::mutex::unlock 的實作</span></h2><p><code>unlock</code> 轉換成內部的 <code>__libcpp_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/mutex.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/mutex.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">mutex::unlock() _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_mutex_unlock(&amp;__m_);</span><br><span class="line">    (<span class="keyword">void</span>)ec;</span><br><span class="line">    _LIBCPP_ASSERT(ec == <span class="number">0</span>, <span class="string">"call to mutex::unlock failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-1-stdmutexunlock-在-unix-平台的實作內容">2-1. std::mutex::unlock 在 unix 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 unix 平台是呼叫 <code>pthread_mutex_unlock</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_mutex_unlock(__m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-2-stdmutexunlock-在-在-windows-平台的實作內容">2-2. std::mutex::unlock 在 在 windows 平台的實作內容</span></h3><p><code>__libcpp_mutex_unlock</code> 在 windows 平台是呼叫 <code>ReleaseSRWLockExclusive</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_mutex_unlock(<span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  ReleaseSRWLockExclusive((PSRWLOCK)__m);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="總結">總結</span></h2><p>在一番 trace code 的結果後，std::mutex 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::mutex::lock</code> 轉換成 <code>pthread_mutex_lock</code><br><code>std::mutex::unlock</code> 轉換成 <code>pthread_mutex_unlock</code><br>在 windows 下<br><code>std::mutex::lock</code> 轉換成 <code>AcquireSRWLockExclusive</code><br><code>std::mutex::unlock</code> 轉換成 <code>ReleaseSRWLockExclusive</code>  </p>
+<p><strong>相關主題</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-condition_variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-mutex-how/" data-id="clxhd8auy005ylrs1tssqdwv9" data-title="std::mutex 怎麼實作的？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-std-condition_variable-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-condition_variable-how/" class="article-date">
+  <time datetime="2019-11-16T14:00:00.000Z" itemprop="datePublished">2019-11-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-condition_variable-how/">std::condition_variable 怎麼實作的？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::condition_variable 的。  </p>
+<p>接下來我們來 trace llvm 的 libc++ 是怎麼實作 std::condition_variable 的。  </p>
+<h2><span id="1-stdcondition_variablenotify_one-的實作">1. std::condition_variable::notify_one 的實作</span></h2><p><code>notify_one</code> 轉換成內部的 <code>__libcpp_condvar_signal</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/condition_variable.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/condition_variable.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">condition_variable::notify_one() _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    __libcpp_condvar_signal(&amp;__cv_);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-1-stdcondition_variablenotify_one-在-unix-平台的實作內容">1-1. std::condition_variable::notify_one 在 unix 平台的實作內容</span></h3><p><code>__libcpp_condvar_signal</code> 在 unix 平台是呼叫 <code>pthread_cond_signal</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_signal(<span class="keyword">__libcpp_condvar_t</span> *__cv)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_cond_signal(__cv);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-2-stdcondition_variablenotify_one-在-windows-平台的實作內容">1-2. std::condition_variable::notify_one 在 windows 平台的實作內容</span></h3><p><code>__libcpp_condvar_signal</code> 在 windows 平台是呼叫 <code>WakeConditionVariable</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/support/win32/thread_win32.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_signal(<span class="keyword">__libcpp_condvar_t</span> *__cv)</span><br><span class="line">&#123;</span><br><span class="line">  WakeConditionVariable((PCONDITION_VARIABLE)__cv);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="2-stdcondition_variablewait-的實作">2. std::condition_variable::wait 的實作</span></h2><p><code>wait</code> 轉換成內部的 <code>__libcpp_condvar_wait</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/condition_variable.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/condition_variable.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">condition_variable::wait(unique_lock&lt;mutex&gt;&amp; lk) _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!lk.owns_lock())</span><br><span class="line">        __throw_system_error(EPERM,</span><br><span class="line">                                  <span class="string">"condition_variable::wait: mutex not locked"</span>);</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_condvar_wait(&amp;__cv_, lk.mutex()-&gt;native_handle());</span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"condition_variable wait failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-1-stdcondition_variablewait-在-unix-平台的實作內容">2-1. std::condition_variable::wait 在 unix 平台的實作內容</span></h3><p><code>__libcpp_condvar_wait</code> 在 unix 平台是呼叫 <code>pthread_cond_wait</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_wait(<span class="keyword">__libcpp_condvar_t</span> *__cv, <span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_cond_wait(__cv, __m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-2-stdcondition_variablewait-在-windows-平台的實作內容">2-2. std::condition_variable::wait 在 windows 平台的實作內容</span></h3><p><code>__libcpp_condvar_wait</code> 在 windows 平台是呼叫 <code>SleepConditionVariableSRW</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_wait(<span class="keyword">__libcpp_condvar_t</span> *__cv, <span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  SleepConditionVariableSRW((PCONDITION_VARIABLE)__cv, (PSRWLOCK)__m, INFINITE, <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="總結">總結</span></h2><p>在一番 trace code 的結果後，std::condition_variable 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::condition_variable::notify_one</code> 轉換成 <code>pthread_cond_signal</code><br><code>std::condition_variable::wait</code> 轉換成 <code>pthread_cond_wait</code><br>在 windows 下<br><code>std::condition_variable::notify_one</code> 轉換成 <code>WakeConditionVariable</code><br><code>std::condition_variable::wait</code> 轉換成 <code>SleepConditionVariableSRW</code>  </p>
+<p><strong>相關主題</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="clxhd8auy005xlrs1li2safny" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-tutorial/" class="article-date">
+  <time datetime="2019-11-15T14:00:00.000Z" itemprop="datePublished">2019-11-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-tutorial/">Python 基礎教學目錄</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 Python 教學彙整了 ShengYu 過往學習 Python 的知識，在此整理成 Python 教學目錄以便日後的查詢與新手入門學習。  </p>
+<h2><span id="python-基礎教學">Python 基礎教學</span></h2><p>這邊介紹一些 Python 常用的基礎知識與常用功能。<br><a href="/python-first-program/" title="第一支 Python 程式">第一支 Python 程式</a><br><a href="/python-arithmetic/" title="四則運算，加法、減法、乘法、除法用法與範例">四則運算，加法、減法、乘法、除法用法與範例</a><br><a href="/python-print/" title="print 格式化輸出">print 格式化輸出</a><br><a href="/python-input/" title="input 取得鍵盤輸入">input 取得鍵盤輸入</a><br><a href="/python-if/" title="if else elif 條件判斷">if else elif 條件判斷</a> - if / if-else / if-elif-else 的用法<br><a href="/python-for/" title="for 迴圈">for 迴圈</a><br><a href="/python-while/" title="while 迴圈">while 迴圈</a><br><a href="/python-function/" title="function 函式">function 函式</a><br><a href="/python-str/" title="str 字串">str 字串</a><br><a href="/python-list/" title="list 串列">list 串列</a><br><a href="/python-set/" title="set 集合">set 集合</a><br><a href="/python-dict/" title="dict 字典">dict 字典</a><br><a href="/python-tuple/" title="tuple 元組">tuple 元組</a><br><a href="/python-range/" title="range 用法">range 用法</a><br><a href="/python-sort/" title="sort 排序">sort 排序</a><br><a href="/python-main/" title="在 Python 寫 main 函式">在 Python 寫 main 函式</a><br><a href="/python-sys-argv/" title="sys.argv 用法">sys.argv 用法</a><br><a href="/python-logging/" title="logging 日誌用法">logging 日誌用法</a><br><a href="/python-lambda/" title="lambda 運算式">lambda 運算式</a><br><a href="/python-ternary-operator/" title="三元運算子">三元運算子</a><br><a href="/python-and/" title="and 運算子">and 運算子</a><br><a href="/python-or/" title="or 運算子">or 運算子</a><br><a href="/python-not/" title="not 運算子">not 運算子</a><br><a href="/python-xor/" title="xor 運算子">xor 運算子</a>  </p>
+<h2><span id="python-字串處理">Python 字串處理</span></h2><p>以下為 Python 字串處理的教學。<br><a href="/python-join/" title="連接字串 join">連接字串 join</a><br><a href="/python-split/" title="字串分割 split">字串分割 split</a><br><a href="/python-replace/" title="取代字元或取代字串 replace">取代字元或取代字串 replace</a><br><a href="/python-strip/" title="去除空白與去除特殊字元 strip">去除空白與去除特殊字元 strip</a>  </p>
+<h2><span id="python-檔案處理">Python 檔案處理</span></h2><p>以下為 Python 檔案處理的教學。<br><a href="/python-read-text-file/" title="讀取 txt 文字檔">讀取 txt 文字檔</a><br><a href="/python-write-text-file/" title="寫入 txt 文字檔">寫入 txt 文字檔</a><br><a href="/python-read-csv-file/" title="讀取 csv 檔案">讀取 csv 檔案</a><br><a href="/python-write-csv-file/" title="寫入 csv 檔案">寫入 csv 檔案</a><br><a href="/python-read-json-file/" title="讀取 json 檔案">讀取 json 檔案</a><br><a href="/python-write-json-file/" title="寫入 json 檔案">寫入 json 檔案</a><br><a href="/python-read-ini-file/" title="讀取 ini 設定檔 ConfigParser 用法">讀取 ini 設定檔 ConfigParser 用法</a><br><a href="/python-write-ini-file/" title="寫入 ini 設定檔 ConfigParser 用法">寫入 ini 設定檔 ConfigParser 用法</a><br><a href="/python-read-yaml-file/" title="讀取 yaml 檔案">讀取 yaml 檔案</a><br><a href="/python-write-yaml-file/" title="寫入 yaml 檔案">寫入 yaml 檔案</a><br><a href="/python-os-path-isfile/" title="判斷檢查檔案是否存在 os.path.isfile">判斷檢查檔案是否存在 os.path.isfile</a><br><a href="/python-os-path-isdir/" title="判斷資料夾是否存在 os.path.isdir">判斷資料夾是否存在 os.path.isdir</a><br><a href="/python-os-path-exists/" title="判斷檢查路徑是否存在 exists">判斷檢查路徑是否存在 exists</a><br><a href="/python-os-path-getsize/" title="取得檔案大小 getsize">取得檔案大小 getsize</a><br><a href="/python-os-path-basename/" title="取出檔案名稱 basename">取出檔案名稱 basename</a><br><a href="/python-os-path-dirname/" title="取出目錄的路徑 dirname">取出目錄的路徑 dirname</a>  </p>
+<h2><span id="時間與日期">時間與日期</span></h2><p>以下為 Python 時間與日期相關的教學。<br><a href="/python-get-current-time-and-date/" title="取得系統當前時間">取得系統當前時間</a><br><a href="/python-measure-execution-time/" title="計算程式執行時間">計算程式執行時間</a><br><a href="/python-use-time-monotonic/" title="使用 monotonic 計算程式執行時間">使用 monotonic 計算程式執行時間</a><br><a href="/python-how-to-use-sleep-function/" title="讓程式 sleep 延遲暫停時間">讓程式 sleep 延遲暫停時間</a><br><a href="/python-subtract-datetime/" title="使用 datetime 日期相減">使用 datetime 日期相減</a>  </p>
+<h2><span id="執行緒">執行緒</span></h2><p>以下為 Python 執行緒相關的教學。<br><a href="/python-multi-thread/" title="建立多執行緒 thread">建立多執行緒 thread</a><br><a href="/python-how-to-use-sleep-function/" title="讓程式 sleep 延遲暫停時間">讓程式 sleep 延遲暫停時間</a>  </p>
+<h2><span id="python-物件導向-oop">Python 物件導向 OOP</span></h2><p>以下為 Python 物件導向相關的教學<br><a href="/python-class/" title="類別 class">類別 class</a><br><a href="/python-inheritance/" title="繼承 inheritance">繼承 inheritance</a><br><a href="/python-multiple-inheritance/" title="多重繼承 multiple inheritance">多重繼承 multiple inheritance</a>  </p>
+<h2><span id="演算法">演算法</span></h2><p>以下為 Python 演算法相關的教學<br><a href="/python-sort/" title="sort 排序用法與範例">sort 排序用法與範例</a><br><a href="/python-bubble-sort/" title="bubble sort 泡沫排序法">bubble sort 泡沫排序法</a><br><a href="/python-selection-sort/" title="selection sort 選擇排序法">selection sort 選擇排序法</a>  </p>
+<h2><span id="python-pil-圖片處理系列文">Python PIL 圖片處理系列文</span></h2><p>使用 Python 搭配 PIL 模組作圖片處理的學習。<br><a href="/python-pil-and-pillow/" title="如何安裝PIL">如何安裝PIL</a><br><a href="/python-pil-read-image-and-show-image/" title="讀取圖片並顯示">讀取圖片並顯示</a><br><a href="/python-pil-blur-image/" title="圖片模糊化 blur">圖片模糊化 blur</a><br><a href="/python-pil-smooth-image/" title="圖片平滑化 smooth">圖片平滑化 smooth</a><br><a href="/python-pil-rotate-image/" title="旋轉圖片 rotate">旋轉圖片 rotate</a><br><a href="/python-pil-flip-image/" title="水平翻轉、垂直翻轉圖片">水平翻轉、垂直翻轉圖片</a><br><a href="/python-pil-crop-image/" title="裁切裁剪圖片 crop">裁切裁剪圖片 crop</a><br><a href="/python-pil-resize-image/" title="縮放圖片 resize">縮放圖片 resize</a><br><a href="/python-pil-thumbnail-image/" title="製作圖片縮圖 thumbnail">製作圖片縮圖 thumbnail</a><br><a href="/python-pil-draw-text-on-image/" title="在圖片上繪製文字">在圖片上繪製文字</a><br><a href="/python-pil-paste-image/" title="圖片貼上 paste">圖片貼上 paste</a><br><a href="/python-pil-exif/" title="取得圖片Exif資訊">取得圖片Exif資訊</a>  </p>
+<h2><span id="python-opencv-影像處理系列文">Python OpenCV 影像處理系列文</span></h2><p>使用 Python 搭配 OpenCV 模組來作影像處理的學習。<br><a href="/python-install-opencv/" title="Python 安裝 OpenCV 模組">Python 安裝 OpenCV 模組</a><br><a href="/python-opencv-rgb-to-gray/" title="彩色轉灰階(RGB/BGR to GRAY)">彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-hsv/" title="彩色轉HSV(RGB/BGR to HSV)">彩色轉HSV(RGB/BGR to HSV)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="彩色轉YCbCr(RGB/BGR to YCbCr)">彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-gray-to-rgb/" title="灰階轉彩色(Gray to RGB/BGR)">灰階轉彩色(Gray to RGB/BGR)</a><br><a href="/python-opencv-threshold/" title="影像二值化 Image Thresholding">影像二值化 Image Thresholding</a><br><a href="/python-opencv-blur/" title="影像平滑模糊化 blur">影像平滑模糊化 blur</a><br><a href="/python-opencv-canny/" title="影像邊緣偵測 Canny Edge Detection">影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-vconcat-hconcat/" title="垂直vconcat 和水平hconcat 影像拼接">垂直vconcat 和水平hconcat 影像拼接</a><br><a href="/python-opencv-resize/" title="圖片縮放 resize">圖片縮放 resize</a><br><a href="/python-opencv-camera/" title="顯示camera攝影機串流影像">顯示camera攝影機串流影像</a><br><a href="/python-opencv-video/" title="讀取播放video影片檔案">讀取播放video影片檔案</a><br><a href="/python-opencv-save-video/" title="儲存寫入video影片到檔案">儲存寫入video影片到檔案</a><br><a href="/python-opencv-erode-dilate/" title="影像侵蝕 erode 與影像膨脹 dilate">影像侵蝕 erode 與影像膨脹 dilate</a>  </p>
+<h2><span id="python-tkinter-視窗程式系列文">Python tkinter 視窗程式系列文</span></h2><p>使用 Python 搭配 tkinter 模組來作視窗程式設計的學習。<br><a href="/python-tkinter-label/" title="tkinter Label 標籤用法與範例">tkinter Label 標籤用法與範例</a><br><a href="/python-tkinter-button/" title="tkinter Button 按鈕用法與範例">tkinter Button 按鈕用法與範例</a><br><a href="/python-tkinter-entry/" title="tkinter Entry 文字輸入框用法與範例">tkinter Entry 文字輸入框用法與範例</a><br><a href="/python-tkinter-combobox/" title="tkinter Combobox 用法與範例">tkinter Combobox 用法與範例</a><br><a href="/python-tkinter-optionmenu/" title="tkinter OptionMenu 用法與範例">tkinter OptionMenu 用法與範例</a><br><a href="/python-tkinter-canvas/" title="tkinter Canvas 用法與範例">tkinter Canvas 用法與範例</a><br><a href="/python-tkinter-messagebox/" title="tkinter messagebox 用法與範例">tkinter messagebox 用法與範例</a><br><a href="/python-tkinter-statusbar/" title="tkinter status bar 狀態列用法與範例">tkinter status bar 狀態列用法與範例</a><br><a href="/python-tkinter-filedialog/" title="tkinter filedialog 開啟檔案對話框">tkinter filedialog 開啟檔案對話框</a><br><a href="/python-tkinter-filedialog-directory/" title="tkinter filedialog.askdirectory 選擇資料夾對話框">tkinter filedialog.askdirectory 選擇資料夾對話框</a>  </p>
+<h2><span id="python-pyqt5-視窗程式系列文">Python PyQt5 視窗程式系列文</span></h2><p>使用 Python 搭配 PyQt5 模組來作視窗程式設計的學習。<br><a href="/python-pyqt-qlabel/" title="PyQt5 QLabel 標籤用法與範例">PyQt5 QLabel 標籤用法與範例</a><br><a href="/python-pyqt-qpushbutton/" title="PyQt5 QPushButton 按鈕用法與範例">PyQt5 QPushButton 按鈕用法與範例</a><br><a href="/python-pyqt-qlineedit/" title="PyQt5 QLineEdit 文字輸入框用法與範例">PyQt5 QLineEdit 文字輸入框用法與範例</a><br><a href="/python-pyqt-qcombobox/" title="PyQt5 QComboBox 下拉式選單用法與範例">PyQt5 QComboBox 下拉式選單用法與範例</a><br><a href="/python-pyqt-qradiobutton/" title="PyQt5 QRadioButton 單選框用法與範例">PyQt5 QRadioButton 單選框用法與範例</a><br><a href="/python-pyqt-qcheckbox/" title="PyQt5 QCheckBox 複選框用法與範例">PyQt5 QCheckBox 複選框用法與範例</a><br><a href="/python-pyqt-qvboxlayout/" title="PyQt5 QVBoxLayout 垂直佈局用法與範例">PyQt5 QVBoxLayout 垂直佈局用法與範例</a><br><a href="/python-pyqt-qhboxlayout/" title="PyQt5 QHBoxLayout 水平佈局用法與範例">PyQt5 QHBoxLayout 水平佈局用法與範例</a><br><a href="/python-pyqt-qgridlayout/" title="PyQt5 QGridLayout 網格佈局用法與範例">PyQt5 QGridLayout 網格佈局用法與範例</a><br><a href="/python-pyqt-qpixmap/" title="PyQt5 QPixmap 用法與範例">PyQt5 QPixmap 用法與範例</a><br><a href="/python-pyqt-qimage/" title="PyQt5 QImage 用法與範例">PyQt5 QImage 用法與範例</a><br><a href="/python-pyqt-qpainter/" title="PyQt5 QPainter 用法與範例">PyQt5 QPainter 用法與範例</a><br><a href="/python-pyqt-qthread/" title="PyQt5 QThread 用法與範例">PyQt5 QThread 用法與範例</a><br><a href="/python-pyqt-qtimer/" title="PyQt5 QTimer 定時器用法與範例">PyQt5 QTimer 定時器用法與範例</a><br><a href="/python-pyqt-qmessagebox/" title="PyQt5 QMessageBox 用法與範例">PyQt5 QMessageBox 用法與範例</a><br><a href="/python-pyqt-qfiledialog/" title="PyQt5 QFileDialog 開啟檔案對話框">PyQt5 QFileDialog 開啟檔案對話框</a>  </p>
+<h2><span id="web">Web</span></h2><p>以下為 Python Web 網頁相關的教學。<br><a href="/python-simple-web-server/" title="快速建立簡單網頁伺服器 http websever">快速建立簡單網頁伺服器 http websever</a><br><a href="/python-tornado/" title="建立簡單的 Tornado Web">建立簡單的 Tornado Web</a><br><a href="/python-flask/" title="Flask 建立簡單的網頁">Flask 建立簡單的網頁</a>  </p>
+<h2><span id="網路通訊">網路通訊</span></h2><p>以下為 Python Socket 網路通訊相關的教學。<br><a href="/python-socket/" title="Python Socket 網路通訊教學">Python Socket 網路通訊教學</a><br><a href="/python-tcp-socket/" title="Python TCP Server/Client 網路通訊程式">Python TCP Server/Client 網路通訊程式</a><br><a href="/python-udp-socket/" title="Python UDP Server/Client 網路通訊程式">Python UDP Server/Client 網路通訊程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="clxhd8auy005wlrs1a2qmyr7w" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-sort" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-sort/" class="article-date">
@@ -180,7 +742,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="clx4r741e005tejs18dvvnmnn" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="clxhd8aux005vlrs1ios6rb1d" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -251,7 +813,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="clx4r741e005sejs1wvwrdyd7" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="clxhd8aux005ulrs1gowjnn3v" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -316,514 +878,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-for/" data-id="clx4r741d005rejs1nsqcilu6" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-opencv-vconcat-hconcat" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-opencv-vconcat-hconcat/" class="article-date">
-  <time datetime="2019-11-11T14:00:00.000Z" itemprop="datePublished">2019-11-11</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-opencv-vconcat-hconcat/">Python OpenCV 垂直vconcat 和水平hconcat 影像拼接</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 搭配 OpenCV 來作 vconcat 垂影像拼接跟 hconcat 水平影像拼接，在做影像處理時有時會需要把兩張圖片拼在一起，或兩張影像以上的拼接，接下就來介紹怎麼使用 python 搭配 OpenCV 的 cv2.vconcat 與 cv2.hconcat 來作影像拼接。  </p>
-<h2><span id="垂直影像拼接-vconcat">垂直影像拼接 vconcat</span></h2><p>這個範例示範垂直影像拼接，將lena.jpg讀進來之後，使用 cv2.vconcat 將兩張影像垂直地拼接起來。<br><figure class="highlight python"><figcaption><span>opencv-vconcat.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">"lena.jpg"</span>)</span><br><span class="line">image_v = cv2.vconcat([image, image])</span><br><span class="line">cv2.imshow(<span class="string">"Result"</span>, image_v)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-opencv-vconcat-hconcat/opencv-vconcat.jpg" width="320" title="結果圖">  </p>
-<h2><span id="水平影像拼接-hconcat">水平影像拼接 hconcat</span></h2><p>這個範例示範水平影像拼接，將 lena.jpg 讀進來之後，使用 cv2.hconcat 將兩張影像水平地拼接起來。<br><figure class="highlight python"><figcaption><span>opencv-hconcat.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">"lena.jpg"</span>)</span><br><span class="line">image_h = cv2.hconcat([image, image])</span><br><span class="line">cv2.imshow(<span class="string">"Result"</span>, image_h)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-opencv-vconcat-hconcat/opencv-hconcat.jpg" width="640" title="結果圖">  </p>
-<h2><span id="補充說明">補充說明</span></h2><p>另外使用 np.tile 也可以達到同樣效果。  </p>
-<p>參考<br>[1] Concatenate images with Python, OpenCV (hconcat, vconcat, np.tile) | note.nkmk.me<br><a href="https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/" rel="noopener external nofollow noreferrer" target="_blank">https://note.nkmk.me/en/python-opencv-hconcat-vconcat-np-tile/</a><br>[2] Python OPenCV 图片简单拼接 hconcat vconcat函数使用_人工智能_qq_31587389的博客-CSDN博客<br><a href="https://blog.csdn.net/qq_31587389/article/details/85722429" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/qq_31587389/article/details/85722429</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你在學習 Python 或 OpenCV 影像處理相關技術，可以參考看看下面的文章，<br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a><br><a href="/python-opencv-rgb-to-gray/" title="Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)">Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-hsv/" title="Python OpenCV 彩色轉HSV(RGB/BGR to HSV)">Python OpenCV 彩色轉HSV(RGB/BGR to HSV)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)">Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-canny/" title="Python OpenCV 影像邊緣偵測 Canny Edge Detection">Python OpenCV 影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-camera/" title="Python OpenCV 顯示camera攝影機串流影像">Python OpenCV 顯示camera攝影機串流影像</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="clx4r741d005qejs14onwsqp8" data-title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-opencv-resize" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-opencv-resize/" class="article-date">
-  <time datetime="2019-11-10T14:00:00.000Z" itemprop="datePublished">2019-11-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-opencv-resize/">Python OpenCV resize 圖片縮放</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇將介紹如何使用 Python 搭配 OpenCV 來 resize 縮放圖片，在寫 python 影像處理程式時常常會用到 opencv cv2.resize 圖片縮放的功能，接下來介紹怎麼使用 python 搭配 OpenCV 模組來進行圖片縮放 resize。  </p>
-<h2><span id="使用範例">使用範例</span></h2><p>以下 python 範例 ShengYu 是將 lena.jpg 讀取進來後，使用 opencv cv2.resize 進行縮放，從原本的512x512大小縮放成256x256 的大小。<br><figure class="highlight python"><figcaption><span>opencv-resize.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'lena.jpg'</span>)</span><br><span class="line">image = cv2.resize(image, (<span class="number">256</span>, <span class="number">256</span>), interpolation=cv2.INTER_AREA)</span><br><span class="line">cv2.imshow(<span class="string">'Result'</span>, image)</span><br><span class="line">cv2.waitKey(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-opencv-resize/opencv-resize.jpg" width="320" title="結果圖">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="參數說明">參數說明</span></h2><p><code>cv2.resize(src, dsize[, dst[, fx[, fy[, interpolation]]]])</code>  </p>
-<table>
-<thead>
-<tr>
-<th>interpolation</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>INTER_NEAREST</td>
-<td>最近鄰插值</td>
-</tr>
-<tr>
-<td>INTER_LINEAR</td>
-<td>雙線性插值（預設）</td>
-</tr>
-<tr>
-<td>INTER_AREA</td>
-<td>使用像素區域關係進行重採樣。它可能是圖像抽取的首選方法，因為它會產生無雲紋理(波紋)的結果。 但是當圖像縮放時，它類似於INTER_NEAREST方法。</td>
-</tr>
-<tr>
-<td>INTER_CUBIC</td>
-<td>4x4像素鄰域的雙三次插值</td>
-</tr>
-<tr>
-<td>INTER_LANCZOS4</td>
-<td>8x8像素鄰域的Lanczos插值</td>
-</tr>
-</tbody>
-</table>
-<p>cv2.resize 參數的詳細細節請參考<a href="https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#cv2.resize" rel="noopener external nofollow noreferrer" target="_blank">這裡</a>  </p>
-<h2><span id="opencv-cv2resize-提供五種方式的結果比較">OpenCV cv2.resize 提供五種方式的結果比較</span></h2><p>下面的例子將 cv2.resize 所提供的所有種類都使用看看，來互相比較之間的差異，<br>我們先 resize 縮小成 400x400 的大小 來比較看看，<br>例子中還使用了 matplotlib 的方式將有圖片一起呈現在同一個視窗內，關於 matplotlib 的使用可以看看<a href="/python-matplotlib/" title="這篇">這篇</a>，<br>其中 matplotlib 的 imshow 圖片是使用RGB排列方式，所以這邊我們將 opencv 的 BGR 排列作個轉換，<br>這樣在 matplotlib 上顏色顯示才會正確。  </p>
-<figure class="highlight python"><figcaption><span>opencv-resize.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">image = cv2.imread(<span class="string">'lena.jpg'</span>)</span><br><span class="line">img1 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_NEAREST)</span><br><span class="line">img2 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_LINEAR)</span><br><span class="line">img3 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_AREA)</span><br><span class="line">img4 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_CUBIC)</span><br><span class="line">img5 = cv2.resize(image, (<span class="number">400</span>, <span class="number">400</span>), interpolation=cv2.INTER_LANCZOS4)</span><br><span class="line"></span><br><span class="line"><span class="comment"># BGR 轉 RGB</span></span><br><span class="line">img0_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</span><br><span class="line">img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)</span><br><span class="line">img2_rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)</span><br><span class="line">img3_rgb = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)</span><br><span class="line">img4_rgb = cv2.cvtColor(img4, cv2.COLOR_BGR2RGB)</span><br><span class="line">img5_rgb = cv2.cvtColor(img5, cv2.COLOR_BGR2RGB)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或這樣轉也可以</span></span><br><span class="line"><span class="comment">#img1_rgb = img1[:,:,::-1]</span></span><br><span class="line"></span><br><span class="line">titles = [<span class="string">'Original Image'</span>, <span class="string">'INTER_NEAREST'</span>, <span class="string">'INTER_LINEAR'</span>, <span class="string">'INTER_AREA'</span>, <span class="string">'INTER_CUBIC'</span>, <span class="string">'INTER_LANCZOS4'</span>]</span><br><span class="line">images = [img0_rgb, img1_rgb, img2_rgb, img3_rgb, img4_rgb, img5_rgb]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">6</span>):</span><br><span class="line">    plt.subplot(<span class="number">2</span>, <span class="number">3</span>, i+<span class="number">1</span>)</span><br><span class="line">    plt.imshow(images[i])</span><br><span class="line">    plt.title(titles[i])</span><br><span class="line">    plt.xticks([]), plt.yticks([])</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
-<p>結果如下圖所示，從下列結果圖發現，使用 INTER_NEAREST 會有些微地鋸齒狀，在圖片中的帽緣與鏡子邊緣上的線條可以發現，<br>INTER_NEAREST 是最簡單的插值方法，且速度快，但也容易出現鋸齒的現象。<br><img src="/python-opencv-resize/opencv-resize2.jpg" title="結果圖">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="opencv-cv2resize-這五種方式在速度上的比較">OpenCV cv2.resize 這五種方式在速度上的比較</span></h2><p>由快到慢排序：INTER_NEAREST &gt; INTER_CUBIC &gt; INTER_LINEAR &gt; INTER_AREA &gt; INTER_LANCZOS4<br>這是以我的電腦的測試數據，每次跑的結果都不太一樣，但整體速度排序來說差不多，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">INTER_NEAREST：  0.000447 seconds</span><br><span class="line">INTER_LINEAR：   0.000673 seconds</span><br><span class="line">INTER_AREA：     0.001684 seconds</span><br><span class="line">INTER_CUBIC：    0.000482 seconds</span><br><span class="line">INTER_LANCZOS4： 0.003038 seconds</span><br></pre></td></tr></table></figure></p>
-<h2><span id="總結">總結</span></h2><p>如果是要縮小圖片的話，通常 INTER_AREA 使用效果較佳。<br>如果是要放大圖片的話，通常 INTER_CUBIC 使用效果較佳，次等則是 INTER_LINEAR。<br>如果要追求速度的話，通常使用 INTER_NEAREST。  </p>
-<p>其它參考<br>opencv: 图像缩放(cv2.resize)_人工智能<em>JNing-CSDN博客<br><a href="https://blog.csdn.net/JNingWei/article/details/78218837" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/JNingWei/article/details/78218837</a><br>Python-OpenCV中的resize()函数 - Rogn - 博客园<br><a href="https://www.cnblogs.com/lfri/p/10596530.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/lfri/p/10596530.html</a><br>OpenCV圖像縮放resize各種插值方式的比較</em>人工智能_pan_jinquan的博客-CSDN博客<br><a href="https://blog.csdn.net/guyuealian/article/details/85097633" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/guyuealian/article/details/85097633</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你在學習 Python 或 OpenCV 影像處理相關技術，可以參考看看下面的文章，<br><a href="/python-opencv-rgb-to-gray/" title="Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)">Python OpenCV 彩色轉灰階(RGB/BGR to GRAY)</a><br><a href="/python-opencv-rgb-to-hsv/" title="Python OpenCV 彩色轉HSV(RGB/BGR to HSV)">Python OpenCV 彩色轉HSV(RGB/BGR to HSV)</a><br><a href="/python-opencv-rgb-to-ycbcr/" title="Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)">Python OpenCV 彩色轉YCbCr(RGB/BGR to YCbCr)</a><br><a href="/python-opencv-canny/" title="Python OpenCV 影像邊緣偵測 Canny Edge Detection">Python OpenCV 影像邊緣偵測 Canny Edge Detection</a><br><a href="/python-opencv-camera/" title="Python OpenCV 顯示camera攝影機串流影像">Python OpenCV 顯示camera攝影機串流影像</a><br><a href="/python-opencv-vconcat-hconcat/" title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接">Python OpenCV 垂直vconcat 和水平hconcat 影像拼接</a><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-opencv-img2char/" title="小專案 Python OpenCV 圖片轉字元圖畫">小專案 Python OpenCV 圖片轉字元圖畫</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="clx4r741c005pejs10gkns9bw" data-title="Python OpenCV resize 圖片縮放" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-multi-thread" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-multi-thread/" class="article-date">
-  <time datetime="2019-11-09T14:00:00.000Z" itemprop="datePublished">2019-11-09</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-multi-thread/">Python thread 建立多執行緒用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 來建立多執行緒 multithread，多執行緒 multithread 是很常會用到的程式技能，接下來介紹怎麼使用 python 3 的 threading 模組來建立執行緒吧。  </p>
-<p>以下的 Python thread 執行緒用法與範例將分為這幾部分，  </p>
-<ul>
-<li>Python 單執行緒到多執行緒的思維  </li>
-<li>Python 建立多個執行緒的範例  </li>
-<li>Python 撰寫多執行緒的注意事項  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2><span id="python-單執行緒到多執行緒的思維">Python 單執行緒到多執行緒的思維</span></h2><p>原本寫程式只會單執行緒從頭寫到尾，例如單執行緒做了 ABC 三件事，總共花了 3 秒，但如果 ABC 三件事的內容是互相不影響的，那改成多執行緒的寫法，同時開 3 個執行緒分別去執行A、B和C的話，可能總共只需要 1 秒呢！這麼厲害的技巧一定要學囉，馬上來學習吧！  </p>
-<h2><span id="python-建立多個執行緒的範例">Python 建立多個執行緒的範例</span></h2><p>下範例是使用 Python 3 的<code>threading.Thread()</code>建立了三個執行緒，每次的寫法都不太一樣，分別為去執行 <code>print_hello()</code>、<code>print_hellowrold()</code> 與 <code>print_hi()</code>，<br><code>print_hello()</code>函式裡很簡單地印出3次的 Hello，並且間隔0.5秒印一次，<br><code>print_hellowrold()</code>函式是根據帶入一個參數n去印，需要注意的是在<code>threading.Thread()</code> 的 <code>args</code> 是要傳入一個tuple， 而tuple只有一個元素的寫法為 <code>args = (3,)</code> 這樣，需要另外加個逗號，<br><code>print_hi()</code>函式為兩個參數。  </p>
-<p>另外依據 <code>time.sleep()</code> 參數給入的秒數，<code>time.sleep()</code> 函式暫停執行當前的執行緒，<br>如果行程裡只有單一條執行緒的話，等同於暫停執行整個行程。<br><figure class="highlight python"><figcaption><span>python3-create-thread.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hello</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>):</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line">        print(<span class="string">"Hello "</span> + str(i))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hellowrold</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(n):</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line">        print(<span class="string">"Hello world "</span>+ str(i))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">print_hi</span><span class="params">(n, interval)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(n):</span><br><span class="line">        time.sleep(interval)</span><br><span class="line">        print(<span class="string">"Hi "</span>+ str(i))</span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target = print_hello)</span><br><span class="line">t2 = threading.Thread(target = print_hellowrold, args = (<span class="number">3</span>,))</span><br><span class="line">t3 = threading.Thread(target = print_hi,</span><br><span class="line">                      args = (<span class="number">3</span>, <span class="number">0.2</span>))</span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line">t3.start()</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Hi</span><br><span class="line">Hi</span><br><span class="line">Hello</span><br><span class="line">Hi</span><br><span class="line">Hello</span><br><span class="line">Hello</span><br></pre></td></tr></table></figure></p>
-<p>另外開執行緒也可以不取得回傳變數直接執行，例如<code>threading.Thread(target = print_hello).start()</code>這樣寫，  </p>
-<p>threading 的詳細細節請參考<a href="https://docs.python.org/3.8/library/threading.html" rel="noopener external nofollow noreferrer" target="_blank">這裡</a>  </p>
-<h2><span id="python-撰寫多執行緒的注意事項">Python 撰寫多執行緒的注意事項</span></h2><p>多執行緒程式比單執行緒程式難撰寫，也難以維護跟除錯，因為多執行緒間的資源共享，可能會造成以下這些問題：  </p>
-<ul>
-<li>Race condition (競爭情況/競爭條件/競爭危害)  </li>
-<li>死結 Deadlock - 當一個執行緒在無窮等待一個鎖時。  </li>
-<li>Livelock  </li>
-<li>Starvation (餓死/飢餓) - 一個行程取得不到 CPU 時間來完成工作。  </li>
-</ul>
-<p>以上就是 Python thread 建立多執行緒用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其他參考<br>Use PyQt’s QThread to Prevent Freezing GUIs – Real Python<br><a href="https://realpython.com/python-pyqt-qthread/" rel="noopener external nofollow noreferrer" target="_blank">https://realpython.com/python-pyqt-qthread/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 Python 相關技術，可以參考看看下面的文章，<br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-input/" title="Python 取得鍵盤輸入 input">Python 取得鍵盤輸入 input</a><br><a href="/python-if/" title="Python if else elif 用法教學與範例">Python if else elif 用法教學與範例</a><br><a href="/python-for/" title="Python for 迴圈">Python for 迴圈</a><br><a href="/python-sort/" title="Python sort 排序">Python sort 排序</a><br><a href="/python-read-text-file/" title="Python 讀檔，讀取 txt 文字檔">Python 讀檔，讀取 txt 文字檔</a><br><a href="/python-split/" title="Python 字串分割 split">Python 字串分割 split</a><br><a href="/python-replace/" title="Python 取代字元或取代字串 replace">Python 取代字元或取代字串 replace</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="clx4r741c005oejs1827varp2" data-title="Python thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-exif" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-exif/" class="article-date">
-  <time datetime="2019-11-08T14:00:00.000Z" itemprop="datePublished">2019-11-08</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-exif/">Python 取得圖片Exif資訊</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 讀取圖片的 Exif 資訊，在做圖片處理時常常會需要根據 Exif 資訊作處理，例如這張圖片有無旋轉，接下就來介紹怎麼使用 python 的 PIL 模組來讀取圖片的 Exif 資訊。</p>
-<h2><span id="安裝-pil">安裝 PIL</span></h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。</p>
-<h2><span id="使用範例">使用範例</span></h2><p>以下範例 ShengYu 是使用一張有 exif 的照片來測試，<br>print(img) 可印出該檔案的基本資料，如模式，大小，記憶體所在位置，<br>使用 _getexif 會回傳個字典 dict，之後在用迴圈將 exif 字典裡的東西全部印出來。<br><figure class="highlight python"><figcaption><span>pil-read-image-exif.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">from</span> PIL.ExifTags <span class="keyword">import</span> TAGS</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"IMG_20181205_xxxxxx.jpg"</span>)</span><br><span class="line">print(img)</span><br><span class="line">exif = img._getexif()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> exif <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">for</span> (tag, value) <span class="keyword">in</span> exif.items():</span><br><span class="line">	    key = TAGS.get(tag, tag)</span><br><span class="line">	    print(key + <span class="string">' = '</span> + str(value))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">ImageWidth = 4048</span><br><span class="line">ImageLength = 3036</span><br><span class="line">ApertureValue = (200, 100)</span><br><span class="line">ExifImageHeight = 3036</span><br><span class="line">DateTimeDigitized = 2018:12:05 11:10:19</span><br><span class="line">MaxApertureValue = (200, 100)</span><br><span class="line">ExifVersion = b&apos;0220&apos;</span><br><span class="line">ColorSpace = 1</span><br><span class="line">Contrast = 0</span><br><span class="line">Saturation = 0</span><br><span class="line">FocalLength = (4670, 1000)</span><br><span class="line">SubjectDistanceRange = 1</span><br><span class="line">ExposureMode = 0</span><br><span class="line">Make = Google</span><br><span class="line">Model = Pixel XL</span><br><span class="line">SubsecTimeOriginal = 253505</span><br><span class="line">Orientation = 1</span><br><span class="line">YCbCrPositioning = 1</span><br><span class="line">SensingMethod = 2</span><br><span class="line">ExposureBiasValue = (0, 6)</span><br><span class="line">XResolution = (72, 1)</span><br><span class="line">YResolution = (72, 1)</span><br><span class="line">ExposureTime = (33333, 1000000)</span><br><span class="line">ExifInteroperabilityOffset = 18588</span><br><span class="line">ExposureProgram = 2</span><br><span class="line">SceneCaptureType = 0</span><br><span class="line">ISOSpeedRatings = 1208</span><br><span class="line">ResolutionUnit = 2</span><br><span class="line">WhiteBalance = 0</span><br><span class="line">MeteringMode = 2</span><br><span class="line">ComponentsConfiguration = b&apos;\x01\x02\x03\x00&apos;</span><br><span class="line">FNumber = (200, 100)</span><br><span class="line">Software = HDR+ 1.0.163413028z</span><br><span class="line">DateTime = 2018:12:05 11:10:19</span><br><span class="line">ShutterSpeedValue = (491, 100)</span><br><span class="line">Flash = 16</span><br><span class="line">SceneType = b&apos;\x01&apos;</span><br><span class="line">Sharpness = 0</span><br><span class="line">ExifImageWidth = 4048</span><br><span class="line">CustomRendered = 1</span><br><span class="line">FlashPixVersion = b&apos;0100&apos;</span><br><span class="line">SubjectDistance = (337, 1000)</span><br><span class="line">DateTimeOriginal = 2018:12:05 11:10:19</span><br><span class="line">SubsecTime = 253505</span><br><span class="line">ExifOffset = 230</span><br><span class="line">SubsecTimeDigitized = 253505</span><br><span class="line">BrightnessValue = (-169, 100)</span><br><span class="line">MakerNote = b&apos;HDRP...&apos;</span><br></pre></td></tr></table></figure></p>
-<p>PIL.ExifTags 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/latest/reference/ExifTags.html" rel="noopener external nofollow noreferrer" target="_blank">這裡</a></p>
-<p>其他參考資料<br><a href="https://zh.wikipedia.org/wiki/EXIF" rel="noopener external nofollow noreferrer" target="_blank">https://zh.wikipedia.org/wiki/EXIF</a></p>
-<p><strong>相關主題</strong><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-draw-text-on-image/" title="Python 在圖片上繪製文字">Python 在圖片上繪製文字</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="clx4r741c005nejs1xgaup0wc" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-paste-image" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-paste-image/" class="article-date">
-  <time datetime="2019-11-07T14:00:00.000Z" itemprop="datePublished">2019-11-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-paste-image/">Python 圖片貼上 paste</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 讀取圖片並且將圖片貼在另一張圖片上，在做影像處理時有時會需要對圖片作剪下貼上的處理，接下來介紹怎麼使用 python 的 PIL 模組來作圖片貼上。  </p>
-<h2><span id="安裝-pil">安裝 PIL</span></h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。  </p>
-<h2><span id="範例1把-lena-的縮圖貼在-lena-圖片上">範例1：把 lena 的縮圖貼在 lena 圖片上</span></h2><p>以下範例 ShengYu 是使用 Image.open() 讀取 lena.jpg 這張圖片，<br>Image.open() 會回傳一個 Image 物件，<br>然後我們使用<a href="/python-pil-thumbnail-image/" title="先前介紹過的圖片縮圖">先前介紹過的圖片縮圖</a>，把它讀取進來，<br>接著來到本篇的重點使用 paste() 將縮圖貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！  </p>
-<figure class="highlight python"><figcaption><span>paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line">img2 = Image.open(<span class="string">"lena-thumbnail.jpg"</span>)</span><br><span class="line">print(img2.size)</span><br><span class="line"></span><br><span class="line">img.paste(img2, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/paste-image.jpg" width="320" title="結果圖"></p>
-<h2><span id="範例2把-crop-下的範圍貼在-lena-圖片上">範例2：把 crop 下的範圍貼在 lena 圖片上</span></h2><p>這範例先使用 crop 裁剪一個範圍，<br>接著使用 paste() 將 crop 的範圍貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！<br><figure class="highlight python"><figcaption><span>crop-paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line"></span><br><span class="line">img2 = img.crop((<span class="number">0</span>, <span class="number">0</span>, <span class="number">300</span>, <span class="number">300</span>))</span><br><span class="line">img.paste(img2, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/crop-paste-image.jpg" width="320" title="結果圖">  </p>
-<h2><span id="範例3把-crop-下的範圍作模糊化再貼在-lena-圖片上">範例3：把 crop 下的範圍作模糊化再貼在 lena 圖片上</span></h2><p>這範例先使用 crop() 裁剪一個範圍，<br>然後使用<a href="/python-pil-blur-image/" title="先前介紹過的模糊化 filter()">先前介紹過的模糊化 filter()</a> 將範圍模糊化，<br>接著使用 paste() 將 crop 的範圍貼在 (150, 50) 的位置上，<br>最後使用 show() 將這張圖片顯示出來，就可以看到結果囉！<br><figure class="highlight python"><figcaption><span>crop-filter-paste-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image, ImageFilter</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line"></span><br><span class="line">img2 = img.crop((<span class="number">0</span>, <span class="number">0</span>, <span class="number">300</span>, <span class="number">300</span>))</span><br><span class="line">img3 = img2.filter(ImageFilter.BLUR)</span><br><span class="line">img.paste(img3, (<span class="number">150</span>, <span class="number">50</span>))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure></p>
-<p>結果如下圖所示：<br><img src="/python-pil-paste-image/crop-filter-paste-image.jpg" width="320" title="結果圖">  </p>
-<p>Image.paste 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.paste" rel="noopener external nofollow noreferrer" target="_blank">這裡</a>  </p>
-<p><strong>相關主題</strong><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-draw-text-on-image/" title="Python 在圖片上繪製文字">Python 在圖片上繪製文字</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-paste-image/" data-id="clx4r741b005mejs1hqsf2z6z" data-title="Python 圖片貼上 paste" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-read-image-and-show-image" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-read-image-and-show-image/" class="article-date">
-  <time datetime="2019-11-06T14:00:00.000Z" itemprop="datePublished">2019-11-06</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-read-image-and-show-image/">Python 讀取圖片並顯示</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python PIL 讀取圖片並且將圖片顯示出來，在做影像處理時常常會需要對圖片作處理，而第一步最常遇到要怎麼讀取圖片跟顯示圖片，接下來介紹怎麼使用 python 的 PIL 模組來讀取圖片跟顯示。  </p>
-<h2><span id="安裝-pil">安裝 PIL</span></h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。  </p>
-<h2><span id="使用範例">使用範例</span></h2><p>以下範例 ShengYu 是使用 Image.open() 讀取 lena.jpg 這張圖片，<br>Image.open() 會回傳一個 Image 物件，<br>之後取出 Image 物件的 size 用 print 把這張圖片的寬和高印出來，<br>最後再使用 show() 將這張圖片顯示出來。  </p>
-<figure class="highlight python"><figcaption><span>read-image-and-show-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">(w, h) = img.size</span><br><span class="line">print(<span class="string">'w=%d, h=%d'</span> % (w, h))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure>
-<p>結果如下圖所示：<br>左邊為原圖，右邊為縮放後的圖。<br><img src="/python-pil-read-image-and-show-image/read-image-and-show-image.jpg" width="320" title="結果圖">  </p>
-<p>Image.open 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open" rel="noopener external nofollow noreferrer" target="_blank">這裡</a><br>Image.show 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show" rel="noopener external nofollow noreferrer" target="_blank">這裡</a>  </p>
-<p><strong>相關主題</strong><br><a href="/python-first-program/" title="Python 第一支 Python 程式">Python 第一支 Python 程式</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-draw-text-on-image/" title="Python 在圖片上繪製文字">Python 在圖片上繪製文字</a><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-read-image-and-show-image/" data-id="clx4r741b005lejs18z2yndvy" data-title="Python 讀取圖片並顯示" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-draw-text-on-image" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-draw-text-on-image/" class="article-date">
-  <time datetime="2019-11-05T14:00:00.000Z" itemprop="datePublished">2019-11-05</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-draw-text-on-image/">Python 在圖片上繪製文字</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 在圖片上繪製文字，在做影像處理時常常會需要在圖片上繪製文字，這邊我們使用 python 的 PIL 模組來在圖片上繪製文字。  </p>
-<h2><span id="安裝-pil">安裝 PIL</span></h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。  </p>
-<h2><span id="使用範例">使用範例</span></h2><p>以下範例 ShengYu 是準備在 lena.jpg 這張圖片上繪製文字，<br>先透過 ImageFont.truetype() 讀入要使用的字型，<br>之後再用 ImageDraw.Draw.text() 繪製 “Hello” 白色的文字，顯示出來。  </p>
-<figure class="highlight python"><figcaption><span>draw-text-on-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image, ImageDraw, ImageFont</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">print(img.size)</span><br><span class="line"></span><br><span class="line">font = ImageFont.truetype(<span class="string">'Pillow/Tests/fonts/FreeMono.ttf'</span>, <span class="number">36</span>)</span><br><span class="line">draw = ImageDraw.Draw(img)</span><br><span class="line">draw.text((<span class="number">10</span>, <span class="number">10</span>), <span class="string">'Hello'</span>, font=font, fill=(<span class="number">255</span>,<span class="number">255</span>,<span class="number">255</span>))</span><br><span class="line"></span><br><span class="line">print(img.size)</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure>
-<p>結果如下圖所示：<br>左邊為原圖，右邊為縮放後的圖。<br><img src="/python-pil-draw-text-on-image/draw-text-on-image.jpg" width="320" title="結果圖">  </p>
-<p>ImageDraw.Draw.text 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html#PIL.ImageDraw.PIL.ImageDraw.ImageDraw.text" rel="noopener external nofollow noreferrer" target="_blank">這裡</a>  </p>
-<p><strong>相關主題</strong><br><a href="/python-first-program/" title="Python 第一支 Python 程式">Python 第一支 Python 程式</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-draw-text-on-image/" data-id="clx4r741a005kejs16mclrquv" data-title="Python 在圖片上繪製文字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-for/" data-id="clxhd8auw005tlrs1a5dwiyn6" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -839,7 +894,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/59/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/58/">58</a><a class="page-number" href="/page/59/">59</a><span class="page-number current">60</span><a class="page-number" href="/page/61/">61</a><a class="page-number" href="/page/62/">62</a><span class="space">&hellip;</span><a class="page-number" href="/page/80/">80</a><a class="extend next" rel="next" href="/page/61/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/59/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/58/">58</a><a class="page-number" href="/page/59/">59</a><span class="page-number current">60</span><a class="page-number" href="/page/61/">61</a><a class="page-number" href="/page/62/">62</a><span class="space">&hellip;</span><a class="page-number" href="/page/81/">81</a><a class="extend next" rel="next" href="/page/61/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -870,23 +925,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
-            <a href="/python-assert/">Python assert 語句用法與範例</a>
+            <a href="/php-mysqli/">使用 PHP 和 MySQLi 進行資料庫操作的簡單指南</a>
           </li>
         
           <li>
-            <a href="/chatgpt-alternatives/">ChatGPT 的 2 個替代工具：Google Gemini與Microsoft Copilot</a>
+            <a href="/python-subprocess.call/">Python subprocess.call 用法與範例解析</a>
           </li>
         
           <li>
-            <a href="/python-subprocess.popen/">Python subprocess.Popen 用法與範例</a>
+            <a href="/python-sqlite/">如何在Python中使用SQLite：完整指南與實用範例</a>
           </li>
         
           <li>
-            <a href="/why-programmers-should-utilize-chatgpt/">善用ChatGPT：程式人員提升效率和技能的必備工具</a>
+            <a href="/what-is-pdca/">什麼是PDCA循環？了解持續改進的管理利器</a>
           </li>
         
           <li>
-            <a href="/python-subprocess/">深入了解 Python subprocess 模組用法與實用範例</a>
+            <a href="/python-mongodb/">Python 與 MongoDB 的完美結合：詳細指南與範例</a>
           </li>
         
       </ul>
@@ -905,7 +960,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">189</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">231</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">189</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">235</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
