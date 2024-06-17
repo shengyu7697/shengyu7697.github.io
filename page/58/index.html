@@ -107,6 +107,133 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-opencv-filestorage" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/opencv-filestorage/" class="article-date">
+  <time datetime="2019-12-15T14:00:00.000Z" itemprop="datePublished">2019-12-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/OpenCV教學/">OpenCV教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/opencv-filestorage/">OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何使用 OpenCV 的 FileStorage 來做 YAML 檔案格式的寫入與讀取，在 OpenCV 許多應用都需要使用資料的儲存於讀取，例如相機的3D校正需要儲存校正後的結果矩陣，以利下次使用；在機器學習的應用上需要將訓練學習得到的參數保存等。OpenCV 提供了 XML/YAML 檔案格式作儲存與讀取，以下將介紹如何使用 FileStorage 來讀取與寫入 YAML。  </p>
+<h2><span id="filestorage-使用介紹">FileStorage 使用介紹</span></h2><p>FileStorage 的使用流程如下：  </p>
+<ol>
+<li>初始化一個 <a href="https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html#a587b4f5793a894fbe245e95cb30d6bc7" rel="noopener external nofollow noreferrer" target="_blank">FileStorage</a> 的變數並且開檔  </li>
+<li>使用 &lt;&lt; 進行資料的寫入，&gt;&gt; 進行資料讀取，類似 C++ 中的檔案操作  </li>
+<li>使用 <a href="https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html#ad23d5415a06fb4bc97bfa034589b376e" rel="noopener external nofollow noreferrer" target="_blank">FileStorage::release()</a> 函數釋放記憶體與關檔  </li>
+</ol>
+<h2><span id="使用-filestorage-寫入資料">使用 FileStorage 寫入資料</span></h2><p>以下範例示範開檔、寫入int數值、寫入矩陣、寫入系統時間，最後關檔。<br><figure class="highlight cpp"><figcaption><span>opencv-FileStorage-write.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ opencv-FileStorage-write.cpp `pkg-config --cflags --libs opencv`</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">writeYaml</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename = <span class="string">"output.yaml"</span>;</span><br><span class="line">    cv::<span class="function">FileStorage <span class="title">fs</span><span class="params">(filename, FileStorage::WRITE)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!fs.isOpened()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"failed to open file "</span> &lt;&lt; filename &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// write int</span></span><br><span class="line">    <span class="keyword">int</span> imageWidth= <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">int</span> imageHeight= <span class="number">10</span>;</span><br><span class="line">    fs &lt;&lt; <span class="string">"imageWidth"</span> &lt;&lt; imageWidth;</span><br><span class="line">    fs &lt;&lt; <span class="string">"imageHeight"</span> &lt;&lt; imageHeight;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// write a Mat</span></span><br><span class="line">    cv::Mat m1= Mat::eye(<span class="number">3</span>, <span class="number">3</span>, CV_8U);</span><br><span class="line">    cv::Mat m2= Mat::ones(<span class="number">3</span>, <span class="number">3</span>, CV_8U);</span><br><span class="line">    cv::Mat resultMat= (m1+<span class="number">1</span>).mul(m1+<span class="number">2</span>);</span><br><span class="line">    fs &lt;&lt; <span class="string">"resultMat"</span> &lt;&lt; resultMat;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// write multi-variables </span></span><br><span class="line">    cv::Mat cameraMatrix = (Mat_&lt;<span class="keyword">double</span>&gt;(<span class="number">3</span>,<span class="number">3</span>) &lt;&lt; <span class="number">700</span>, <span class="number">0</span>, <span class="number">320</span>, <span class="number">0</span>, <span class="number">700</span>, <span class="number">240</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line">    cv::Mat distCoeffs = (Mat_&lt;<span class="keyword">double</span>&gt;(<span class="number">5</span>,<span class="number">1</span>) &lt;&lt; <span class="number">0.1</span>, <span class="number">0.01</span>, <span class="number">-0.001</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    fs &lt;&lt; <span class="string">"cameraMatrix"</span> &lt;&lt; cameraMatrix &lt;&lt; <span class="string">"distCoeffs"</span> &lt;&lt; distCoeffs;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// write local time</span></span><br><span class="line">    <span class="keyword">time_t</span> rawtime;</span><br><span class="line">    time(&amp;rawtime); <span class="comment">// #include &lt;time.h&gt;</span></span><br><span class="line">    fs &lt;&lt; <span class="string">"calibrationDate"</span> &lt;&lt; asctime(localtime(&amp;rawtime));</span><br><span class="line"></span><br><span class="line">    fs.release();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    writeYaml();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="使用-filestorage-讀取資料">使用 FileStorage 讀取資料</span></h2><figure class="highlight cpp"><figcaption><span>opencv-FileStorage-read.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ opencv-FileStorage-read.cpp `pkg-config --cflags --libs opencv`</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/opencv.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">readYaml</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename = <span class="string">"output.yaml"</span>;</span><br><span class="line">    cv::<span class="function">FileStorage <span class="title">fs</span><span class="params">(filename, FileStorage::READ)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!fs.isOpened()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"failed to open file "</span> &lt;&lt; filename &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> width;</span><br><span class="line">    <span class="keyword">int</span> height;</span><br><span class="line">    fs[<span class="string">"imageWidth"</span>] &gt;&gt; width;</span><br><span class="line">    fs[<span class="string">"imageHeight"</span>] &gt;&gt; height;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"width = "</span> &lt;&lt; width &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"height = "</span> &lt;&lt;height &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// read Mat</span></span><br><span class="line">    cv::Mat resultMatRead;</span><br><span class="line">    fs[<span class="string">"resultMat"</span>] &gt;&gt; resultMatRead;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"resultMat = \n"</span> &lt;&lt; resultMatRead &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    </span><br><span class="line">    cv::Mat cameraMatrix, distCoeffs;</span><br><span class="line">    fs[<span class="string">"cameraMatrix"</span>] &gt;&gt; cameraMatrix;</span><br><span class="line">    fs[<span class="string">"distCoeffs"</span>] &gt;&gt; distCoeffs;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"cameraMatrix = \n"</span> &lt;&lt; cameraMatrix &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"distCoeffs = \n"</span> &lt;&lt; distCoeffs &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// read string</span></span><br><span class="line">    <span class="built_in">string</span> timeRead;</span><br><span class="line">    fs[<span class="string">"calibrationDate"</span>] &gt;&gt; timeRead;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"calibrationDate = "</span> &lt;&lt; timeRead &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"> </span><br><span class="line">    fs.release();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    readYaml();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">width = 5</span><br><span class="line">height = 10</span><br><span class="line">resultMat = </span><br><span class="line">[  6,   2,   2;</span><br><span class="line">   2,   6,   2;</span><br><span class="line">   2,   2,   6]</span><br><span class="line">cameraMatrix = </span><br><span class="line">[700, 0, 320;</span><br><span class="line"> 0, 700, 240;</span><br><span class="line"> 0, 0, 1]</span><br><span class="line">distCoeffs = </span><br><span class="line">[0.1;</span><br><span class="line"> 0.01;</span><br><span class="line"> -0.001;</span><br><span class="line"> 0;</span><br><span class="line"> 0]</span><br><span class="line">calibrationDate = Wed Dec 18 23:04:36 2019</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] OpenCV: cv::FileStorage Class Reference<br><a href="https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.opencv.org/3.4.8/da/d56/classcv_1_1FileStorage.html</a><br>[2] OpenCV —數據持久化: FileStorage類的數據存取操作與示例 - iracer的博客<br><a href="https://blog.csdn.net/iracer/article/details/51339377" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/iracer/article/details/51339377</a><br>[3] 使用OpenCV的FileStorage模塊持久化存取數據(Python)<br><a href="http://zhaoxuhui.top/blog/2018/06/29/PythonOpenCVFileStorage.html" rel="noopener external nofollow noreferrer" target="_blank">http://zhaoxuhui.top/blog/2018/06/29/PythonOpenCVFileStorage.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/opencv-version/" title="怎麼查詢 OpenCV 的版本">怎麼查詢 OpenCV 的版本</a><br><a href="/opencv-build-information/" title="如何看OpenCV當初編譯的編譯參設定">如何看OpenCV當初編譯的編譯參設定</a><br><a href="/opencv-trace-videocapture/" title="OpenCV trace VideoCapture 流程">OpenCV trace VideoCapture 流程</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/opencv-filestorage/" data-id="clxj0vy5h006rbts1nsw3egon" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-android-usb-tethering" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-usb-tethering/" class="article-date">
+  <time datetime="2019-12-14T14:00:00.000Z" itemprop="datePublished">2019-12-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/android-usb-tethering/">Android USB Tethering 透過 USB 分享行動數據</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何使用 Android USB Tethering 的功能，這個功能可以讓你的電腦透過 Android USB 分享行動數據，這功能背後技術是使用 RNDIS(Remote Network Driver Interface Specification) 的協定。</p>
+<p>透過下列指令查看目前 usb 的設定是在什麼模式下。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ adb shell getprop persist.sys.usb.config</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mtp,adb</span><br></pre></td></tr></table></figure></p>
+<p>透過下列指令即可開啟 RNDIS 的功能，也可以從設定&gt;更多&gt;網路共用與可攜式無線網路基地台&gt;USB網路用，此時 android 會長出 rndis0 的網路介面，電腦端應該會長出一個 usb0 的網路介面(有可能被重命名)。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ adb shell setprop persist.sys.usb.config rndis,adb</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] Android USB Tethering<br><a href="https://wiki.gentoo.org/wiki/Android_USB_Tethering" rel="noopener external nofollow noreferrer" target="_blank">https://wiki.gentoo.org/wiki/Android_USB_Tethering</a><br>[2] 使用 USB 行動數據分享 (USB Tethering)<br><a href="https://artistehsu.pixnet.net/blog/post/273206803" rel="noopener external nofollow noreferrer" target="_blank">https://artistehsu.pixnet.net/blog/post/273206803</a><br>[3] Android USB 属性设置：ADB、RNDIS、MTP等<br><a href="https://blog.csdn.net/u012247418/article/details/84674793" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/u012247418/article/details/84674793</a><br>[4] 如何讓 embedded device 透過手機上網 – USB Tethering – SZ Lin &amp; Embedded Linux<br><a href="https://szlin.me/2016/08/26/%e5%a6%82%e4%bd%95%e8%ae%93-embedded-device-%e9%80%8f%e9%81%8e%e6%89%8b%e6%a9%9f%e4%b8%8a%e7%b6%b2-usb-tethering/" rel="noopener external nofollow noreferrer" target="_blank">https://szlin.me/2016/08/26/%e5%a6%82%e4%bd%95%e8%ae%93-embedded-device-%e9%80%8f%e9%81%8e%e6%89%8b%e6%a9%9f%e4%b8%8a%e7%b6%b2-usb-tethering/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-usb-tethering/" data-id="clxj0vy5g006qbts1oq9kb0dz" data-title="Android USB Tethering 透過 USB 分享行動數據" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-unordered_map" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-unordered_map/" class="article-date">
@@ -183,7 +310,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-unordered_map/" data-id="clxiy125f006o0ms14wtmu2x3" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-unordered_map/" data-id="clxj0vy5g006pbts1p5kamt75" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -349,7 +476,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-build-aosp/" data-id="clxiy125f006n0ms1k8mihhby" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-build-aosp/" data-id="clxj0vy5g006obts1yywa0wty" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -415,7 +542,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-fastboot/" data-id="clxiy125f006m0ms12a6okclf" data-title="Android fastboot 基本用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-fastboot/" data-id="clxj0vy5f006nbts1pk6zl4i4" data-title="Android fastboot 基本用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -472,7 +599,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-fastboot-get-current-active-slot/" data-id="clxiy125e006l0ms1hdkevlga" data-title="Android fastboot 查詢當前使用的a/b槽" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-fastboot-get-current-active-slot/" data-id="clxj0vy5f006mbts11na3ms5u" data-title="Android fastboot 查詢當前使用的a/b槽" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -528,7 +655,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-get-battery-level-via-adb/" data-id="clxiy125e006k0ms1chf4zjqo" data-title="Android adb 取得電池 battery 電量資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-get-battery-level-via-adb/" data-id="clxj0vy5d006kbts18r7cw6uj" data-title="Android adb 取得電池 battery 電量資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -587,7 +714,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-android-mk-to-android-bp/" data-id="clxiy125d006i0ms1dmotzkpu" data-title="從 Android.mk 到 Android.bp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-android-mk-to-android-bp/" data-id="clxj0vy5e006lbts16mk2t3v7" data-title="從 Android.mk 到 Android.bp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -644,7 +771,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-how-android-mk-work/" data-id="clxiy125d006j0ms17kwjemkq" data-title="Android.mk 的運作原理" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-how-android-mk-work/" data-id="clxj0vy5c006ibts1u0r39j3x" data-title="Android.mk 的運作原理" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -747,137 +874,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-write-a-android-mk/" data-id="clxiy125c006h0ms1l2sb2lic" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-write-a-android-mk/" data-id="clxj0vy5d006jbts1g1cqoq6y" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-android-platform-source-code-version" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/android-platform-source-code-version/" class="article-date">
-  <time datetime="2019-12-05T14:00:00.000Z" itemprop="datePublished">2019-12-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/android-platform-source-code-version/">如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇紀錄一下如何看 Android Platform (BSP) 的 <code>PLATFORM_VERSION</code> 版本號碼。<br><code>PLATFORM_VERSION</code> 位在 <code>platform/build/core/version_defaults.mk</code> 裡。</p>
-<p>Master<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/master/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/master/core/version_defaults.mk</a></p>
-<p>Android 10<br><a href="https://android.googlesource.com/platform/build/+/refs/tags/android-10.0.0_r17/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/tags/android-10.0.0_r17/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/android10-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/android10-release/core/version_defaults.mk</a><br>PLATFORM_VERSION.QP1A := 10</p>
-<p>Android 9 Pie<br><a href="https://android.googlesource.com/platform/build/+/refs/tags/android-9.0.0_r51/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/tags/android-9.0.0_r51/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/pie-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/pie-release/core/version_defaults.mk</a><br>PLATFORM_VERSION.PPR1 := 9</p>
-<p>Android 8 Oreo<br><a href="https://android.googlesource.com/platform/build/+/refs/tags/android-8.0.0_r41/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/tags/android-8.0.0_r41/core/version_defaults.mk</a><br>PLATFORM_VERSION.OPR1 := 8.0.0<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/oreo-mr1-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/oreo-mr1-release/core/version_defaults.mk</a><br>PLATFORM_VERSION.OPM1 := 8.1.0</p>
-<p>Android 7 Nougat<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/nougat-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/nougat-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 7.0<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/nougat-mr2.3-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/nougat-mr2.3-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 7.1.2</p>
-<p>Android 6 Marshmallow<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 6.0<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-mr3-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/marshmallow-mr3-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 6.0.1</p>
-<p>Android 5 Lollipop<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 5.0.2<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-cts-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-cts-release/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-fi-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-fi-release/core/version_defaults.mk</a><br><a href="https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/lollipop-mr1-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 5.1.1</p>
-<p>Android 4 KitKat<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/kitkat-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/kitkat-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 4.4<br><a href="https://android.googlesource.com/platform/build/+/refs/heads/kitkat-mr2.2-release/core/version_defaults.mk" rel="noopener external nofollow noreferrer" target="_blank">https://android.googlesource.com/platform/build/+/refs/heads/kitkat-mr2.2-release/core/version_defaults.mk</a><br>PLATFORM_VERSION := 4.4.4</p>
-<p>參考<br>[1] Where to find the version information in source code on Android platform - Stack Overflow<br><a href="https://stackoverflow.com/questions/2377225/where-to-find-the-version-information-in-source-code-on-android-platform" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/2377225/where-to-find-the-version-information-in-source-code-on-android-platform</a><br>[2] Android版本列表 - 維基百科，自由的百科全書<br><a href="https://zh.wikipedia.org/wiki/Android%E7%89%88%E6%9C%AC%E5%88%97%E8%A1%A8" rel="noopener external nofollow noreferrer" target="_blank">https://zh.wikipedia.org/wiki/Android%E7%89%88%E6%9C%AC%E5%88%97%E8%A1%A8</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-platform-source-code-version/" data-id="clxiy125c006g0ms1d5644k6b" data-title="如何看 Android Platform 的 PLATFORM_VERSION 版本號碼?" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-opencv-4-1-2-build-install-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/opencv-4-1-2-build-install-in-ubuntu/" class="article-date">
-  <time datetime="2019-12-04T14:00:00.000Z" itemprop="datePublished">2019-12-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/opencv-4-1-2-build-install-in-ubuntu/">在 Ubuntu 下編譯安裝 OpenCV 4.1.2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何在 Ubuntu 下編譯安裝 OpenCV 4.1.2，<br>這版 OpenCV 4.1.2 釋出日期是 2019/10/10，開始動手編譯原始碼安裝吧！  </p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04<br>GCC：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>G++：5.4.0 (Ubuntu 5.4.0-6ubuntu1~16.04.11)<br>使用版本：OpenCV 4.1.2 <a href="https://github.com/opencv/opencv/releases/tag/4.1.2" rel="noopener external nofollow noreferrer" target="_blank">下載處</a> / <a href="https://github.com/opencv/opencv/archive/4.1.2.zip" rel="noopener external nofollow noreferrer" target="_blank">zip</a>  </p>
-<h2><span id="安裝編譯所需的套件">安裝編譯所需的套件</span></h2><p>安裝編譯 opencv 所需要的套件，gcc / g++ / make / libc6-dev 都已包含在 build-essential 裡了，<br>所以不計較空間的話安裝 build-essential 算是相當的簡單省事。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake</span><br></pre></td></tr></table></figure></p>
-<h2><span id="下載原始碼">下載原始碼</span></h2><p>使用 wget 指令下載原始碼，並且解壓縮。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/opencv/opencv/archive/4.1.2.zip</span><br><span class="line">unzip 4.1.2.zip</span><br></pre></td></tr></table></figure></p>
-<h2><span id="編譯安裝">編譯安裝</span></h2><p>切換到剛剛解壓縮出來的目錄開始進行編譯，<br>最後 make 時，就看你電腦 CPU 有幾個核心，帶不同的參數，有助於加快整個編譯時間。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd opencv-4.1.2</span><br><span class="line">mkdir -p build &amp;&amp; cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure></p>
-<p>安裝，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
-<p>重新載入動態連結，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure></p>
-<h2><span id="查詢已安裝的-opencv-版本">查詢已安裝的 opencv 版本</span></h2><p>使用 <code>opencv_version</code> 指令查詢已安裝 opencv 的版本。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ opencv_version</span><br><span class="line">4.1.2</span><br></pre></td></tr></table></figure></p>
-<p>或者使用 <code>pkg-config</code> 查詢已安裝的 opencv 版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pkg-config --modversion opencv</span><br><span class="line">4.1.2</span><br></pre></td></tr></table></figure></p>
-<p>到這裡就完成 opencv 的安裝了，下篇將會介紹 <a href="/opencv-first-program-in-ubuntu/" title="如何寫第一支 OpenCV 程式">如何寫第一支 OpenCV 程式</a>。  </p>
-<p><strong>相關主題</strong><br><a href="/opencv-first-program-in-ubuntu/" title="在 Ubuntu 下寫第一支 OpenCV 程式">在 Ubuntu 下寫第一支 OpenCV 程式</a><br><a href="/opencv-version/" title="怎麼查詢 OpenCV 的版本">怎麼查詢 OpenCV 的版本</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-4-1-2-build-install-in-ubuntu/" data-id="clxiy125c006f0ms16v1ylfh5" data-title="在 Ubuntu 下編譯安裝 OpenCV 4.1.2" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
 
     </footer>
   </div>

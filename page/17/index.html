@@ -107,6 +107,163 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-openssl-aes" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-openssl-aes/" class="article-date">
+  <time datetime="2022-04-07T14:00:00.000Z" itemprop="datePublished">2022-04-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-openssl-aes/">C/C++ OpenSSL AES encryption/decryption 加密解密範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard) 演算法，AES 是目前主流的加密演算法，常見對稱式加密演算法的應用像是將檔案壓成壓縮時 (zip/7-zip) 如果要設定密碼加密就會使用到。  </p>
+<h2><span id="cc-openssl-aes-256-cbc">C/C++ OpenSSL AES-256 CBC</span></h2><p>AES 提供了幾種模式，分別為 ECB、CBC、CFB、CTR、OFB 五種模式，這邊介紹 C/C++ OpenSSL AES 256 CBC encryption/decryption 加密解密範例，在 openssl 可以常看到 encrypt 與 decrypt 關鍵字，encrypt 表示加密，decrypt 表示解密，在本範例中我們會使用 <code>AES_cbc_encrypt()</code> 做加密，解密的話則是使用 <code>aes_cbc_decrypt()</code>。  </p>
+<p>AES 的區塊長度固定為 128 bits (16 bytes)，即多輪且每次對 128 bits 明文區塊作加密，而不是一次對整個明文作加密，明文長度不是 128 bits 的整數倍的話，剩餘不足 128 bits 的區塊會用填充 (Padding) 的方式，填充 (Padding) 的方式有好幾種，最簡單就是用零填充 ZeroBytePadding，常用填充方式為 PKCS5Padding 或 PKCS7Padding，需要注意的是加密用哪一種填充方式，解密時也要同用一種填充方式。  </p>
+<p>key 就是加密過程中會用到的金鑰，AES 的 key 金鑰長度則可以是 128、192 或 256 bits，也就是平常大家說的 AES-128、AES-192 或 AES-256，以安全性來說 AES-256 安全性最高。  </p>
+<p>iv 就是初始向量 (Initialization Vector)，在加密過程中，原本相同明文區塊使用相同金鑰加密後的密文會相同，加入 iv 可讓每次的相同明文區塊使用相同金鑰加密後的密文不同，<br>用來防止同樣的內容產生同樣的加密資料，解密時用的 iv 必須跟加密的 iv 內容一樣，長度必須為 16 bytes (128 bits)，在使用 <code>AES_cbc_encrypt()</code> 加密時會修改 iv 的數值，所以在 <code>aes_cbc_decrypt()</code> 解密時務必確認是用相同的 iv。  </p>
+<p>另外 openssl command 還提供了 salt 的選項，salt 就是加鹽的意思，是個隨機產生的資料，在密碼 password 推導成金鑰 key 時可以使用，使用 salt 的話相同的密碼 password 就不會每次都推導成相同的金鑰 key 了。  </p>
+<p>以下的範例是直接設定金鑰 key 與 iv，沒有使用 salt，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;openssl/aes.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; key = from_hex_string(<span class="string">"2B7E151628AED2A6ABF7158809CF4F3C"</span>);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv = from_hex_string(<span class="string">"000102030405060708090A0B0C0D0E0F"</span>);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; plain = from_hex_string(<span class="string">"6BC1BEE22E409F96E93D7E117393172A"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; cipher = aes_128_cbc_encrypt(plain, key, iv);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"plain  : "</span> &lt;&lt; to_hex_string(plain) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"cipher : "</span> &lt;&lt; to_hex_string(cipher) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"iv     : "</span> &lt;&lt; to_hex_string(iv) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; decrypt_text = aes_128_cbc_decrypt(cipher, key, iv);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"decrypt: "</span> &lt;&lt; to_hex_string(decrypt_text) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>加密的函式，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; aes_128_cbc_encrypt(<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;plain,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;key,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv) &#123;</span><br><span class="line">    </span><br><span class="line">    AES_KEY ctx;</span><br><span class="line">    AES_set_encrypt_key(key.data(), <span class="number">128</span>, &amp;ctx);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; cipher(<span class="number">16</span>);</span><br><span class="line">    AES_cbc_encrypt(plain.data(), cipher.data(), <span class="number">16</span>, &amp;ctx, iv.data(), AES_ENCRYPT);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> cipher;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>解密的函式，<br><figure class="highlight cpp"><figcaption><span>cpp-aes-cbc.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; aes_128_cbc_decrypt(<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;cipher,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; &amp;key,</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; iv) &#123;</span><br><span class="line"></span><br><span class="line">    AES_KEY ctx;</span><br><span class="line">    AES_set_decrypt_key(key.data(), <span class="number">128</span>, &amp;ctx);</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; plain(<span class="number">16</span>);</span><br><span class="line">    AES_cbc_encrypt(cipher.data(), plain.data(), <span class="number">16</span>, &amp;ctx, iv.data(), AES_DECRYPT);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> plain;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">plain  : 6BC1BEE22E409F96E93D7E117393172A</span><br><span class="line">cipher : 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">iv     : 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">decrypt: 6BC1BEE22E409F96E93D7E117393172A</span><br></pre></td></tr></table></figure></p>
+<p>這邊列出一些網路上一些 AES 的 Test Vectors 測試向量可以測試看看加密後資料是否一致，這邊使用 <a href="https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html" rel="noopener external nofollow noreferrer" target="_blank">Apple</a> 提供的 4 組 AES-128-CBC Test Vectors，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 000102030405060708090A0B0C0D0E0F</span><br><span class="line">Plaintext = 6BC1BEE22E409F96E93D7E117393172A</span><br><span class="line">Ciphertext = 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 7649ABAC8119B246CEE98E9B12E9197D</span><br><span class="line">Plaintext = AE2D8A571E03AC9C9EB76FAC45AF8E51</span><br><span class="line">Ciphertext = 5086CB9B507219EE95DB113A917678B2</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 5086CB9B507219EE95DB113A917678B2</span><br><span class="line">Plaintext = 30C81C46A35CE411E5FBC1191A0A52EF</span><br><span class="line">Ciphertext = 73BED6B8E3C1743B7116E69E22229516</span><br><span class="line"></span><br><span class="line">Cipher = AES-128-CBC</span><br><span class="line">Key = 2B7E151628AED2A6ABF7158809CF4F3C</span><br><span class="line">IV = 73BED6B8E3C1743B7116E69E22229516</span><br><span class="line">Plaintext = F69F2445DF4F9B17AD2B417BE66C3710</span><br><span class="line">Ciphertext = 3FF1CAA1681FAC09120ECA307586E1A7</span><br></pre></td></tr></table></figure></p>
+<p>將這些 Key、IV、Plaintext 替換程式中的值，再看看程式執行完的 Ciphertext 是否一致。  </p>
+<p>加密前，計算原始明文長度如果使用 strlen 的話會有個缺點，strlen 是計算到 <code>&#39;\0&#39;</code> 結束字元為止，如果原始明文資料中間就有包含 <code>&#39;\0&#39;</code> 的話就會被 strlen 給截斷，那麼結果就是只會加密 <code>&#39;\0&#39;</code> 前面這一段，所以通常還是要傳入真正的原始明文資料長度，而不是使用 strlen  去計算明文長度。  </p>
+<h2><span id="padding-填充">Padding 填充</span></h2><p>以 PKCS5Padding 或 PKCS7Padding 為例，假設 block size 為 16 byte，那麼明文資料長度不足 16 的倍數就需要填充，如果明文資料長度是 15/31/47 byte 的話就填充 1 byte，填充的數值為 1，如果明文資料長度是 14/30/46 byte 的話就填充 2 byte，填充的數值為 2，如果明文資料長度是 13/29/45 byte 的話就填充 3 byte，填充的數值為 3，等等依此類推。  </p>
+<p>如果明文資料長度剛好是 16 的整數倍就額外填充 16 byte，填充的數值為 16，這一步很重要而且是必須的！為什麼明文資料長度為 16 整數倍時還要多填充 16 byte 呢？因為這樣解密出來明文才能區分最後的 byte 資料是填充的資料而不是原始明文資料的一部分。舉個例子，假設我原始明文資料長度為 16 且最後 1 個 byte 為 1，如果不填充的話，經過加密再解密回來時，那要怎麼知道資料的最後 1 個 byte 的 1 是填充還是原始明文資料呢？解決方法就是明文長度是整數倍時還是進行填充。  </p>
+<p>以下以 block size 為 4 byte 為例，那麼填充的各種結果會是這樣，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DD DD DD DD | DD DD DD 01</span><br><span class="line">DD DD DD DD | DD DD 02 02</span><br><span class="line">DD DD DD DD | DD 03 03 03</span><br><span class="line">DD DD DD DD | 04 04 04 04</span><br></pre></td></tr></table></figure></p>
+<p>PKCS5Padding 與 PKCS7Padding 在實作中基本上是完全相同的，只是 PKCS5Padding 是用來處理 block size 長度為 8 byte (64 bit)，所以 AES block size 為 16 的話是要使用 PKCS7Padding 才比較正確。  </p>
+<h2><span id="cc-openssl-aes-256-cbc-使用-evp-api">C/C++ OpenSSL AES-256 CBC 使用 EVP API</span></h2><p>後來 openssl 還有推出了 EVP 的 API，EVP 的 API 提供了所有對稱式加密演算法的統一介面，對開發者來說就可以很輕易的就換成其他演算法，另外 EVP API 還有硬體加速的部分，關於 EVP API 的討論可以看看<a href="https://stackoverflow.com/questions/9889492/how-to-do-encryption-using-aes-in-openssl" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>與<a href="https://stackoverflow.com/questions/10366950/openssl-using-evp-vs-algorithm-api-for-symmetric-crypto" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>，下一篇就介紹怎麼用 EVP API 來寫 AES-256 CBC。  </p>
+<p>C++ class that interfaces to OpenSSL ciphers – Joe’s Blog<br><a href="https://joelinoff.com/blog/?p=664" rel="noopener external nofollow noreferrer" target="_blank">https://joelinoff.com/blog/?p=664</a><br><a href="https://github.com/jlinoff/openssl-aes-cipher" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/jlinoff/openssl-aes-cipher</a><br>這個人寫了一個 C++ Cipher class for OpenSSL AES-256-CBC，</p>
+<hr>
+<p>其他參考<br>進階加密標準 - 維基百科，自由的百科全書<br><a href="https://zh.wikipedia.org/wiki/%E9%AB%98%E7%BA%A7%E5%8A%A0%E5%AF%86%E6%A0%87%E5%87%86" rel="noopener external nofollow noreferrer" target="_blank">https://zh.wikipedia.org/wiki/%E9%AB%98%E7%BA%A7%E5%8A%A0%E5%AF%86%E6%A0%87%E5%87%86</a><br>高級加密標准AES的工作模式（ECB、CBC、CFB、OFB）_天天向上99的博客-CSDN博客_aes cfb<br><a href="https://blog.csdn.net/charleslei/article/details/48710293" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/charleslei/article/details/48710293</a><br><a href="https://mp.weixin.qq.com/s?__biz=MzI1MTIzMzI2MA==&amp;mid=2650561454&amp;idx=1&amp;sn=dd91cdd8f3853fe07e1f2d02f4f126a9&amp;chksm=f1feed2dc689643bc143bc9462cc36315843a96e1babe372216375808148c43258278723749a&amp;scene=21#wechat_redirect" rel="noopener external nofollow noreferrer" target="_blank">漫画：什么是 AES 算法？</a><br><a href="https://mp.weixin.qq.com/s/zayzFr1h5HIIcWq9xGefkQ?" rel="noopener external nofollow noreferrer" target="_blank">漫画：AES 算法的底层原理</a>  </p>
+<p>填充模式<br>Padding (cryptography) - Wikipedia<br><a href="https://en.wikipedia.org/wiki/Padding_(cryptography" rel="noopener external nofollow noreferrer" target="_blank">https://en.wikipedia.org/wiki/Padding_(cryptography</a>)<br>Day 22. 加密演算法要注意的那些毛 (二) - 填充模式 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天<br><a href="https://ithelp.ithome.com.tw/articles/10250386" rel="noopener external nofollow noreferrer" target="_blank">https://ithelp.ithome.com.tw/articles/10250386</a><br>(瞭解 PKCS#5 的 PKCS#7 的差別)<br>cryptography - How does PKCS7 not lose data? - Stack Overflow<br><a href="https://stackoverflow.com/questions/7447242/how-does-pkcs7-not-lose-data" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/7447242/how-does-pkcs7-not-lose-data</a>  </p>
+<p>Salt and IV 的差異<br>encryption - Passphrase, Salt and IV, do I need all of these? - Stack Overflow<br><a href="https://stackoverflow.com/questions/1905112/passphrase-salt-and-iv-do-i-need-all-of-these" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1905112/passphrase-salt-and-iv-do-i-need-all-of-these</a><br>encryption - Why would you need a salt for AES-CBS when IV is already randomly generated and stored with the encrypted data? - Information Security Stack Exchange<br><a href="https://security.stackexchange.com/questions/48000/why-would-you-need-a-salt-for-aes-cbs-when-iv-is-already-randomly-generated-and" rel="noopener external nofollow noreferrer" target="_blank">https://security.stackexchange.com/questions/48000/why-would-you-need-a-salt-for-aes-cbs-when-iv-is-already-randomly-generated-and</a>  </p>
+<p>AES Test Vectors 測試向量<br><a href="https://const.net.cn/682.html" rel="noopener external nofollow noreferrer" target="_blank">aes 加密算法 测试向量(Test Vectors)示例 - 天行常</a><br><a href="https://github.com/Anexsoft/Bolt-CMS/blob/master/vendor/passwordlib/passwordlib/test/Data/Vectors/aes-ofb.test-vectors" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/Anexsoft/Bolt-CMS/blob/master/vendor/passwordlib/passwordlib/test/Data/Vectors/aes-ofb.test-vectors</a><br><a href="https://boringssl.googlesource.com/boringssl/+/2490/crypto/cipher/test/cipher_test.txt" rel="noopener external nofollow noreferrer" target="_blank">https://boringssl.googlesource.com/boringssl/+/2490/crypto/cipher/test/cipher_test.txt</a><br><a href="https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html" rel="noopener external nofollow noreferrer" target="_blank">https://opensource.apple.com/source/OpenSSL/OpenSSL-38/openssl/test/evptests.txt.auto.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/openssl-aes-encryption/" title="OpenSSL AES encryption 對稱式加密指令用法與範例">OpenSSL AES encryption 對稱式加密指令用法與範例</a><br><a href="/ubuntu-openssl/" title="Ubuntu 2 種安裝 OpenSSL 的方法">Ubuntu 2 種安裝 OpenSSL 的方法</a><br><a href="/mac-openssl/" title="macOS 2 種安裝 OpenSSL 的方法">macOS 2 種安裝 OpenSSL 的方法</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-openssl-aes/" data-id="clxj0vya600i4bts1v49csyvb" data-title="C/C++ OpenSSL AES encryption/decryption 加密解密範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-openssl-aes-encryption" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/openssl-aes-encryption/" class="article-date">
+  <time datetime="2022-04-04T14:00:00.000Z" itemprop="datePublished">2022-04-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/openssl-aes-encryption/">OpenSSL AES encryption 對稱式加密指令用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 OpenSSL AES encryption and decryption 對稱式加密解密指令用法與範例，AES 是典型的對稱式加密演算法，對稱式加密演算法是可逆的，也就是用一個金鑰加密後可以再用同一個金鑰解密回來，而 AES 全名是 Advanced Encryption Standard 是用來取代原先的 DES (Data Encryption Standard) 演算法，AES 是目前主流的加密演算法，常見對稱式加密演算法的應用像是將檔案壓成壓縮時 (zip/7-zip) 如果要設定密碼加密就會使用到。  </p>
+<p>以下 OpenSSL AES 加密解密的指令用法介紹將分為這幾部份，  </p>
+<ul>
+<li>檢查 OpenSSL 版本  </li>
+<li>OpenSSL AES encryption 加密/解密檔案  </li>
+<li>OpenSSL AES encryption 加密/解密文字  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2><span id="檢查-openssl-版本">檢查 OpenSSL 版本</span></h2><p>在使用 OpenSSL 之前，要先檢查確認 OpenSSL 版本，輸入 <code>openssl version</code> 指令可以顯示 OpenSSL 的版本，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ openssl version</span><br><span class="line">OpenSSL 1.1.1n  15 Mar 2022</span><br></pre></td></tr></table></figure></p>
+<p>目前來說是比較建議使用 OpenSSL 1.1.1 之後的版本，之前的版本有一些安全性 bug 不建議使用，建議要裝有 -pbkdf2 選項的 OpenSSL 版本。<br>有些平台會使用 <a href="https://zh.wikipedia.org/wiki/LibreSSL" rel="noopener external nofollow noreferrer" target="_blank">LibreSSL</a>，LibreSSL 是從 OpenSSL 1.0.1g 分支出來的，那麼可能有些選項跟 openssl 不一樣。  </p>
+<h2><span id="openssl-aes-encryption-加密解密檔案">OpenSSL AES encryption 加密/解密檔案</span></h2><p>這邊介紹 OpenSSL AES-256 encryption 加密與解密檔案指令的用法，使用 <code>openssl list-cipher-commands</code> 選項可以列出有哪些加密模式可以選擇，在本範例我們使用 aes-256-cbc 選項，AES-256 表示 key 金鑰長度使用 256 bits，目前有 128、192 或 256 bits 可以選擇，而其中以 AES-256 安全性最高，CBC 是 AES 的其中一種模式，</p>
+<p>openssl 對稱式加密有兩種使用方式，一種是直接指定要用的加密演算法，例如直接指定 AES-256 CBC：<code>openssl aes-256-cbc</code> ，另外一種是使用 enc 的方式，在 <code>openssl enc</code> 後面參數再指定要使用的加密演算法，例如：<code>openssl enc -aes-256-cbc</code>，enc 是將 openssl 提供多個對稱式加密演算法集成到一個指令中，而且 enc 可以指定對稱式加密演算法指令沒有提供的選項，所以建議使用 <code>openssl enc</code> 這種方式，openssl AES 解密檔案指令如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ openssl enc -aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plain.txt -out encrypted.txt</span><br><span class="line"><span class="comment"># 或者</span></span><br><span class="line">$ openssl aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plain.txt -out encrypted.txt</span><br></pre></td></tr></table></figure></p>
+<p><code>openssl enc -aes-256-cbc</code> 常見選項有：<br>-in: 輸入檔案<br>-out: 輸出檔案<br>-e: 加密(預設)<br>-d: 解密<br>-a: 文字格式輸出，base64<br>-md: Openssl 1.1.0 才從 md5 改為 sha-256，目前 sha-256 為預設<br>-pass pass:<password>: 指定加密/解密密碼，否則會顯示提示訊息讓你輸入密碼<br>-salt: 加鹽(預設)，用於 password 推導成 key 的過程中<br>-nosalt: 不加鹽，除非測試才時使用<br>-S salt: 指定鹽<br>-p: 印出 salt, key and IV<br>-P: 印出 salt, key and IV 且立即結束程式，不做任何加解密<br>-pbkdf2: Openssl 1.1.1 才有，建議使用此選項<br>-iter: password 推導成 key 的迭代次數<br>-z: 在加密前壓縮，使用zlib，前提是這個openssl在編譯時有加入zlib選項。  </password></p>
+<p>執行後會要你輸入 password，並且重新輸入 password 一次確認，之後就會進行加密，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ openssl enc -aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plain.txt -out encrypted.txt</span><br><span class="line">enter aes-256-cbc encryption password:</span><br><span class="line">Verifying - enter aes-256-cbc encryption password:</span><br></pre></td></tr></table></figure></p>
+<p>openssl AES 解密檔案的話就使用下列指令，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ openssl enc -aes-256-cbc -pbkdf2 -d -<span class="keyword">in</span> encrypted.txt -out plain.txt</span><br><span class="line"><span class="comment"># 或者</span></span><br><span class="line">$ openssl aes-256-cbc -pbkdf2 -d -<span class="keyword">in</span> encrypted.txt -out plain.txt</span><br></pre></td></tr></table></figure></p>
+<h2><span id="openssl-aes-encryption-加密解密文字">OpenSSL AES encryption 加密/解密文字</span></h2><p>這邊介紹 OpenSSL AES-256 encryption 加密與解密文字指令的用法，openssl AES 加密文字指令如下，<code>-a</code> 表示以文字格式輸出 (base64格式)，預設不指定 <code>-pass</code> 帶入密碼的話，他會跳出提示訊息讓你輸入密碼，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"Hello World"</span> | openssl aes-256-cbc -pbkdf2 -a</span><br><span class="line">enter aes-256-cbc encryption password:</span><br><span class="line">Verifying - enter aes-256-cbc encryption password:</span><br><span class="line">U2FsdGVkX19X1Q1t2NbuTdc4xjRr21ZGQ0BZ4rYy8qs=</span><br></pre></td></tr></table></figure></p>
+<p>openssl AES 解密文字的話就使用下列指令，加密時有加 <code>-a</code> 選項的話解密也要有 <code>-a</code> 選項，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"U2FsdGVkX19X1Q1t2NbuTdc4xjRr21ZGQ0BZ4rYy8qs="</span> | openssl enc -aes-256-cbc -pbkdf2 -a -d</span><br><span class="line">enter aes-256-cbc decryption password:</span><br><span class="line">Hello World</span><br></pre></td></tr></table></figure></p>
+<p>加入 <code>-pass</code> 選項的話可以設定密碼，以下範例密碼為 “shengyutalk”，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"Hello World"</span> | openssl enc -aes-256-cbc -pbkdf2 -a -pass pass:shengyutalk</span><br><span class="line">U2FsdGVkX19M0vfdhjcNiBW0OHrwdQYWMnOUJ6UvOL0=</span><br></pre></td></tr></table></figure></p>
+<p>解密時也可以加入 <code>-pass</code> 參數設定解密密碼，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">"U2FsdGVkX19M0vfdhjcNiBW0OHrwdQYWMnOUJ6UvOL0="</span> | openssl enc -aes-256-cbc -pbkdf2 -a -d -pass pass:shengyutalk</span><br><span class="line">Hello World</span><br></pre></td></tr></table></figure></p>
+<p>以上就是 OpenSSL AES encryption 對稱式加密指令用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br><a href="https://www.openssl.org/docs/man1.0.2/man1/openssl-enc.html" rel="noopener external nofollow noreferrer" target="_blank">openssl-enc man 1.0.2</a><br><a href="https://www.openssl.org/docs/man1.1.1/man1/openssl-enc.html" rel="noopener external nofollow noreferrer" target="_blank">openssl-enc man 1.1.1</a><br><a href="https://www.openssl.org/docs/man3.0/man1/openssl-enc.html" rel="noopener external nofollow noreferrer" target="_blank">openssl-enc man 3.0</a><br>encryption - How to use OpenSSL to encrypt/decrypt files? - Stack Overflow<br><a href="https://stackoverflow.com/questions/16056135/how-to-use-openssl-to-encrypt-decrypt-files" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/16056135/how-to-use-openssl-to-encrypt-decrypt-files</a><br>encryption - OpenSSL 1.1.1b warning: Using -iter or -pbkdf2 would be better while decrypting a file encrypted using OpenSSL 1.1.0g - Unix &amp; Linux Stack Exchange<br><a href="https://unix.stackexchange.com/questions/507131/openssl-1-1-1b-warning-using-iter-or-pbkdf2-would-be-better-while-decrypting" rel="noopener external nofollow noreferrer" target="_blank">https://unix.stackexchange.com/questions/507131/openssl-1-1-1b-warning-using-iter-or-pbkdf2-would-be-better-while-decrypting</a><br>(討論 OpenSSL 1.1.1 之前舊版本的 bug，建議要裝有 -pbkdf2 選項的 OpenSSL 版本。)<br>OpenSSL 對稱式、非對稱式加密檔案指令教學與範例<br><a href="https://officeguide.cc/linux-openssl-file-symmetic-asymmetric-encryption-commands-tutorial-examples/" rel="noopener external nofollow noreferrer" target="_blank">https://officeguide.cc/linux-openssl-file-symmetic-asymmetric-encryption-commands-tutorial-examples/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-openssl-aes/" title="C/C++ OpenSSL AES encryption/decryption 加密解密範例">C/C++ OpenSSL AES encryption/decryption 加密解密範例</a><br><a href="/mac-openssl/" title="macOS 2 種安裝 OpenSSL 的方法">macOS 2 種安裝 OpenSSL 的方法</a><br><a href="/ubuntu-openssl/" title="Ubuntu 2 種安裝 OpenSSL 的方法">Ubuntu 2 種安裝 OpenSSL 的方法</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/openssl-aes-encryption/" data-id="clxj0vya600i3bts1uhim1c52" data-title="OpenSSL AES encryption 對稱式加密指令用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-opencv-medianblur" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-opencv-medianblur/" class="article-date">
@@ -158,7 +315,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-medianblur/" data-id="clxiy12a200i20ms1pmbq3w4b" data-title="Python OpenCV cv2.medianBlur 中值濾波" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-medianblur/" data-id="clxj0vya600i2bts1338di21m" data-title="Python OpenCV cv2.medianBlur 中值濾波" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -229,7 +386,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-gaussianblur/" data-id="clxiy12a100i10ms1ujxf6pnu" data-title="Python OpenCV cv2.GaussianBlur 高斯濾波" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-gaussianblur/" data-id="clxj0vya500i1bts1qwiqy255" data-title="Python OpenCV cv2.GaussianBlur 高斯濾波" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -291,7 +448,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-numpy-print-array-precision/" data-id="clxiy12a100i00ms1mrxm256b" data-title="Python print numpy array 設定精準度" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-numpy-print-array-precision/" data-id="clxj0vya500i0bts12l32xepb" data-title="Python print numpy array 設定精準度" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -356,7 +513,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-numpy-write-csv-file/" data-id="clxiy12a000hz0ms1aqn6uprt" data-title="Python numpy 寫入 csv" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-numpy-write-csv-file/" data-id="clxj0vya400hzbts1ph7714ht" data-title="Python numpy 寫入 csv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -421,7 +578,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-pip-install-opencv/" data-id="clxiy12a000hy0ms1n327b0s0" data-title="macOS 使用 pip 安裝 opencv" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-pip-install-opencv/" data-id="clxj0vya400hybts1219os1q8" data-title="macOS 使用 pip 安裝 opencv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -497,7 +654,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-shell-input/" data-id="clxiy12a000hx0ms1jy4996mo" data-title="Android adb shell input 事件用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-shell-input/" data-id="clxj0vya400hxbts1ccblc2s4" data-title="Android adb shell input 事件用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -558,7 +715,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pip-install-specific-version/" data-id="clxiy129z00hw0ms1bjcixkob" data-title="Python pip install 如何安裝指定版本的套件" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pip-install-specific-version/" data-id="clxj0vya300hwbts1b9hotjiz" data-title="Python pip install 如何安裝指定版本的套件" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -621,145 +778,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-pthread_detach/" data-id="clxiy129z00hv0ms1zjnjx6e5" data-title="C/C++ Linux pthread_detach 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-pthread_exit" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-pthread_exit/" class="article-date">
-  <time datetime="2022-03-03T14:00:00.000Z" itemprop="datePublished">2022-03-03</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-pthread_exit/">C/C++ Linux pthread_exit 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒 <code>pthread_exit()</code> 用法，<code>pthread_exit()</code> 是用來結束該執行緒並透過 pthread_exit 的 retval 參數來回傳值，該回傳值可被 pthread_join 取得到。</p>
-<h2><span id="pthread_exit-基本用法">pthread_exit 基本用法</span></h2><p>以下簡單示範如何使用 <code>pthread_exit()</code>，在 foo 函式裡用 <code>pthread_exit()</code> 並回傳 123 數字，接著在 main 主程式中用 <code>pthread_join()</code> 接收到這個回傳值並且印出來，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_exit.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_exit.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo 1\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> *result = (<span class="keyword">int</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    *result = <span class="number">123</span>;</span><br><span class="line">    pthread_exit(result);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo 2\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">int</span> *retval;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_join(t1, (<span class="keyword">void</span> **)&amp;retval) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_join\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"retval: %d\n"</span>, *retval);</span><br><span class="line">    <span class="built_in">free</span>(retval);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo 1</span><br><span class="line">retval: 123</span><br></pre></td></tr></table></figure></p>
-<p>這邊另外介紹在 foo 函式裡用 <code>pthread_exit()</code> 並回傳 <code>hello</code> 字串，接著在 main 主程式中用 <code>pthread_join()</code> 接收到這個回傳值並且印出來，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_exit2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_exit2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo 1\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">char</span> *result = (<span class="keyword">char</span> *)<span class="built_in">malloc</span>(<span class="number">32</span> * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));</span><br><span class="line">    <span class="built_in">strcpy</span>(result, <span class="string">"hello"</span>);</span><br><span class="line">    pthread_exit(result);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo 2\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">char</span> *retval;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_join(t1, (<span class="keyword">void</span> **)&amp;retval) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_join\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"retval: %s\n"</span>, retval);</span><br><span class="line">    <span class="built_in">free</span>(retval);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo 1</span><br><span class="line">retval: hello</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="pthread_exit-其它使用情境">pthread_exit 其它使用情境</span></h2><p>這邊介紹 pthread_exit 另一個使用情境，有時 main 主程式已經執行完畢並結束，那麼建立出來的執行緒就終止了，如下範例，<br><figure class="highlight c++"><figcaption><span>cpp-pthread_exit3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_exit3.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo ++\n"</span>);</span><br><span class="line">    sleep(<span class="number">3</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo --\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"main ++\n"</span>);</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"main --\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">main ++</span><br><span class="line">foo ++</span><br><span class="line">main --</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>如果要讓建立出來的執行緒不被 main 主程式的結束退出影響時，就需要在主程式結束時呼叫 <code>pthread_exit()</code>，這樣會等到所有執行緒結束後 main 才會退出，如下範例，<br><figure class="highlight c++"><figcaption><span>cpp-pthread_exit4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_exit4.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo ++\n"</span>);</span><br><span class="line">    sleep(<span class="number">3</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo --\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"main ++\n"</span>);</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pthread_exit\n"</span>);</span><br><span class="line">    pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"main --\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>而使用 pthread_exit 自然不會執行到後面的 <code>printf(&quot;main --\n&quot;);</code> 與 <code>return 0</code>，輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">main ++</span><br><span class="line">pthread_exit</span><br><span class="line">foo ++</span><br><span class="line">foo --</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以上就是 C/C++ Linux pthread_exit 用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其它參考<br>pthread_exit(3) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man3/pthread_exit.3.html" rel="noopener external nofollow noreferrer" target="_blank">https://man7.org/linux/man-pages/man3/pthread_exit.3.html</a><br>pthread_exit()函數：終止線程<br><a href="http://c.biancheng.net/view/8608.html" rel="noopener external nofollow noreferrer" target="_blank">http://c.biancheng.net/view/8608.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pthread_join/" title="C/C++ Linux pthread_join 用法與範例">C/C++ Linux pthread_join 用法與範例</a><br><a href="/cpp-pthread_detach/" title="C/C++ Linux pthread_detach 用法與範例">C/C++ Linux pthread_detach 用法與範例</a><br><a href="/cpp-sched_setaffinity/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-pthread_exit/" data-id="clxiy129z00hu0ms1go7nb3xs" data-title="C/C++ Linux pthread_exit 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-pthread_join" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-pthread_join/" class="article-date">
-  <time datetime="2022-02-28T14:00:00.000Z" itemprop="datePublished">2022-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-pthread_join/">C/C++ Linux pthread_join 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒 <code>pthread_join()</code> 用法，<code>pthread_join()</code> 是在當前執行緒等待指定的執行緒執行完畢。</p>
-<h2><span id="pthread_join-基本用法">pthread_join 基本用法</span></h2><p>使用 pthread_join 會在當前執行緒阻塞並等待指定的執行緒執行完畢，如果指定的執行緒已經終止那麼 pthread_join 會立即回傳，指定的執行緒必須是 joinable 的。  </p>
-<p>pthread_join 對於 pthread 很重要，不呼叫 pthread_join 可能會造成建立的執行緒沒有執行完畢的問題，以下簡單示範如何使用 <code>pthread_join()</code>，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_join.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_join.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_join(t1, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_join\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="pthread_join-取得回傳值">pthread_join 取得回傳值</span></h2><p>這邊示範用 pthread_join 來取得執行緒的回傳值，在 foo 回傳 123 整數，在 main 主程式裡用 pthread_join 等待執行緒執行結束並將 retval 印出來，<br><figure class="highlight c++"><figcaption><span>cpp-pthread_join2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_join2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span> *)<span class="number">123</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">void</span> *retval;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_join(t1, &amp;retval) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_join\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (retval != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"retval: %d\n"</span>, retval);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo</span><br><span class="line">retval: 123</span><br></pre></td></tr></table></figure></p>
-<p>這邊示範用 pthread_join 來取得執行緒的回傳值，在 foo 回傳 hello 字串，在 main 主程式裡用 pthread_join 等待執行緒執行結束並將 retval 印出來，<br><figure class="highlight c++"><figcaption><span>cpp-pthread_join3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_join3.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span> *)<span class="string">"hello"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">void</span> *retval;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pthread_join(t1, &amp;retval) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_join\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (retval != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"retval: %s\n"</span>, (<span class="keyword">char</span> *)retval);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo</span><br><span class="line">retval: hello</span><br></pre></td></tr></table></figure></p>
-<p>其它參考<br>pthread_join(3) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man3/pthread_join.3.html" rel="noopener external nofollow noreferrer" target="_blank">https://man7.org/linux/man-pages/man3/pthread_join.3.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pthread_detach/" title="C/C++ Linux pthread_detach 用法與範例">C/C++ Linux pthread_detach 用法與範例</a><br><a href="/cpp-pthread_exit/" title="C/C++ Linux pthread_exit 用法與範例">C/C++ Linux pthread_exit 用法與範例</a><br><a href="/cpp-sched_setaffinity/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-pthread_join/" data-id="clxiy129y00ht0ms1b6mutg8y" data-title="C/C++ Linux pthread_join 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-pthread_detach/" data-id="clxj0vya300hvbts1zkkvafv8" data-title="C/C++ Linux pthread_detach 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
