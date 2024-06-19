@@ -107,6 +107,345 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-sched_setaffinity" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-sched_setaffinity/" class="article-date">
+  <time datetime="2021-05-11T14:00:00.000Z" itemprop="datePublished">2021-05-11</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-sched_setaffinity/">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ Linux/Unix 執行緒設定 CPU 的方法 <code>sched_setaffinity()</code>，  </p>
+<h2><span id="主執行緒設定-cpu">主執行緒設定 CPU</span></h2><p>主執行緒要設定跑在哪顆 CPU 的話，可以直接在 main 裡的主執行緒使用 <code>sched_setaffinity()</code> 設定即可，<code>sched_setaffinity()</code> 的第一個參數為 pid，<br>以我的電腦來說是單 CPU 4 核心，所以有 CPU0~CPU3 可以選擇，這邊示範選擇跑在 CPU3，<br><figure class="highlight cpp"><figcaption><span>cpp-sched_setaffinity.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-sched_setaffinity.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt; // for sched_setaffinity()</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt; // for getpid()</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sched_setaffinity cpu%d\n"</span>, cpu_id);</span><br><span class="line">    sched_setaffinity(getpid(), <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>也可以使用 <code><a href="/cpp-pthread_setaffinity_np/" title="pthread_setaffinity_np()">pthread_setaffinity_np()</a></code> 來設定 main 主執行緒跑在哪個 CPU。  </p>
+<h2><span id="在-pthread-執行緒設定-cpu">在 pthread 執行緒設定 CPU</span></h2><p>這邊示範用 pthread 建立出來的執行緒設定 CPU，<br><code>sched_setaffinity()</code> 的第一個參數為 pid，如果傳入0的話就是會設定當前的執行緒，所以這邊在 <code>foo()</code> 函式裡使用 <code>sched_setaffinity()</code> 來設定，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-sched_setaffinity-pthread.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt; // for sched_setaffinity()</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sched_setaffinity cpu%d\n"</span>, cpu_id);</span><br><span class="line">    sched_setaffinity(<span class="number">0</span>, <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error: pthread_create\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sched_setaffinity cpu3</span><br><span class="line">t1 thread sched_getcpu = 3</span><br></pre></td></tr></table></figure></p>
+<p>由於 <code>sched_setaffinity()</code> 的第一個參數是 pid，在指定 thread 要執行在哪顆 CPU 上的情況下不如 <code><a href="/cpp-pthread_setaffinity_np/" title="pthread_setaffinity_np()">pthread_setaffinity_np()</a></code> 來得方便，  </p>
+<h2><span id="在-c-stdthread-執行緒設定-cpu">在 Ｃ++ std::thread 執行緒設定 CPU</span></h2><p>這邊示範用 Ｃ++ std::thread 建立出來的執行緒設定 CPU，基本上跟上例相似，<br><figure class="highlight cpp"><figcaption><span>cpp-sched_setaffinity-std-thread.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-sched_setaffinity-std-thread.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cpu_id = <span class="number">3</span>; <span class="comment">// set thread to cpu3</span></span><br><span class="line">    <span class="keyword">cpu_set_t</span> cpuset;</span><br><span class="line">    CPU_ZERO(&amp;cpuset);</span><br><span class="line">    CPU_SET(cpu_id, &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sched_setaffinity cpu%d\n"</span>, cpu_id);</span><br><span class="line">    sched_setaffinity(<span class="number">0</span>, <span class="keyword">sizeof</span>(cpuset), &amp;cpuset);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"t1 thread sched_getcpu = %d\n"</span>, sched_getcpu());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//printf("main thread sched_getcpu = %d\n", sched_getcpu());</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (t1.joinable()) &#123;</span><br><span class="line">        t1.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其它參考<br>sched_setaffinity(2) - Linux manual page<br><a href="https://man7.org/linux/man-pages/man2/sched_setaffinity.2.html" rel="noopener external nofollow noreferrer" target="_blank">https://man7.org/linux/man-pages/man2/sched_setaffinity.2.html</a><br>multithreading - how to set CPU affinity of a particular pthread? - Stack Overflow<br><a href="https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pthread_setaffinity_np/" title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np">C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 pthread_setaffinity_np</a><br><a href="/cpp-pthread/" title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-sched_setaffinity/" data-id="clxlves1m00ebbts129246qis" data-title="C/C++ Linux/Unix 讓執行緒跑在指定 CPU 的方法 sched_setaffinity" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-python-ctrl-c-signal" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-ctrl-c-signal/" class="article-date">
+  <time datetime="2021-05-10T14:00:00.000Z" itemprop="datePublished">2021-05-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-ctrl-c-signal/">Python 捕捉 ctrl+c 事件的方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 Python 捕捉 ctrl+c 事件的方法，  </p>
+<p>在 Python 要捕捉 <code>ctrl+c</code> 事件的話可以向作業系統註冊 SIGINT 的 handler，當程式發生 SIGINT 的訊號時，就會執行先前註冊的 handler，Python 註冊 signal 是使用 <code>signal.signal()</code> 函式，使用之前要先 <code>import signal</code> 模組，<code>signal.signal()</code> 註冊 SIGINT 的用法如下，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> signal</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">signal_handler</span><span class="params">(signum, frame)</span>:</span></span><br><span class="line">    print(<span class="string">'signal_handler: caught signal '</span> + str(signum))</span><br><span class="line">    <span class="keyword">if</span> signum == signal.SIGINT.value:</span><br><span class="line">        print(<span class="string">'SIGINT'</span>)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">signal.signal(signal.SIGINT, signal_handler)</span><br><span class="line">print(signal.SIGINT)</span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，按下 ctrl+c 後會看到 <code>^C</code> 字樣，接著就進入到我們定義的 signal_handler 函式裡，然後判斷是 SIGINT 就離開程式，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Signals.SIGINT</span><br><span class="line">^Csignal_handler: caught signal 2</span><br><span class="line">SIGINT</span><br></pre></td></tr></table></figure></p>
+<p>其它參考<br>signal — Set handlers for asynchronous events — Python 3 documentation<br><a href="https://docs.python.org/3/library/signal.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3/library/signal.html</a><br>controls - How do I capture SIGINT in Python? - Stack Overflow<br><a href="https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python</a><br>Get signal names from numbers in Python - Stack Overflow<br><a href="https://stackoverflow.com/questions/2549939/get-signal-names-from-numbers-in-python/35996948" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/2549939/get-signal-names-from-numbers-in-python/35996948</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-ctrl-c-signal/" title="C/C++ 捕捉 ctrl+c 事件的 2 種方法">C/C++ 捕捉 ctrl+c 事件的 2 種方法</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-ctrl-c-signal/" data-id="clxlves1m00eabts1w3417j0j" data-title="Python 捕捉 ctrl+c 事件的方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-pthread" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-pthread/" class="article-date">
+  <time datetime="2021-05-07T14:00:00.000Z" itemprop="datePublished">2021-05-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-pthread/">C/C++ Linux/Unix pthread 建立多執行緒用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 要介紹 C/C++ Linux/Unix pthread 建立多執行緒用法與範例，  </p>
+<ul>
+<li>pthread 建立新 thread 來執行一個函式  </li>
+<li>pthread 建立新 thread 來執行一個函式，且帶入參數  </li>
+<li>pthread 建立新 thread 來執行一個類別函式  </li>
+<li>pthread detach 不等待 thread 執行結束  </li>
+<li>pthread 用陣列建立多個 thread  </li>
+</ul>
+<h2><span id="pthread-建立新-thread-來執行一個函式">pthread 建立新 thread 來執行一個函式</span></h2><p>pthread 要建立新 thread 的話使用的函式為 pthread_create，<br>第三個參數為執行緒的函式指標，要注意的是 foo 的函式參數與回傳值類型要符合 pthread_create 的規定，<br>最後需要使用 pthread_join 來等待 t1 執行完成，這表示主執行緒會停在這一行，直到 t1 thread 執行完成才會往下繼續執行，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo\n"</span>;</span><br><span class="line">    pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo 2\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">foo</span><br></pre></td></tr></table></figure></p>
+<h2><span id="pthread-建立新-thread-來執行一個函式且帶入參數">pthread 建立新 thread 來執行一個函式，且帶入參數</span></h2><p>這邊示範 pthread 建立新 thread 如何傳遞參數，分別是傳字串跟傳整數，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo, "</span> &lt;&lt; (<span class="keyword">char</span> *)arg &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">bar</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> *n = (<span class="keyword">int</span> *)arg;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"bar, "</span> &lt;&lt; *n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, (<span class="keyword">void</span> *)<span class="string">"foo thread"</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pthread_t</span> t2;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t2, <span class="literal">NULL</span>, bar, &amp;n) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(t2, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">foo, foo thread</span><br><span class="line">bar, 10</span><br></pre></td></tr></table></figure></p>
+<h2><span id="pthread-建立新-thread-來執行一個類別函式">pthread 建立新 thread 來執行一個類別函式</span></h2><p>這邊示範 <code>pthread_create()</code> 在 class 裡建立 thread，並指定成員函式為 <code>FOO::run()</code>，<code>FOO::run()</code> 需要宣告成 static，可參考下面範例的兩種方式寫法，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-class.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-class.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FOO</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    FOO(<span class="keyword">int</span> id) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;id = id;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"FOO id = "</span> &lt;&lt; id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">create_thread</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, run, <span class="keyword">this</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">join_thread</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">//static void * run(void *arg);</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> * <span class="title">run</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">        FOO *self = (FOO *)arg;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"run id = "</span> &lt;&lt; self-&gt;id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*void * FOO::run(void *arg) &#123;</span></span><br><span class="line"><span class="comment">    FOO *self = (FOO *)arg;</span></span><br><span class="line"><span class="comment">    cout &lt;&lt; "run id = " &lt;&lt; self-&gt;id &lt;&lt; "\n";</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    return NULL;</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">FOO <span class="title">foo</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    foo.create_thread();</span><br><span class="line"></span><br><span class="line">    foo.join_thread();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FOO id = 1</span><br><span class="line">run id = 1</span><br></pre></td></tr></table></figure></p>
+<p>跟上例不同，這邊示範 <code>pthread_create()</code> 在 class 外建立 thread，並指定成員函式為 <code>FOO::run()</code>，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-class2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-class2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FOO</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    FOO(<span class="keyword">int</span> id) &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;id = id;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"FOO id = "</span> &lt;&lt; id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//static void * run(void *arg);</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> * <span class="title">run</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">        FOO *self = (FOO *)arg;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"run id = "</span> &lt;&lt; self-&gt;id &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*void * FOO::run(void *arg) &#123;</span></span><br><span class="line"><span class="comment">    FOO *self = (FOO *)arg;</span></span><br><span class="line"><span class="comment">    cout &lt;&lt; "run id = " &lt;&lt; self-&gt;id &lt;&lt; "\n";</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    return NULL;</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">FOO <span class="title">foo</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, FOO::run, &amp;foo) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_join(t1, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出同上。  </p>
+<h2><span id="pthread-detach-不等待-thread-執行結束">pthread detach 不等待 thread 執行結束</span></h2><p>如果主執行緒不想等或是可以不用等待 t1 執行緒的話，<br>就可以使用 <code>pthread_detach()</code> 來讓 t1 執行緒分離，接著主執行緒就可以繼續執行，t1執行緒也在繼續執行，<br>也可以在 foo 裡使用 <code>pthread_detach()</code> 使用 <code>pthread_self()</code> 傳入自身的 pthread_t 即可，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-detach.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-detach.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt; // for sleep</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// pthread_detach(pthread_self());</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo 1\n"</span>;</span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"foo 2\n"</span>;</span><br><span class="line">    <span class="comment">//pthread_exit(NULL);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> t1;</span><br><span class="line">    <span class="keyword">if</span> (pthread_create(&amp;t1, <span class="literal">NULL</span>, foo, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"main 1\n"</span>;</span><br><span class="line">    pthread_detach(t1);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"main 2\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">main 1</span><br><span class="line">main 2</span><br><span class="line">foo 1</span><br></pre></td></tr></table></figure></p>
+<h2><span id="pthread-用陣列建立多個-thread">pthread 用陣列建立多個 thread</span></h2><p>這邊示範用陣列建立多個 thread，傳入的參數也變成陣列各自獨立，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-array.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-array.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *arg)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = *(<span class="keyword">int</span> *)arg;</span><br><span class="line">    <span class="comment">//cout &lt;&lt; "foo, n=" &lt;&lt; n &lt;&lt; "\n" &lt;&lt; endl;</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"foo, n=%d\n"</span>, n);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> threads[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">int</span> args[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        args[i] = i;</span><br><span class="line">        <span class="keyword">if</span> (pthread_create(&amp;threads[i], <span class="literal">NULL</span>, foo, &amp;args[i]) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        pthread_join(threads[i], <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">foo, n=1</span><br><span class="line">foo, n=0</span><br><span class="line">foo, n=2</span><br></pre></td></tr></table></figure></p>
+<p>這邊要注意一點的是，傳遞參數時需要注意變數的生命週期，否則會遇到該 thread 會拿到無效/非預期的參考資料，如下範例，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">int</span> data;</span><br><span class="line">&#125; ThreadArgs;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *args)</span> </span>&#123;</span><br><span class="line">    ThreadArgs* threadArgs = (ThreadArgs*)args;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"id: %d, data: %d\n"</span>, threadArgs-&gt;id, threadArgs-&gt;data);</span><br><span class="line">    </span><br><span class="line">    pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> threads[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        ThreadArgs args;</span><br><span class="line">        args.id = i;</span><br><span class="line">        args.data = i * <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (pthread_create(&amp;threads[i], <span class="literal">NULL</span>, foo, &amp;args) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        pthread_join(threads[i], <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果可能如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">id: 2, data: 4</span><br><span class="line">id: 2, data: 4</span><br><span class="line">id: 2, data: 4</span><br></pre></td></tr></table></figure></p>
+<p>修正後的作法應該會變成這樣寫，<br><figure class="highlight cpp"><figcaption><span>cpp-pthread_create-array2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pthread_create-array2.cpp -o a.out -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">int</span> data;</span><br><span class="line">&#125; ThreadArgs;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">foo</span><span class="params">(<span class="keyword">void</span> *args)</span> </span>&#123;</span><br><span class="line">    ThreadArgs* threadArgs = (ThreadArgs*)args;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"id: %d, data: %d\n"</span>, threadArgs-&gt;id, threadArgs-&gt;data);</span><br><span class="line">    </span><br><span class="line">    pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> threads[<span class="number">3</span>];</span><br><span class="line">    ThreadArgs* args[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        args[i] = (ThreadArgs*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(ThreadArgs));</span><br><span class="line">        args[i]-&gt;id = i;</span><br><span class="line">        args[i]-&gt;data = i * <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (pthread_create(&amp;threads[i], <span class="literal">NULL</span>, foo, args[i]) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error: pthread_create\n"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        pthread_join(threads[i], <span class="literal">NULL</span>);</span><br><span class="line">        <span class="built_in">free</span>(args[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，這次結果就符合我們的預期了，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">id: 0, data: 0</span><br><span class="line">id: 1, data: 2</span><br><span class="line">id: 2, data: 4</span><br></pre></td></tr></table></figure></p>
+<p>以上就是 C/C++ Linux/Unix pthread 建立多執行緒用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pthread_join/" title="C/C++ Linux pthread_join 用法與範例">C/C++ Linux pthread_join 用法與範例</a><br><a href="/cpp-pthread_exit/" title="C/C++ Linux pthread_exit 用法與範例">C/C++ Linux pthread_exit 用法與範例</a><br><a href="/cpp-pthread_attr_setstacksize/" title="C/C++ Linux pthread_attr_setstacksize 設定執行緒堆疊大小用法">C/C++ Linux pthread_attr_setstacksize 設定執行緒堆疊大小用法</a><br><a href="/cpp-sleep/" title="C/C++ sleep 用法與範例">C/C++ sleep 用法與範例</a><br><a href="/std-thread/" title="C++ std::thread 建立多執行緒用法與範例">C++ std::thread 建立多執行緒用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-pthread/" data-id="clxlves1l00e9bts11zzr1t68" data-title="C/C++ Linux/Unix pthread 建立多執行緒用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-backtrace" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-backtrace/" class="article-date">
+  <time datetime="2021-05-06T14:00:00.000Z" itemprop="datePublished">2021-05-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-backtrace/">C/C++ dump stack backtrace 的方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ dump stack backtrace 的方法，  </p>
+<p>C/C++ 印出 backtrace 的方法如下，<br><figure class="highlight cpp"><figcaption><span>cpp-backtrace.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ -g -rdynamic cpp-backtrace.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;execinfo.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_backtrace</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span> *buffer[<span class="number">64</span>];</span><br><span class="line">    <span class="keyword">char</span> **symbols;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> num = backtrace(buffer, <span class="number">64</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"backtrace() returned %d addresses\n"</span>, num);</span><br><span class="line"></span><br><span class="line">    symbols = backtrace_symbols(buffer, num);</span><br><span class="line">    <span class="keyword">if</span> (symbols == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        perror(<span class="string">"backtrace_symbols"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; num; j++)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, symbols[j]);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(symbols);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc3</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    print_backtrace();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    myfunc3();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    myfunc2();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    myfunc1();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">backtrace() returned 7 addresses</span><br><span class="line">./a.out(_Z15print_backtracev+0x2e) [0x400a94]</span><br><span class="line">./a.out(_Z7myfunc3v+0x9) [0x400b79]</span><br><span class="line">./a.out(_Z7myfunc2v+0x9) [0x400b85]</span><br><span class="line">./a.out(_Z7myfunc1v+0x9) [0x400b91]</span><br><span class="line">./a.out(main+0x9) [0x400b9d]</span><br><span class="line">/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0) [0x7fb39bc04840]</span><br><span class="line">./a.out(_start+0x29) [0x400999]</span><br></pre></td></tr></table></figure></p>
+<p>用 <a href="/linux-addr2line/" title="addr2line">addr2line</a> 來看 0x400a94 address 是在程式碼的那一行，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">addr2line -fie a.out 0x400a94</span><br><span class="line">_Z15print_backtracev</span><br><span class="line">cpp-backtrace.cpp:9</span><br></pre></td></tr></table></figure></p>
+<p>發現輸出結果 _Z15print_backtracev 看得似懂非懂，addr2line 加上 <code>-C</code> 來解析 C++ 的名稱，這樣就解決了！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">addr2line -Cfie a.out 0x400a94</span><br><span class="line">print_backtrace()</span><br><span class="line">cpp-backtrace.cpp:9</span><br><span class="line">$ addr2line -Cfie a.out 0x400b79</span><br><span class="line">myfunc3()</span><br><span class="line">cpp-backtrace.cpp:30</span><br><span class="line">$ addr2line -Cfie a.out 0x400b85</span><br><span class="line">myfunc2()</span><br><span class="line">cpp-backtrace.cpp:34</span><br><span class="line">$ addr2line -Cfie a.out 0x400b91</span><br><span class="line">myfunc1()</span><br><span class="line">cpp-backtrace.cpp:38</span><br><span class="line">$ addr2line -Cfie a.out 0x400b9d</span><br><span class="line">main</span><br><span class="line">cpp-backtrace.cpp:42</span><br></pre></td></tr></table></figure></p>
+<p>在<a href="https://panthema.net/2008/0901-stacktrace-demangled/" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>是乾脆就順便用 <code>abi::__cxa_demangle()</code> 直接解析出 C++ 的符號了，過程中需要自行從 symbols 裡的 mangled function name 擷取出來後在執行 <code>abi::__cxa_demangle()</code>，還蠻費工的～  </p>
+<p>其它參考<br>Unix backtrace<br><a href="https://man7.org/linux/man-pages/man3/backtrace.3.html" rel="noopener external nofollow noreferrer" target="_blank">https://man7.org/linux/man-pages/man3/backtrace.3.html</a><br>Windows CaptureBackTrace<br><a href="http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx" rel="noopener external nofollow noreferrer" target="_blank">http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx</a><br>C++ Code Snippet - Print Stack Backtrace Programmatically with Demangled Function Names<br><a href="https://panthema.net/2008/0901-stacktrace-demangled/" rel="noopener external nofollow noreferrer" target="_blank">https://panthema.net/2008/0901-stacktrace-demangled/</a><br>C++的backtrace<br><a href="https://owent.net/2018/1801.html" rel="noopener external nofollow noreferrer" target="_blank">https://owent.net/2018/1801.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-backtrace/" data-id="clxlves1l00e8bts1px3umcng" data-title="C/C++ dump stack backtrace 的方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-ctrl-c-signal" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-ctrl-c-signal/" class="article-date">
+  <time datetime="2021-05-03T14:00:00.000Z" itemprop="datePublished">2021-05-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-ctrl-c-signal/">C/C++ 捕捉 ctrl+c 事件的 2 種方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ 捕捉 ctrl+c 事件的 2 種方法，第 1 種是 signal 方式，第 2 種是 sigaction 方式，  </p>
+<h2><span id="signal-方式">signal 方式</span></h2><p>這個方式適用於大多數系統，這是標準 C 函式庫就有支援，我們這邊要捕捉的是 ctrl+c 的事件，對應的是 SIGINT signal，<br>所以我們需要的是使用 <code>signal()</code> 函式註冊 SIGINT 這個事件發生時，要來執行我們預先定義好的 signal_handler 函式，<br>注意這邊的 sig_handler 是有註冊成功的 signal 才會進來，例如我這邊只有註冊 SIGINT，所以 SIGINT 這個 signal 會進來 sig_handler，其他的像 SIGABRT、SIGSEGV、SIGILL、SIGTERM 等等沒註冊的自然不會進 sig_handler，<br><figure class="highlight cpp"><figcaption><span>cpp-signal-sigint.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-signal-sigint.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt; // for std::this_thread::sleep_for</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal_handler</span><span class="params">(<span class="keyword">int</span> signum)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"signal_handler: caught signal %d\n"</span>, signum);</span><br><span class="line">    <span class="keyword">if</span> (signum == SIGINT) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"SIGINT\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (signal(SIGINT, signal_handler) == SIG_ERR) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Failed to caught signal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，按下 Ctrl+C 後會看到 <code>^C</code> 字樣，接著就進入到我們定義的 signal_handler 函式裡，然後判斷是 SIGINT 就離開程式，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">^Csignal_handler: caught signal 2</span><br><span class="line">SIGINT</span><br></pre></td></tr></table></figure></p>
+<h2><span id="sigaction-方式">sigaction 方式</span></h2><p>這邊我們示範另外一種 sigaction 的方式，比上述的 signal 還強大，能處理更複雜的功能，不過我們這邊只是要用來攔住 ctrl+c 的事件而已，用法如下，<br>事先需要先初始化好 sigaction 結構的變數，再用 <code>sigaction()</code> 來註冊 SIGINT 的事件，這個事件發生時就會來執行我們預先定義好的 signal_handler 函式，<br><figure class="highlight cpp"><figcaption><span>cpp-sigaction-sigint.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-sigaction-sigint.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt; // for std::this_thread::sleep_for</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal_handler</span><span class="params">(<span class="keyword">int</span> signum)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"signal_handler: caught signal %d\n"</span>, signum);</span><br><span class="line">    <span class="keyword">if</span> (signum == SIGINT) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"SIGINT\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">sa</span>;</span></span><br><span class="line">    sa.sa_handler = signal_handler;</span><br><span class="line">    sigemptyset(&amp;sa.sa_mask);</span><br><span class="line">    sa.sa_flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (sigaction(SIGINT, &amp;sa, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Failed to caught signal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>效果是跟前一個方法一樣。  </p>
+<p>其它參考<br>c++ - How can I catch a ctrl+c event? - Stack Overflow<br><a href="https://stackoverflow.com/questions/1641182/how-can-i-catch-a-ctrl+c-event" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1641182/how-can-i-catch-a-ctrl+c-event</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-ctrl-c-signal/" title="Python 捕捉 ctrl+c 事件的方法">Python 捕捉 ctrl+c 事件的方法</a><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="clxlves1k00e7bts107drj0c9" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-hex-to-int" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-hex-to-int/" class="article-date">
@@ -158,7 +497,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="clxls6zgd00e4tvs1k77u70sb" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="clxlves1k00e6bts17ifgigux" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -221,7 +560,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="clxls6zgd00e3tvs1b98ibyaz" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="clxlves1k00e5bts1v71sc0bc" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -284,7 +623,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="clxls6zgd00e2tvs1vxsg6zla" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="clxlves1j00e4bts1lyvt1rfp" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -347,7 +686,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="clxls6zgc00e1tvs154kuotib" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="clxlves1j00e3bts12a88yz77" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -414,372 +753,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-import/" data-id="clxls6zgc00e0tvs1k1oonrpw" data-title="Python import 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-import/" data-id="clxlves1i00e2bts1kcuhqmd2" data-title="Python import 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-binary-search" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-binary-search/" class="article-date">
-  <time datetime="2021-04-20T14:00:00.000Z" itemprop="datePublished">2021-04-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-binary-search/">Python 二元搜尋法 Binary Search</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Python 二元搜尋法 Binary Search。  </p>
-<h2><span id="python-binary-search-二元搜尋法迴圈版本">Python Binary Search 二元搜尋法(迴圈版本)</span></h2><p>這篇介紹 C/C++ Binary Search 二元搜尋法迴圈的版本，遞迴的版本下一節會介紹到，要使用二元搜尋法前有個前提，就是必須要確認資料是已排序過的，如果資料未排序可以用 <a href="/python-sort/" title="sort">sort</a> 來先排序，接著使用迴圈每次將 key 值與中間值作比較，如果 key 值大於中間值的話，下次就往右側搜尋，右側為值較大的一邊，否則就往左側搜尋，左側為值較小的一邊，這的動作一直持續到比對到符合的 key 值或者迴圈結束未找到 key 值，範例如下，<br><figure class="highlight python"><figcaption><span>python3-binary-search.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">binary_search</span><span class="params">(data, key)</span>:</span></span><br><span class="line">    low = <span class="number">0</span></span><br><span class="line">    high = len(data)<span class="number">-1</span></span><br><span class="line">    <span class="keyword">while</span> low &lt;= high:</span><br><span class="line">        mid = int((low + high) / <span class="number">2</span>)</span><br><span class="line">        <span class="keyword">if</span> key == data[mid]:</span><br><span class="line">            <span class="keyword">return</span> mid</span><br><span class="line">        <span class="keyword">elif</span> key &gt; data[mid]:</span><br><span class="line">            low = mid + <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            high = mid - <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">9</span>, <span class="number">2</span>, <span class="number">7</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">5</span>, <span class="number">6</span>]</span><br><span class="line">key = <span class="number">7</span></span><br><span class="line">data.sort()</span><br><span class="line">print(data)</span><br><span class="line">ret = binary_search(data, key)</span><br><span class="line"><span class="keyword">if</span> ret == <span class="number">-1</span>:</span><br><span class="line">    print(<span class="string">'找不到'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'找到索引值'</span> + str(ret))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span><br><span class="line">找到索引值6</span><br></pre></td></tr></table></figure></p>
-<h2><span id="python-binary-search-二元搜尋法遞迴版本">Python Binary Search 二元搜尋法(遞迴版本)</span></h2><p>剛剛介紹的二元搜尋法是迴圈的版本，這邊要介紹二元搜尋法遞迴版本，遞迴的版本要稍微修改一下，思考方式也要稍微轉換一下，<br><figure class="highlight python"><figcaption><span>python3-binary-search2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">binary_search</span><span class="params">(data, low, high, key)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> low &gt; high:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line">    </span><br><span class="line">    mid = int((low + high) / <span class="number">2</span>)</span><br><span class="line">    <span class="keyword">if</span> key == data[mid]:</span><br><span class="line">        <span class="keyword">return</span> mid</span><br><span class="line">    <span class="keyword">elif</span> key &gt; data[mid]:</span><br><span class="line">        low = mid + <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> binary_search(data, low, high, key)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        high = mid - <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> binary_search(data, low, high, key)</span><br><span class="line"></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">9</span>, <span class="number">2</span>, <span class="number">7</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">5</span>, <span class="number">6</span>]</span><br><span class="line">key = <span class="number">7</span></span><br><span class="line">data.sort()</span><br><span class="line">print(data)</span><br><span class="line">ret = binary_search(data, <span class="number">0</span>, len(data)<span class="number">-1</span>, key)</span><br><span class="line"><span class="keyword">if</span> ret == <span class="number">-1</span>:</span><br><span class="line">    print(<span class="string">'找不到'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'找到索引值'</span> + str(ret))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span><br><span class="line">找到索引值6</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-sequential-search/" title="Python 循序搜尋法 Sequential Search">Python 循序搜尋法 Sequential Search</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-binary-search/" data-id="clxls6zgb00dztvs1010uv482" data-title="Python 二元搜尋法 Binary Search" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-tkinter-canvas" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-tkinter-canvas/" class="article-date">
-  <time datetime="2021-04-19T14:00:00.000Z" itemprop="datePublished">2021-04-19</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-tkinter-canvas/">Python tkinter Canvas 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Python tkinter Canvas 用法與範例，在 Python tkinter 裡可以使用 Canvas 來進行圖形的繪製，透過繪製一些基本的點、直線、矩形、圓型等等，進而組成自己需要的圖形，  </p>
-<p>以下的 Python tkinter Canvas 用法與範例將分為這幾部分，  </p>
-<ul>
-<li>建立 tkinter Canvas  </li>
-<li>tkinter Canvas create_text 繪製文字  </li>
-<li>tkinter Canvas create_line 繪製直線  </li>
-<li>tkinter Canvas create_rectangle 繪製矩形  </li>
-<li>tkinter Canvas create_oval 繪製圓形、橢圓  </li>
-<li>tkinter Canvas create_arc 繪製圓弧  </li>
-<li>tkinter Canvas create_polygon 繪製多邊形  </li>
-<li>tkinter Canvas create_image 繪製影像  </li>
-</ul>
-<h2><span id="建立-tkinter-canvas">建立 tkinter Canvas</span></h2><p>tkinter 簡單建立 Canvas 的用法如下，<br><figure class="highlight python"><figcaption><span>python3-canvas.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=<span class="number">300</span>, height=<span class="number">200</span>)</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-1.png" title="tkinter canvas">  </p>
-<h2><span id="tkinter-canvas-create_text-繪製文字">tkinter Canvas create_text 繪製文字</span></h2><p>tkinter Canvas 繪製文字帶入的(x,y)座標是文字中心的座標，而不是文字的左上角座標，這點跟其它大部分 GUI api 比較不一樣，但是我們可以設定 anchor 參數來改變這件事，anchor=’nw’ 就可以將該座標表示為繪製的文字的左上表座標，如下例中的 <code>123456</code> 文字，<br><figure class="highlight python"><figcaption><span>python3-canvas-create_text.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=<span class="number">300</span>, height=<span class="number">200</span>)</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">mycanvas.create_text(<span class="number">100</span>, <span class="number">50</span>, text=<span class="string">'Hello World'</span>)</span><br><span class="line">mycanvas.create_text(<span class="number">100</span>, <span class="number">100</span>, text=<span class="string">'Python tkinter'</span>, font=(<span class="string">'Arial'</span>, <span class="number">18</span>))</span><br><span class="line">mycanvas.create_text(<span class="number">0</span>, <span class="number">0</span>, text=<span class="string">'123456'</span>, anchor=<span class="string">'nw'</span>)</span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-2.png" title="tkinter canvas">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="tkinter-canvas-create_line-繪製直線">tkinter Canvas create_line 繪製直線</span></h2><p>tkinter Canvas create_line 繪製直線時需要傳入兩組座標以上 (x1, y1) 與 (x2, y2) … (xn, yn)，dash 參數是設定成虛線像式，width 參數是設定線條寬度，fill 參數則是設定線條顏色，<br><figure class="highlight python"><figcaption><span>python3-canvas-create_line.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=<span class="number">300</span>, height=<span class="number">200</span>)</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">mycanvas.create_line(<span class="number">20</span>, <span class="number">20</span>, <span class="number">280</span>, <span class="number">20</span>)</span><br><span class="line">mycanvas.create_line(<span class="number">20</span>, <span class="number">40</span>, <span class="number">280</span>, <span class="number">40</span>, dash=(<span class="number">4</span>, <span class="number">4</span>))</span><br><span class="line">mycanvas.create_line(<span class="number">20</span>, <span class="number">60</span>, <span class="number">280</span>, <span class="number">60</span>, width=<span class="number">5</span>)</span><br><span class="line">mycanvas.create_line(<span class="number">20</span>, <span class="number">80</span>, <span class="number">280</span>, <span class="number">80</span>, fill=<span class="string">'red'</span>)</span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-3.png" title="tkinter canvas">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="tkinter-canvas-create_rectangle-繪製矩形">tkinter Canvas create_rectangle 繪製矩形</span></h2><p>tkinter Canvas create_rectangle 繪製矩形時是帶入兩個座標 (x1, y1) 與 (x2, y2)，(x1, y1) 為矩形的左上角座標，(x2, y2) 為矩形的右下角座標，dash 參數是設定成虛線像式，fill 參數則是設定矩形內的填充顏色，outline 參數是設定矩形的線條顏色，<br><figure class="highlight python"><figcaption><span>python3-canvas-create_rectangle.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=<span class="number">400</span>, height=<span class="number">200</span>)</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">mycanvas.create_rectangle(<span class="number">10</span>, <span class="number">10</span>, <span class="number">90</span>, <span class="number">100</span>)</span><br><span class="line">mycanvas.create_rectangle(<span class="number">110</span>, <span class="number">10</span>, <span class="number">190</span>, <span class="number">100</span>, dash=(<span class="number">4</span>, <span class="number">4</span>))</span><br><span class="line">mycanvas.create_rectangle(<span class="number">210</span>, <span class="number">10</span>, <span class="number">290</span>, <span class="number">100</span>, fill=<span class="string">'red'</span>)</span><br><span class="line">mycanvas.create_rectangle(<span class="number">310</span>, <span class="number">10</span>, <span class="number">390</span>, <span class="number">100</span>, outline=<span class="string">'blue'</span>)</span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-4.png" title="tkinter canvas">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="tkinter-canvas-create_oval-繪製圓形-橢圓">tkinter Canvas create_oval 繪製圓形、橢圓</span></h2><p>tkinter Canvas 繪製圓形、橢圓時都是使用 create_oval 函式，傳入的 (x1, y1) 與 (x2, y2) 分別為圓形/橢圓外圍的矩形的左上角座標與右下角座標，fill 參數是設定圓形或橢圓內的填充顏色，outline 則是設定圓形或橢圓的線條顏色，<br><figure class="highlight python"><figcaption><span>python3-canvas-create_oval.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=<span class="number">320</span>, height=<span class="number">200</span>)</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">mycanvas.create_oval(<span class="number">10</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">100</span>) <span class="comment"># 圓形</span></span><br><span class="line">mycanvas.create_oval(<span class="number">110</span>, <span class="number">10</span>, <span class="number">200</span>, <span class="number">100</span>, fill=<span class="string">'red'</span>) <span class="comment"># 圓形</span></span><br><span class="line">mycanvas.create_oval(<span class="number">210</span>, <span class="number">10</span>, <span class="number">300</span>, <span class="number">100</span>, outline=<span class="string">'blue'</span>) <span class="comment"># 圓形</span></span><br><span class="line">mycanvas.create_oval(<span class="number">10</span>, <span class="number">110</span>, <span class="number">290</span>, <span class="number">190</span>) <span class="comment"># 橢圓</span></span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-5.png" title="tkinter canvas">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="tkinter-canvas-create_arc-繪製圓弧">tkinter Canvas create_arc 繪製圓弧</span></h2><p>tkinter Canvas 繪製圓弧是使用 create_arc 函式，傳入的 (x1, y1) 與 (x2, y2) 分別為矩形的左上角座標與右下角座標，extent 參數是繪製圓弧的角度，範圍值是 1-359，0 跟 360 則會變成直線，預設是90，style 參數有三種樣式，ARC PIESLICE CHORD 三種可以選擇，預設是 PIESLICE。<br><figure class="highlight python"><figcaption><span>python3-canvas-create_arc.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=<span class="number">350</span>, height=<span class="number">200</span>)</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">mycanvas.create_arc(<span class="number">10</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">100</span>)</span><br><span class="line">mycanvas.create_arc(<span class="number">110</span>, <span class="number">10</span>, <span class="number">200</span>, <span class="number">100</span>, extent=<span class="number">45</span>)</span><br><span class="line">mycanvas.create_arc(<span class="number">210</span>, <span class="number">10</span>, <span class="number">300</span>, <span class="number">100</span>, extent=<span class="number">180</span>)</span><br><span class="line"></span><br><span class="line">mycanvas.create_arc(<span class="number">10</span>, <span class="number">110</span>, <span class="number">100</span>, <span class="number">210</span>, style=tk.ARC)</span><br><span class="line">mycanvas.create_arc(<span class="number">110</span>, <span class="number">110</span>, <span class="number">200</span>, <span class="number">210</span>, style=tk.PIESLICE)</span><br><span class="line">mycanvas.create_arc(<span class="number">210</span>, <span class="number">110</span>, <span class="number">300</span>, <span class="number">210</span>, style=tk.CHORD)</span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-6.png" title="tkinter canvas">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="tkinter-canvas-create_polygon-繪製多邊形">tkinter Canvas create_polygon 繪製多邊形</span></h2><p>tkinter Canvas 繪製多邊形是使用 create_polygon 函式，需要傳入兩組座標以上 (x1, y1) 與 (x2, y2) … (xn, yn)，fill 參數是設定多邊形內的填充顏色，outline 則是設定多邊形的線條顏色，<br><figure class="highlight python"><figcaption><span>python3-canvas-create_polygon.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=<span class="number">300</span>, height=<span class="number">200</span>)</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">mycanvas.create_polygon(<span class="number">40</span>,<span class="number">40</span>, <span class="number">60</span>,<span class="number">20</span>, <span class="number">80</span>,<span class="number">40</span>, <span class="number">80</span>,<span class="number">80</span>, <span class="number">40</span>,<span class="number">80</span>)</span><br><span class="line">mycanvas.create_polygon(<span class="number">100</span>,<span class="number">40</span>, <span class="number">120</span>,<span class="number">20</span>, <span class="number">140</span>,<span class="number">40</span>, <span class="number">140</span>,<span class="number">80</span>, <span class="number">100</span>,<span class="number">80</span>, fill=<span class="string">''</span>, outline=<span class="string">'black'</span>)</span><br><span class="line">mycanvas.create_polygon(<span class="number">160</span>,<span class="number">80</span>, <span class="number">200</span>,<span class="number">80</span>, <span class="number">180</span>,<span class="number">20</span>, fill=<span class="string">'yellow'</span>)</span><br><span class="line">mycanvas.create_polygon(<span class="number">220</span>,<span class="number">80</span>, <span class="number">260</span>,<span class="number">80</span>, <span class="number">240</span>,<span class="number">20</span>, fill=<span class="string">'red'</span>, outline=<span class="string">'black'</span>)</span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-7.png" title="tkinter canvas">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="tkinter-canvas-create_image-繪製影像">tkinter Canvas create_image 繪製影像</span></h2><p>由於 tkinter 的 PhotoImage 只能支援 GIF 與 PGM/PPM 的圖片格式，要讀取 jpg 的話就要花點功夫，這邊我們使用 PIL 套件來輔助完成，<br>如果你之前還沒安裝過 Python 的 PIL 套件的話，可以透過 <code>sudo apt install python3-pil</code> 指令來安裝，這邊還需要安裝 PIL 與 tkinter 的影像轉換套件 ImageTk，透過 <code>sudo apt install python3-pil.imagetk</code> 即可完成安裝，  </p>
-<p>在繪製影像時可以調整 anchor 參數，anchor 參數是設定影像輸出在該區域的位置，預設是 <code>anchor=tk.CENTER</code> 表示會以傳入的座標為影像中心，這邊我們改成 <code>anchor=tk.NW</code> 表示傳入的該座標為影像的左上角，如下例中的 (0,0) 為影像的左上角。  </p>
-<p><code>NW</code>：左上<br><code>N</code>：上<br><code>NE</code>：右上<br><code>W</code>：左<br><code>CENTER</code>：中<br><code>E</code>：右<br><code>SW</code>：左下<br><code>S</code>：下<br><code>SE</code>：右下<br>tkinter 允許你可以用小寫的字串來作設定，例如：<code>anchor=&#39;nw&#39;</code>  </p>
-<figure class="highlight python"><figcaption><span>python3-canvas-create_image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image, ImageTk</span><br><span class="line"></span><br><span class="line">root = tk.Tk()</span><br><span class="line">root.title(<span class="string">'my window'</span>)</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">'lena.jpg'</span>)</span><br><span class="line">img2 = ImageTk.PhotoImage(img)</span><br><span class="line"><span class="comment">#img2 = tk.PhotoImage(file='lena.gif')</span></span><br><span class="line"></span><br><span class="line">mycanvas = tk.Canvas(root, width=img.size[<span class="number">0</span>], height=img.size[<span class="number">1</span>])</span><br><span class="line">mycanvas.pack()</span><br><span class="line"></span><br><span class="line">mycanvas.create_image(<span class="number">0</span>,<span class="number">0</span>, anchor=tk.NW, image=img2)</span><br><span class="line"></span><br><span class="line">root.mainloop()</span><br></pre></td></tr></table></figure>
-<p>結果圖如下，<br><img src="/python-tkinter-canvas/tkinter-canvas-8.jpg" title="tkinter canvas">  </p>
-<p>以上就是 Python tkinter Canvas 用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！<br>對 PIL 有興趣的可以參考<a href="/python-pil-read-image-and-show-image/" title="這邊的文章">這邊的文章</a>。  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-tkinter-tutorial/" title="Python tkinter 新手入門教學">Python tkinter 新手入門教學</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tkinter-canvas/" data-id="clxls6zgb00dytvs1aprce2uy" data-title="Python tkinter Canvas 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tkinter/">tkinter</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-main" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-main/" class="article-date">
-  <time datetime="2021-04-16T14:00:00.000Z" itemprop="datePublished">2021-04-16</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-main/">在 Python 寫 main 函式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹 Python main 主程式進入點用法與範例，<br>Python 中沒有所謂的 main 主程式入口函式，Python 是腳本語言，執行時是從上往下逐步解析執行，  </p>
-<h2><span id="python-中基本的-main-函式">Python 中基本的 main 函式</span></h2><p>在 Python 中一個 main 函式的基本寫法如下，<br>Python interpreter 執行 Python 腳本時會定義 <strong>name</strong> 變數為某個字串，<br>寫 <code>if __name__ == &#39;__main__&#39;</code>，是想表示 main() 只有在當前腳本被直接執行時才執行，不希望被導入其它模組時執行。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">	print(<span class="string">'Hello World'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure></p>
-<h2><span id="python-中模組的-main-函式">Python 中模組的 main 函式</span></h2><p>有時候執行 Python 檔案時，並沒有指定入口檔案（命令行中較常見，例如：<code>python -m http.server 8000</code>），這時候程式是從哪個檔案開始執行呢？答案是 <code>__main__.py</code> 檔案，它所在的包被當成一個”檔案”來執行了</p>
-<p>其它參考<br>Python - if <strong>name</strong> == ‘<strong>main</strong>‘ 涵義<br><a href="http://blog.castman.net/%E6%95%99%E5%AD%B8/2018/01/27/python-name-main.html" rel="noopener external nofollow noreferrer" target="_blank">http://blog.castman.net/%E6%95%99%E5%AD%B8/2018/01/27/python-name-main.html</a><br>python的 if <strong>name</strong> == ‘<strong>main</strong>‘: 是什麼意思?<br><a href="https://ithelp.ithome.com.tw/articles/10231756" rel="noopener external nofollow noreferrer" target="_blank">https://ithelp.ithome.com.tw/articles/10231756</a><br>在Python中定義Main函數<br><a href="https://kknews.cc/zh-tw/code/gjxb2am.html" rel="noopener external nofollow noreferrer" target="_blank">https://kknews.cc/zh-tw/code/gjxb2am.html</a>  </p>
-<hr>
-<p>在Python中定义Main函数（第一部分）<br><a href="https://python.freelycode.com/contribution/detail/1584" rel="noopener external nofollow noreferrer" target="_blank">https://python.freelycode.com/contribution/detail/1584</a><br>在Python中定义Main函数（第二部分）<br><a href="https://blog.csdn.net/sinat_38682860/article/details/90522767" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/sinat_38682860/article/details/90522767</a><br>在Python中定义Main函数（第三部分）<br><a href="https://python.freelycode.com/contribution/detail/1586" rel="noopener external nofollow noreferrer" target="_blank">https://python.freelycode.com/contribution/detail/1586</a><br>Defining Main Functions in Python (原文)<br><a href="https://realpython.com/python-main-function/" rel="noopener external nofollow noreferrer" target="_blank">https://realpython.com/python-main-function/</a>  </p>
-<p>Python為什麼沒有main函數？為什麼我不推薦寫main函數？<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/723146/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/723146/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-write-text-file/" title="Python 寫檔，寫入 txt 文字檔">Python 寫檔，寫入 txt 文字檔</a><br><a href="/python-read-csv-file/" title="[Python] 讀取 csv 檔案">[Python] 讀取 csv 檔案</a><br><a href="/python-write-csv-file/" title="[Python] 寫入 csv 檔案">[Python] 寫入 csv 檔案</a><br><a href="/python-read-write-file/" title="[Python] 讀寫檔案">[Python] 讀寫檔案</a><br><a href="/python-generate-non-repeating-random-numbers/" title="[Python] 產生 random 隨機不重複的數字 list">[Python] 產生 random 隨機不重複的數字 list</a><br><a href="/python-pyautogui/" title="[Python] PyAutoGUI 使用教學">[Python] PyAutoGUI 使用教學</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-main/" data-id="clxls6zgb00dxtvs191qwi3nx" data-title="在 Python 寫 main 函式" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-sequential-search" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-sequential-search/" class="article-date">
-  <time datetime="2021-04-15T14:00:00.000Z" itemprop="datePublished">2021-04-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-sequential-search/">Python 循序搜尋法 Sequential Search</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Python 循序搜尋法 Sequential Search。  </p>
-<h2><span id="python-sequential-search-循序搜尋法">Python Sequential Search 循序搜尋法</span></h2><p>以下為 Python 循序搜尋法的實作，要從串列 data 裡尋找數字 7，循序搜尋法是最簡單的實作方式，主要是由一個主迴圈從頭掃到尾，一個一個值拿來跟 key 作比對，一直到有比對成功救回傳索引值或者一直到結束都沒有比對成功，沒有比對成功的話就回傳 -1，範例如下，<br><figure class="highlight python"><figcaption><span>python3-sequential-search.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sequential_search</span><span class="params">(data, key)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(data)):</span><br><span class="line">        <span class="keyword">if</span> key == data[i]:</span><br><span class="line">            <span class="keyword">return</span> i</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>]</span><br><span class="line">key = <span class="number">7</span></span><br><span class="line">print(data)</span><br><span class="line">ret = sequential_search(data, key)</span><br><span class="line"><span class="keyword">if</span> ret == <span class="number">-1</span>:</span><br><span class="line">    print(<span class="string">'找不到'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'找到索引值'</span> + str(ret))</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span><br><span class="line">找到索引值6</span><br></pre></td></tr></table></figure></p>
-<h2><span id="使用循序搜尋法時資料不需要先排序過">使用循序搜尋法時資料不需要先排序過</span></h2><p>使用循序搜尋法前時資料不需要先排序過就可以直接搜尋了，跟<a href="/python-binary-search/" title="二元搜尋法">二元搜尋法</a>比較不一樣，範例如下，<br><figure class="highlight python"><figcaption><span>python3-sequential-search2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sequential_search</span><span class="params">(data, key)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(data)):</span><br><span class="line">        <span class="keyword">if</span> key == data[i]:</span><br><span class="line">            <span class="keyword">return</span> i</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">data = [<span class="number">1</span>, <span class="number">9</span>, <span class="number">2</span>, <span class="number">7</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">5</span>, <span class="number">6</span>]</span><br><span class="line">key = <span class="number">7</span></span><br><span class="line">print(data)</span><br><span class="line">ret = sequential_search(data, key)</span><br><span class="line"><span class="keyword">if</span> ret == <span class="number">-1</span>:</span><br><span class="line">    print(<span class="string">'找不到'</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(<span class="string">'找到索引值'</span> + str(ret))</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[1, 9, 2, 7, 4, 10, 3, 8, 5, 6]</span><br><span class="line">找到索引值3</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-binary-search/" title="Python 二元搜尋法 Binary Search">Python 二元搜尋法 Binary Search</a><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sequential-search/" data-id="clxls6zga00dwtvs11ui93d0k" data-title="Python 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-base64" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-base64/" class="article-date">
-  <time datetime="2021-04-12T14:00:00.000Z" itemprop="datePublished">2021-04-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-base64/">Linux base64 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Linux base64 用法與範例， </p>
-<p>以下的 Linux base64 用法與範例將分為這幾部分，  </p>
-<ul>
-<li>Linux base64 encode 編碼  </li>
-<li>Linux base64 decode 解碼  </li>
-<li>Linux base64 encode 編碼並輸出至檔案  </li>
-<li>Linux base64 從檔案解碼 decode  </li>
-<li>為什麼 linux base64 跟 python base64 的結果輸出不一樣？  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2><span id="linux-base64-encode-編碼">Linux base64 encode 編碼</span></h2><p>這邊示範用 Linux base64 編碼一段文字並輸出在標準輸出上，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;Hello World&quot; | base64</span><br></pre></td></tr></table></figure></p>
-<p>標準輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SGVsbG8gV29ybGQK</span><br></pre></td></tr></table></figure></p>
-<p>Linux echo 指令預設會加上換行符號 <code>\n</code>，如果想要 echo 不加上換行符號的話可以加上 <code>-n</code> 的選項，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo -n &quot;Hello World&quot; | base64</span><br></pre></td></tr></table></figure></p>
-<p>標準輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SGVsbG8gV29ybGQ=</span><br></pre></td></tr></table></figure></p>
-<h2><span id="linux-base64-decode-解碼">Linux base64 decode 解碼</span></h2><p>承上例，將這段編碼的文字用 base64 指令解碼，編碼後輸出至標準輸出，<br>Linux base64 decode 解碼的參數是 <code>-d</code>，macOS base64 decode 解碼的參數是 <code>-D</code>，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo -n &quot;SGVsbG8gV29ybGQ=&quot; | base64 -d</span><br></pre></td></tr></table></figure></p>
-<p>標準輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hello World</span><br></pre></td></tr></table></figure></p>
-<h2><span id="linux-base64-encode-編碼並輸出至檔案">Linux base64 encode 編碼並輸出至檔案</span></h2><p>如下範例，把 inputPlan.txt 檔案內容編碼，編碼後輸出至標準輸出，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 inputPlan.txt</span><br></pre></td></tr></table></figure></p>
-<p>要輸出至檔案的話，指令會變成這樣，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 inputPlan.txt &gt; encoded.txt</span><br></pre></td></tr></table></figure></p>
-<h2><span id="linux-base64-從檔案解碼-decode">Linux base64 從檔案解碼 decode</span></h2><p>承上例，將這個編碼過的 encoded.txt 的檔案用 base64 指令解碼，並輸出至標準輸出，<br>Linux 下 base64 解碼 decode 的參數是 <code>-d</code>，macOS 下 base64 解碼 decode 的參數是 <code>-D</code>，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 -d encoded.txt</span><br></pre></td></tr></table></figure></p>
-<h2><span id="為什麼-linux-base64-跟-python-base64-的結果輸出不一樣">為什麼 linux base64 跟 python base64 的結果輸出不一樣？</span></h2><p>在 <a href="https://stackoverflow.com/questions/51658184/base-64-gnu-linux-vs-python" rel="noopener external nofollow noreferrer" target="_blank">stackoverflow 這篇</a>有在討論為什麼 linux base64 指令跟 python base64 的輸出不一樣，理論上用不同工具做 base64 轉換應該要得到相同結果，結果發現是在用 echo 指令時會加上換行符號 <code>\n</code>，解決方式就是用 <code>echo -n</code> 不要加上換行符號。  </p>
-<p>以上就是 Linux base64 用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-xargs/" title="Linux xargs 參數列表轉換用法與範例">Linux xargs 參數列表轉換用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-base64/" data-id="clxls6zga00dvtvs1stv6j2id" data-title="Linux base64 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -792,7 +769,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/30/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/81/">81</a><a class="extend next" rel="next" href="/page/32/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/30/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/82/">82</a><a class="extend next" rel="next" href="/page/32/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -858,7 +835,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">190</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">236</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">190</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">236</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
