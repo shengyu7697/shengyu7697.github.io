@@ -107,6 +107,110 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-googletest" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/googletest/" class="article-date">
+  <time datetime="2021-02-26T14:00:00.000Z" itemprop="datePublished">2021-02-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/googletest/">GoogleTest 寫 C++ 單元測試的用法與教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 GoogleTest 用法與教學，Google test 又稱為 gtest，gtest 是一個 C++ 的單元測試框架（unit testing framework），gtest 是由 Google 所開發出來的，  </p>
+<p>以下 Google Test 內容將分為這幾部份，  </p>
+<ul>
+<li>下載編譯安裝  </li>
+<li>googletest 常用語法  </li>
+<li>googletest 基本的 C++ 單元測試  </li>
+<li>查詢 googletest 的版本  </li>
+<li>有在使用 googletest 的開源專案  </li>
+<li>其它有 test 的開源專案  </li>
+</ul>
+<h2><span id="下載編譯安裝">下載編譯安裝</span></h2><p>以下是 GoogleTest 的下載與編譯步驟，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ git clone https://github.com/google/googletest</span><br><span class="line">$ cd googletest</span><br><span class="line">$ mkdir build</span><br><span class="line">$ cd build</span><br><span class="line">$ cmake -DCMAKE_CXX_FLAGS=-std=c++11 -Dgtest_build_samples=ON ..</span><br><span class="line">$ make -j4</span><br></pre></td></tr></table></figure></p>
+<p>googletest 原始碼目錄下有 googletest 與 googlemock，<br>注意要切換到 googletest/ 頂層目錄去編譯，不是切換到 googletest/googletest/ 下編譯，否則你可能會遇到 cmake 的錯誤，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CMake Error at CMakeLists.txt:129 (set_target_properties):</span><br><span class="line">  set_target_properties called with incorrect number of arguments.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">CMake Error at CMakeLists.txt:131 (set_target_properties):</span><br><span class="line">  set_target_properties called with incorrect number of arguments.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">-- Configuring incomplete, errors occurred!</span><br></pre></td></tr></table></figure></p>
+<p>在 Ubuntu 16.04 下可能會遇到編譯錯誤的訊息，需要加上 <code>std=c++11</code> 的編譯選項，一種方法是在 CMakeLists.txt 裡加入 <code>set(CMAKE_CXX_STANDARD 11)</code> 或 <code>-DCMAKE_CXX_FLAGS=-std=c++11</code>  </p>
+<p>另外如果電腦是多核心可以下 <code>make -j4</code> 有助於提升編譯速度，  </p>
+<p>如果要安裝到系統的話，請輸入下列指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
+<p>你可以在 /usr/local/include/ 目錄下發現有新的 gtest/gtest.h 標頭檔<br><code>/usr/local/include/gtest/gtest.h</code><br>你也可以在 /usr/local/lib/ 目錄下發現有新的 libgtest 靜態函式庫<br><code>/usr/local/lib/libgtest.a</code><br>這些待會都會用到，  </p>
+<h2><span id="googletest-常用語法">googletest 常用語法</span></h2><p>這邊列出幾個 googletest 常用斷言，googletest 中定義的斷言如下，  </p>
+<p><strong>基本斷言</strong><br>判斷 condition 為真<br><code>ASSERT_TRUE(condition);</code><br><code>EXPECT_TRUE(condition);</code></p>
+<p>判斷 condition 為假<br><code>ASSERT_FALSE(condition);</code><br><code>EXPECT_FALSE(condition);</code></p>
+<p><strong>數字比較</strong><br>語法為 <code>ASSERT_EQ(期待值，實際值)</code>，期待值和實際值不等時，測試失敗<br>判斷兩數是否相等，expected == actual<br><code>ASSERT_EQ(expected,actual);</code><br><code>EXPECT_EQ(expected,actual);</code></p>
+<p>判斷兩數是否不相等，val1 != val2<br><code>ASSERT_NE(val1,val2);</code><br><code>EXPECT_NE(val1,val2);</code></p>
+<p>判斷 val1 是否小於 val2，val1 &lt; val2<br><code>ASSERT_LT(val1,val2);</code><br><code>EXPECT_LT(val1,val2);</code></p>
+<p>判斷 val1 是否小於等於 val2，val1 &lt;= val2<br><code>ASSERT_LE(val1,val2);</code><br><code>EXPECT_LE(val1,val2);</code></p>
+<p>判斷 val1 是否大於 val2，val1 &gt; val2<br><code>ASSERT_GT(val1,val2);</code><br><code>EXPECT_GT(val1,val2);</code></p>
+<p>判斷 val1 是否大於等於 val2，val1 &gt;= val2<br><code>ASSERT_GE(val1,val2);</code><br><code>EXPECT_GE(val1,val2);</code></p>
+<p><strong>字元字串比較</strong><br>判斷兩個 C-style 字元字串有相同的內容<br><code>ASSERT_STREQ(expected_str,actual_str);</code><br><code>EXPECT_STREQ(expected_str,actual_str);</code></p>
+<p>判斷兩個 C-style 字元字串有不同的內容<br><code>ASSERT_STRNE(str1,str2);</code><br><code>EXPECT_STRNE(str1,str2);</code></p>
+<p>判斷兩個 C-style 字元字串有相同的內容，忽略大小寫<br><code>ASSERT_STRCASEEQ(expected_str,actual_str);</code><br><code>EXPECT_STRCASEEQ(expected_str,actual_str);</code></p>
+<p>判斷兩個 C-style 字元字串有不同的內容，忽略大小寫<br><code>ASSERT_STRCASENE(str1,str2);</code><br><code>EXPECT_STRCASENE(str1,str2);</code></p>
+<h2><span id="googletest-基本的-c-單元測試">googletest 基本的 C++ 單元測試</span></h2><p>這邊就示範一下怎麼用 GoogleTest 來寫單元測試，假如我要測試我寫的 myadd 函式的話，<br><figure class="highlight cpp"><figcaption><span>gtest-add.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gtest/gtest.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myadd</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test1) &#123;</span><br><span class="line">    EXPECT_EQ(myadd(<span class="number">2</span>, <span class="number">3</span>), <span class="number">5</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    testing::InitGoogleTest(&amp;argc, argv);</span><br><span class="line">    <span class="keyword">return</span> RUN_ALL_TESTS();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接下來用 cmake 編譯或 g++ 編譯都可以，我這邊簡單的用 g++ 作示範，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ gtest-add.cpp -o a.out -std=c++11 -lgtest -lpthread</span><br></pre></td></tr></table></figure></p>
+<p>或者使用 pkg-config 來輔助，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ gtest-add.cpp -o a.out -std=c++11 `pkg-config --libs gtest`</span><br></pre></td></tr></table></figure></p>
+<p>執行 a.out 後就可以看到測試的輸出囉～<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">[==========] Running 1 test from 1 test suite.</span><br><span class="line">[----------] Global test environment set-up.</span><br><span class="line">[----------] 1 test from testCase</span><br><span class="line">[ RUN      ] testCase.test1</span><br><span class="line">[       OK ] testCase.test1 (0 ms)</span><br><span class="line">[----------] 1 test from testCase (0 ms total)</span><br><span class="line"></span><br><span class="line">[----------] Global test environment tear-down</span><br><span class="line">[==========] 1 test from 1 test suite ran. (0 ms total)</span><br><span class="line">[  PASSED  ] 1 test.</span><br></pre></td></tr></table></figure></p>
+<p>多加幾個測試項目，<br><figure class="highlight cpp"><figcaption><span>gtest-arithmetic.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ gtest-arithmetic.cpp -o a.out -std=c++11 -lgtest -lpthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gtest/gtest.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myadd</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mysub</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a - b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mymul</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a * b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mydiv</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a / b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test1) &#123;</span><br><span class="line">    EXPECT_EQ(myadd(<span class="number">2</span>, <span class="number">3</span>), <span class="number">5</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test2) &#123;</span><br><span class="line">    EXPECT_EQ(mysub(<span class="number">2</span>, <span class="number">3</span>), <span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test3) &#123;</span><br><span class="line">    EXPECT_EQ(mymul(<span class="number">3</span>, <span class="number">4</span>), <span class="number">12</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test4) &#123;</span><br><span class="line">    EXPECT_EQ(mydiv(<span class="number">21</span>, <span class="number">7</span>), <span class="number">3</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    testing::InitGoogleTest(&amp;argc, argv);</span><br><span class="line">    <span class="keyword">return</span> RUN_ALL_TESTS();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">[==========] Running 4 tests from 1 test suite.</span><br><span class="line">[----------] Global test environment set-up.</span><br><span class="line">[----------] 4 tests from testCase</span><br><span class="line">[ RUN      ] testCase.test1</span><br><span class="line">[       OK ] testCase.test1 (0 ms)</span><br><span class="line">[ RUN      ] testCase.test2</span><br><span class="line">[       OK ] testCase.test2 (0 ms)</span><br><span class="line">[ RUN      ] testCase.test3</span><br><span class="line">[       OK ] testCase.test3 (0 ms)</span><br><span class="line">[ RUN      ] testCase.test4</span><br><span class="line">[       OK ] testCase.test4 (0 ms)</span><br><span class="line">[----------] 4 tests from testCase (0 ms total)</span><br><span class="line"></span><br><span class="line">[----------] Global test environment tear-down</span><br><span class="line">[==========] 4 tests from 1 test suite ran. (0 ms total)</span><br><span class="line">[  PASSED  ] 4 tests.</span><br></pre></td></tr></table></figure></p>
+<p>另外如果 link 連結 gtest_main 的話，就會幫你連結一個 main 主程式入口，那麼你就可以省略不用寫 main 主函式了，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ gtest-add.cpp -o a.out -std=c++11 -lgtest -lgtest_main -lpthread</span><br></pre></td></tr></table></figure></p>
+<p>那麼程式碼就可以改成這樣，<br><figure class="highlight cpp"><figcaption><span>gtest-arithmetic2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ gtest-arithmetic2.cpp -o a.out -std=c++11 -lgtest -lgtest_main -lpthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;gtest/gtest.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myadd</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mysub</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a - b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mymul</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a * b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mydiv</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a / b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test1) &#123;</span><br><span class="line">    EXPECT_EQ(myadd(<span class="number">2</span>, <span class="number">3</span>), <span class="number">5</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test2) &#123;</span><br><span class="line">    EXPECT_EQ(mysub(<span class="number">2</span>, <span class="number">3</span>), <span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test3) &#123;</span><br><span class="line">    EXPECT_EQ(mymul(<span class="number">3</span>, <span class="number">4</span>), <span class="number">12</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(testCase, test4) &#123;</span><br><span class="line">    EXPECT_EQ(mydiv(<span class="number">21</span>, <span class="number">7</span>), <span class="number">3</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果是選用 cmake 編譯系統的話 CMakeLists.txt 可以這樣寫，<br><figure class="highlight cmake"><figcaption><span>CMakeLists.txt</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(gtest-example)</span><br><span class="line"></span><br><span class="line"><span class="comment">#set(CMAKE_CXX_STANDARD 11)</span></span><br><span class="line"><span class="keyword">set</span>(CMAKE_CXX_FLAGS <span class="string">"$&#123;CMAKE_CXX_FLAGS&#125; -std=c++11"</span>)</span><br><span class="line"><span class="keyword">add_executable</span>(gtest-arithmetic gtest-arithmetic2.cpp)</span><br><span class="line"><span class="keyword">target_link_libraries</span>(gtest-arithmetic PRIVATE gtest gtest_main pthread)</span><br><span class="line"><span class="comment">#set_property(TARGET gtest-arithmetic PROPERTY CXX_STANDARD 11)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">enable_testing</span>()</span><br><span class="line"><span class="keyword">add_test</span>(test_arithmetic1 gtest-arithmetic)</span><br></pre></td></tr></table></figure></p>
+<h2><span id="查詢-googletest-的版本">查詢 googletest 的版本</span></h2><p>googletest 版本號碼在 CMakeLists.txt 裡會去設定的 GOOGLETEST_VERSION 變數，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(GOOGLETEST_VERSION 1.10.0)</span><br></pre></td></tr></table></figure></p>
+<h2><span id="有在使用-googletest-的開源專案">有在使用 googletest 的開源專案</span></h2><p>這邊列出比較知名的大型開源專案有在用 googletest，你可以參考學習他們的測試程式碼如何撰寫，有在使用 googletest 的知名開源專案如下，<br><strong><a href="https://github.com/opencv/opencv" rel="noopener external nofollow noreferrer" target="_blank">OpenCV</a></strong><br>測試範例：<br><a href="https://github.com/opencv/opencv/blob/4.x/modules/imgproc/test/test_pyramid.cpp" rel="noopener external nofollow noreferrer" target="_blank">test_pyramid.cpp</a><br><a href="https://github.com/opencv/opencv/blob/4.x/modules/imgproc/test/test_grabcut.cpp" rel="noopener external nofollow noreferrer" target="_blank">test_grabcut.cpp</a><br><a href="https://github.com/opencv/opencv/blob/4.x/modules/imgcodecs/test/test_jpeg.cpp" rel="noopener external nofollow noreferrer" target="_blank">test_jpeg.cpp</a>  </p>
+<p><strong><a href="https://github.com/xbmc/xbmc" rel="noopener external nofollow noreferrer" target="_blank">Kodi(舊名xbmc)</a></strong><br>測試範例：<br><a href="https://github.com/xbmc/xbmc/blob/master/xbmc/network/test/TestNetwork.cpp" rel="noopener external nofollow noreferrer" target="_blank">TestNetwork.cpp</a><br><a href="https://github.com/xbmc/xbmc/blob/master/xbmc/network/test/TestWebServer.cpp" rel="noopener external nofollow noreferrer" target="_blank">TestWebServer.cpp</a><br><a href="https://github.com/xbmc/xbmc/blob/master/xbmc/utils/test/TestCPUInfo.cpp" rel="noopener external nofollow noreferrer" target="_blank">TestCPUInfo.cpp</a><br><a href="https://github.com/xbmc/xbmc/blob/master/xbmc/utils/test/Testlog.cpp" rel="noopener external nofollow noreferrer" target="_blank">Testlog.cpp</a>  </p>
+<p><strong><a href="https://github.com/grpc/grpc" rel="noopener external nofollow noreferrer" target="_blank">gRPC</a></strong><br>測試範例：<br><a href="https://github.com/grpc/grpc/blob/master/test/core/util/cmdline_test.cc" rel="noopener external nofollow noreferrer" target="_blank">cmdline_test.cc</a><br><a href="https://github.com/grpc/grpc/blob/master/test/core/util/stack_tracer_test.cc" rel="noopener external nofollow noreferrer" target="_blank">stack_tracer_test.cc</a><br><a href="https://github.com/grpc/grpc/blob/master/test/cpp/test/mock_stream_test.cc" rel="noopener external nofollow noreferrer" target="_blank">mock_stream_test.cc</a>  </p>
+<p><strong><a href="https://github.com/google/glog" rel="noopener external nofollow noreferrer" target="_blank">glog</a></strong><br>測試範例：<br><a href="https://github.com/google/glog/blob/master/src/stl_logging_unittest.cc" rel="noopener external nofollow noreferrer" target="_blank">stl_logging_unittest.cc</a><br><a href="https://github.com/google/glog/blob/master/src/logging_unittest.cc" rel="noopener external nofollow noreferrer" target="_blank">logging_unittest.cc</a>  </p>
+<h2><span id="其它有-test-的開源專案">其它有 test 的開源專案</span></h2><p>以下是其它有 test 的開源專案，也可以參考看看，<br><strong><a href="https://github.com/bitcoin/bitcoin" rel="noopener external nofollow noreferrer" target="_blank">bitcoin</a></strong><br>使用 boost test，測試範例：<br><a href="https://github.com/bitcoin/bitcoin/blob/master/src/test/base64_tests.cpp" rel="noopener external nofollow noreferrer" target="_blank">base64_tests.cpp</a><br><a href="https://github.com/bitcoin/bitcoin/blob/master/src/test/crypto_tests.cpp" rel="noopener external nofollow noreferrer" target="_blank">crypto_tests.cpp</a><br><a href="https://github.com/bitcoin/bitcoin/blob/master/src/test/logging_tests.cpp" rel="noopener external nofollow noreferrer" target="_blank">logging_tests.cpp</a><br><a href="https://github.com/bitcoin/bitcoin/blob/master/src/test/sock_tests.cpp" rel="noopener external nofollow noreferrer" target="_blank">sock_tests.cpp</a>  </p>
+<p><strong><a href="https://github.com/gabime/spdlog" rel="noopener external nofollow noreferrer" target="_blank">spdlog</a></strong><br>使用 Catch2，測試範例：<br><a href="https://github.com/gabime/spdlog/blob/v1.x/tests/test_backtrace.cpp" rel="noopener external nofollow noreferrer" target="_blank">test_backtrace.cpp</a><br><a href="https://github.com/gabime/spdlog/blob/v1.x/tests/test_misc.cpp" rel="noopener external nofollow noreferrer" target="_blank">test_misc.cpp</a>  </p>
+<p>其他參考<br>C++ 单元测试框架-gtest | Mike’s Blog<br><a href="https://mikeblog.top/2019/01/02/googletest/" rel="noopener external nofollow noreferrer" target="_blank">https://mikeblog.top/2019/01/02/googletest/</a><br>快速上手Google C++ 測試框架googletest_記錄學習的過程-CSDN博客<br><a href="https://blog.csdn.net/weiwei9363/article/details/103469525" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/weiwei9363/article/details/103469525</a><br>c++单元测试之gtest测试框架快速上手_guotianqing的博客-CSDN博客<br><a href="https://blog.csdn.net/guotianqing/article/details/104055221" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/guotianqing/article/details/104055221</a><br>C Unit Test Framework 介紹 (Googletest) | by 亮谷 | Medium<br><a href="https://medium.com/@ktvexe/c-unit-test-framework-%E4%BB%8B%E7%B4%B9-googletest-9713dadceb7a" rel="noopener external nofollow noreferrer" target="_blank">https://medium.com/@ktvexe/c-unit-test-framework-%E4%BB%8B%E7%B4%B9-googletest-9713dadceb7a</a><br>輕鬆編寫 C++ 單元測試 | 開源互助社區<br><a href="https://coctec.com/docs/linux/show-post-68880.html" rel="noopener external nofollow noreferrer" target="_blank">https://coctec.com/docs/linux/show-post-68880.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-string-to-integer/" title="C/C++ 字串轉數字的4種方法">C/C++ 字串轉數字的4種方法</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a><br><a href="/std-deque/" title="std::deque 用法與範例">std::deque 用法與範例</a><br><a href="/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/googletest/" data-id="clxlwu7fe00cr5js1dn3aw7k8" data-title="GoogleTest 寫 C++ 單元測試的用法與教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-android-adb-set-date" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/android-adb-set-date/" class="article-date">
@@ -159,7 +263,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-set-date/" data-id="clxlwhdp400cow7s1dd5gn216" data-title="Android adb 同步時間/設定時間" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-set-date/" data-id="clxlwu7fd00cq5js1fleskwye" data-title="Android adb 同步時間/設定時間" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -228,7 +332,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-string-to-datetime/" data-id="clxlwhdp400cnw7s19978m5o9" data-title="Python 字串轉時間日期" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-string-to-datetime/" data-id="clxlwu7fd00cp5js1s9wnu5pb" data-title="Python 字串轉時間日期" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -292,7 +396,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tkinter-change-button-text/" data-id="clxlwhdp300cmw7s1w7q58sxg" data-title="Python tkinter 修改按鈕文字的 2 種方式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tkinter-change-button-text/" data-id="clxlwu7fc00co5js157ynqowu" data-title="Python tkinter 修改按鈕文字的 2 種方式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tkinter/">tkinter</a></li></ul>
@@ -367,7 +471,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-str-slice/" data-id="clxlwhdp100clw7s16rl1qot3" data-title="Python 字串切片" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-str-slice/" data-id="clxlwu7fc00cn5js1639cti3l" data-title="Python 字串切片" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -428,7 +532,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-datetime-to-string/" data-id="clxlwhdp100ckw7s1rlb0zv8v" data-title="Python 時間日期轉字串" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-datetime-to-string/" data-id="clxlwu7fc00cm5js1v74xlda9" data-title="Python 時間日期轉字串" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -503,10 +607,70 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-range-sum-query-immutable/" data-id="clxlwhdp100cjw7s18agckuey" data-title="LeetCode C++ Range Sum Query - Immutable 區域和檢索" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-range-sum-query-immutable/" data-id="clxlwu7fa00cl5js1qnjo33pe" data-title="LeetCode C++ Range Sum Query - Immutable 區域和檢索" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LeetCode/">LeetCode</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-git-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/git-tutorial/" class="article-date">
+  <time datetime="2021-02-19T14:00:00.000Z" itemprop="datePublished">2021-02-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/git-tutorial/">Git 新手入門教學懶人包</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 Git 新手入門教學彙整了 ShengYu 過往學習 Git 的知識，在此整理成教學目錄以便日後的查詢與新手入門學習。  </p>
+<h2><span id="git-基礎指令操作">Git 基礎指令操作</span></h2><p>這裡介紹一下 Git 指令的基本操作，<br><a href="/git-new-branch/" title="Git 開新分支 branch">Git 開新分支 branch</a><br><a href="/git-checkout-branch/" title="Git 切換分支 branch">Git 切換分支 branch</a><br><a href="/git-delete-branch/" title="Git 刪除本地端分支 branch">Git 刪除本地端分支 branch</a><br><a href="/git-revert/" title="git revert commit 抵銷提交">git revert commit 抵銷提交</a>  </p>
+<h2><span id="git-進階指令">Git 進階指令</span></h2><p>這裡介紹一下 Git 進階指令的操作，<br><a href="/git-amend-commit/" title="Git 修改上次的 commit">Git 修改上次的 commit</a><br><a href="/git-diff-commit/" title="Git 比對這次 commit 跟前一次 commit 的差異">Git 比對這次 commit 跟前一次 commit 的差異</a><br><a href="/git-view-file-history/" title="Git 顯示某個檔案的歷史修改記錄">Git 顯示某個檔案的歷史修改記錄</a><br><a href="/git-view-repository-history/" title="Git 顯示整個repository的歷史修改記錄">Git 顯示整個repository的歷史修改記錄</a><br><a href="/git-commit-partial-change/" title="Git commit 檔案的某幾個小部分修改">Git commit 檔案的某幾個小部分修改</a><br><a href="/git-clone-a-single-branch/" title="git clone 某單一個分支 branch">git clone 某單一個分支 branch</a><br><a href="/git-clone-specific-branch/" title="git clone 指定分支">git clone 指定分支</a><br><a href="/git-clone-specific-folder/" title="git clone 指定資料夾名稱">git clone 指定資料夾名稱</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/git-tutorial/" data-id="clxlwu7f900cj5js18kyn1a1b" data-title="Git 新手入門教學懶人包" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
 
     </footer>
   </div>
@@ -591,70 +755,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pow/" data-id="clxlwhdp000ciw7s1yyrs7bxj" data-title="Python 平方、次方 3 種用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pow/" data-id="clxlwu7f900ck5js1zq04q6jp" data-title="Python 平方、次方 3 種用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-git-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/git-tutorial/" class="article-date">
-  <time datetime="2021-02-19T14:00:00.000Z" itemprop="datePublished">2021-02-19</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Git教學/">Git教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/git-tutorial/">Git 新手入門教學懶人包</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 Git 新手入門教學彙整了 ShengYu 過往學習 Git 的知識，在此整理成教學目錄以便日後的查詢與新手入門學習。  </p>
-<h2><span id="git-基礎指令操作">Git 基礎指令操作</span></h2><p>這裡介紹一下 Git 指令的基本操作，<br><a href="/git-new-branch/" title="Git 開新分支 branch">Git 開新分支 branch</a><br><a href="/git-checkout-branch/" title="Git 切換分支 branch">Git 切換分支 branch</a><br><a href="/git-delete-branch/" title="Git 刪除本地端分支 branch">Git 刪除本地端分支 branch</a><br><a href="/git-revert/" title="git revert commit 抵銷提交">git revert commit 抵銷提交</a>  </p>
-<h2><span id="git-進階指令">Git 進階指令</span></h2><p>這裡介紹一下 Git 進階指令的操作，<br><a href="/git-amend-commit/" title="Git 修改上次的 commit">Git 修改上次的 commit</a><br><a href="/git-diff-commit/" title="Git 比對這次 commit 跟前一次 commit 的差異">Git 比對這次 commit 跟前一次 commit 的差異</a><br><a href="/git-view-file-history/" title="Git 顯示某個檔案的歷史修改記錄">Git 顯示某個檔案的歷史修改記錄</a><br><a href="/git-view-repository-history/" title="Git 顯示整個repository的歷史修改記錄">Git 顯示整個repository的歷史修改記錄</a><br><a href="/git-commit-partial-change/" title="Git commit 檔案的某幾個小部分修改">Git commit 檔案的某幾個小部分修改</a><br><a href="/git-clone-a-single-branch/" title="git clone 某單一個分支 branch">git clone 某單一個分支 branch</a><br><a href="/git-clone-specific-branch/" title="git clone 指定分支">git clone 指定分支</a><br><a href="/git-clone-specific-folder/" title="git clone 指定資料夾名稱">git clone 指定資料夾名稱</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/git-tutorial/" data-id="clxlwhdp000chw7s1ztxql43g" data-title="Git 新手入門教學懶人包" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
 
     </footer>
   </div>
@@ -712,69 +816,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-mod/" data-id="clxlwhdp000cgw7s1s1k1w5lm" data-title="Python mod 取餘數用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-mod/" data-id="clxlwu7f800ci5js1rcsqn71f" data-title="Python mod 取餘數用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-vscode-cpp" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/vscode-cpp/" class="article-date">
-  <time datetime="2021-02-17T14:00:00.000Z" itemprop="datePublished">2021-02-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/vscode-cpp/">Visual Studio Code 安裝 C/C++11 環境教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹在 Windows 使用 Visual Studio Code(VS Code) 設定 C++11 寫程式的環境，  </p>
-<h2><span id="visual-studio-codevs-code-設定-c11">Visual Studio Code(VS Code) 設定 C++11</span></h2><p>在 VS Code 安裝好 code runner 這個插件就可以來寫 C++ 程式了，這邊是 code runner 的設定 C++11 的方式，  </p>
-<p>想辦法找到選單 Settings 設定頁面，以我的 1.49.2 版本為例，<br><code>File &gt; Preferences &gt; Settings</code><br>在 Settings 設定頁面搜尋 “code-runner.executorMap”<br>然後選擇 Edit settings.json<br><img src="/vscode-cpp/vscode1.png" title="vscode"><br>在 g++ 後面加上 c++11 的參數選項，在 linux 或 macOS 環境常常用到執行緒相關的話可以加上 <code>-pthrrad</code><br><figure class="highlight"><figcaption><span>settings.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">"code-runner.executorMap": &#123;</span><br><span class="line">    "cpp": "cd $dir &amp;&amp; g++ $fileName -o $fileNameWithoutExt -std=c++11 -pthread &amp;&amp; $dir$fileNameWithoutExt"</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
-<p>結果像這樣，這樣就可以囉！<br><img src="/vscode-cpp/vscode2.png" title="vscode">  </p>
-<p>其他參考<br><a href="https://stackoverflow.com/questions/53995830/compiling-c11-in-visual-studio-code" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/53995830/compiling-c11-in-visual-studio-code</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/vscode-add-cpp-include-path/" title="VS Code 新增 C++ 標頭檔路徑">VS Code 新增 C++ 標頭檔路徑</a><br><a href="/vscode-debugging-on-mac/" title="macOS 使用 VS Code Debugger 除錯">macOS 使用 VS Code Debugger 除錯</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-cpp/" data-id="clxlwhdoz00cfw7s1k24558z1" data-title="Visual Studio Code 安裝 C/C++11 環境教學" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
 
     </footer>
   </div>
@@ -818,6 +863,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/linux-watch/">Linux watch 指令用法與範例</a>
+          </li>
+        
+          <li>
             <a href="/python-subprocess.run/">Python 中的 subprocess.run 完整指南與範例</a>
           </li>
         
@@ -831,10 +880,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/python-subprocess.call/">Python subprocess.call 用法與範例解析</a>
-          </li>
-        
-          <li>
-            <a href="/python-sqlite/">如何在Python中使用SQLite：完整指南與實用範例</a>
           </li>
         
       </ul>
