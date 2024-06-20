@@ -37,7 +37,7 @@
 <meta property="og:site_name" content="ShengYu Talk">
 <meta property="og:description" content="本篇 ShengYu 介紹 Python subprocess.Popen 用法與範例，在進行 Python 程式開發時，常常需要與外部程式進行互動，例如執行系統指令、啟動外部應用程式或執行其他腳本。在這些情境下，Python 的 subprocess 模組是非常有用的工具，其中的 subprocess.Popen 提供了強大的功能和靈活性，讓我們能夠更精細地控制子行程。本文將詳盡介紹 subpr">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2024-06-06T23:31:22.969Z">
+<meta property="og:updated_time" content="2024-06-20T11:30:06.962Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Python subprocess.Popen 用法與範例">
 <meta name="twitter:description" content="本篇 ShengYu 介紹 Python subprocess.Popen 用法與範例，在進行 Python 程式開發時，常常需要與外部程式進行互動，例如執行系統指令、啟動外部應用程式或執行其他腳本。在這些情境下，Python 的 subprocess 模組是非常有用的工具，其中的 subprocess.Popen 提供了強大的功能和靈活性，讓我們能夠更精細地控制子行程。本文將詳盡介紹 subpr">
@@ -176,6 +176,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <li><code>cwd</code>: 設定子行程的當前工作目錄。</li>
 <li><code>env</code>: 設定子行程的環境變數。</li>
 </ul>
+<h2><span id="subprocesspopen-是-blocking-阻塞函式嗎">subprocess.Popen 是 blocking 阻塞函式嗎？</span></h2><p><code>subprocess.Popen</code> 本身不是阻塞（blocking）的。當你調用 <code>subprocess.Popen</code> 時，它會啟動一個子進程並立即返回一個 <code>Popen</code> 對象，而不會等待子進程完成。這意味著主進程可以繼續執行其他操作，而子進程在後台執行。</p>
+<p>但是，與 <code>Popen</code> 對象的某些方法交互時，可能會產生阻塞行為，例如：</p>
+<ol>
+<li><p><strong><code>Popen.communicate()</code></strong>：</p>
+<ul>
+<li>這個方法會阻塞主進程，直到子進程完成並且其所有輸出和錯誤數據都被讀取完畢。</li>
+<li>範例：<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"></span><br><span class="line">process = subprocess.Popen([<span class="string">'ls'</span>, <span class="string">'-l'</span>], stdout=subprocess.PIPE, stderr=subprocess.PIPE)</span><br><span class="line">stdout, stderr = process.communicate()  <span class="comment"># 這裡會阻塞，直到子進程完成</span></span><br><span class="line">print(stdout.decode())</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p><strong><code>Popen.wait()</code></strong>：</p>
+<ul>
+<li>這個方法會阻塞主進程，直到子進程終止。</li>
+<li>範例：<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"></span><br><span class="line">process = subprocess.Popen([<span class="string">'sleep'</span>, <span class="string">'5'</span>])</span><br><span class="line">process.wait()  <span class="comment"># 這裡會阻塞，直到子進程完成</span></span><br><span class="line">print(<span class="string">"子進程已結束"</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p><strong>讀取標準輸入/輸出/錯誤</strong>：</p>
+<ul>
+<li>如果你使用 <code>Popen.stdout.read()</code> 或 <code>Popen.stderr.read()</code> 等方法來讀取子進程的輸出，這些操作也可能會阻塞，特別是當子進程生成大量輸出且你沒有適當地處理這些輸出的時候。</li>
+<li>範例：<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"></span><br><span class="line">process = subprocess.Popen([<span class="string">'cat'</span>], stdin=subprocess.PIPE, stdout=subprocess.PIPE)</span><br><span class="line">process.stdin.write(<span class="string">b'Hello\n'</span>)</span><br><span class="line">output = process.stdout.read()  <span class="comment"># 這裡會阻塞，直到有數據可以讀取</span></span><br><span class="line">print(output.decode())</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ol>
+<p>所以 <code>subprocess.Popen</code> 本身不阻塞，啟動子進程後立即返回。</p>
+<p>但是某些方法如 <code>communicate()</code>、<code>wait()</code> 和讀取輸出的方法會阻塞，直到特定條件滿足（例如子進程結束或輸出被完全讀取）。</p>
 <h2><span id="小結">小結</span></h2><p><code>subprocess.Popen</code> 是一個功能強大且靈活的工具，能夠滿足從簡單指令執行到複雜行程間通信的各種需求。無論你是需要簡單地執行一個外部指令，還是需要在多個子行程間進行資料傳遞，<code>subprocess.Popen</code> 都能提供合適的解決方案。</p>
 <p>透過上述範例和說明，相信你已經對 <code>subprocess.Popen</code> 有了一定的了解和掌握。希望這些資訊能夠幫助你在未來的開發工作中更好地使用 Python 進行行程管理。</p>
 <p>以上就是 Python subprocess.Popen 用法與範例的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
@@ -184,7 +211,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-subprocess.popen/" data-id="clxn67gpn00me9cs1218nshiw" data-title="Python subprocess.Popen 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-subprocess.popen/" data-id="clxn6kb6800mehss127lkxdk6" data-title="Python subprocess.Popen 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
