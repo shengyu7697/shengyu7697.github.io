@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://shengyu7697.github.io/"/>
-  <updated>2024-06-19T14:10:06.475Z</updated>
+  <updated>2024-06-06T23:31:22.969Z</updated>
   <id>https://shengyu7697.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>使用 PHP 的 PDO 進行資料庫操作：入門指南</title>
+    <link href="https://shengyu7697.github.io/php-pdo/"/>
+    <id>https://shengyu7697.github.io/php-pdo/</id>
+    <published>2024-06-22T12:00:00.000Z</published>
+    <updated>2024-06-06T23:31:22.969Z</updated>
+    
+    <content type="html"><![CDATA[<p>本篇 ShengYu 介紹 PHP 和 PDO 進行資料庫操作用法，在 PHP 開發中，與資料庫進行互動是一個常見的需求。PDO（PHP Data Objects）是一個提供一致接口來訪問多種資料庫的擴展。PDO 使得處理不同資料庫（如 MySQL、PostgreSQL、SQLite 等）變得更加容易和一致。本文將介紹如何使用 PDO 進行基本的資料庫操作，包括連線資料庫、執行查詢、插入、更新和刪除資料。</p><h2><span id="什麼是-pdo">什麼是 PDO？</span></h2><p>PDO（PHP Data Objects）是一個物件導向的資料庫抽象層，旨在提高安全性和開發效率，同時提供一致的語法以支援多種資料庫。PDO 的功能和特點如下：</p><ol><li><p><strong>通用性強</strong>：PDO 支援多種資料庫系統，如 MySQL、MS SQL、ODBC、PostgreSQL、SQLite、Firebird、Informix 等。這意味著只要更換連線的資料庫驅動程式，程式碼無需更改即可適用於不同的資料庫系統。</p></li><li><p><strong>語法一致性</strong>：無論 PHP 版本如何，PDO 的語法在所有支援的資料庫系統中都是一致的。這與 MySQL 驅動（如 <code>mysql</code> 和 <code>mysqli</code>）不同，後者在不同 PHP 版本中可能需要不同的語法。</p></li><li><p><strong>物件導向設計</strong>：PDO 採用物件導向的設計，使得程式碼更具結構性和可讀性。物件導向的方式也更容易進行模組化和重用。</p></li><li><p><strong>增強安全性</strong>：PDO 提供了預處理語句和參數化查詢，有效防止 SQL 注入攻擊。這些功能允許開發者安全地處理來自使用者輸入的資料，減少潛在的安全風險。</p></li><li><p><strong>方便的資料操作</strong>：PDO 支援將查詢結果轉換為對應的 PHP 物件或陣列，使得資料操作更加方便和直觀。例如，使用 <code>fetchObject()</code> 方法可以直接將資料庫查詢結果轉換為 PHP 物件。</p></li><li><p><strong>內建於 PHP 5.5 以上版本</strong>：從 PHP 5.5 開始，PDO 已內建於 PHP 核心，無需額外安裝。這使得 PDO 成為一個非常方便和強大的選擇。</p></li></ol><p>綜上所述，PDO 是 PHP 開發中一個強大且靈活的資料庫操作工具。它不僅提供了跨資料庫的通用語法，還透過物件導向和安全性增強的設計，提高了開發效率和應用程式的安全性。</p><h2><span id="1-建立-pdo-連線">1. 建立 PDO 連線</span></h2><p>首先，我們需要建立一個 PDO 物件來連線資料庫。這需要提供資料來源名稱（DSN）、使用者名和密碼。</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    $dsn = <span class="string">'mysql:host=localhost;dbname=testdb'</span>;</span><br><span class="line">    $username = <span class="string">'root'</span>;</span><br><span class="line">    $password = <span class="string">'password'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 建立 PDO 連線</span></span><br><span class="line">    $pdo = <span class="keyword">new</span> PDO($dsn, $username, $password);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 設定 PDO 錯誤模式為異常</span></span><br><span class="line">    $pdo-&gt;setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"連線成功"</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> (PDOException $e) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"連線失敗: "</span> . $e-&gt;getMessage();</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><p>這段程式碼中，我們建立了一個 PDO 實例並設定錯誤模式為異常，以便在出現錯誤時能夠更容易地進行除錯。</p><h2><span id="2-執行-sql-查詢">2. 執行 SQL 查詢</span></h2><h3><span id="使用-query-方法">使用 <code>query</code> 方法</span></h3><p>對於不需要參數的簡單查詢，我們可以使用 <code>query</code> 方法：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"SELECT * FROM users"</span>;</span><br><span class="line"><span class="keyword">foreach</span> ($pdo-&gt;query($sql) <span class="keyword">as</span> $row) &#123;</span><br><span class="line">    print_r($row);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><h3><span id="使用-prepare-和-execute-方法">使用 <code>prepare</code> 和 <code>execute</code> 方法</span></h3><p>對於需要參數的查詢，應使用 <code>prepare</code> 方法來防止 SQL 注入攻擊：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"SELECT * FROM users WHERE id = :id"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'id'</span> =&gt; <span class="number">1</span>]);</span><br><span class="line">$user = $stmt-&gt;fetch(PDO::FETCH_ASSOC);</span><br><span class="line"></span><br><span class="line">print_r($user);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><h2><span id="3-插入資料">3. 插入資料</span></h2><p>使用 <code>prepare</code> 和 <code>execute</code> 方法插入資料：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"INSERT INTO users (username, email) VALUES (:username, :email)"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'username'</span> =&gt; <span class="string">'shengyu'</span>, <span class="string">'email'</span> =&gt; <span class="string">'shengyu@example.com'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"新記錄插入成功，ID: "</span> . $pdo-&gt;lastInsertId();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><h2><span id="4-更新資料">4. 更新資料</span></h2><p>同樣地，可以使用 <code>prepare</code> 和 <code>execute</code> 方法更新資料：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"UPDATE users SET email = :email WHERE id = :id"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'email'</span> =&gt; <span class="string">'newemail@example.com'</span>, <span class="string">'id'</span> =&gt; <span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"記錄更新成功"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><h2><span id="5-刪除資料">5. 刪除資料</span></h2><p>使用 <code>prepare</code> 和 <code>execute</code> 方法刪除資料：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"DELETE FROM users WHERE id = :id"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'id'</span> =&gt; <span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"記錄刪除成功"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><h2><span id="6-關閉連線">6. 關閉連線</span></h2><p>在 PHP 中，當 PDO 物件被銷毀時，連線會自動關閉。因此，不需要顯式地關閉連線。</p><h2><span id="總結">總結</span></h2><p>PDO 提供了一個靈活且安全的方式來處理資料庫操作。透過使用 <code>prepare</code> 和 <code>execute</code> 方法，可以有效地防止 SQL 注入攻擊。PDO 的一致性和易用性使得它成為 PHP 開發人員處理資料庫操作的首選工具。</p><p>以上就是 PHP 和 PDO 進行資料庫操作的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener" target="_blank">Facebook 按讚</a>支持一下！  </p><p><strong>其它相關文章推薦</strong><br>如果你想學習 PHP 相關技術，可以參考看看下面的文章，<br><a href="/php-mysqli/" title="PHP 和 MySQLi 進行資料庫操作">PHP 和 MySQLi 進行資料庫操作</a><br><a href="/php-display-errors/" title="PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤">PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;本篇 ShengYu 介紹 PHP 和 PDO 進行資料庫操作用法，在 PHP 開發中，與資料庫進行互動是一個常見的需求。PDO（PHP Data Objects）是一個提供一致接口來訪問多種資料庫的擴展。PDO 使得處理不同資料庫（如 MySQL、PostgreSQL、S
+      
+    
+    </summary>
+    
+      <category term="PHP教學" scheme="https://shengyu7697.github.io/categories/PHP%E6%95%99%E5%AD%B8/"/>
+    
+    
+      <category term="PHP" scheme="https://shengyu7697.github.io/tags/PHP/"/>
+    
+  </entry>
   
   <entry>
     <title>Linux watch 指令用法與範例</title>
@@ -367,11 +392,11 @@
     </summary>
     
     
-      <category term="軟體開發" scheme="https://shengyu7697.github.io/tags/%E8%BB%9F%E9%AB%94%E9%96%8B%E7%99%BC/"/>
-    
       <category term="ChatGPT" scheme="https://shengyu7697.github.io/tags/ChatGPT/"/>
     
       <category term="AI" scheme="https://shengyu7697.github.io/tags/AI/"/>
+    
+      <category term="軟體開發" scheme="https://shengyu7697.github.io/tags/%E8%BB%9F%E9%AB%94%E9%96%8B%E7%99%BC/"/>
     
   </entry>
   
@@ -499,31 +524,6 @@
       <category term="ChatGPT" scheme="https://shengyu7697.github.io/tags/ChatGPT/"/>
     
       <category term="AI" scheme="https://shengyu7697.github.io/tags/AI/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>如何消除C/C++未使用變數的編譯錯誤訊息</title>
-    <link href="https://shengyu7697.github.io/cpp-remove-unused-variable-errors/"/>
-    <id>https://shengyu7697.github.io/cpp-remove-unused-variable-errors/</id>
-    <published>2024-05-29T12:00:00.000Z</published>
-    <updated>2024-06-07T09:51:40.209Z</updated>
-    
-    <content type="html"><![CDATA[<p>本篇 ShengYu 介紹 如何消除C/C++未使用變數的編譯錯誤訊息，在開發C/C++程式時，我們常會遇到未使用變數所產生的編譯警告或錯誤訊息。這些訊息雖然對程式的執行沒有直接影響，但會使編譯過程不夠乾淨，甚至可能掩蓋其他潛在的問題。本文將介紹幾種有效的方法來消除這些警告或錯誤訊息，讓你的程式碼更加整潔。</p><h2><span id="1-移除未使用的變數">1. 移除未使用的變數</span></h2><p>最直接的方法就是從程式碼中移除不需要的變數。如果確實不需要該變數，將其刪除即可。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> unused_var;</span><br><span class="line"><span class="comment">// 將 unused_var 移除</span></span><br></pre></td></tr></table></figure><h2><span id="2-使用-void-來表示變數未使用">2. 使用 <code>(void)</code> 來表示變數未使用</span></h2><p>在變數前加上 <code>(void)</code>，表示你有意識到該變數未使用，從而避免編譯器警告。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> unused_var;</span><br><span class="line">(<span class="keyword">void</span>)unused_var;</span><br></pre></td></tr></table></figure><p>或者，你也可以定義一個巨集來標記未使用的變數，使程式碼更具可讀性和一致性。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用巨集</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> UNUSED(x) (void)(x)</span></span><br><span class="line">UNUSED(unused_var);</span><br></pre></td></tr></table></figure><h2><span id="3-使用-__attribute__unused-gcc特定">3. 使用 <code>__attribute__((unused))</code> (GCC特定)</span></h2><p>在變數宣告前加上 <code>__attribute__((unused))</code>，告訴編譯器該變數未使用。</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> unused_var __attribute__((unused));</span><br></pre></td></tr></table></figure><h2><span id="4-使用-pragma-指示-gcc特定">4. 使用 <code>#pragma</code> 指示 (GCC特定)</span></h2><p>使用 <code>#pragma</code> 指示來忽略特定的警告。在程式碼的適當位置新增以下指示：</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> GCC diagnostic ignored <span class="meta-string">"-Wunused-variable"</span></span></span><br><span class="line"><span class="keyword">int</span> unused_var;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> GCC diagnostic <span class="meta-keyword">warning</span> <span class="meta-string">"-Wunused-variable"</span></span></span><br></pre></td></tr></table></figure><p>這樣可以有選擇性地忽略特定區塊的警告。</p><h2><span id="5-使用-wno-unused-variable-編譯選項">5. 使用 <code>-Wno-unused-variable</code> 編譯選項</span></h2><p>編譯時新增 <code>-Wno-unused-variable</code> 選項來忽略未使用變數的警告。</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -Wno-unused-variable -o myprogram myprogram.c</span><br></pre></td></tr></table></figure><h2><span id="6-使用條件編譯">6. 使用條件編譯</span></h2><p>使用條件編譯根據需要定義變數。例如在除錯模式下才使用某些變數：</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> DEBUG</span></span><br><span class="line"><span class="keyword">int</span> debug_var;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure><h2><span id="總結">總結</span></h2><p>未使用變數的警告雖然不會影響程式執行，但會讓編譯過程不夠乾淨。以上介紹的幾種方法能幫助你有效地消除這些警告，讓程式碼更加整潔和專業。</p><p>以上就是 如何消除C/C++未使用變數的編譯錯誤訊息介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener" target="_blank">Facebook 按讚</a>支持一下！  </p><p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-strcpy/" title="C/C++ strcpy 用法與範例">C/C++ strcpy 用法與範例</a><br><a href="/cpp-strcmp/" title="C/C++ strcmp 用法與範例">C/C++ strcmp 用法與範例</a><br><a href="/cpp-strcat/" title="C/C++ strcat 用法與範例">C/C++ strcat 用法與範例</a><br><a href="/cpp-strstr/" title="C/C++ strstr 用法與範例">C/C++ strstr 用法與範例</a><br><a href="/cpp-strtok/" title="C/C++ strtok 用法與範例">C/C++ strtok 用法與範例</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;本篇 ShengYu 介紹 如何消除C/C++未使用變數的編譯錯誤訊息，在開發C/C++程式時，我們常會遇到未使用變數所產生的編譯警告或錯誤訊息。這些訊息雖然對程式的執行沒有直接影響，但會使編譯過程不夠乾淨，甚至可能掩蓋其他潛在的問題。本文將介紹幾種有效的方法來消除這些警告
-      
-    
-    </summary>
-    
-      <category term="C/C++教學" scheme="https://shengyu7697.github.io/categories/C-C-%E6%95%99%E5%AD%B8/"/>
-    
-    
-      <category term="C/C++" scheme="https://shengyu7697.github.io/tags/C-C/"/>
     
   </entry>
   
