@@ -107,6 +107,141 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-debug-print" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-debug-print/" class="article-date">
+  <time datetime="2018-03-16T14:00:00.000Z" itemprop="datePublished">2018-03-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-debug-print/">慣C除錯</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹在 C/C++ 下使用 printf 來 debug 的一些技巧，  </p>
+<p><a href="https://gist.github.com/shengyu7697/a3c7d65dcfb1f1d8ceca87cf8e7dabc5" rel="noopener external nofollow noreferrer" target="_blank">Gist</a>  </p>
+<p><a href="https://stackoverflow.com/questions/1941307/c-debug-print-macros" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1941307/c-debug-print-macros</a>  </p>
+<p>最簡單的<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...)  printf(<span class="meta-string">"[DEBUG] %s, %s(), line:%d, msg:"</span> fmt, __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span></span><br></pre></td></tr></table></figure></p>
+<p>Tom Kuschel 的版本<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 3</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG) &amp;&amp; DEBUG &gt; 0</span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d:%s(): "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
+<p>以下為我的版本, DEBUG 可以定義不同數字等級, 決定輸出的訊息種類.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG 4</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(DEBUG)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> DEBUG &gt;= 4 <span class="comment">// filename:function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s():%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 3 <span class="comment">// filename:function</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%s() "</span> fmt, \</span></span><br><span class="line">    __FILE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 2 <span class="comment">// filename:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s:%d "</span> fmt, \</span></span><br><span class="line">    __FILE__, __LINE__, __func__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> DEBUG &gt;= 1 <span class="comment">// function:line</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) fprintf(stderr, <span class="meta-string">"[DEBUG] %s():%d "</span> fmt, \</span></span><br><span class="line">    __func__, __LINE__, ##__VA_ARGS__)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT(fmt, ...) <span class="comment">// Don't do anything in release builds</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
+<p>使用<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DEBUG_PRINT(<span class="string">"Debugging is enabled.\n"</span>);</span><br><span class="line">DEBUG_PRINT(<span class="string">"Debug level: %d"</span>, (<span class="keyword">int</span>) DEBUG);</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>20180220 updated: <a href="https://github.com/libimobiledevice/libusbmuxd/blob/c724e70fb52ba45291dc73a2e369c0c5bae0ec2e/src/libusbmuxd.c#L88" rel="noopener external nofollow noreferrer" target="_blank">libusbmuxd 另一種用法</a></p>
+<hr>
+<p>20190409 updated: 新增顯示檔名<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="comment">// 提醒：For Windows use '\\' instead of '/'.</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __FILENAME__ (strrchr(__FILE__, <span class="meta-string">'/'</span>) ? strrchr(__FILE__, <span class="meta-string">'/'</span>) + 1 : __FILE__)</span></span><br><span class="line"><span class="comment">// function() filename:line</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DRBUG_PRINT(fmt, ...) do &#123; fprintf(stderr, <span class="meta-string">"[DEBUG] %s() %s:%d "</span> fmt, __FUNCTION__, __FILENAME__, __LINE__, ##__VA_ARGS__); &#125; while(0)</span></span><br></pre></td></tr></table></figure></p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-debug-print/" data-id="clxs7oeao001efus1vwc8nv66" data-title="慣C除錯" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-multiple-platforms-socket-cplusplus" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/multiple-platforms-socket-cplusplus/" class="article-date">
+  <time datetime="2018-03-14T14:00:00.000Z" itemprop="datePublished">2018-03-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/multiple-platforms-socket-cplusplus/">multiple platforms socket c++</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p><a href="https://github.com/shengyu7697/TinyTcp" rel="noopener external nofollow noreferrer" target="_blank">TinyTcp</a>: This is a C++ socket library designed to fast development of socket related functionality.  </p>
+<p>參考<br><a href="https://www.codeproject.com/Articles/2477/Multi-threaded-Client-Server-Socket-Class" rel="noopener external nofollow noreferrer" target="_blank">codeproject Multi-threaded-Client-Server-Socket-Class</a>  </p>
+<hr>
+<p><a href="https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.h" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.h</a><br><a href="https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.c" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/paul999/433.92-Raspberry-Pi/blob/master/libs/socket.c</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">struct socket_callback_t &#123;</span><br><span class="line">    void (*client_connected_callback)(int);</span><br><span class="line">    void (*client_disconnected_callback)(int);</span><br><span class="line">    void (*client_data_callback)(int, char*);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">int start_server(unsigned short port);</span><br><span class="line">int connect_to_server(char *address, unsigned short port);</span><br><span class="line">void socket_close(int i);</span><br><span class="line">void socket_write(int sockfd, const char *msg, ...);</span><br><span class="line">void socket_write_big(int sockfd, const char *msg, ...);</span><br><span class="line">char *socket_read(int sockfd);</span><br><span class="line">char *socket_read_big(int sockfd);</span><br></pre></td></tr></table></figure></p>
+<p>socket_read_big 可以看看<br>socket_write_big 可以看看  </p>
+<hr>
+<p><a href="http://netlinksockets.sourceforge.net/chat_client_8cc-example.html" rel="noopener external nofollow noreferrer" target="_blank">NetLink Sockets C++: chatClient.cc</a><br><a href="http://netlinksockets.sourceforge.net/chat_server_8cc-example.html" rel="noopener external nofollow noreferrer" target="_blank">NetLink Sockets C++: chatServer.cc</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">OnAccept onAccept;</span><br><span class="line">OnRead onRead;</span><br><span class="line">OnDisconnect onDisconnect;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>The C++ Network Library Project<br>(A collection of open-source libraries for high level network programming.)<br><a href="https://github.com/cpp-netlib/cpp-netlib" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/cpp-netlib/cpp-netlib</a></p>
+<hr>
+<h3><span id="libusbmuxd-c-版本"> (C 版本)</span></h3><p><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.h" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.h</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.c" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/socket.c</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.h" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.h</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.c" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/libimobiledevice/libusbmuxd/blob/master/common/collection.c</a><br><a href="https://github.com/libimobiledevice/libusbmuxd/blob/master/src/libusbmuxd.c" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/libimobiledevice/libusbmuxd/blob/master/src/libusbmuxd.c</a><br><a href="https://github.com/libimobiledevice/usbmuxd/blob/master/src/main.c" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/libimobiledevice/usbmuxd/blob/master/src/main.c</a>  </p>
+<hr>
+<p><a href="http://beej-zhtw.netdpi.net/06-client-server-background" rel="noopener external nofollow noreferrer" target="_blank">Beej’s Guide to Network Programming 正體中文版: 06-Client-Server 基礎</a><br><a href="http://www.boost.org/doc/libs/1_39_0/doc/html/boost_asio/examples.html" rel="noopener external nofollow noreferrer" target="_blank">boost asio examples</a><br><a href="https://github.com/socketio/socket.io-client-cpp" rel="noopener external nofollow noreferrer" target="_blank">C++11 implementation of Socket.IO client</a><br><a href="https://stackoverflow.com/questions/28027937/cross-platform-sockets" rel="noopener external nofollow noreferrer" target="_blank">關閉Sockets不一樣 stackoverflow cross-platform-sockets</a><br><a href="https://github.com/ia/connect" rel="noopener external nofollow noreferrer" target="_blank">tiny cross-platform socket API library</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/multiple-platforms-socket-cplusplus/" data-id="clxs7oean001dfus17ht67h7q" data-title="multiple platforms socket c++" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Socket/">Socket</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-openmediavault-forgot-password" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/openmediavault-forgot-password/" class="article-date">
@@ -154,7 +289,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/openmediavault-forgot-password/" data-id="clxq2ijqv001dxis1rsdx9h77" data-title="OpenMediaVault 忘記密碼" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/openmediavault-forgot-password/" data-id="clxs7oeam001bfus1f8aw6g47" data-title="OpenMediaVault 忘記密碼" class="article-share-link">Share</a>
       
       
     </footer>
@@ -209,7 +344,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-glfw/" data-id="clxq2ijqu001cxis1ibi1syrd" data-title="Ubuntu 編譯安裝 GLFW" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-glfw/" data-id="clxs7oean001cfus1j0geqqyg" data-title="Ubuntu 編譯安裝 GLFW" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GLFW/">GLFW</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -264,7 +399,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opengl-load-obj/" data-id="clxq2ijqu001bxis15x7ixin1" data-title="OpenGL 讀取 .obj 3D 模型檔" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opengl-load-obj/" data-id="clxs7oeal001afus1trcgdkre" data-title="OpenGL 讀取 .obj 3D 模型檔" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
@@ -326,7 +461,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/glfw-glew-glm-glut/" data-id="clxq2ijqt001axis1o6k0z8pu" data-title="glfw glew glm glut 傻傻分不清楚" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/glfw-glew-glm-glut/" data-id="clxs7oeal0019fus1jlgvco8s" data-title="glfw glew glm glut 傻傻分不清楚" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GLFW/">GLFW</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
@@ -388,7 +523,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/pyqt-ui-by-qt-designer/" data-id="clxq2ijqs0019xis1q2bvm7c7" data-title="快速開發 PyQt 的 UI - 使用 Qt Designer" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/pyqt-ui-by-qt-designer/" data-id="clxs7oeak0017fus19afiw8uz" data-title="快速開發 PyQt 的 UI - 使用 Qt Designer" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -459,7 +594,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/depth-camera/" data-id="clxq2ijqs0018xis1a87ejre3" data-title="深度相機列表" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/depth-camera/" data-id="clxs7oeaj0016fus1noilr7wm" data-title="深度相機列表" class="article-share-link">Share</a>
       
       
     </footer>
@@ -517,133 +652,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-nginx/" data-id="clxq2ijqr0017xis1ro3k262z" data-title="Ubuntu 安裝 nginx" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-nginx/" data-id="clxs7oeaj0015fus1d6k0jaoo" data-title="Ubuntu 安裝 nginx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ubuntu-vagrant" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/ubuntu-vagrant/" class="article-date">
-  <time datetime="2018-03-07T14:00:00.000Z" itemprop="datePublished">2018-03-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/ubuntu-vagrant/">Vagrant 教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇紀錄在 Ubuntu 下使用 Vagrant 基本指令與流程，  </p>
-<p><a href="https://www.vagrantup.com/downloads.html" rel="noopener external nofollow noreferrer" target="_blank">官網最新的 vagrant 下載</a><br><a href="http://www.vagrantbox.es/" rel="noopener external nofollow noreferrer" target="_blank">vagrant box 列表</a> 這是別人做好的 box image  </p>
-<p>作業系統： Ubuntu 16.04<br>版本：vagrant 2.0.2  </p>
-<h2><span id="step-1-下載-box-image-只有第一次需要做">Step 1. 下載 box image (只有第一次需要做)</span></h2><p>box image 會下載到 <code>~/.vagrant.d/boxes/</code><br>Ubuntu 14.04<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add u1404 https://github.com/kraksoft/vagrant-box-ubuntu/releases/download/14.04/ubuntu-14.04-amd64.box</span><br></pre></td></tr></table></figure></p>
-<p>Ubuntu 12.04<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vagrant box add u1204 http://files.vagrantup.com/precise64.box</span><br></pre></td></tr></table></figure></p>
-<h2><span id="setp-2-初始一個虛擬機-與-啟動">Setp 2. 初始一個虛擬機 與 啟動</span></h2><p>啟動一個 虛擬環境 (使用 u1404 這個 box 樣本)<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vagrant init u1404 <span class="comment"># 初始化生成一個 Vagrantfile 檔案</span></span><br><span class="line">vagrant up <span class="comment"># 開機啟動</span></span><br></pre></td></tr></table></figure></p>
-<p>他會生成的虛擬機器檔在 <code>~/VirtualBox VMs</code> 這個目錄下  </p>
-<p>以下為一些常用的基本指令:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vagrant halt <span class="comment"># 關機</span></span><br><span class="line">vagrant ssh <span class="comment"># 登入</span></span><br><span class="line">vagrant destroy <span class="comment"># 刪除</span></span><br><span class="line">vagrant reload <span class="comment"># 重啟</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="修改虛擬機的-ram-size">修改虛擬機的 Ram Size</span></h2><p>修改 Vagrantfile 裡的 <code>vb.memory = &quot;1024&quot;</code>, 再重啟  </p>
-<p>參考<br><a href="https://about.gitlab.com/downloads/#ubuntu1404" rel="noopener external nofollow noreferrer" target="_blank">https://about.gitlab.com/downloads/#ubuntu1404</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-vagrant/" data-id="clxq2ijtw006hxis1jjrwjjvb" data-title="Vagrant 教學" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vagrant/">Vagrant</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Virtual-Machine/">Virtual Machine</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cmake-gui-build-install-in-windows" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cmake-gui-build-install-in-windows/" class="article-date">
-  <time datetime="2018-03-07T14:00:00.000Z" itemprop="datePublished">2018-03-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cmake-gui-build-install-in-windows/">Windows 編譯 cmake-gui</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹 Windows 編譯 cmake-gui 的步驟，  </p>
-<h2><span id="系統環境">系統環境</span></h2><p>作業系統：Win 7<br>版本：cmake 3.10.2  </p>
-<h2><span id="下載原始碼">下載原始碼</span></h2><p>從<a href="https://cmake.org/" rel="noopener external nofollow noreferrer" target="_blank">官網下載</a><br>解壓縮 <code>cmake-3.10.2.zip</code> 到 <code>C:\</code>  </p>
-<h2><span id="編譯">編譯</span></h2><p>打開 <code>Git Bash</code> 執行下列指令產生 Visual Studio 專案檔<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /c/cmake-3.10.2</span><br><span class="line">mkdir -p build</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake .. \</span><br><span class="line">	-G <span class="string">"Visual Studio 14 2015"</span> \</span><br><span class="line">	-DCMAKE_INSTALL_PREFIX=<span class="string">"../../install"</span> \</span><br><span class="line">	-DBUILD_QtDialog</span><br></pre></td></tr></table></figure></p>
-<p>打開 <code>C:\cmake-3.10.2\build\CMake.sln</code> 進行編譯  </p>
-<p>如果編譯 Release 版本的話, 輸出的執行檔在 <code>C:\cmake-3.10.2\build\bin\Release\cmake-gui.exe</code>  </p>
-<p><strong>相關文章</strong><br><a href="/cmake-cmakelists/" title="撰寫 cmake 的 CMakeLists.txt">撰寫 cmake 的 CMakeLists.txt</a><br><a href="/cmake-include-cmake-file/" title="CMake 專案裡 include .cmake 檔案">CMake 專案裡 include .cmake 檔案</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cmake-gui-build-install-in-windows/" data-id="clxq2ijqp0014xis1u3gk4md3" data-title="Windows 編譯 cmake-gui" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
 
     </footer>
   </div>
@@ -697,7 +709,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/windows-cmder/" data-id="clxq2ijqq0016xis1gs55736y" data-title="cmder 安裝" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/windows-cmder/" data-id="clxs7oeak0018fus17bjfz5xm" data-title="cmder 安裝" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
@@ -744,7 +756,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/linux-pstree/">Linux pstree 指令用法範例</a>
+          </li>
+        
+          <li>
             <a href="/php-pdo/">使用 PHP 的 PDO 進行資料庫操作：入門指南</a>
+          </li>
+        
+          <li>
+            <a href="/google-sheets-sum-by-month/">Google Sheets 累計月份金額或數字</a>
           </li>
         
           <li>
@@ -753,14 +773,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/python-subprocess.run/">Python 中的 subprocess.run 完整指南與範例</a>
-          </li>
-        
-          <li>
-            <a href="/android-dumpsys/">Android dumpsys 指令用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/php-mysqli/">使用 PHP 和 MySQLi 進行資料庫操作的簡單指南</a>
           </li>
         
       </ul>
