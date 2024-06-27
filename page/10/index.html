@@ -107,6 +107,177 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-linux-tcp-socket" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-linux-tcp-socket/" class="article-date">
+  <time datetime="2023-01-02T14:00:00.000Z" itemprop="datePublished">2023-01-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-linux-tcp-socket/">C/C++ Linux TCP Socket Server/Client 網路通訊教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹如何寫 C/C++ Linux TCP Socket Server/Client 網路通訊程式，在這個網路盛行的時代，網路通訊已成為基礎，想要精通學習網路通訊必須先了解 TCP/IP 協定，其中又以 TCP 通訊最常被使用，TCP 通訊程式通常分成伺服器端與客戶端的兩部份程式，接下來教學內容將介紹如何使用 socket API 來搭建一個典型的 TCP 通訊程式，甚至可以寫出一個聊天室的程式，或者像 LINE 這樣的通訊程式。  </p>
+<p>以下 C/C++ Linux TCP 內容將分為幾部分，分別為：  </p>
+<ul>
+<li>常見的 Socket API 函式 Overview 總覽  </li>
+<li>C/C++ Linux Socket TCP Server/Client 通訊流程  </li>
+<li>C/C++ Linux TCP Server 伺服器端程式 (Echo Sever)  </li>
+<li>C/C++ Linux TCP Client 客戶端程式 (傳送使用者的輸入)  </li>
+<li>C/C++ Linux TCP Client 客戶端程式 (定時傳送資料)  </li>
+<li>C/C++ Linux TCP 常見問題  </li>
+<li>Linux sokcet 的 ip 字串轉 sockaddr_in  </li>
+<li>Linux sokcet 的 sockaddr_in 轉 ip 字串  </li>
+</ul>
+<h2><span id="常見的-socket-api-函式-overview-總覽">常見的 Socket API 函式 Overview 總覽</span></h2><p>C/C++ Linux 的 socket 模組它提供了標準的 BSD Socket API，主要的 socket API 函式如下:<br><code>socket()</code>：建立 socket 與設定使用哪種通訊協定<br><code>bind(sock_fd, addr)</code>：將 socket 綁定到地址<br><code>listen(sock_fd, n)</code>：開始監聽 TCP 傳入連接，n 指定在拒絕連線前，操作系統可以掛起的最大連接數，該值最少為1，通常設為5就夠用了<br><code>accept(sock_fd, addr)</code>：等待連線，接受到 TCP 連線後，可以從 addr 得知連線客戶端的地址。<br><code>connect(address)</code>：連線到 address 處的 socket<br><code>recv()</code>：接收 TCP 資料<br><code>send()</code>：發送 TCP 資料<br><code>close()</code>：關閉 socket  </p>
+<h2><span id="cc-linux-socket-tcp-serverclient-通訊流程">C/C++ Linux Socket TCP Server/Client 通訊流程</span></h2><p>以下 ShengYu 講解 C/C++ Linux TCP Server 端與 TCP Client 端的程式流程以及會如何使用這些 socket API，<br>TCP Server 的流程分為以下幾大步驟：  </p>
+<ol>
+<li>建立socket：<code>sock_fd = socket(AF_INET, SOCK_STREAM, 0);</code>，指定 <code>AF_INET</code> (Internet Protocol) family 的通訊協定，類型使用 SOCK_STREAM (Stream Socket) 也就是 TCP 傳輸方式  </li>
+<li>綁定 socket 到本地 IP 與 port：<code>bind(sock_fd, ...)</code>  </li>
+<li>開始監聽：<code>listen(sock_fd, ...)</code>  </li>
+<li>等待與接受客戶端的請求連線：<code>new_fd = accept(sock_fd, ...)</code>  </li>
+<li>接收客戶端傳來的資料：<code>recv(new_fd, ...)</code>  </li>
+<li>傳送給對方發送資料：<code>send(new_fd, ...)</code>  </li>
+<li>傳輸完畢後，關閉 socket：<code>close(new_fd)</code>  </li>
+</ol>
+<p>TCP Client 的流程分為以下幾大步驟：  </p>
+<ol>
+<li>建立 socket：<code>sock_fd = socket(AF_INET, SOCK_STREAM, 0);</code>  </li>
+<li>連線至遠端地址：<code>connect(sock_fd, ...)</code>  </li>
+<li>傳送資料：<code>send(sock_fd, ...)</code>  </li>
+<li>接收資料：<code>recv(sock_fd, ...)</code>  </li>
+<li>傳輸完畢後，關閉 socket：<code>close(sock_fd)</code>  </li>
+</ol>
+<p>以上是 TCP Server/Client 通訊的重點流程，實際的 C/C++ Linux socket API 用法與範例詳見下列章節，接下來就來看看怎麼寫 TCP Server/Client 通訊程式吧！  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="cc-linux-tcp-server-伺服器端程式-echo-sever">C/C++ Linux TCP Server 伺服器端程式 (Echo Sever)</span></h2><p>這邊 ShengYu 就開始介紹怎麼寫 C/C++ Linux TCP Server 程式，下列範例這是一個典型的 Echo Server，Echo Server 就是收到什麼資料就回覆什麼資料，很簡單吧！<br>跟網路上其他範例不同的是此範例建立連線後不是傳輸一次資料就關閉連線，而是使用迴圈可以一直傳輸資料直到客戶端不想傳關閉連線為止，並且伺服器端再次地等待新的客戶端連線來服務。  </p>
+<p>如下例所示，伺服器端一開始建立 socket，用 <code>bind()</code> 綁定，這裡是使用 <code>0.0.0.0</code>, port 為 <code>7000</code>，<br>使用 <code>listen()</code> 開始監聽，上限連線數為<code>5</code>，之後進入主迴圈，<code>accept()</code> 等待接受客戶端的連線請求，<br>一旦有客戶端連線的話，就會從 <code>accept()</code> 繼續往下執行，<br>之後是另一個迴圈來服務這個連線，不斷地從這個連線 <code>recv</code> 接收資料與 <code>send</code> 傳送資料，<br>如果 <code>recv()</code> 的回傳值為0，表示客戶端已斷開連線，此時我們也關閉這個連線，<br>之後回到 <code>accept()</code> 等待新的客戶端連線，等到新的客戶端連線連上便跟之前的流程一樣，這樣便是一個完整的 C/C++ Linux TCP 伺服器程式。<br><figure class="highlight cpp"><figcaption><span>cpp-linux-tcp-socket-server.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-linux-tcp-socket-server.cpp -o server</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* host = <span class="string">"0.0.0.0"</span>;</span><br><span class="line"><span class="keyword">int</span> port = <span class="number">7000</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sock_fd, new_fd;</span><br><span class="line">    <span class="keyword">socklen_t</span> addrlen;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">my_addr</span>, <span class="title">client_addr</span>;</span></span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line">    <span class="keyword">char</span> indata[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;, outdata[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> on = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// create a socket</span></span><br><span class="line">    sock_fd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (sock_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Socket creation error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// for "Address already in use" error message</span></span><br><span class="line">    <span class="keyword">if</span> (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &amp;on, <span class="keyword">sizeof</span>(<span class="keyword">int</span>)) == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Setsockopt error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// server address</span></span><br><span class="line">    my_addr.sin_family = AF_INET;</span><br><span class="line">    inet_aton(host, &amp;my_addr.sin_addr);</span><br><span class="line">    my_addr.sin_port = htons(port);</span><br><span class="line"></span><br><span class="line">    status = bind(sock_fd, (struct sockaddr *)&amp;my_addr, <span class="keyword">sizeof</span>(my_addr));</span><br><span class="line">    <span class="keyword">if</span> (status == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Binding error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"server start at: %s:%d\n"</span>, inet_ntoa(my_addr.sin_addr), port);</span><br><span class="line"></span><br><span class="line">    status = listen(sock_fd, <span class="number">5</span>);</span><br><span class="line">    <span class="keyword">if</span> (status == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Listening error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"wait for connection...\n"</span>);</span><br><span class="line"></span><br><span class="line">    addrlen = <span class="keyword">sizeof</span>(client_addr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        new_fd = accept(sock_fd, (struct sockaddr *)&amp;client_addr, &amp;addrlen);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"connected by %s:%d\n"</span>, inet_ntoa(client_addr.sin_addr),</span><br><span class="line">            ntohs(client_addr.sin_port));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">int</span> nbytes = recv(new_fd, indata, <span class="keyword">sizeof</span>(indata), <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">if</span> (nbytes &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                close(new_fd);</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"client closed connection.\n"</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"recv: %s\n"</span>, indata);</span><br><span class="line"></span><br><span class="line">            <span class="built_in">sprintf</span>(outdata, <span class="string">"echo %s"</span>, indata);</span><br><span class="line">            send(new_fd, outdata, <span class="built_in">strlen</span>(outdata), <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    close(sock_fd);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果 Server 伺服器端不正常關閉後再次啟動時可能會遇到 <code>Binding error: Address already in use</code> 這種錯誤訊息的話，那麼你可以在 <code>bind()</code> 之前設定 <code>REUSEADDR</code> 可以解決這個問題，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> on = <span class="number">1</span>;</span><br><span class="line">setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &amp;on, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="cc-linux-tcp-client-客戶端程式-傳送使用者的輸入">C/C++ Linux TCP Client 客戶端程式 (傳送使用者的輸入)</span></h2><p>先用一個終端機來啟動前述的 TCP 伺服器端的程式，接著再用另一個終端機執行 TCP 客戶端的程式。C/C++ Linux TCP Client 範例如下，這邊要示範的是傳送使用者的輸入訊息，將使用者的輸入訊息傳送給伺服器端，通常應用於一般聊天軟體上，學習之後就可以寫一個簡單的聊天軟體了。  </p>
+<p>如下例所示，客戶端一開始建立 socket，之後 <code>connect()</code> 連線伺服器主機的 host 與 port，<br>之後進入主迴圈，不斷地傳送使用者的輸入，這邊是使用 <code>gets()</code> 取得使用者輸入的資料，也可以使用 <code>scanf()</code> 或 <code>fgets()</code> 等函式，<br>使用者輸入完後按下 Enter 便會將資料發送給伺服器端，接著等待伺服器端傳送資料，接收到來自伺服器端的資料就把它印出來，<br><figure class="highlight cpp"><figcaption><span>cpp-linux-tcp-socket-client.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-linux-tcp-socket-client.cpp -o client</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* host = <span class="string">"0.0.0.0"</span>;</span><br><span class="line"><span class="keyword">int</span> port = <span class="number">7000</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sock_fd;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv_name</span>;</span></span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line">    <span class="keyword">char</span> indata[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;, outdata[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// create a socket</span></span><br><span class="line">    sock_fd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (sock_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Socket creation error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// server address</span></span><br><span class="line">    serv_name.sin_family = AF_INET;</span><br><span class="line">    inet_aton(host, &amp;serv_name.sin_addr);</span><br><span class="line">    serv_name.sin_port = htons(port);</span><br><span class="line"></span><br><span class="line">    status = connect(sock_fd, (struct sockaddr *)&amp;serv_name, <span class="keyword">sizeof</span>(serv_name));</span><br><span class="line">    <span class="keyword">if</span> (status == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Connection error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"please input message: "</span>);</span><br><span class="line">        gets(outdata);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"send: %s\n"</span>, outdata);</span><br><span class="line">        send(sock_fd, outdata, <span class="built_in">strlen</span>(outdata), <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> nbytes = recv(sock_fd, indata, <span class="keyword">sizeof</span>(indata), <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (nbytes &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            close(sock_fd);</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"server closed connection.\n"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"recv: %s\n"</span>, indata);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以下示範一下程式的啟動過程，過程中我在客戶端輸入了兩次的訊息，最後按 <code>ctrl+c</code> 結束了程式，<br>客戶端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>client</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ./client</span><br><span class="line">please input message: hello</span><br><span class="line">send: hello</span><br><span class="line">recv: <span class="built_in">echo</span> hello</span><br><span class="line">please input message: hello tcp</span><br><span class="line">send: hello tcp</span><br><span class="line">recv: <span class="built_in">echo</span> hello tcp</span><br><span class="line">please input message: ^C</span><br></pre></td></tr></table></figure></p>
+<p>伺服器端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>server</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ ./server</span><br><span class="line">server start at: 0.0.0.0:7000</span><br><span class="line"><span class="built_in">wait</span> <span class="keyword">for</span> connection...</span><br><span class="line">connected by 127.0.0.1:59362</span><br><span class="line">recv: hello</span><br><span class="line">recv: hello tcp</span><br><span class="line">client closed connection.</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="cc-linux-tcp-client-客戶端程式-定時傳送資料">C/C++ Linux TCP Client 客戶端程式 (定時傳送資料)</span></h2><p>前一章節示範了 Echo Sever 與 Client 通訊程式，這時可以打鐵趁熱，除了前一章節 TCP Client 使用者手動輸入的情形之外，這邊也介紹另一種客戶端會定時地傳送資料給伺服器端，同時這也適用於各種通訊情形。  </p>
+<p>步驟跟前一章節 TCP Client 幾乎相同，傳輸字串為 <code>&#39;heartbeat&#39;</code>，這邊傳送後使用 <code>sleep(1)</code> 來讓程式睡眠1秒，之後再繼續傳送資料，進而達成定時傳送的功能，<br><figure class="highlight cpp"><figcaption><span>cpp-linux-tcp-socket-client-heartbeat.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-linux-tcp-socket-client-heartbeat.cpp -o client</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* host = <span class="string">"0.0.0.0"</span>;</span><br><span class="line"><span class="keyword">int</span> port = <span class="number">7000</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sock_fd;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv_name</span>;</span></span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line">    <span class="keyword">char</span> indata[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;, outdata[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// create a socket</span></span><br><span class="line">    sock_fd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (sock_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Socket creation error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// server address</span></span><br><span class="line">    serv_name.sin_family = AF_INET;</span><br><span class="line">    inet_aton(host, &amp;serv_name.sin_addr);</span><br><span class="line">    serv_name.sin_port = htons(port);</span><br><span class="line"></span><br><span class="line">    status = connect(sock_fd, (struct sockaddr *)&amp;serv_name, <span class="keyword">sizeof</span>(serv_name));</span><br><span class="line">    <span class="keyword">if</span> (status == <span class="number">-1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"Connection error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">strcpy</span>(outdata, <span class="string">"heartbeat"</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"send: %s\n"</span>, outdata);</span><br><span class="line">        send(sock_fd, outdata, <span class="built_in">strlen</span>(outdata), <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> nbytes = recv(sock_fd, indata, <span class="keyword">sizeof</span>(indata), <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (nbytes &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            close(sock_fd);</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"server closed connection.\n"</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"recv: %s\n"</span>, indata);</span><br><span class="line"></span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>客戶端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>client</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ ./client</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">send: heartbeat</span><br><span class="line">recv: <span class="built_in">echo</span> heartbeat</span><br><span class="line">^C</span><br></pre></td></tr></table></figure></p>
+<p>伺服器端輸出結果如下，<br><figure class="highlight bash"><figcaption><span>server</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ ./server</span><br><span class="line">server start at: 0.0.0.0:7000</span><br><span class="line"><span class="built_in">wait</span> <span class="keyword">for</span> connection...</span><br><span class="line">connected by 127.0.0.1:33862</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">recv: heartbeat</span><br><span class="line">client closed connection.</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="cc-linux-tcp-常見問題">C/C++ Linux TCP 常見問題</span></h2><p>在 TCP 的傳輸裡，為什麼伺服器還要回傳給客戶端？<br>因為這只是個示範用的通訊程式，讓你了解通訊的過程，就像打電話或者跟別人對話一樣，你一句我一句的來回互動，你可以根據實際的需求而修改程式，你也可以改成一直傳，例如客戶端一直傳送，伺服器一直接收。  </p>
+<p>為什麼 recv 還沒收到資料前會卡住一直等？<br>因為預設是 blocking 非阻塞模式，recv 還沒收到資料前會卡住一直等，沒法做其他事情，直到 recv 接收到資料才會從 recv 函式返回，解決辦法是改用 Non-blocking 非阻塞模式，Non-blocking 模式是這次沒接收到資料就會從 recv 函式返回，接著繼續往下執行；另一個解決方式是另外建立執行緒去做其他事情。  </p>
+<h2><span id="linux-sokcet-的-ip-字串轉-sockaddr_in">Linux sokcet 的 ip 字串轉 sockaddr_in</span></h2><p>在 Linux 中 ip 字串轉換成 sockaddr_in 結構可用 inet_aton (ipv4 only)跟 inet_pton (ipv4 &amp; ipv6) 兩個 API 達成，但在 windows 中沒有 inet_aton，而是 inet_addr (ipv4) 可用，所以用 inet_aton 的缺點是跨平台的話還要在修改這部分的程式碼，  </p>
+<p>inet_aton 用法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* host = <span class="string">"0.0.0.0"</span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">my_addr</span>;</span></span><br><span class="line">inet_aton(host, &amp;my_addr.sin_addr);</span><br></pre></td></tr></table></figure></p>
+<p>所以使用 inet_pton 的話，好處就是 linux 跟 windows 都可以通用，所以基本上在 linux 中是建議使用 inet_pton，  </p>
+<p>inet_pton 使用方法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* host = <span class="string">"0.0.0.0"</span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">my_addr</span>;</span></span><br><span class="line">inet_pton(AF_INET, host, &amp;my_addr.sin_addr); <span class="comment">// AF_INET -&gt; ipv4</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="linux-sokcet-的-sockaddr_in-轉-ip-字串">Linux sokcet 的 sockaddr_in 轉 ip 字串</span></h2><p>在 Linux 中 要將 sockaddr_in 結構轉換成 ip 字串的話可用 inet_ntoa (ipv4 only)跟 inet_ntop (ipv4 &amp; ipv6) 兩個 API 達成，  </p>
+<p>inet_ntoa 用法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">client_addr</span>;</span></span><br><span class="line"><span class="keyword">char</span> *ip;</span><br><span class="line">ip = inet_ntoa(client_addr.sin_addr)</span><br></pre></td></tr></table></figure></p>
+<p>inet_ntop 用法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">client_addr</span>;</span></span><br><span class="line"><span class="keyword">char</span> ip[INET_ADDRSTRLEN];</span><br><span class="line">inet_ntop(AF_INET, &amp;client_addr.sin_addr, ip, <span class="keyword">sizeof</span>(ip));</span><br></pre></td></tr></table></figure></p>
+<p>以上就是 C/C++ Linux TCP Socket Server/Client 網路通訊教學，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-linux-tcp-socket/" data-id="clxx9uzg400kc6cs1l8458kcs" data-title="C/C++ Linux TCP Socket Server/Client 網路通訊教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-linux-hexdiff" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/linux-hexdiff/" class="article-date">
+  <time datetime="2022-12-29T14:00:00.000Z" itemprop="datePublished">2022-12-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/linux-hexdiff/">Linux hexdiff 比較二進制檔案差異用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹 Linux hexdiff 比較二進制檔案差異用法與範例。  </p>
+<p>在 Ubuntu 下安裝 hexdiff 的方式為：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install hexdiff</span><br></pre></td></tr></table></figure></p>
+<p>Linux hexdiff 指令用法範例如下，用 hexdiff 來比較 a.bin 跟 b.bin 兩個二進制檔案內容的差異，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexdiff a.bin b.bin</span><br></pre></td></tr></table></figure></p>
+<p>結果如下圖，<br><img src="/linux-hexdiff/linux-hexdiff.png" title="linux hexdiff">  </p>
+<p>除了 hexdiff 以外，還可以用其他指令來達成同樣的目的，例如：xxd 搭配 diff<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ xxd a.bin &gt; a.hex <span class="comment"># 用 xxd 轉為十六進位碼</span></span><br><span class="line">$ xxd b.bin &gt; b.hex <span class="comment"># 用 xxd 轉為十六進位碼</span></span><br><span class="line">$ diff a.hex b.hex <span class="comment"># 用 diff 比較差異</span></span><br></pre></td></tr></table></figure></p>
+<p>結果如下圖，<br><img src="/linux-hexdiff/linux-diff.png" title="linux diff">  </p>
+<p>以上就是 Linux hexdiff 比較二進制檔案差異用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/linux-hexdiff/" data-id="clxx9uzg300kb6cs1cvvucvtg" data-title="Linux hexdiff 比較二進制檔案差異用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-fseek" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-fseek/" class="article-date">
@@ -169,7 +340,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fseek/" data-id="clxx7pvpx00o2bss14mlm6ms2" data-title="C/C++ fseek 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-fseek/" data-id="clxx9uzg300ka6cs10kwljugw" data-title="C/C++ fseek 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -247,7 +418,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-diff-binary-file/" data-id="clxx7pvpt00nubss1rwvja34q" data-title="Linux 比較二進制檔案差異的工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-diff-binary-file/" data-id="clxx9uzg300k96cs1gekl1ne2" data-title="Linux 比較二進制檔案差異的工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -309,7 +480,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gimp-pixelate/" data-id="clxx7pvps00nsbss1w4iuiya4" data-title="GIMP 馬賽克處理" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/gimp-pixelate/" data-id="clxx9uzg200k86cs12esp93vs" data-title="GIMP 馬賽克處理" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GIMP/">GIMP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li></ul>
@@ -370,7 +541,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/convert-webp-to-jpg/" data-id="clxx7pvpr00nqbss1w1i6d8wa" data-title="webp 轉換 jpg 的 command line 指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/convert-webp-to-jpg/" data-id="clxx9uzfz00k76cs1ghdsk35h" data-title="webp 轉換 jpg 的 command line 指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -444,7 +615,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ftell/" data-id="clxx7pvpq00nobss1f9lbiwsb" data-title="C/C++ ftell 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ftell/" data-id="clxx9uzfz00k66cs129vqksjs" data-title="C/C++ ftell 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -512,7 +683,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/google-sheet-add-alternating-colors/" data-id="clxx7pvpq00nmbss19j81nwbx" data-title="Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/google-sheet-add-alternating-colors/" data-id="clxx9uzfy00k56cs1ffoe64cu" data-title="Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Sheet/">Google Sheet</a></li></ul>
@@ -569,7 +740,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/js-get-screen-width/" data-id="clxx7pvpo00nkbss168f33621" data-title="JavaScript 取得螢幕寬度的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/js-get-screen-width/" data-id="clxx9uzfy00k46cs10f49o1kr" data-title="JavaScript 取得螢幕寬度的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/">JavaScript</a></li></ul>
@@ -628,165 +799,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-head/" data-id="clxx7pvpo00nibss1yys5twzh" data-title="Linux head 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-head/" data-id="clxx9uzfy00k36cs1ldkxlhat" data-title="Linux head 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-std-ifstream-seekg" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/std-ifstream-seekg/" class="article-date">
-  <time datetime="2022-12-05T14:00:00.000Z" itemprop="datePublished">2022-12-05</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/std-ifstream-seekg/">C++ std::ifstream::seekg 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹 C/C++ std::ifstream::seekg 用法與範例，C/C++ 可以使用 seekg 移動檔案指標到某個位置，例如在讀檔想要跳至某個位置讀取時就會用到 seekg，接下來看看 seekg 用法範例。  </p>
-<p>以下 C++ std::ifstream::seekg 的用法介紹將分為這幾部份，  </p>
-<ul>
-<li>C++ std::ifstream::seekg 基本範例  </li>
-<li>C++ std::ifstream::seekg 計算檔案大小  </li>
-<li>C++ std::ifstream::seekg 計算檔案全部文字再 new 配置記憶體  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<p>要使用 std::ifstream::seekg 的話，需要引入的標頭檔: <code>&lt;fstream&gt;</code>  </p>
-<h2><span id="c-stdifstreamseekg-基本範例">C++ std::ifstream::seekg 基本範例</span></h2><p>以下為 std::ifstream::seekg 移動檔案指標搭配 std::ifstream::tellg 的各種情況範例，了解這些情況更能幫助了解怎麼使用 std::ifstream::seekg，剛開完檔後使用 tellg 會回傳 0，使用 seekg 移動 5 個 bytes 再用 tellg 會回傳 5，再次使用 seekg 移動 5 個 bytes 再用 tellg 還是會回傳 5，說明 seekg 預設是移動到一個從檔頭開始的絕對位置而不是前一次的相對位置，移動相對位置的話則要 seekg 搭配 std::ifstream::cur 參數就會以當前的位置再開始移動，最後兩個範例分別是移到檔尾跟移到檔頭，<br><figure class="highlight cpp"><figcaption><span>std-ifstream-seekg.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ifstream-seekg.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.txt"</span>, <span class="built_in">std</span>::ios::in)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">size_t</span> pos = ifs.tellg();</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"position: "</span> &lt;&lt; pos &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    ifs.seekg(<span class="number">5</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"position: "</span> &lt;&lt; ifs.tellg() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    ifs.seekg(<span class="number">5</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"position: "</span> &lt;&lt; ifs.tellg() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    ifs.seekg(<span class="number">5</span>, <span class="built_in">std</span>::ifstream::cur);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"position: "</span> &lt;&lt; ifs.tellg() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    ifs.seekg(<span class="number">0</span>, <span class="built_in">std</span>::ifstream::end); <span class="comment">// 移到檔尾</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"position: "</span> &lt;&lt; ifs.tellg() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    ifs.seekg(<span class="number">0</span>, <span class="built_in">std</span>::ifstream::beg); <span class="comment">// 移到檔頭</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"position: "</span> &lt;&lt; ifs.tellg() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>假設我的 input.txt 檔案大小是 44 bytes，程式執行結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">position: 0</span><br><span class="line">position: 5</span><br><span class="line">position: 5</span><br><span class="line">position: 10</span><br><span class="line">position: 44</span><br><span class="line">position: 0</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="c-stdifstreamseekg-計算檔案大小">C++ std::ifstream::seekg 計算檔案大小</span></h2><p>這邊介紹一下如何利用 std::ifstream::seekg 來計算檔案大小，<br>我們可以藉由 std::ifstream::seekg 移動到檔尾，然後 tellg 取得 size，藉此來知道檔案大小，這種情形通常是在使用 new 或 malloc 動態配置記憶體時需要知道總大小是多少的情況會使用到，<br><figure class="highlight cpp"><figcaption><span>std-ifstream-seekg2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ifstream-seekg2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.txt"</span>, <span class="built_in">std</span>::ios::in)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ifs.seekg(<span class="number">0</span>, <span class="built_in">std</span>::ifstream::end);</span><br><span class="line">    <span class="keyword">size_t</span> fsize = ifs.tellg();</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"file size: "</span> &lt;&lt; fsize &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file size: 44</span><br></pre></td></tr></table></figure></p>
-<h2><span id="c-stdifstreamseekg-計算檔案全部文字再-new-配置記憶體">C++ std::ifstream::seekg 計算檔案全部文字再 new 配置記憶體</span></h2><p>以下示範 C++ std::ifstream::seekg 移動檔案指標到檔尾，然後計算檔案全部文字後 new 配置記憶體，再讀取檔案內容到預先配置好的 buffer 裡，<br><figure class="highlight cpp"><figcaption><span>std-ifstream-seekg3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-ifstream-seekg3.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.txt"</span>, <span class="built_in">std</span>::ios::in)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ifs.seekg(<span class="number">0</span>, <span class="built_in">std</span>::ifstream::end);</span><br><span class="line">    <span class="keyword">int</span> size = ifs.tellg();</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"size: "</span> &lt;&lt; size &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    ifs.seekg(<span class="number">0</span>, <span class="built_in">std</span>::ifstream::beg);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">char</span> *buffer = <span class="keyword">new</span> <span class="keyword">char</span>[size];</span><br><span class="line"></span><br><span class="line">    ifs.read(buffer, size);</span><br><span class="line">    ifs.close();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//std::cout &lt;&lt; buffer;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span>.write(buffer, size);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span>[] buffer;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以上就是 C++ std::ifstream::seekg 用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-string/" title="std::string 用法與範例">std::string 用法與範例</a><br><a href="/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a><br><a href="/std-set/" title="std::set 用法與範例">std::set 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-ifstream-seekg/" data-id="clxx7pvpm00ngbss1fdce10yj" data-title="C++ std::ifstream::seekg 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-github-personal-access-token" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/github-personal-access-token/" class="article-date">
-  <time datetime="2022-12-03T14:00:00.000Z" itemprop="datePublished">2022-12-03</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Github/">Github</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/github-personal-access-token/">Github 如何使用 Personal Access Token</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Github 如何使用 Personal Access Token，產生 Github Access Token 的好處是如果有臨時需要給其他人權限進行共同編輯，但又不想將對方加成協作者時就可以使用 token 的方式來臨時給對方權限，同時也可以設定要給這個 Access Token 幾天的存取權限，例如7/30/60/90天數等等，以及 這個 Access Token 有怎麼樣的權限，例如只能更新 code 不能 push code 等等權限設定，Github 如何使用 Personal Access Token 分成這幾部分介紹，  </p>
-<ul>
-<li>Github 產生 Token  </li>
-<li>Github Token 怎麼使用  </li>
-<li>Github Token 過期怎麼辦？  </li>
-</ul>
-<p>沒有 Github Token 的話我們需要先在 Github 網站上產生一個 Token，  </p>
-<h2><span id="github-產生-token">Github 產生 Token</span></h2><p>這邊介紹 Github 網站如何產生 Personal Access Token，<br>先登入自己 GitHub 帳號並進入 <code>Settings</code>，<br><img src="/github-personal-access-token/1.png" width="200" title="Github Personal Access Token">  </p>
-<p>選擇左下方的 <code>Developer settings</code>，<br><img src="/github-personal-access-token/2.png" title="Github Personal Access Token">  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>左邊選擇 <code>Personal access tokens</code> &gt; <code>Token (classic)</code>，<br>接著右上角選擇 <code>Generate new token</code> 來創一個新的 token<br><img src="/github-personal-access-token/3.png" title="Github Personal Access Token">  </p>
-<p>輸入 token 的名稱（自己記得用途即可），以及設定這個 token 控制權限，<br><img src="/github-personal-access-token/4.png" title="Github Personal Access Token">  </p>
-<p>最後按 <code>Generate token</code> 產生 token，<br><img src="/github-personal-access-token/5.png" width="400" title="Github Personal Access Token">  </p>
-<p>token 就會出現在畫面上，<br><img src="/github-personal-access-token/6.png" title="Github Personal Access Token">  </p>
-<p>請複製保存好此 Token，跳出畫面後它就不會再出現，忘記的話就得再產生一個新的。<br>之後在需要輸入 password 時，填入 token 就可以了，GitHub 會驗證該 token 是否有權操控相對應功能。  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="github-token-怎麼使用">Github Token 怎麼使用</span></h2><p>原本存取時帳號需要輸入密碼 password 的部分，換成輸入 token 就可以了！  </p>
-<p>使用 token 的好處是如果有臨時需要給其他人權限進行共同編輯，但又不想將對方加成協作者時就可以使用 token 的方式來臨時給對方權限。  </p>
-<h2><span id="github-token-過期怎麼辦">Github Token 過期怎麼辦？</span></h2><p>Github Token 過期時之後在存取 github 時會出現錯誤，例如過期後我 <code>git pull --rebase</code> 更新 code 會出現以下訊息，表示 token 過期了，再次 <code>git pull --rebase</code> 時會提示我要輸入密碼 password，這時輸入原本過期的 token 一樣是失效，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ git pull --rebase</span><br><span class="line">remote: Invalid username or password.</span><br><span class="line">fatal: Authentication failed <span class="keyword">for</span> <span class="string">'https://github.com/xxx/xxx.git/'</span></span><br><span class="line"></span><br><span class="line">$ git pull --rebase </span><br><span class="line">Password <span class="keyword">for</span> <span class="string">'https://xxx@github.com'</span>:</span><br></pre></td></tr></table></figure></p>
-<p>那怎麼辦呢？token 過期的解決方式很簡單，就是在申請一個新的 token，原本的 token 就可以刪除了，取得新的 token 後，提示我要輸入密碼 password 時，輸入新的 token 就可以囉！<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ git pull --rebase   </span><br><span class="line">Password <span class="keyword">for</span> <span class="string">'https://xxx@github.com'</span>: </span><br><span class="line">Already up to date.</span><br><span class="line">Current branch master is up to date.</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以上就是 Github 如何使用 Personal Access Token 的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/github-create-pull-request/" title="Github 提交你的修改貢獻到開源專案">Github 提交你的修改貢獻到開源專案</a><br><a href="/github-update-forked-repository/" title="Github 如何更新已經 fork 的專案與原專案紀錄同步">Github 如何更新已經 fork 的專案與原專案紀錄同步</a><br><a href="/git-view-file-history/" title="Git 顯示某個檔案的歷史修改記錄">Git 顯示某個檔案的歷史修改記錄</a><br><a href="/git-view-repository-history/" title="Git 顯示整個repository的歷史修改記錄">Git 顯示整個repository的歷史修改記錄</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-personal-access-token/" data-id="clxx7pvpl00nebss1nyndm0vm" data-title="Github 如何使用 Personal Access Token" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
 
     </footer>
   </div>
@@ -799,7 +815,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/9/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/82/">82</a><a class="extend next" rel="next" href="/page/11/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/9/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/83/">83</a><a class="extend next" rel="next" href="/page/11/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -830,6 +846,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/python-search-strings-ignore-case/">3 種 Python 字串搜尋並且忽略大小寫方法</a>
+          </li>
+        
+          <li>
             <a href="/linux-pstree/">Linux pstree 指令用法範例</a>
           </li>
         
@@ -843,10 +863,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/linux-watch/">Linux watch 指令用法與範例</a>
-          </li>
-        
-          <li>
-            <a href="/python-subprocess.run/">Python 中的 subprocess.run 完整指南與範例</a>
           </li>
         
       </ul>
@@ -865,7 +881,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">190</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">236</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">190</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">238</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
