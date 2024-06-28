@@ -107,12 +107,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
-    <article id="post-hack-daydream-controller" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-arduino-use-mpu6050" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/hack-daydream-controller/" class="article-date">
+    <a href="/arduino-use-mpu6050/" class="article-date">
   <time datetime="2018-02-09T14:00:00.000Z" itemprop="datePublished">2018-02-09</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Arduino/">Arduino</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -121,7 +125,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/hack-daydream-controller/">改造 Google Daydream controller</a>
+      <a class="article-title" href="/arduino-use-mpu6050/">Use MPU6050 (GY-521) on the Arduino</a>
     </h1>
   
 
@@ -144,18 +148,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
         <!-- ads-1 -->
-        <p><a href="https://hackernoon.com/how-i-hacked-google-daydream-controller-part-vi-11297b9efe34" rel="noopener external nofollow noreferrer" target="_blank">How I hacked Google Daydream controller (Part VI)</a><br>這篇作者是在 Hack Google Daydream Controller, 讓 Controller 有 6DoF 的能力.<br>簡單說就是 Google Daydream Controller 只有 3DoF, 裡面的 IMU 只能算出旋轉(orientation)沒有位移(position).<br>所以作者加工了一下, 加上一個會發光的乒乓球, 再透過攝影機捕捉影像經過影像處理的方式計算出 Controller 上光球的 position,<br>進而達到 6DoF Controller, 有 orientation 也有 position.  </p>
-<p>內文作者提到 “VR will be big but AR will be bigger and take longer.” 這句話很有意思, 我個人也覺得 AR 應該要很有市場才對.  </p>
-<p>最後覺得這篇作者太強了, 竟然還利用 touchpad 來寫英文字作為輸入方式, 超酷的整合應用！  </p>
-<p>還用了 socket.io 加 bootstrap 技術, 把收到的 IMU 資訊圖形化的方式顯示在網頁上.<br><a href="https://socket.io/" rel="noopener external nofollow noreferrer" target="_blank">socket.io</a> 看起來是 node.js 的 socket 通訊函式庫.<br><a href="http://getbootstrap.com/" rel="noopener external nofollow noreferrer" target="_blank">bootstrap</a> 是個製作網頁的 Framework.<br>改天來學習學習！</p>
+        <p>官方網站的 MPU6050 介紹<br><a href="https://playground.arduino.cc/Main/MPU-6050" rel="noopener external nofollow noreferrer" target="_blank">https://playground.arduino.cc/Main/MPU-6050</a></p>
+<h2><span id="系統環境">系統環境</span></h2><ul>
+<li>Arduino 1.8.3</li>
+<li>Processing 3.3.5</li>
+</ul>
+<h2><span id="arduino-與-mpu6050-的接法">Arduino 與 MPU6050 的接法</span></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">VCC &lt;---&gt; 3.3V / 5V (GY-521 上有 voltage regulator)</span><br><span class="line">GND &lt;---&gt; GND</span><br><span class="line">SDA &lt;---&gt; A4</span><br><span class="line">SCL &lt;---&gt; A5</span><br><span class="line">INT &lt;---&gt; D2</span><br></pre></td></tr></table></figure>
+<h2><span id="mpu6050-吐出-raw-data">MPU6050 吐出 Raw Data</span></h2><p>下載<a href="https://github.com/jrowberg/i2cdevlib/" rel="noopener external nofollow noreferrer" target="_blank">i2cdevlib</a><br>使用裡面附的 MPU6050_raw.ino 範例<br>Setp 1. 把 <code>i2cdevlib/Arduino/I2Cdev</code> 放到 <code>~/Arduino/libraries/</code><br>Setp 2. 把 <code>i2cdevlib/Arduino/MPU6050</code> 放到 <code>~/Arduino/libraries/</code><br>Setp 3. 打開 <code>arduino &gt; Examples &gt; MPU6050 &gt; MPU6050_raw.ino</code> 編譯上傳即可<br>Setp 4. 打開 Serial Monitor 調整一下 baud rate (MPU6050_raw.ino 範例是使用 38400), 就可以看到資料一直吐出來了！</p>
+<h2><span id="顯示-imu-姿態在畫面上">顯示 IMU 姿態在畫面上</span></h2><p>使用 MPU6050_DMP6.ino 配合 processing IDE 的 Toxi 函式庫  </p>
+<p>Setp 1. 修改 MPU6050_DMP6.ino 與上傳<br>註解下段 code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//#define OUTPUT_READABLE_YAWPITCHROLL</span><br></pre></td></tr></table></figure></p>
+<p>解開下段 code<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define OUTPUT_TEAPOT</span><br></pre></td></tr></table></figure></p>
+<p>Setp 2. 下載 processing IDE 安裝 Toxi 函式庫<br>下載 <a href="https://bitbucket.org/postspectacular/toxiclibs/downloads/toxiclibs-complete-0020.zip" rel="noopener external nofollow noreferrer" target="_blank">Toxi 函式庫 toxiclibs-complete-0020.zip</a>  </p>
+<p>將 toxiclibs-complete-0020 資料夾解壓縮放到 <code>~/sketchbook/libraries/</code><br>將 <code>i2cdevlib/Arduino/MPU6050/examples/MPU6050_DMP6/Processing/MPUTeapot/MPUTeapot.pde</code> 放到 <code>~/sketchbook/examples/MPUTeapot/MPUTeapot.pde</code>  </p>
+<p>Setp 3. 用 processing IDE 打開 MPUTeapot.pde 按 run<br>也可以指定com port：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">String portName = Serial.list()[0];</span><br><span class="line">把上列修改成下面</span><br><span class="line">String portName = &quot;/dev/ttyACM0&quot;; // or /dev/ttyUSB1</span><br></pre></td></tr></table></figure></p>
+<p>PS. 約需10秒才會穩定，待穩定後可翻轉 GY-521</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/hack-daydream-controller/" data-id="clxxy5icl000os1s1umwxmvkq" data-title="改造 Google Daydream controller" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/arduino-use-mpu6050/" data-id="clxyl0jwz000oies1pfw6qtbm" data-title="Use MPU6050 (GY-521) on the Arduino" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VR/">VR</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Arduino/">Arduino</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IMU/">IMU</a></li></ul>
 
     </footer>
   </div>
@@ -206,10 +220,68 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/introduction-to-mpu6050/" data-id="clxxy5icp000us1s1gxuojf09" data-title="MPU6050 介紹" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/introduction-to-mpu6050/" data-id="clxyl0jx3000ties121uprroy" data-title="MPU6050 介紹" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IMU/">IMU</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-video-subtitling" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/video-subtitling/" class="article-date">
+  <time datetime="2018-02-08T14:00:00.000Z" itemprop="datePublished">2018-02-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/video-subtitling/">字幕編輯工具</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>感覺 Openshot 內建的字幕編輯方式不是很好用, 簡單影片還可以應付.  </p>
+<p>相片停留秒速最好在5~7秒,<br>10-15分鐘的影片(約120-180張圖),<br>又含字幕的話(一張配一句話), 那字幕起碼也是120-180句,<br>按 Openshot 那樣的編輯方式的話, 我可能會編輯到暈掉.  </p>
+<p>所以思考過後決定用srt外掛字幕的方式來編輯字幕, 之後字幕搞定後, 再來把影片跟字幕做一個整合轉檔.  </p>
+<p>Ubuntu 下有個字幕編輯工具, 安裝方式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install gnome-subtitles</span><br></pre></td></tr></table></figure></p>
+<p>參考<br><a href="https://linux.cn/article-4657-1.html" rel="noopener external nofollow noreferrer" target="_blank">https://linux.cn/article-4657-1.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/video-subtitling/" data-id="clxyl0jwy000nies1zls6iccj" data-title="字幕編輯工具" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li></ul>
 
     </footer>
   </div>
@@ -273,68 +345,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/rotation-conversions/" data-id="clxxy5ici000ls1s1cmdh293r" data-title="Rotation Conversions" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/rotation-conversions/" data-id="clxyl0jwx000mies1txwa52gv" data-title="Rotation Conversions" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-video-subtitling" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/video-subtitling/" class="article-date">
-  <time datetime="2018-02-08T14:00:00.000Z" itemprop="datePublished">2018-02-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/video-subtitling/">字幕編輯工具</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>感覺 Openshot 內建的字幕編輯方式不是很好用, 簡單影片還可以應付.  </p>
-<p>相片停留秒速最好在5~7秒,<br>10-15分鐘的影片(約120-180張圖),<br>又含字幕的話(一張配一句話), 那字幕起碼也是120-180句,<br>按 Openshot 那樣的編輯方式的話, 我可能會編輯到暈掉.  </p>
-<p>所以思考過後決定用srt外掛字幕的方式來編輯字幕, 之後字幕搞定後, 再來把影片跟字幕做一個整合轉檔.  </p>
-<p>Ubuntu 下有個字幕編輯工具, 安裝方式如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install gnome-subtitles</span><br></pre></td></tr></table></figure></p>
-<p>參考<br><a href="https://linux.cn/article-4657-1.html" rel="noopener external nofollow noreferrer" target="_blank">https://linux.cn/article-4657-1.html</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/video-subtitling/" data-id="clxxy5icj000ms1s1q02no2mo" data-title="字幕編輯工具" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li></ul>
 
     </footer>
   </div>
@@ -392,57 +406,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-and-opengl-coordinate-system/" data-id="clxxy5il400izs1s17603jy6v" data-title="OpenCV 與 OpenGL 座標系" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-and-opengl-coordinate-system/" data-id="clxyl0jwx000lies1swtmj6rt" data-title="OpenCV 與 OpenGL 座標系" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-github-change-github-pages-theme" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/github-change-github-pages-theme/" class="article-date">
-  <time datetime="2018-02-07T14:00:00.000Z" itemprop="datePublished">2018-02-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Github/">Github</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/github-change-github-pages-theme/">Github 更換 Github Pages 網頁主題</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>本篇介紹如何使用 Github Pages 提供的網頁主題以及切換，<br>在 Github 網頁上切換至 <code>欲新增專案首頁</code> 的專案<br>點選 <code>Settings</code>, 滑到 <code>GitHub Pages</code> 區域<br>Source 選 <code>gh-pages branch</code> (表示 gh-pages branch 會放置網頁相關的設定)<br>再按 <code>Change theme</code> 選擇喜歡的主題, 搞定完成！<br>
-        
-          <p class="article-more-link">
-            <a href="/github-change-github-pages-theme/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-change-github-pages-theme/" data-id="clxxy5icn000rs1s1j6ybjwe5" data-title="Github 更換 Github Pages 網頁主題" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
 
     </footer>
   </div>
@@ -487,7 +454,54 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-create-static-page/" data-id="clxxy5ici000ks1s1lyf5zj6q" data-title="GitHub 建立靜態網頁 GitHub Pages" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-create-static-page/" data-id="clxyl0jww000kies1xd0x6id3" data-title="GitHub 建立靜態網頁 GitHub Pages" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-github-change-github-pages-theme" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/github-change-github-pages-theme/" class="article-date">
+  <time datetime="2018-02-07T14:00:00.000Z" itemprop="datePublished">2018-02-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Github/">Github</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/github-change-github-pages-theme/">Github 更換 Github Pages 網頁主題</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本篇介紹如何使用 Github Pages 提供的網頁主題以及切換，<br>在 Github 網頁上切換至 <code>欲新增專案首頁</code> 的專案<br>點選 <code>Settings</code>, 滑到 <code>GitHub Pages</code> 區域<br>Source 選 <code>gh-pages branch</code> (表示 gh-pages branch 會放置網頁相關的設定)<br>再按 <code>Change theme</code> 選擇喜歡的主題, 搞定完成！<br>
+        
+          <p class="article-more-link">
+            <a href="/github-change-github-pages-theme/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/github-change-github-pages-theme/" data-id="clxyl0jwv000jies1yznsaeqr" data-title="Github 更換 Github Pages 網頁主題" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -563,7 +577,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-opencv-3-on-windows-use-msvc/" data-id="clxxy5ich000js1s19prw9ww0" data-title="Qt and OpenCV 3 on Windows (使用MSVC)" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-opencv-3-on-windows-use-msvc/" data-id="clxyl0jwv000iies1hud7vk46" data-title="Qt and OpenCV 3 on Windows (使用MSVC)" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -625,7 +639,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/bluetooth-programming/" data-id="clxxy5icg000is1s1f6xxr0ya" data-title="Bluetooth Programming" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/bluetooth-programming/" data-id="clxyl0jwu000hies10c4sqb3n" data-title="Bluetooth Programming" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li></ul>
@@ -683,7 +697,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/my-favorite-software/" data-id="clxxy5icf000hs1s1pueenerx" data-title="我的常用軟體" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/my-favorite-software/" data-id="clxyl0jwt000gies1b2fbzail" data-title="我的常用軟體" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li></ul>
