@@ -107,6 +107,68 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-hexo-local-disable-google-analytics" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/hexo-local-disable-google-analytics/" class="article-date">
+  <time datetime="2019-09-11T14:00:00.000Z" itemprop="datePublished">2019-09-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/hexo-local-disable-google-analytics/">Hexo 本機測試時如何關閉 Google Analytics</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>ShengYu 最近在使用 Hexo 進行 <code>hexo s</code> 本機測試的文章時，發現這些瀏覽行為也會被 Google Analytics 給紀錄回傳出去，<br>但是這時候的行為大多數都是點擊測試看看連結有沒有作用, 然後關閉，<br>不然就是瀏覽整個版面有沒有正常文章有無順暢, 然後關閉，<br>這些不太像是正常使用者的行為，我想看的數據是真實使用者的數據阿！！不想紀錄這愚蠢的數據XD  </p>
+<p>如果不想讓以上這些本機開發測試的這些行為被 Google Analytics 給紀錄進去,<br>最好的方式就是在本機測試 <code>hexo s</code> 時, 先把 Google Analytics 拿掉,  </p>
+<p>位置在 <code>themes/landscape/_config.yml</code>，把裡面的 <code>google_analytics: UA-xxxxxxxx-x</code> 拿掉即可，<br>但每次前都要去拿掉，發布前要加回來，這動作一直重複且容易忘記，<br>這時可以寫成一個 script，ShengYu 自己的習慣是寫成 Makefile，  </p>
+<p>Makefile 範例如下：<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server: remove_google_analytics generate</span></span><br><span class="line">    @hexo s -p <span class="variable">$(PORT)</span> --drafts</span><br><span class="line"></span><br><span class="line"><span class="section">server_without_drafts: remove_google_analytics generate</span></span><br><span class="line">    @hexo s -p <span class="variable">$(PORT)</span></span><br><span class="line"></span><br><span class="line"><span class="section">deploy: add_google_analytics generate</span></span><br><span class="line">    @echo <span class="string">"Start deploy ..."</span> &amp;&amp; \</span><br><span class="line">    hexo d</span><br><span class="line"></span><br><span class="line"><span class="section">generate: clean</span></span><br><span class="line">    @echo <span class="string">"Generate ..."</span> &amp;&amp; \</span><br><span class="line">    hexo g</span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    @echo <span class="string">"Clean ..."</span> &amp;&amp; \</span><br><span class="line">    hexo clean</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把 google analytics 移除, 避免用本機測試時上傳不真實數據</span></span><br><span class="line"><span class="section">remove_google_analytics:</span></span><br><span class="line">    sed -i 's/'google_analytics:\ UA-xxxxxxxx-x'/'google_analytics:'/g' themes/landscape/_config.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 發布前把 google analytics 加回來</span></span><br><span class="line"><span class="section">add_google_analytics:</span></span><br><span class="line">    sed -i 's/'google_analytics:'/'google_analytics:\ UA-xxxxxxxx-x'/g' themes/landscape/_config.yml</span><br></pre></td></tr></table></figure></p>
+<p>這腳本包含了7個規則 (rule)，那這個腳本要怎麼使用呢？<br><strong>make server</strong> - 啟動本機網頁伺服器<br>(會先執行它的依賴規則，remove_google_analytics 和 generate)<br>也就是說，輸入make srever，會幫我們先執行 remove_google_analytics 這個規則，<br>再執行 generate 這個規則，最後執行 server 本身這個規則。<br>輸入一個指令就幫我們執行了三個規則了，好膩害！  </p>
+<p><strong>make server_without_drafts</strong> - 啟動本機網頁伺服器，無草稿模式<br><strong>make deploy</strong> - 發布<br>會先去執行它的依賴規則，先執行 add_google_analytics 這個規則，<br>再執行 generate 這個規則，最後執行 deploy 本身的規則。  </p>
+<p><strong>make clean</strong> - 清除<br><strong>make generate</strong> - 產生靜態網頁資料<br><strong>make remove_google_analytics</strong> - 移除 google analytics id<br><strong>make add_google_analytics</strong> - 加入 google analytics id<br>如果對 Makefile 規則不熟悉的話可以 Google 一下。  </p>
+<p>以上就是 ShengYu 目前在使用的腳本，是不是方便多了呢！哈哈！  </p>
+<p><strong>相關文章</strong><br><a href="/hexo-google-analytics/" title="Hexo 使用 Google Analytics 進行網站流量分析">Hexo 使用 Google Analytics 進行網站流量分析</a><br><a href="/hexo-codeblock/" title="Hexo codeblock 插入程式碼區塊與各種程式語言預覽">Hexo codeblock 插入程式碼區塊與各種程式語言預覽</a><br><a href="/hexo-upgrade/" title="升級更新 Hexo upgrade">升級更新 Hexo upgrade</a><br><a href="/hexo-theme/" title="Hexo 熱門主題列表">Hexo 熱門主題列表</a><br><a href="/hexo-install-ubuntu/" title="Ubuntu 安裝 Hexo">Ubuntu 安裝 Hexo</a><br><a href="/hexo-install-mac/" title="Mac OS 安裝 Hexo">Mac OS 安裝 Hexo</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/hexo-local-disable-google-analytics/" data-id="cly02lhp9004csspqxx8m6atr" data-title="Hexo 本機測試時如何關閉 Google Analytics" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-bluetooth-first-program" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-bluetooth-first-program/" class="article-date">
@@ -163,7 +225,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-bluetooth-first-program/" data-id="clxzr61b0004evwpq6rb23fq8" data-title="Python 的第一支藍芽程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-bluetooth-first-program/" data-id="cly02lhpa004dsspquvp1lf2h" data-title="Python 的第一支藍芽程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -232,7 +294,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/app-google-analytics/" data-id="clxzr61b0004cvwpqnq1eu3xo" data-title="Google Analytics Mobile App 隨時掌握網站即時資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/app-google-analytics/" data-id="cly02lhp9004bsspq4s0utnm7" data-title="Google Analytics Mobile App 隨時掌握網站即時資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Analytics/">Google Analytics</a></li></ul>
@@ -304,7 +366,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-bluetooth-l2cap/" data-id="clxzr61ay004avwpqx1p1ykmk" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-bluetooth-l2cap/" data-id="cly02lhp70049sspq6h4hf7ul" data-title="Python 寫藍芽 L2CAP 通訊程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bluetooth/">Bluetooth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -347,7 +409,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-while/" data-id="clxzr61az004bvwpq0155ok8t" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-while/" data-id="cly02lhp7004asspqtmkofebv" data-title="Shell Script while 迴圈" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -416,7 +478,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/apple-macbook-pro-retina-15-mid-2014-replace-battery/" data-id="clxzr61ay0049vwpqvl8ez1p7" data-title="macbook pro retina 15 mid 2014 更換電池驚險記" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/apple-macbook-pro-retina-15-mid-2014-replace-battery/" data-id="cly02lhp60048sspqw3ikci3v" data-title="macbook pro retina 15 mid 2014 更換電池驚險記" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Apple/">Apple</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Macbook-Pro/">Macbook Pro</a></li></ul>
@@ -478,7 +540,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-2to3/" data-id="clxzr61ax0048vwpquu97d34x" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-2to3/" data-id="cly02lhp60047sspqoozzlnm6" data-title="Python 2to3 - 將 Python 2 程式碼轉為 Python 3 程式碼的工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -540,7 +602,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-view-model/" data-id="clxzr61ax0047vwpqjghprk0g" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-view-model/" data-id="cly02lhp50046sspqzr1ylz83" data-title="Qt5 的 View Model 學習" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -604,7 +666,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-version/" data-id="clxzr61aw0046vwpqcfv8ljgq" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-version/" data-id="cly02lhp30045sspqazb37kvu" data-title="怎麼查詢 OpenCV 的版本" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -669,66 +731,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-get-current-time-and-date/" data-id="clxzr61aw0045vwpqmov79m6j" data-title="C++ 取得系統當前時間" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-get-current-time-and-date/" data-id="cly02lhp20044sspq1k0qqvci" data-title="C++ 取得系統當前時間" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-rsync" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-rsync/" class="article-date">
-  <time datetime="2019-05-08T14:00:00.000Z" itemprop="datePublished">2019-05-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-rsync/">Linux rsync 同步最近修改的檔案/遠端同步資料檔案用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹 Linux rsync 指令來同步最近修改的檔案到遠端機器去，<br>以下指令會先找出最近60天修改的檔案並同步到遠端機器上，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync `find . -name &quot;*.pdf&quot; -mtime -60` username@hostname:/tmp/</span><br></pre></td></tr></table></figure></p>
-<p>參考<br><a href="https://www.linuxquestions.org/questions/linux-server-73/rsync-by-date-785692/" rel="noopener external nofollow noreferrer" target="_blank">https://www.linuxquestions.org/questions/linux-server-73/rsync-by-date-785692/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-sed/" title="Linux sed 字串取代用法與範例">Linux sed 字串取代用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-xargs/" title="Linux xargs 參數列表轉換用法與範例">Linux xargs 參數列表轉換用法與範例</a><br><a href="/linux-du/" title="Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例">Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例</a><br><a href="/linux-wget/" title="Linux wget 下載檔案用法與範例">Linux wget 下載檔案用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-rsync/" data-id="clxzr61aw0044vwpq5mcs48tx" data-title="Linux rsync 同步最近修改的檔案/遠端同步資料檔案用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -772,6 +778,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/php-display-errors/">PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤</a>
+          </li>
+        
+          <li>
             <a href="/nextcloud/">NextCloud 安裝教學、使用方式與常見問題</a>
           </li>
         
@@ -785,10 +795,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/linux-pstree/">Linux pstree 指令用法範例</a>
-          </li>
-        
-          <li>
-            <a href="/php-pdo/">使用 PHP 的 PDO 進行資料庫操作：入門指南</a>
           </li>
         
       </ul>
