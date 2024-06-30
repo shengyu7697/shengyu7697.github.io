@@ -107,6 +107,70 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-socketserver" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-socketserver/" class="article-date">
+  <time datetime="2020-10-12T14:00:00.000Z" itemprop="datePublished">2020-10-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-socketserver/">Python socketserver 伺服器端網路通訊程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何使用 Python 3 提供的 socketserver 類別來撰寫 Server 伺服器端的程式，在上一篇介紹了<a href="/python-tcp-socket/" title="怎麼撰寫一個基本的 TCP socket 通訊程式">怎麼撰寫一個基本的 TCP socket 通訊程式</a>，<br>這一篇將專門介紹 server 伺服器端的撰寫，為什麼呢？因為通常伺服器端的程式是比客戶端的程式還要難的，<br>所以 python 提供了 socketserver 這個模組來簡化這個開發的難易度，<br>而 python 的 socketserver 模組提供了 TCPServer，UDPServer，UnixStreamServer，UnixDatagramServer 這4種，<br>接下來的內容將會先以 TCP 解說為優先，本篇學習了 <code>socketserver</code> 基礎概念後下篇會以本篇為基礎撰寫一個簡單的聊天程式，  </p>
+<h2><span id="使用-socketservertcpserver">使用 socketserver.TCPServer</span></h2><p>以下使用 <code>socketserver.TCPServer</code> 的範例，client 端可以沿用之前的範例，<br>範例中直接實例化 <code>socketserver.TCPServer</code> 與 <code>MyTCPHandler</code> 繼承 <code>socketserver.BaseRequestHandler</code>，<br><code>socketserver.BaseRequestHandler</code> 是用來處理接收資料時事件處理，不能直接產生實例，需要繼承 <code>socketserver.BaseRequestHandler</code> 後才能實例化，<br>在 <code>handle()</code> 裡撰寫接收後的程式邏輯即可，以這個範例為例，接收到一個 request 後，就開始一個迴圈來交換傳遞資料，  </p>
+<p>另外補充一下python 2與python 3的差異處，<br>python 2 是 <code>SocketServer</code> class 與 <code>import SocketServer</code><br>python 3 是 <code>socketserver</code> class 與 <code>import socketserver</code><br><figure class="highlight python"><figcaption><span>python3-socketserver-echo-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socketserver</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTCPHandler</span><span class="params">(socketserver.BaseRequestHandler)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">'connected by '</span> + str(self.client_address))</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            indata = self.request.recv(<span class="number">1024</span>).strip()</span><br><span class="line">            <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">                self.request.close()</span><br><span class="line">                print(<span class="string">'client closed connection.'</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">            outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">            self.request.sendall(outdata.encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    HOST, PORT = <span class="string">"0.0.0.0"</span>, <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Create the server, binding to localhost on port 7000</span></span><br><span class="line">    socketserver.TCPServer.allow_reuse_address = <span class="literal">True</span></span><br><span class="line">    server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        server.serve_forever()</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        print(<span class="string">"closing the server."</span>)</span><br><span class="line">        server.server_close()</span><br><span class="line">        <span class="keyword">raise</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="多執行緒的伺服器端程式">多執行緒的伺服器端程式</span></h2><p>上述的例子一次最多只能服務一個客戶端，這篇介紹用 <code>socketserver.ThreadingMixIn</code> 的方式達成每個連線都建立一個新的執行緒來服務，<br>進而達成多客戶端連線溝通的例子，<br>在範例中的 <code>ThreadedTCPServer</code> 是多重繼承 <code>socketserver.ThreadingMixIn</code> 與 <code>socketserver.TCPServer</code><br><figure class="highlight python"><figcaption><span>python3-socketserver-asynchronous-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socketserver, sys, threading</span><br><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> ctime</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadedTCPRequestHandler</span><span class="params">(socketserver.BaseRequestHandler)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle</span><span class="params">(self)</span>:</span></span><br><span class="line">        cur = threading.current_thread()</span><br><span class="line">        print(<span class="string">'[%s] Client connected from %s and [%s] is handling with him.'</span> % (ctime(), self.request.getpeername(), cur.name))</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            indata = self.request.recv(<span class="number">1024</span>).strip()</span><br><span class="line">            <span class="keyword">if</span> len(indata) == <span class="number">0</span>: <span class="comment"># connection closed</span></span><br><span class="line">                self.request.close()</span><br><span class="line">                print(<span class="string">'client closed connection.'</span>)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">            outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">            self.request.send(outdata.encode())</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadedTCPServer</span><span class="params">(socketserver.ThreadingMixIn, socketserver.TCPServer)</span>:</span></span><br><span class="line">    daemon_threads = <span class="literal">True</span></span><br><span class="line">    allow_reuse_address = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    HOST, PORT = <span class="string">'0.0.0.0'</span>, <span class="number">7000</span></span><br><span class="line">    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)</span><br><span class="line">    ip, port = server.server_address</span><br><span class="line">    print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        server.serve_forever()</span><br><span class="line">    <span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">        sys.exit(<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>21.21. socketserver — A framework for network servers — Python 3.5.10 documentation<br><a href="https://docs.python.org/3.5/library/socketserver.html#examples" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3.5/library/socketserver.html#examples</a><br>例項講解Python中SocketServer模組處理網路請求的用法 | 程式前沿<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368565/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368565/</a><br>Python使用SocketServer模組編寫基本伺服器程式的教程 | 程式前沿<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368387/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/368387/</a><br>Python socketserver — A framework for network servers | My.APOLLO<br><a href="https://myapollo.com.tw/zh-tw/python-socketserver/" rel="noopener external nofollow noreferrer" target="_blank">https://myapollo.com.tw/zh-tw/python-socketserver/</a><br>20.17. SocketServer — A framework for network servers — Python 2 documentation<br><a href="https://docs.python.org/2/library/socketserver.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/2/library/socketserver.html</a><br>socketserver — A framework for network servers — Python 3 documentation<br><a href="https://docs.python.org/3/library/socketserver.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3/library/socketserver.html</a>  </p>
+<p>其他相關參考<br>c# - Why does my python TCP server need to bind to 0.0.0.0 and not localhost or it’s IP address? - Stack Overflow<br><a href="https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/38256851/why-does-my-python-tcp-server-need-to-bind-to-0-0-0-0-and-not-localhost-or-its</a><br>Python 3 TypeError: Can’t convert ‘bytes’ object to str implicitly - Mkyong.com<br><a href="https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/" rel="noopener external nofollow noreferrer" target="_blank">https://mkyong.com/python/python-3-typeerror-cant-convert-bytes-object-to-str-implicitly/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊程式">Python TCP Socket Server/Client 網路通訊程式</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-socketserver/" data-id="cly1i1csy00ahifpqadrvhvqb" data-title="Python socketserver 伺服器端網路通訊程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-integer-multiplication-overflow" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-integer-multiplication-overflow/" class="article-date">
@@ -163,7 +227,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-integer-multiplication-overflow/" data-id="cly10w47500ahu7pqlzqldidq" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-integer-multiplication-overflow/" data-id="cly1i1csz00aiifpqbqjoymyh" data-title="C/C++ 整數乘法溢位" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -226,7 +290,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-vim-ctags-cscope/" data-id="cly10w47500agu7pqkq3n049f" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-vim-ctags-cscope/" data-id="cly1i1csy00agifpq8bsjwlqs" data-title="vim 使用 ctags 與 cscope 的開發環境" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -318,7 +382,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-vim-shortcuts/" data-id="cly10w47400afu7pqavtkfbru" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-vim-shortcuts/" data-id="cly1i1csy00afifpqis6n8es3" data-title="vim 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -386,7 +450,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multiple-inheritance/" data-id="cly10w47400aeu7pqg1zdtwyx" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-multiple-inheritance/" data-id="cly1i1csx00aeifpqhvrbfumj" data-title="Python 多重繼承 multiple inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -443,7 +507,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="cly10w47100adu7pqs7b642mf" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/eclipse-cpp-reference-another-project/" data-id="cly1i1csx00adifpqq5djb0xb" data-title="Ecslipse C++ 參考其他專案符號的設定方式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
@@ -512,7 +576,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="cly10w47100acu7pqmb92xnxh" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-inheritance/" data-id="cly1i1csx00acifpqwevuu1hg" data-title="Python 繼承 inheritance" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -623,7 +687,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-shortcuts/" data-id="cly10w47000abu7pql3exp2fe" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-shortcuts/" data-id="cly1i1csw00abifpqu6liwzb9" data-title="Qt Creator 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -681,7 +745,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-kill-by-name/" data-id="cly10w47000aau7pqz96t2apa" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-kill-by-name/" data-id="cly1i1csw00aaifpqq2xslxii" data-title="Linux kill 指令砍掉指定的 process name" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -756,72 +820,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-scrcpy/" data-id="cly10w46z00a9u7pqo128ctxq" data-title="開源專案scrcpy-讓Android投影/鏡射到電腦，還可鍵盤滑鼠操控" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-scrcpy/" data-id="cly1i1csv00a9ifpqjq3gvfby" data-title="開源專案scrcpy-讓Android投影/鏡射到電腦，還可鍵盤滑鼠操控" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-mac-git" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/mac-git/" class="article-date">
-  <time datetime="2020-09-03T14:00:00.000Z" itemprop="datePublished">2020-09-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/mac-git/">macOS 用 Homebrew 安裝 git 指令</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇紀錄在 macOS 下用 Homebrew 安裝 git 指令與 git gui (gitk)，macOS 內建沒有 git 指令所以需要自行安裝，<br>macOS 請先安裝 Homebrew，請參考<a href="https://brew.sh/index_zh-tw" rel="noopener external nofollow noreferrer" target="_blank">官網</a>教學安裝，macOS 有安裝過 Homebrew 也請更新，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew update</span><br></pre></td></tr></table></figure></p>
-<p>Homebrew最新的版本為2.4.16<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ brew --version</span><br><span class="line">Homebrew 2.4.16-39-g48c6dc8</span><br><span class="line">Homebrew/homebrew-core (git revision 158ad0; last commit 2020-09-01)</span><br><span class="line">Homebrew/homebrew-cask (git revision c1c3f; last commit 2020-09-01)</span><br></pre></td></tr></table></figure></p>
-<h2><span id="macos-安裝-git-指令">macOS 安裝 git 指令</span></h2><p>接下來透過 Homebrew 安裝 git 指令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ brew install git</span><br></pre></td></tr></table></figure></p>
-<p>如果之前已經透過 Homebrew 安裝 git 過，他應該會提示你用<code>brew upgrade</code>升級的指令，如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ brew install git</span><br><span class="line">Updating Homebrew...</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/pcre2-10.35.high_sierra.bot</span><br><span class="line">==&gt; Downloading from https://d29vzk4ow07wi7.cloudfront.net/69c4fb400d19d1910df33</span><br><span class="line">######################################################################## 100.0%</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/git-2.28.0.high_sierra.bott</span><br><span class="line">==&gt; Downloading from https://d29vzk4ow07wi7.cloudfront.net/5095b064dfafb8cf4cabd</span><br><span class="line">######################################################################## 100.0%</span><br><span class="line">Error: git 2.2.0 is already installed</span><br><span class="line">To upgrade to 2.28.0, run `brew upgrade git`.</span><br><span class="line">$ brew upgrade git</span><br><span class="line">Updating Homebrew...</span><br><span class="line">==&gt; Upgrading 1 outdated package:</span><br><span class="line">git 2.2.0 -&gt; 2.28.0</span><br><span class="line">==&gt; Upgrading git 2.2.0 -&gt; 2.28.0</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/pcre2-10.35.high_sierra.bot</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>查看一下安裝 git 的版本，本次升級完 git 的版本為 2.28<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git version</span><br><span class="line">git version 2.28.0</span><br></pre></td></tr></table></figure></p>
-<p>用 <code>which</code> 指令檢查一下 git 指令是位在 <code>/usr/local/bin/git</code> 下<br>且軟連結到<code>/usr/local/Cellar/git/2.28.0/bin/git</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ which git</span><br><span class="line">/usr/local/bin/git</span><br><span class="line">$ ls -al /usr/local/bin/git</span><br><span class="line">lrwxr-xr-x  1 shengyu  admin  28  9  1 22:35 /usr/local/bin/git -&gt; ../Cellar/git/2.28.0/bin/git</span><br></pre></td></tr></table></figure></p>
-<h2><span id="macos-安裝-gitk-git-gui">macOS 安裝 gitk / git-gui</span></h2><p>接下來透過 Homebrew 安裝 gitk 指令，安裝完後就可以使用 gitk 指令了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ brew install git-gui</span><br></pre></td></tr></table></figure></p>
-<p>用 <code>which</code> 指令檢查一下 gitk 指令是位在 <code>/usr/local/bin/gitk</code> 下<br>且軟連結到<code>/usr/local/Cellar/git-gui/2.28.0/bin/gitk</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ which gitk</span><br><span class="line">/usr/local/bin/gitk</span><br><span class="line">$ ls -al /usr/local/bin/gitk</span><br><span class="line">lrwxr-xr-x  1 shengyu  admin  33  9  1 22:37 /usr/local/bin/gitk -&gt; ../Cellar/git-gui/2.28.0/bin/gitk</span><br></pre></td></tr></table></figure></p>
-<p>之前 git 2.2.0 時使用 gitk 明顯地畫質還沒跟上高解析度的螢幕，<br>經過這次的升級到 2.28.0 後，這 gitk 畫質不足問題已經獲得改善。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-git/" data-id="cly10w46z00a8u7pqlufymox8" data-title="macOS 用 Homebrew 安裝 git 指令" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
 
     </footer>
   </div>
@@ -865,6 +867,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/linux-nohup/">Linux nohup 斷線不中斷程式執行用法範例</a>
+          </li>
+        
+          <li>
             <a href="/php-display-errors/">PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤</a>
           </li>
         
@@ -878,10 +884,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/python-search-strings-ignore-case/">3 種 Python 字串搜尋並且忽略大小寫方法</a>
-          </li>
-        
-          <li>
-            <a href="/python-search-keywords-in-string/">4 種 Python 字串中搜尋關鍵字的方法</a>
           </li>
         
       </ul>
