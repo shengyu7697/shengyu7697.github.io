@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://shengyu7697.github.io/"/>
-  <updated>2024-07-03T23:40:08.385Z</updated>
+  <updated>2024-07-04T15:00:06.468Z</updated>
   <id>https://shengyu7697.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>如何使用 Python slack_sdk 發送訊息給 Slack</title>
+    <link href="https://shengyu7697.github.io/python-slack_sdk/"/>
+    <id>https://shengyu7697.github.io/python-slack_sdk/</id>
+    <published>2024-07-04T12:00:00.000Z</published>
+    <updated>2024-07-04T15:00:06.468Z</updated>
+    
+    <content type="html"><![CDATA[<p>本篇 ShengYu 介紹如何使用 Python 透過 slack_sdk 發送訊息到 Slack，在現代開發環境中，能夠快速與團隊溝通是提升工作效率的關鍵之一。Slack 作為一個廣泛使用的團隊協作工具，提供了強大的 API，可以讓開發者輕鬆地自動化各種操作。本文將介紹如何使用 <code>slack_sdk</code> 這個 Python 套件來發送訊息到 Slack 頻道。</p><h2><span id="步驟-1安裝-slack_sdk-套件">步驟 1：安裝 slack_sdk 套件</span></h2><p>如果傾向使用虛擬環境的話，請用以下指令，要離開虛擬環境的話要下 <code>deactivate</code> 指令，</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python -m venv myenv</span><br><span class="line">source myenv/bin/activate</span><br></pre></td></tr></table></figure><p>首先，我們需要安裝 <code>slack_sdk</code> 套件。在終端中運行以下命令來安裝它：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install slack_sdk</span><br></pre></td></tr></table></figure><p>這個命令會安裝 <code>slack_sdk</code> 到你的 Python 環境中，使你能夠在 Python 代碼中使用它。</p><h2><span id="步驟-2取得-slack-bot-token">步驟 2：取得 Slack Bot Token</span></h2><p>要與 Slack API 互動，你需要一個 Slack Bot Token。按照以下步驟來獲取這個 token：</p><ol><li>登錄到 <a href="https://api.slack.com/" rel="noopener" target="_blank">Slack API</a> 頁面。</li><li>點擊“Create an app”按鈕，選擇“From scratch”。</li><li>為你的應用程式命名，並選擇你要將其添加到的工作區。</li><li>創建應用後，進入“OAuth &amp; Permissions”頁面，並在“Scopes”部分添加 <code>chat:write</code> scope。</li><li>點擊“Install App to Workspace”按鈕，並授權應用程式。</li><li>完成後，你將看到一個 Bot User OAuth Token。複製這個 token，稍後會在代碼中用到。</li></ol><p>轉到“OAuth和權限”選項卡，向下滾動到Scopes卡片，在Bot Token Scopes下，點選“Add OAuth Scope”來新增’chat:write’，’chat:write.customize’，’files:read’，’files:write’Scopes（總共需要點選“新增OAuthScopes”四次）。</p><h2><span id="步驟-3編寫-python-代碼發送訊息">步驟 3：編寫 Python 代碼發送訊息</span></h2><p>有了 <code>slack_sdk</code> 套件和 Bot Token，我們就可以開始編寫代碼來發送訊息。以下是示範代碼，<br>將 xoxb-your-slack-bot-token 替換為您的 Slack Bot Token，不想寫在code裡也可用 <code>os.environ[&quot;SLACK_BOT_TOKEN&quot;]</code> 來取得 SLACK_BOT_TOKEN 環境變數，<br>之後再呼叫 chat_postMessage 方法發送訊息，<br>將 channel 替換為您的頻道 ID 或使用者名，將 text 換成你要傳輸的內容，<br>try except 則是捕獲錯誤並打印，</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> slack_sdk <span class="keyword">import</span> WebClient</span><br><span class="line"><span class="keyword">from</span> slack_sdk.errors <span class="keyword">import</span> SlackApiError</span><br><span class="line"><span class="comment">#import os</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 輸入你的 Slack Bot Token</span></span><br><span class="line">slack_token = <span class="string">"xoxb-your-slack-bot-token"</span></span><br><span class="line"><span class="comment">#slack_token = os.environ["SLACK_BOT_TOKEN"]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立 Slack 客戶端</span></span><br><span class="line">client = WebClient(token=slack_token)</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    <span class="comment"># 發送訊息到指定頻道</span></span><br><span class="line">    response = client.chat_postMessage(</span><br><span class="line">        channel=<span class="string">"#general"</span>,  <span class="comment"># 替換成你的頻道 ID 或名稱</span></span><br><span class="line">        text=<span class="string">"Hello, world!"</span></span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">assert</span> response[<span class="string">"message"</span>][<span class="string">"text"</span>] == <span class="string">"Hello, world!"</span></span><br><span class="line">    print(<span class="string">"訊息發送成功"</span>)</span><br><span class="line">    <span class="comment">#print(response["ok"])</span></span><br><span class="line"><span class="keyword">except</span> SlackApiError <span class="keyword">as</span> e:</span><br><span class="line">    print(<span class="string">f"發送訊息失敗: <span class="subst">&#123;e.response[<span class="string">'error'</span>]&#125;</span>"</span>)</span><br></pre></td></tr></table></figure><p>在這段代碼中，我們首先從 <code>slack_sdk</code> 導入 <code>WebClient</code> 和 <code>SlackApiError</code>。然後使用你的 Bot Token 創建一個 Slack 客戶端，並使用 <code>chat_postMessage</code> 方法發送訊息到指定頻道。如果訊息發送成功，你將看到“訊息發送成功”的提示；否則，會顯示錯誤訊息。</p><p>如果想發送可點擊超連結URL的話，像下面這樣，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">text=&quot;&lt;https://shengyu7697.github.io/linux-watch/|Linux watch 指令用法與範例&gt; 參考這篇&quot;</span><br></pre></td></tr></table></figure></p><p>另外簡單介紹其他種類型，粗体、斜体、链接、列表，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">text=&quot;*Bold* _Italic_ `Code` &lt;http://example.com|Link&gt;&quot;</span><br></pre></td></tr></table></figure></p><h2><span id="結論">結論</span></h2><p>使用 <code>slack_sdk</code> 套件發送訊息到 Slack 是一個簡單且強大的自動化方法。只需按照上述步驟安裝套件、獲取 Bot Token 並編寫代碼，即可輕鬆實現訊息的自動發送。這不僅能夠提升你的工作效率，還能使團隊溝通更加順暢。</p><p>另外還有發送圖片、附件檔案、Emoji 的方式，有興趣的話可以留言讓我知道，有機會我另外寫一篇介紹。</p><p>以上就是如何使用 Python 發送訊息給 Slack 的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener" target="_blank">Facebook 按讚</a>支持一下！  </p><p>其他參考<br><a href="https://blog.learning520.com/2024/01/16/%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8python%E5%8F%91%E9%80%81slack%E6%B6%88%E6%81%AF/" rel="noopener" target="_blank">如何使用Python发送Slack消息</a><br><a href="https://blog.crazyfan.net/posts/2017/04/08/slack_incoming_webhooks/" rel="noopener" target="_blank">使用 Slack API 傳遞訊息至 Slack頻道</a><br><a href="https://blog.darkthread.net/blog/slack-api/" rel="noopener" target="_blank">為自己寫程式 - 簡單寫個 .NET Slack 訊息發送程式</a></p><p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;本篇 ShengYu 介紹如何使用 Python 透過 slack_sdk 發送訊息到 Slack，在現代開發環境中，能夠快速與團隊溝通是提升工作效率的關鍵之一。Slack 作為一個廣泛使用的團隊協作工具，提供了強大的 API，可以讓開發者輕鬆地自動化各種操作。本文將介紹如
+      
+    
+    </summary>
+    
+      <category term="Python教學" scheme="https://shengyu7697.github.io/categories/Python%E6%95%99%E5%AD%B8/"/>
+    
+    
+      <category term="Python" scheme="https://shengyu7697.github.io/tags/Python/"/>
+    
+  </entry>
   
   <entry>
     <title>macOS 下使用 rm 指令如何避免誤刪除</title>
@@ -484,31 +509,6 @@
       <category term="Linux" scheme="https://shengyu7697.github.io/tags/Linux/"/>
     
       <category term="Shell Script" scheme="https://shengyu7697.github.io/tags/Shell-Script/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Python swap 用法與範例</title>
-    <link href="https://shengyu7697.github.io/python-swap/"/>
-    <id>https://shengyu7697.github.io/python-swap/</id>
-    <published>2024-06-08T12:00:00.000Z</published>
-    <updated>2024-06-17T23:20:07.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>本篇 ShengYu 介紹 Python swap 用法與範例，在寫Python程式中，經常需要交換變數的值。這在許多情況下都是非常有用的操作，例如在演算法中或者在簡單的邏輯處理中。本文將介紹Python中兩種交換變數值的方法：一種是使用Python的特性進行簡單的交換，另一種是透過自製swap函式實現交換。我們將深入探討這兩種方法的優缺點，以及何時使用它們。</p><h3><span id="方法一簡單方法">方法一：簡單方法</span></h3><p>首先，讓我們看一下使用Python特性進行簡單交換的方法。在Python中，可以使用一行程式碼就完成變數值的交換。下面是一個範例：</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">1</span></span><br><span class="line">b = <span class="number">2</span></span><br><span class="line">a, b = b, a</span><br><span class="line">print(<span class="string">"a ="</span>, a)  <span class="comment"># Output: a = 2</span></span><br><span class="line">print(<span class="string">"b ="</span>, b)  <span class="comment"># Output: b = 1</span></span><br></pre></td></tr></table></figure><p>這裡我們使用了元組解包的特性，將b的值賦給a，將a的值賦給b，從而實現了變數值的交換。這種方法非常簡潔和直觀，適用於大多數情況下的變數交換需求。</p><h3><span id="方法二自製swap函式">方法二：自製swap函式</span></h3><p>除了使用Python的特性外，我們還可以編寫一個自製的swap函式來實現變數交換。這樣做的好處是可以提高程式碼的可讀性和重用性。下面是一個範例：</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">swap</span><span class="params">(x, y)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> y, x</span><br><span class="line"></span><br><span class="line">a = <span class="number">1</span></span><br><span class="line">b = <span class="number">2</span></span><br><span class="line">a, b = swap(a, b)</span><br><span class="line">print(<span class="string">"a ="</span>, a)  <span class="comment"># Output: a = 2</span></span><br><span class="line">print(<span class="string">"b ="</span>, b)  <span class="comment"># Output: b = 1</span></span><br></pre></td></tr></table></figure><p>在這個範例中，我們定義了一個名為swap的函式，接受兩個參數x和y，並回傳它們的交換值。透過呼叫這個函式，我們可以實現變數值的交換。這種方法雖然需要額外的函式呼叫，但提供了更好的可讀性和可維護性，特別是在需要多次交換變數值的情況下。</p><h3><span id="何時使用哪種方法">何時使用哪種方法？</span></h3><p>那麼，在實際寫程式中，我們應該何時選擇哪種方法呢？這取決於具體的情況和需求。</p><ul><li><p><strong>使用簡單方法</strong>：當只需要交換少量變數值時，或者希望程式碼簡潔明了時，可以使用簡單方法。它適用於大多數情況下的變數交換需求，並且具有更好的性能。</p></li><li><p><strong>使用自製swap函式</strong>：當需要在多個地方重覆使用變數交換邏輯時，或者希望提高程式碼的可讀性和可維護性時，可以考慮使用自製swap函式。雖然它需要額外的函式呼叫，但可以提高程式碼的模組化程度，並且在覆雜邏輯中更容易理解。</p></li></ul><h3><span id="總結">總結</span></h3><p>本文介紹了Python中兩種交換變數值的方法：簡單方法和自製swap函式。簡單方法利用Python的特性，一行程式碼即可完成變數值的交換，適用於大多數情況下的需求。而自製swap函式則提供了更好的可讀性和重用性，適用於需要多次交換變數值或者提高程式碼可維護性的情況。在實際寫程式中，根據具體情況選擇合適的方法，可以提高程式碼的效率和可維護性。</p><p>以上就是 Python swap 用法與範例的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener" target="_blank">Facebook 按讚</a>支持一下！  </p><p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-subprocess.run/" title="Python 中的 subprocess.run 完整指南與範例">Python 中的 subprocess.run 完整指南與範例</a><br><a href="/python-subprocess.call/" title="Python subprocess.call 用法與範例解析">Python subprocess.call 用法與範例解析</a><br><a href="/python-sqlite/" title="如何在Python中使用SQLite：完整指南與實用範例">如何在Python中使用SQLite：完整指南與實用範例</a><br><a href="/python-mongodb/" title="Python 與 MongoDB 的完美結合：詳細指南與範例">Python 與 MongoDB 的完美結合：詳細指南與範例</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;本篇 ShengYu 介紹 Python swap 用法與範例，在寫Python程式中，經常需要交換變數的值。這在許多情況下都是非常有用的操作，例如在演算法中或者在簡單的邏輯處理中。本文將介紹Python中兩種交換變數值的方法：一種是使用Python的特性進行簡單的交換，另
-      
-    
-    </summary>
-    
-      <category term="Python教學" scheme="https://shengyu7697.github.io/categories/Python%E6%95%99%E5%AD%B8/"/>
-    
-    
-      <category term="Python" scheme="https://shengyu7697.github.io/tags/Python/"/>
     
   </entry>
   
