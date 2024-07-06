@@ -39,7 +39,7 @@
 <meta property="og:image" content="https://shengyu7697.github.io/nextcloud/nextcloud-1.png">
 <meta property="og:image" content="https://shengyu7697.github.io/nextcloud/nextcloud-2.png">
 <meta property="og:image" content="https://shengyu7697.github.io/nextcloud/nextcloud-3.png">
-<meta property="og:updated_time" content="2024-07-03T14:40:08.015Z">
+<meta property="og:updated_time" content="2024-07-06T14:20:07.881Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NextCloud 安裝教學、使用方式與常見問題">
 <meta name="twitter:description" content="本篇 ShengYu 介紹 NextCloud 安裝教學、使用方式與常見問題，NextCloud是一個開源的雲端儲存和檔案同步解決方案，讓使用者可以在自己的伺服器上建立和管理私有雲。它類似於商業服務如 Dropbox 或 Google Drive，但提供了更高的隱私和控制權。目前 NextCloud 已經不支援 SQLite 只有支援 MySQL/MariaDB。NextCloud是一個靈活、安全">
@@ -153,6 +153,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <li>Ubuntu NextCloud 安裝步驟</li>
 <li>更換 nextcloud 儲存路徑</li>
 <li>調整 PHP 的記憶體限制</li>
+<li>Nextcloud 影片沒有預覽圖(縮圖)的問題</li>
 <li>為什麼 nextcloud 手機版 app 的功能沒有網頁版完整</li>
 <li>QA. NextCloud 設定檔位置在哪？</li>
 <li>QA. nextcloud log 檔位置在哪？</li>
@@ -189,6 +190,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <p>編輯 php 設定檔<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/php/8.1/apache2/php.ini</span><br></pre></td></tr></table></figure></p>
 <p>從原本的 128M 改成 512M，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">memory_limit = 512M</span><br></pre></td></tr></table></figure></p>
 <p>之後在重啟 Apache 服務，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl restart apache2</span><br></pre></td></tr></table></figure></p>
+<h2><span id="nextcloud-影片沒有預覽圖縮圖的問題">Nextcloud 影片沒有預覽圖(縮圖)的問題</span></h2><p>Nextcloud 安裝後上傳影片檔案發現影片沒有預覽圖(縮圖)，預設就是這樣，影片要一個一個打開看才知道是哪個影片，這樣實在很不方便，解決方法如下，</p>
+<p>Nextcloud 依賴 ffmpeg 來產生影片預覽縮圖。請確保已安裝並正確設定了 ffmpeg。<br>在 Debian/Ubuntu 系統上，可以使用以下指令安裝 ffmpeg：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install ffmpeg</span><br></pre></td></tr></table></figure></p>
+<p>在 Nextcloud 的 config.php 檔案中，確保預覽功能已啟用。<br><code>sudo vim /var/www/html/nextcloud/config/config.php</code><br>新增或確保以下設定存在：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&apos;enable_previews&apos; =&gt; true,</span><br><span class="line">&apos;enabledPreviewProviders&apos; =&gt; [</span><br><span class="line">    &apos;OC\Preview\Movie&apos;,</span><br><span class="line">    &apos;OC\Preview\PNG&apos;,</span><br><span class="line">    &apos;OC\Preview\JPEG&apos;,</span><br><span class="line">    &apos;OC\Preview\GIF&apos;,</span><br><span class="line">],</span><br></pre></td></tr></table></figure></p>
+<p>有時，調整 enabledPreviewProviders 的順序也能解決問題。確保 <code>OC\Preview\Movie</code> 位於清單的頂部。</p>
+<p>存檔後重新整理網頁或APP即可，到這邊為止網頁版與手機版就可以看到影片預覽縮圖了</p>
+<p>查看 Nextcloud 日誌檔案中的錯誤資訊，可能會給出更多關於問題的線索。日誌檔案位於<br><code>/var/www/html/nextcloud/data/nextcloud.log</code></p>
+<p>但網頁版播放影片失敗是另外的問題？</p>
 <h2><span id="為什麼-nextcloud-手機版-app-的功能沒有網頁版完整">為什麼 nextcloud 手機版 app 的功能沒有網頁版完整</span></h2><p>Nextcloud 的手機版 app 一般不如網頁介面功能全面。這是因為手機應用主要專注於檔案同步和基本功能，以保持輕便和易於使用。網頁介面則提供了更廣泛的功能和設定選項，適合進行更深入的管理和設定。</p>
 <p>以下是一些在手機版 app 上可能缺少的功能：</p>
 <ol>
@@ -248,7 +256,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/nextcloud/" data-id="clya2ogrv00myhfpq80s6zz15" data-title="NextCloud 安裝教學、使用方式與常見問題" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/nextcloud/" data-id="clya7olf300myompqkwfka8p1" data-title="NextCloud 安裝教學、使用方式與常見問題" class="article-share-link">Share</a>
       
       
     </footer>
