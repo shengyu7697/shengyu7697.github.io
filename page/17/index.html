@@ -107,6 +107,81 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-lldb" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lldb/" class="article-date">
+  <time datetime="2022-06-27T14:00:00.000Z" itemprop="datePublished">2022-06-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lldb/">LLDB 除錯教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 LLDB 除錯教學，LLDB Debugger 是 LLVM 專案的除錯元件。在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 LLDB 來替 C/C++ 程式偵錯。  </p>
+<p>以下 LLDB 除錯教學的內容大概分為這幾部分，  </p>
+<ul>
+<li>clang/clang++ 編譯 C/C++ 程式  </li>
+<li>LLDB 進行除錯  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2><span id="clangclang-編譯-cc-程式">clang/clang++ 編譯 C/C++ 程式</span></h2><p>我的桌機環境為 Ubuntu 16.04，以下為一個簡單的 C/C++ 程式，使用 <code>clang++ main.cpp -g -o a.out</code> 進行編譯，編譯成功後會產生 a.out 執行檔，<code>-g</code> 表示帶有除錯資訊，這邊當然也可以使用 gcc/g++ 去編譯 C/C++ 程式 (<code>g++ main.cpp -g -o a.out</code>)，gcc/g++ 編譯後的程式 LLDB 也可以進行除錯，<br><figure class="highlight cpp"><figcaption><span>main.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// clang++ main.cpp -g -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> s = <span class="string">"hello world"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        sum += i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>程式輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hello world</span><br><span class="line">sum=10</span><br><span class="line">end</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="lldb-進行除錯">LLDB 進行除錯</span></h2><p>接著使用 lldb 指令對 a.out 進行除錯，執行 <code>lldb ./a.out</code> 指令進入 lldb 交互介面，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ lldb ./a.out </span><br><span class="line">(lldb) target create <span class="string">"./a.out"</span></span><br><span class="line">Current executable <span class="built_in">set</span> to <span class="string">'./a.out'</span> (x86_64).</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<p>輸入 <code>b main.cpp:14</code> 插入中斷點在 main.cpp 的 14 行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b main.cpp:14</span><br><span class="line">Breakpoint 1: <span class="built_in">where</span> = a.out`main + 188 at main.cpp:14, address = 0x0000000000400c2c</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<p>輸入 <code>b</code> 印出目前設定的中斷點，這個指令跟 gdb 有所不同，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = &apos;main.cpp&apos;, line = 14, exact_match = 0, locations = 1</span><br><span class="line">  1.1: where = a.out`main + 188 at main.cpp:14, address = a.out[0x0000000000400c2c], unresolved, hit count = 0 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>按下 <code>r</code> 開始執行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(lldb) r</span><br><span class="line">Process 24479 launched: <span class="string">'./a.out'</span> (x86_64)</span><br><span class="line">hello world</span><br><span class="line">Process 24479 stopped</span><br><span class="line">* thread <span class="comment">#1, name = 'a.out', stop reason = breakpoint 1.1</span></span><br><span class="line">    frame <span class="comment">#0: 0x0000000000400c2c a.out`main at main.cpp:14</span></span><br><span class="line">   11       &#125;</span><br><span class="line">   12  </span><br><span class="line">   13       std::cout &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">-&gt; 14       std::cout &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">   15       std::cout &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line">   16  </span><br><span class="line">   17       <span class="built_in">return</span> 0;</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<p>再次輸入 <code>b</code> 印出目前設定的中斷點，可以看到中斷點被觸發幾次，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = <span class="string">'main.cpp'</span>, line = 14, exact_match = 0, locations = 1, resolved = 1, hit count = 1</span><br><span class="line">  1.1: <span class="built_in">where</span> = a.out`main + 188 at main.cpp:14, address = 0x0000000000400c2c, resolved, hit count = 1 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<p>接著按 <code>c</code> 繼續執行直到程式結束，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) c</span><br><span class="line">Process 24479 resuming</span><br><span class="line">sum=10</span><br><span class="line">end</span><br><span class="line">Process 24479 exited with status = 0 (0x00000000)</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>以下為 lldb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>b</code>：印出目前設定的中斷點（這個指令跟 gdb 有所不同）<br><code>po &lt;變數名稱&gt;</code>：印出目前變數的值，例如：<code>po sum</code><br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
+<p>以上就是 LLDB 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br>LLDB 玩樂筆記. 最近在寫 uTensor 的 CNN Demo 文章，code 是可以… | by Dboy Liao | Medium<br><a href="https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff" rel="noopener external nofollow noreferrer" target="_blank">https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff</a>  </p>
+<p><strong>相關主題</strong><br><a href="/gdb/" title="gdb 除錯教學">gdb 除錯教學</a><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/lldb/" data-id="clybi4bfb00ipbzpqit2j3xdi" data-title="LLDB 除錯教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-gdbserver" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/gdbserver/" class="article-date">
@@ -157,7 +232,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gdbserver/" data-id="clya7oldg00ioompqdmfjje0r" data-title="gdbserver 遠端除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/gdbserver/" data-id="clybi4bfa00iobzpq3m87ssty" data-title="gdbserver 遠端除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -232,7 +307,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gdb/" data-id="clya7oldg00inompqvt1w10bl" data-title="gdb 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/gdb/" data-id="clybi4bfa00inbzpqjy6xmt00" data-title="gdb 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -313,7 +388,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-ubuntu/" data-id="clya7oldf00imompqj87hvt3j" data-title="Ubuntu 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-ubuntu/" data-id="clybi4bfa00imbzpqut4nmzsb" data-title="Ubuntu 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -391,7 +466,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-debugging-with-vscode/" data-id="clya7oldf00ilompq8r40xg2q" data-title="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-debugging-with-vscode/" data-id="clybi4bf900ilbzpqmq9glogn" data-title="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -454,7 +529,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="clya7olde00ikompqp20ucsdv" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="clybi4bf900ikbzpq54gnxslx" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -549,7 +624,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="clya7olde00ijompq3fe933vs" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="clybi4bf900ijbzpqzw2eq6ax" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -629,7 +704,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="clya7olde00iiompqtx45slnu" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="clybi4bf800iibzpqd9x8z38d" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -696,7 +771,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="clya7oldd00ihompqs0rv8npk" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="clybi4bf800ihbzpqjawjnw3r" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -770,73 +845,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="clya7oldd00igompqwbhrh5lj" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="clybi4bf800igbzpqwa4gx0no" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ubuntu-suspend-command" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/ubuntu-suspend-command/" class="article-date">
-  <time datetime="2022-05-23T14:00:00.000Z" itemprop="datePublished">2022-05-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/ubuntu-suspend-command/">Ubuntu 休眠指令</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 要介紹在 Ubuntu 下休眠的指令，Ubuntu 裡 Systemd 工具提供了睡眠管理的高階命令，分別有 <code>systemctl suspend</code>、<code>systemctl hibernate</code>、<code>systemctl hybrid-sleep</code></p>
-<h2><span id="suspend-掛起模式">Suspend 掛起模式</span></h2><p>掛起時系統的執行資料仍然儲存在記憶體，所以會以較低的功耗消耗電量。掛起模式喚醒系統恢復非常快速，<br>Ubuntu 桌面版的選單只有 Suspend 掛起模式，要用其他模式可以用輸入指令的方式。我的主機 suspend 後電源燈會呈現閃爍狀態。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl suspend # 需要權限</span><br></pre></td></tr></table></figure></p>
-<p>Suspend 模式使用範例如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl suspend</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.set-wall-message ===</span><br><span class="line">Authentication is required to set a wall message</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.suspend ===</span><br><span class="line">Authentication is required for suspending the system.</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br></pre></td></tr></table></figure></p>
-<h2><span id="hibernate-休眠模式">Hibernate 休眠模式</span></h2><p>Hibernate 模式，字面上的意思是休眠，將記憶體內容寫入硬碟後完全關閉電源，等同 Windows 的休眠模式。完全不耗電，恢復速度比掛起慢。我的主機 hibernate 後電源燈會關閉。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hibernate # 需要權限</span><br></pre></td></tr></table></figure></p>
-<p>Hibernate 模式使用範例如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl hibernate</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.set-wall-message ===</span><br><span class="line">Authentication is required to set a wall message</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.hibernate ===</span><br><span class="line">Authentication is required for hibernating the system.</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br></pre></td></tr></table></figure></p>
-<h2><span id="hybird-sleep-混合睡眠模式">Hybird Sleep 混合睡眠模式</span></h2><p>Hybird Sleep 模式，混合睡眠，只供應電源給記憶體，其餘零件全部切斷電源供給，等同 Windows 的睡眠模式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hybrid-sleep # 需要權限</span><br></pre></td></tr></table></figure></p>
-<p>Hybird Sleep 模式使用範例如下，我是桌機安裝 Ubuntu 桌面版，看起來應該沒有啟用 Hybird Sleep 混合睡眠模式而是會去執行 Hibernate 休眠模式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl hybrid-sleep</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.set-wall-message ===</span><br><span class="line">Authentication is required to set a wall message</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br><span class="line">==== AUTHENTICATING FOR org.freedesktop.login1.hibernate ===</span><br><span class="line">Authentication is required for hibernating the system.</span><br><span class="line">Authenticating as: shengyu,,, (shengyu)</span><br><span class="line">Password: </span><br><span class="line">==== AUTHENTICATION COMPLETE ===</span><br></pre></td></tr></table></figure></p>
-<p>以上指令會需要輸入兩次密碼，覺得麻煩可以前面加 sudo，但也不會出現任何提示訊息。  </p>
-<p>其它參考<br><a href="https://caloskao.org/ubuntu-hibernate-and-sleep-mode/" rel="noopener external nofollow noreferrer" target="_blank">https://caloskao.org/ubuntu-hibernate-and-sleep-mode/</a><br><a href="https://blog.csdn.net/HermitSun/article/details/113791114" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/HermitSun/article/details/113791114</a><br><a href="https://www.gushiciku.cn/pl/gvWd/zh-tw" rel="noopener external nofollow noreferrer" target="_blank">https://www.gushiciku.cn/pl/gvWd/zh-tw</a><br><a href="https://codertw.com/%E4%BC%BA%E6%9C%8D%E5%99%A8/380170/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E4%BC%BA%E6%9C%8D%E5%99%A8/380170/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/windows-joystick-tool/" title="Windows 10 測試搖桿的工具">Windows 10 測試搖桿的工具</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="clya7oldd00ifompqeusyrjtp" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -880,6 +892,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/linux-nmap/">Linux 全面了解 Nmap：用途、範例及應用指南</a>
+          </li>
+        
+          <li>
             <a href="/php-session_start/">了解 PHP 中的 session_start() 函式用途與範例</a>
           </li>
         
@@ -893,10 +909,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/linux-nohup/">Linux nohup 斷線不中斷程式執行用法範例</a>
-          </li>
-        
-          <li>
-            <a href="/php-display-errors/">PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤</a>
           </li>
         
       </ul>
