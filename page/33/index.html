@@ -107,6 +107,70 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-ctrl-c-signal" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-ctrl-c-signal/" class="article-date">
+  <time datetime="2021-05-03T14:00:00.000Z" itemprop="datePublished">2021-05-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-ctrl-c-signal/">C/C++ 捕捉 ctrl+c 事件的 2 種方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ 捕捉 ctrl+c 事件的 2 種方法，第 1 種是 signal 方式，第 2 種是 sigaction 方式，  </p>
+<h2><span id="signal-方式">signal 方式</span></h2><p>這個方式適用於大多數系統，這是標準 C 函式庫就有支援，我們這邊要捕捉的是 ctrl+c 的事件，對應的是 SIGINT signal，<br>所以我們需要的是使用 <code>signal()</code> 函式註冊 SIGINT 這個事件發生時，要來執行我們預先定義好的 signal_handler 函式，<br>注意這邊的 sig_handler 是有註冊成功的 signal 才會進來，例如我這邊只有註冊 SIGINT，所以 SIGINT 這個 signal 會進來 sig_handler，其他的像 SIGABRT、SIGSEGV、SIGILL、SIGTERM 等等沒註冊的自然不會進 sig_handler，<br><figure class="highlight cpp"><figcaption><span>cpp-signal-sigint.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-signal-sigint.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt; // for std::this_thread::sleep_for</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal_handler</span><span class="params">(<span class="keyword">int</span> signum)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"signal_handler: caught signal %d\n"</span>, signum);</span><br><span class="line">    <span class="keyword">if</span> (signum == SIGINT) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"SIGINT\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (signal(SIGINT, signal_handler) == SIG_ERR) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Failed to caught signal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，按下 Ctrl+C 後會看到 <code>^C</code> 字樣，接著就進入到我們定義的 signal_handler 函式裡，然後判斷是 SIGINT 就離開程式，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">^Csignal_handler: caught signal 2</span><br><span class="line">SIGINT</span><br></pre></td></tr></table></figure></p>
+<h2><span id="sigaction-方式">sigaction 方式</span></h2><p>這邊我們示範另外一種 sigaction 的方式，比上述的 signal 還強大，能處理更複雜的功能，不過我們這邊只是要用來攔住 ctrl+c 的事件而已，用法如下，<br>事先需要先初始化好 sigaction 結構的變數，再用 <code>sigaction()</code> 來註冊 SIGINT 的事件，這個事件發生時就會來執行我們預先定義好的 signal_handler 函式，<br><figure class="highlight cpp"><figcaption><span>cpp-sigaction-sigint.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-sigaction-sigint.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt; // for std::this_thread::sleep_for</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal_handler</span><span class="params">(<span class="keyword">int</span> signum)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"signal_handler: caught signal %d\n"</span>, signum);</span><br><span class="line">    <span class="keyword">if</span> (signum == SIGINT) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"SIGINT\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">sa</span>;</span></span><br><span class="line">    sa.sa_handler = signal_handler;</span><br><span class="line">    sigemptyset(&amp;sa.sa_mask);</span><br><span class="line">    sa.sa_flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (sigaction(SIGINT, &amp;sa, <span class="literal">NULL</span>) == <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Failed to caught signal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>效果是跟前一個方法一樣。  </p>
+<p>其它參考<br>c++ - How can I catch a ctrl+c event? - Stack Overflow<br><a href="https://stackoverflow.com/questions/1641182/how-can-i-catch-a-ctrl+c-event" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/1641182/how-can-i-catch-a-ctrl+c-event</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-ctrl-c-signal/" title="Python 捕捉 ctrl+c 事件的方法">Python 捕捉 ctrl+c 事件的方法</a><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-ctrl-c-signal/" data-id="clyfsfv6700e97ipq63jppw7h" data-title="C/C++ 捕捉 ctrl+c 事件的 2 種方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-hex-to-int" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-hex-to-int/" class="article-date">
@@ -158,7 +222,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="clyed00u800e9x0pqctexl1i5" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-hex-to-int/" data-id="clyfsfv6700e87ipq78g0k2wr" data-title="Python hex string to int 16進位字串轉數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -221,7 +285,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="clyed00u700e8x0pqjhlwu0jw" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-binary-search/" data-id="clyfsfv6700e77ipqyccr9vqs" data-title="C/C++ 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -284,7 +348,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="clyed00u700e7x0pqqyb5f9nz" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-random-randint/" data-id="clyfsfv6600e67ipqljrqjkw8" data-title="Python random.randint 產生隨機數字" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -347,7 +411,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="clyed00u600e6x0pqf89wzu7p" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sequential-search/" data-id="clyfsfv6600e57ipqxhfd3kvv" data-title="C/C++ 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -414,7 +478,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-import/" data-id="clyed00u500e5x0pqriav0rnx" data-title="Python import 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-import/" data-id="clyfsfv6500e47ipqamlbow8v" data-title="Python import 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -477,7 +541,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-binary-search/" data-id="clyed00u500e4x0pqdoe1rrin" data-title="Python 二元搜尋法 Binary Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-binary-search/" data-id="clyfsfv6500e37ipq159111r6" data-title="Python 二元搜尋法 Binary Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -573,7 +637,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tkinter-canvas/" data-id="clyed00u400e3x0pqhfik5xnz" data-title="Python tkinter Canvas 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tkinter-canvas/" data-id="clyfsfv6500e27ipq7ddxq1tm" data-title="Python tkinter Canvas 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tkinter/">tkinter</a></li></ul>
@@ -638,7 +702,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-main/" data-id="clyed00u200e2x0pq10ecfbee" data-title="在 Python 寫 main 函式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-main/" data-id="clyfsfv6400e17ipqa3pvn8zh" data-title="在 Python 寫 main 函式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -701,85 +765,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sequential-search/" data-id="clyed00u200e1x0pqcc4makd1" data-title="Python 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sequential-search/" data-id="clyfsfv6300e07ipqddcs8hnd" data-title="Python 循序搜尋法 Sequential Search" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-base64" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-base64/" class="article-date">
-  <time datetime="2021-04-12T14:00:00.000Z" itemprop="datePublished">2021-04-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-base64/">Linux base64 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Linux base64 用法與範例， </p>
-<p>以下的 Linux base64 用法與範例將分為這幾部分，  </p>
-<ul>
-<li>Linux base64 encode 編碼  </li>
-<li>Linux base64 decode 解碼  </li>
-<li>Linux base64 encode 編碼並輸出至檔案  </li>
-<li>Linux base64 從檔案解碼 decode  </li>
-<li>為什麼 linux base64 跟 python base64 的結果輸出不一樣？  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2><span id="linux-base64-encode-編碼">Linux base64 encode 編碼</span></h2><p>這邊示範用 Linux base64 編碼一段文字並輸出在標準輸出上，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;Hello World&quot; | base64</span><br></pre></td></tr></table></figure></p>
-<p>標準輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SGVsbG8gV29ybGQK</span><br></pre></td></tr></table></figure></p>
-<p>Linux echo 指令預設會加上換行符號 <code>\n</code>，如果想要 echo 不加上換行符號的話可以加上 <code>-n</code> 的選項，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo -n &quot;Hello World&quot; | base64</span><br></pre></td></tr></table></figure></p>
-<p>標準輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SGVsbG8gV29ybGQ=</span><br></pre></td></tr></table></figure></p>
-<h2><span id="linux-base64-decode-解碼">Linux base64 decode 解碼</span></h2><p>承上例，將這段編碼的文字用 base64 指令解碼，編碼後輸出至標準輸出，<br>Linux base64 decode 解碼的參數是 <code>-d</code>，macOS base64 decode 解碼的參數是 <code>-D</code>，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo -n &quot;SGVsbG8gV29ybGQ=&quot; | base64 -d</span><br></pre></td></tr></table></figure></p>
-<p>標準輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hello World</span><br></pre></td></tr></table></figure></p>
-<h2><span id="linux-base64-encode-編碼並輸出至檔案">Linux base64 encode 編碼並輸出至檔案</span></h2><p>如下範例，把 inputPlan.txt 檔案內容編碼，編碼後輸出至標準輸出，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 inputPlan.txt</span><br></pre></td></tr></table></figure></p>
-<p>要輸出至檔案的話，指令會變成這樣，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 inputPlan.txt &gt; encoded.txt</span><br></pre></td></tr></table></figure></p>
-<h2><span id="linux-base64-從檔案解碼-decode">Linux base64 從檔案解碼 decode</span></h2><p>承上例，將這個編碼過的 encoded.txt 的檔案用 base64 指令解碼，並輸出至標準輸出，<br>Linux 下 base64 解碼 decode 的參數是 <code>-d</code>，macOS 下 base64 解碼 decode 的參數是 <code>-D</code>，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">base64 -d encoded.txt</span><br></pre></td></tr></table></figure></p>
-<h2><span id="為什麼-linux-base64-跟-python-base64-的結果輸出不一樣">為什麼 linux base64 跟 python base64 的結果輸出不一樣？</span></h2><p>在 <a href="https://stackoverflow.com/questions/51658184/base-64-gnu-linux-vs-python" rel="noopener external nofollow noreferrer" target="_blank">stackoverflow 這篇</a>有在討論為什麼 linux base64 指令跟 python base64 的輸出不一樣，理論上用不同工具做 base64 轉換應該要得到相同結果，結果發現是在用 echo 指令時會加上換行符號 <code>\n</code>，解決方式就是用 <code>echo -n</code> 不要加上換行符號。  </p>
-<p>以上就是 Linux base64 用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-xargs/" title="Linux xargs 參數列表轉換用法與範例">Linux xargs 參數列表轉換用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-base64/" data-id="clyed00u100e0x0pqjvuvfj7q" data-title="Linux base64 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -792,7 +781,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/32/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><a class="page-number" href="/page/32/">32</a><span class="page-number current">33</span><a class="page-number" href="/page/34/">34</a><a class="page-number" href="/page/35/">35</a><span class="space">&hellip;</span><a class="page-number" href="/page/83/">83</a><a class="extend next" rel="next" href="/page/34/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/32/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><a class="page-number" href="/page/32/">32</a><span class="page-number current">33</span><a class="page-number" href="/page/34/">34</a><a class="page-number" href="/page/35/">35</a><span class="space">&hellip;</span><a class="page-number" href="/page/84/">84</a><a class="extend next" rel="next" href="/page/34/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -823,6 +812,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/ubuntu-prevent-accidental-deletion-with-rm-command/">Ubuntu 下使用 rm 指令如何避免誤刪除</a>
+          </li>
+        
+          <li>
             <a href="/linux-nmap/">Linux 全面了解 Nmap：用途、範例及應用指南</a>
           </li>
         
@@ -836,10 +829,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/mac-ubuntu-prevent-accidental-deletion-with-rm-command/">macOS 下使用 rm 指令如何避免誤刪除</a>
-          </li>
-        
-          <li>
-            <a href="/linux-nohup/">Linux nohup 斷線不中斷程式執行用法範例</a>
           </li>
         
       </ul>
