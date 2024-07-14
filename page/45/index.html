@@ -107,6 +107,140 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-exception" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-exception/" class="article-date">
+  <time datetime="2020-12-10T14:00:00.000Z" itemprop="datePublished">2020-12-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-exception/">C++ exception 例外處理</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹 c++ exception 例外處理，程式在執行過程中可能會發生一些特殊情況的異常，例如：記憶體不夠、越界存取，所以我們可以用 try catch 來處理這種例外情形  </p>
+<h2><span id="c-基本的-try-catch-例外處理">C++ 基本的 try… catch… 例外處理</span></h2><p>最簡單的例外處理的寫法如下，使用 <code>try... catch...</code> 所組成，<br>用 try 包住可能會發生例外的程式碼區段，<br>用 catch 來處理這個 try 區域所發生的例外，<br><code>what()</code> 是 exception 類別提供的一個 public method，exception 類別會被所有子類重載，所以不管發生哪種例外，只要呼叫 exception 類的 <code>what()</code> 方法，就會取得該種例外的發生的原因，這個機制是用 <a href="/cpp-virtual/" title="C++ virtual">C++ virtual</a> 所完成的，程式碼中的 <code>e.what()</code> 將回傳例外產生的原因字串。  </p>
+<p>另外，catch 裡面的 exception 變數應該要用 reference 的方式。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;exception&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (<span class="built_in">std</span>::exception &amp;e) &#123; <span class="comment">// exception should be caught by reference</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"exception: "</span> &lt;&lt; e.what() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接下來我們來看看實戰中的例外範例，  </p>
+<h2><span id="c-vector-的-out_of_range-例外處理">C++ vector 的 out_of_range 例外處理</span></h2><p>C++ vector 存取元素的方式有兩種，一種是使用 <code>[]</code> operator，例如：<code>v[0] = 0</code>，<br>另一種是使用 <code>at()</code>，例如：<code>v.at(0) = 0</code>，<br>這兩個的差別在於使用 <code>[]</code> operator 存取超界時不會丟出例外 exception，<br>所以像下面這個例子中的 <code>v[3]</code> 實際上是讀取了不知名的記憶體位置的數值，<br>使用 <code>at()</code> 存取超界時會丟出 <code>std::out_of_range</code> 的例外 exception，<br>所以下面這個範例我們嘗試捕捉看看例外，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-exception.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;exception&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v[<span class="number">0</span>] &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v[<span class="number">1</span>] &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v[<span class="number">2</span>] &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v[<span class="number">3</span>] &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v.at(<span class="number">0</span>) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v.at(<span class="number">1</span>) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v.at(<span class="number">2</span>) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; v.at(<span class="number">3</span>) &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (<span class="built_in">std</span>::exception &amp;e) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"exception: "</span> &lt;&lt; e.what() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>程式輸出如下，可以發現 使用 <code>v[3]</code> operator 存取超界用 <code>try... catch...</code> 是捕捉不到例外的，<br>但是當程式執行到 <code>v.at(3)</code> 時存取超界拋出了例外 exception，  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">0</span><br><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">exception: vector::_M_range_check: __n (which is 3) &gt;= this-&gt;size() (which is 3)</span><br></pre></td></tr></table></figure>
+<h2><span id="常見的-exception-例外">常見的 exception 例外</span></h2><p>以下幾乎是所以有的 exception 例外種類，C++11 以及之後加入的 exception 未列在下面，  </p>
+<table>
+<thead>
+<tr>
+<th>例外種類</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>std::exception</td>
+<td>所有標準 C++ 例外的父類</td>
+</tr>
+<tr>
+<td>std::bad_alloc</td>
+<td>new 配置記憶體失敗時拋出，可能是記憶體不足</td>
+</tr>
+<tr>
+<td>std::bad_cast</td>
+<td>dynamic_cast 失敗時拋出</td>
+</tr>
+<tr>
+<td>std::bad_exception</td>
+<td>無法預期的例外</td>
+</tr>
+<tr>
+<td>std::bad_typeid</td>
+<td>typeid 拋出</td>
+</tr>
+<tr>
+<td>std::logic_error</td>
+<td>程式碼邏輯異常拋出</td>
+</tr>
+<tr>
+<td>std::runtime_error</td>
+<td>執行期間的例外</td>
+</tr>
+<tr>
+<td>std::domain_error</td>
+<td>Domain error exception</td>
+</tr>
+<tr>
+<td>std::invalid_argument</td>
+<td>無效的參數時拋出</td>
+</tr>
+<tr>
+<td>std::length_error</td>
+<td>建立長度太長時拋出，例外：std::string</td>
+</tr>
+<tr>
+<td>std::out_of_range</td>
+<td>存取越界時拋出，例如：std::vector</td>
+</tr>
+<tr>
+<td>std::overflow_error</td>
+<td>溢位時拋出</td>
+</tr>
+<tr>
+<td>std::range_error</td>
+<td>Range error exception</td>
+</tr>
+<tr>
+<td>std::underflow_error</td>
+<td>算術下溢時拋出</td>
+</tr>
+</tbody>
+</table>
+<h2><span id="重新拋出例外-exception">重新拋出例外 exception</span></h2><p>在 C++ 中有時候這個例外 exception 捕捉到了，但是某些原因未去處理或還不想處理，想要將該例外重新拋出，就需要使用 <code>throw</code> 這個關鍵字，<br>重新拋出例外 exception 後，讓該例外交給更外層的例外捕捉處理，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (execption &amp;e) &#123;</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt; e.what() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">throw</span>; <span class="comment">// 重新拋出例外</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>Exceptions - C++ Tutorials<br><a href="http://www.cplusplus.com/doc/tutorial/exceptions/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/doc/tutorial/exceptions/</a><br>exception - C++ Reference<br><a href="http://www.cplusplus.com/reference/exception/exception/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/reference/exception/exception/</a><br>std::exception - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/error/exception" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/error/exception</a><br>簡介例外處理<br><a href="https://openhome.cc/Gossip/CppGossip/ExceptionHandling.html" rel="noopener external nofollow noreferrer" target="_blank">https://openhome.cc/Gossip/CppGossip/ExceptionHandling.html</a><br>C++ 异常处理 | 菜鸟教程<br><a href="https://www.runoob.com/cplusplus/cpp-exceptions-handling.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.runoob.com/cplusplus/cpp-exceptions-handling.html</a><br>Throwing out of range exception in C++ - Stack Overflow<br><a href="https://stackoverflow.com/questions/2709719/throwing-out-of-range-exception-in-c/2709733" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/2709719/throwing-out-of-range-exception-in-c/2709733</a><br>XYZ的筆記本: C++ 捕捉不到 vector 超出範圍的例外 ?<br><a href="https://xyz.cinc.biz/2013/10/c-vector-try-catch-out-of-range-exception.html" rel="noopener external nofollow noreferrer" target="_blank">https://xyz.cinc.biz/2013/10/c-vector-try-catch-out-of-range-exception.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-exception/" data-id="clyli795m00b1ebpqspadceka" data-title="C++ exception 例外處理" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-tkinter-filedialog-directory" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-tkinter-filedialog-directory/" class="article-date">
@@ -162,7 +296,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tkinter-filedialog-directory/" data-id="clylcuf9w00b09fpq66bq9lex" data-title="Python tkinter filedialog.askdirectory 選擇資料夾" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tkinter-filedialog-directory/" data-id="clyli795m00b0ebpqpjon462t" data-title="Python tkinter filedialog.askdirectory 選擇資料夾" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tkinter/">tkinter</a></li></ul>
@@ -223,7 +357,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-logcat-read-unexpected-eof/" data-id="clylcuf9w00az9fpq6qx6uy3q" data-title="Android adb logcat 出現 read unexpected eof 解決方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-logcat-read-unexpected-eof/" data-id="clyli795l00azebpqot0o7iak" data-title="Android adb logcat 出現 read unexpected eof 解決方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -287,7 +421,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-write-ini-file/" data-id="clylcuf9v00ay9fpqlb53f4nh" data-title="Python 寫入 ini 設定檔 ConfigParser 用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-write-ini-file/" data-id="clyli795l00ayebpq00pfpmyo" data-title="Python 寫入 ini 設定檔 ConfigParser 用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -367,7 +501,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tkinter-filedialog/" data-id="clylcuf9v00ax9fpq8jxxlnhj" data-title="Python tkinter filedialog 開啟檔案對話框" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tkinter-filedialog/" data-id="clyli795l00axebpq976puqzz" data-title="Python tkinter filedialog 開啟檔案對話框" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tkinter/">tkinter</a></li></ul>
@@ -441,7 +575,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-read-ini-file/" data-id="clylcuf9u00aw9fpq6pr3ze2m" data-title="Python 讀取 ini 設定檔 ConfigParser 用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-read-ini-file/" data-id="clyli795k00awebpqc4339h6j" data-title="Python 讀取 ini 設定檔 ConfigParser 用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -505,7 +639,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-check-tuple-empty/" data-id="clylcuf9u00av9fpqmh0ifo9o" data-title="Python 檢查 tuple 是否為空" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-check-tuple-empty/" data-id="clyli795k00avebpq9fbolc9r" data-title="Python 檢查 tuple 是否為空" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -572,7 +706,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-crop-image/" data-id="clylcuf9u00au9fpqc68clkth" data-title="Python OpenCV 裁剪圖片 crop" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-crop-image/" data-id="clyli795k00auebpq0bt6d8wp" data-title="Python OpenCV 裁剪圖片 crop" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -639,7 +773,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-xor/" data-id="clylcuf9t00at9fpqeu106t3d" data-title="Python xor 運算子用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-xor/" data-id="clyli795j00atebpqph4b9692" data-title="Python xor 運算子用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -711,114 +845,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-md5/" data-id="clylcuf9t00as9fpqfqwfbkhk" data-title="Python 計算 md5 hash 雜湊值" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-md5/" data-id="clyli795j00asebpqaa69khzv" data-title="Python 計算 md5 hash 雜湊值" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-std-map" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/std-map/" class="article-date">
-  <time datetime="2020-11-05T14:00:00.000Z" itemprop="datePublished">2020-11-05</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/std-map/">C++ std::map 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇將介紹如何使用 C++ std map 以及用法，C++ std::map 是一個關聯式容器，關聯式容器把鍵值和一個元素連繫起來，並使用該鍵值來尋找元素、插入元素和刪除元素等操作。  </p>
-<p>map 是有排序關聯式容器，即 map 容器中所有的元素都會根據元素對應的鍵值來排序，而鍵值 key 是唯一值，並不會出現同樣的鍵值 key，也就是說假設已經有一個 鍵值 key 存在 map 裡，當同樣的鍵值 key 再 insert 資料時，新的資料就會覆蓋掉原本 key 的資料。</p>
-<p>map 的實作方式通常是用紅黑樹(red-black tree)實作的，這樣它可以保證可以在<code>O(log n)</code>時間內完成搜尋、插入、刪除，n為元素的數目。  </p>
-<p>以下內容將分為這幾部分，  </p>
-<ul>
-<li>map 常用功能  </li>
-<li>map 初始化  </li>
-<li>map 容器插入元素與存取元素  </li>
-<li>map 容器的迴圈遍歷  </li>
-<li>使用 string 當 key 鍵值, int 當 value 資料的 map 範例  </li>
-<li>使用 string 當 key 鍵值, 自定義類別或自定義結構當 value 資料的 map 範例  </li>
-<li>刪除 map 指定的元素  </li>
-<li>清空 map 容器  </li>
-<li>判斷 map 容器是否為空  </li>
-</ul>
-<p>要使用 map 容器的話，<strong>需要引入的標頭檔</strong>：<code>&lt;map&gt;</code>  </p>
-<h2><span id="map-常用功能">map 常用功能</span></h2><p>C++ map 是一種關聯式容器，包含「key鍵值/value資料」成對關係<br><strong>元素存取</strong><br><code>operator[]</code>：存取指定的[i]元素的資料<br><strong>迭代器</strong><br><code>begin()</code>：回傳指向map頭部元素的迭代器<br><code>end()</code>：回傳指向map末尾的迭代器<br><code>rbegin()</code>：回傳一個指向map尾部的反向迭代器<br><code>rend()</code>：回傳一個指向map頭部的反向迭代器<br><strong>容量</strong><br><code>empty()</code>：檢查容器是否為空，空則回傳true<br><code>size()</code>：回傳元素數量<br><code>max_size()</code>：回傳可以容納的最大元素個數<br><strong>修改器</strong><br><code>clear()</code>：刪除所有元素<br><code>insert()</code>：插入元素<br><code>erase()</code>：刪除一個元素<br><code>swap()</code>：交換兩個map<br><strong>查找</strong><br><code>count()</code>：回傳指定元素出現的次數<br><code>find()</code>：查找一個元素  </p>
-<h2><span id="map-初始化">map 初始化</span></h2><p>接下來說說怎麼初始化 c++ map 容器吧！<br>先以 int 當 key, string 當 value 的 map 為範例，<br>以一個班級的學生編號為例，一個編號會對應到一個學生，這邊先以學生姓名作示範，<br>所以會寫成<code>std::map&lt;int, std::string&gt; studentMap</code>這樣<br>std::map 宣告時要宣告兩個變數類型，<br>map.first：第一個稱為(key)鍵值，在 map 裡面，(key)鍵值不會重複<br>map.second：第二個稱為(key)鍵值對應的數值(value)<br>map 容器初始化的寫法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">1</span>, <span class="string">"Tom"</span>));</span><br><span class="line">studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">7</span>, <span class="string">"Jack"</span>));</span><br><span class="line">studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">15</span>, <span class="string">"John"</span>));</span><br></pre></td></tr></table></figure></p>
-<p>或者像陣列的方式一樣<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">studentMap[<span class="number">1</span>] = <span class="string">"Tom"</span>;</span><br><span class="line">studentMap[<span class="number">7</span>] = <span class="string">"Jack"</span>;</span><br><span class="line">studentMap[<span class="number">15</span>] = <span class="string">"John"</span>;</span><br></pre></td></tr></table></figure></p>
-<p>或者這樣初始化更專業一點<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap = &#123;</span><br><span class="line">    &#123;<span class="number">1</span>, <span class="string">"Tom"</span>&#125;,</span><br><span class="line">    &#123;<span class="number">2</span>, <span class="string">"Jack"</span>&#125;,</span><br><span class="line">    &#123;<span class="number">3</span>, <span class="string">"John"</span>&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="map-容器插入元素與存取元素">map 容器插入元素與存取元素</span></h2><p>剛剛在初始化部分已經有示範過了，map 容器插入元素有兩種寫法，<br>第一種是使用中括號 <code>[]</code> 的方式來插入元素，很像陣列的寫法，例如：<code>map[key] = value</code>，如果該 key 值已經存在則 value 會被更新成新的數值，範例如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">studentMap[<span class="number">1</span>] = <span class="string">"Tom"</span>;</span><br><span class="line">...</span><br><span class="line">studentMap[<span class="number">1</span>] = <span class="string">"John"</span>;</span><br></pre></td></tr></table></figure></p>
-<p>另一種是使用 <code>map.insert()</code> 成員函式來插入元素，<br>那這個 <code>map.insert()</code> 方式跟上面中括號 <code>[]</code> 的方式有什麼不同呢？  </p>
-<p>差別在於如果 key 值已經存在的話，使用中括號 <code>[]</code> 的方式會將新資料覆蓋舊資料，<br>而使用 <code>map.insert()</code> 的方式會回傳插入的結果，該 key 值存在的話會回傳失敗的結果，<br>檢查 <code>map.insert()</code> 的插入結果方式如下，<br><figure class="highlight cpp"><figcaption><span>std-map.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-map.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">    studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">1</span>, <span class="string">"Tom"</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::pair&lt;<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;::iterator, <span class="keyword">bool</span>&gt; retPair;</span><br><span class="line">    retPair = studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">1</span>, <span class="string">"Tom"</span>));  </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (retPair.second == <span class="literal">true</span>)</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Insert Successfully\n"</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Insert Failure\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>要取得某 key 鍵值元素的話可以這樣寫，或者看下節遍歷整個 map 容器<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"name: "</span> &lt;&lt; studentMap[<span class="number">1</span>] &lt;&lt; <span class="string">"\n"</span>;</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="map-容器的迴圈遍歷">map 容器的迴圈遍歷</span></h2><p>迴圈遍歷 map 容器的方式有幾種，以下先介紹使用 range-based for loop 來遍歷 map 容器，<br>這邊故意將 id 不按順序初始化或者插入，先初始化 <code>1</code>、<code>3</code>、<code>2</code> key 鍵值的元素，<br>之後再插入 <code>5</code> 和 <code>4</code> key 鍵值的元素，然後我們再來觀察看看是不是 map 會將其排序，<br><figure class="highlight cpp"><figcaption><span>std-map2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-map2.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap = &#123;</span><br><span class="line">        &#123;<span class="number">1</span>, <span class="string">"Tom"</span>&#125;,</span><br><span class="line">        &#123;<span class="number">3</span>, <span class="string">"John"</span>&#125;,</span><br><span class="line">        &#123;<span class="number">2</span>, <span class="string">"Jack"</span>&#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    studentMap[<span class="number">5</span>] = <span class="string">"Tiffany"</span>;</span><br><span class="line">    studentMap[<span class="number">4</span>] = <span class="string">"Ann"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; s : studentMap) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"id: "</span> &lt;&lt; s.first &lt;&lt; <span class="string">", name: "</span> &lt;&lt; s.second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>輸出內容如下，從這個輸出結果發現是 key 鍵值由小到大排列，所以 map 容器裡面真的是會幫你排序的，<br>在插入元素的同時會根據鍵值來進行排序，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">id: 1, name: Tom</span><br><span class="line">id: 2, name: Jack</span><br><span class="line">id: 3, name: John</span><br><span class="line">id: 4, name: Ann</span><br><span class="line">id: 5, name: Tiffany</span><br></pre></td></tr></table></figure></p>
-<p>使用前向迭代器，輸出結果跟上列相同，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;::iterator it = studentMap.begin(); it != studentMap.end(); it++) &#123;</span><br><span class="line"><span class="comment">// or</span></span><br><span class="line"><span class="comment">// for (auto it = studentMap.begin(); it != studentMap.end(); it++) &#123;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"id: "</span> &lt;&lt; (*it).first &lt;&lt; <span class="string">", name: "</span> &lt;&lt; (*it).second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>使用反向迭代器的例子，如果嫌 iterator 迭代器名稱太長的話可以善用 <code>auto</code> 關鍵字讓編譯器去推導該變數類型，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// for (std::map&lt;int, std::string&gt;::reverse_iterator it = studentMap.rbegin(); it != studentMap.rend(); it++) &#123;</span></span><br><span class="line"><span class="comment">// or</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> it = studentMap.rbegin(); it != studentMap.rend(); it++) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"id: "</span> &lt;&lt; (*it).first &lt;&lt; <span class="string">", name: "</span> &lt;&lt; (*it).second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>反向迭代器的輸出結果如下，反著印出來，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">id: 5, name: Tiffany</span><br><span class="line">id: 4, name: Ann</span><br><span class="line">id: 3, name: John</span><br><span class="line">id: 2, name: Jack</span><br><span class="line">id: 1, name: Tom</span><br></pre></td></tr></table></figure></p>
-<h2><span id="使用-string-當-key-鍵值-int-當-value-資料的-map-範例">使用 string 當 key 鍵值, int 當 value 資料的 map 範例</span></h2><p>這個範例跟之前的範例相反，我們試著用 string 當作 key 鍵值，int 當 value，看看是不是也可以這樣使用，<br>所以會寫成 <code>std::map&lt;std::string, int&gt;</code> 這樣，完整範例如下，  </p>
-<figure class="highlight cpp"><figcaption><span>std-map3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-map3.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="keyword">int</span>&gt; <span class="built_in">map</span> = &#123;</span><br><span class="line">        &#123;<span class="string">"Tom"</span>, <span class="number">1</span>&#125;,</span><br><span class="line">        &#123;<span class="string">"Jack"</span>, <span class="number">2</span>&#125;,</span><br><span class="line">        &#123;<span class="string">"Ann"</span>, <span class="number">4</span>&#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; n : <span class="built_in">map</span>) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"key: "</span> &lt;&lt; n.first &lt;&lt; <span class="string">" value: "</span> &lt;&lt; n.second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">map</span>[<span class="string">"Tiffany"</span>] = <span class="number">5</span>;</span><br><span class="line">    <span class="built_in">map</span>[<span class="string">"John"</span>] = <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">map</span>[<span class="string">"John"</span>] &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="built_in">map</span>[<span class="string">"Tiffany"</span>] &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; n : <span class="built_in">map</span>) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"key: "</span> &lt;&lt; n.first &lt;&lt; <span class="string">" value: "</span> &lt;&lt; n.second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>輸出內容如下，可以發現印出來的順序是按照學生姓名的順序，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">key: Ann value: 4</span><br><span class="line">key: Jack value: 2</span><br><span class="line">key: Tom value: 1</span><br><span class="line">3</span><br><span class="line">5</span><br><span class="line">key: Ann value: 4</span><br><span class="line">key: Jack value: 2</span><br><span class="line">key: John value: 3</span><br><span class="line">key: Tiffany value: 5</span><br><span class="line">key: Tom value: 1</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="使用-string-當-key-鍵值-自定義類別或自定義結構當-value-資料的-map-範例">使用 string 當 key 鍵值, 自定義類別或自定義結構當 value 資料的 map 範例</span></h2><p>如果要在 value 欄位放入自定義 struct 或 自定義 class 的話，可以參考下面這個範例，<br>那個宣告就會是 <code>std::map&lt;std::string, Class/Struct&gt;</code> 這樣子寫，  </p>
-<figure class="highlight cpp"><figcaption><span>std-map4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-map4.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Student</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, Student&gt; studentMap;</span><br><span class="line">    studentMap[<span class="string">"Tom"</span>] = &#123;<span class="number">1</span>, <span class="string">"Tom"</span>, <span class="number">18</span>&#125;;</span><br><span class="line">    studentMap[<span class="string">"Ann"</span>] = &#123;<span class="number">4</span>, <span class="string">"Ann"</span>, <span class="number">20</span>&#125;;</span><br><span class="line">    studentMap[<span class="string">"Jack"</span>] = &#123;<span class="number">2</span>, <span class="string">"Jack"</span>, <span class="number">16</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; m : studentMap) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"name: "</span> &lt;&lt; m.first &lt;&lt; <span class="string">" id: "</span> &lt;&lt; m.second.id &lt;&lt; <span class="string">" age: "</span> &lt;&lt; m.second.age &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>輸出內容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">name: Ann id: 4 age: 20</span><br><span class="line">name: Jack id: 2 age: 16</span><br><span class="line">name: Tom id: 1 age: 18</span><br></pre></td></tr></table></figure></p>
-<h2><span id="刪除-map-指定的元素">刪除 map 指定的元素</span></h2><p>刪除 map 指定的元素要使用 <code>erase()</code>，<br><figure class="highlight cpp"><figcaption><span>std-map5.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-map5.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">    studentMap[<span class="number">1</span>] = <span class="string">"Tom"</span>;</span><br><span class="line">    studentMap[<span class="number">7</span>] = <span class="string">"Jack"</span>;</span><br><span class="line">    studentMap[<span class="number">15</span>] = <span class="string">"John"</span>;</span><br><span class="line"></span><br><span class="line">    studentMap.erase(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; m : studentMap) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; m.first &lt;&lt; <span class="string">" "</span> &lt;&lt; m.second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">7 Jack</span><br><span class="line">15 John</span><br></pre></td></tr></table></figure></p>
-<p>那如果 map 刪除不存在的元素會發生什麼事呢？<br><figure class="highlight cpp"><figcaption><span>std-map6.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-map6.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">    studentMap[<span class="number">1</span>] = <span class="string">"Tom"</span>;</span><br><span class="line">    studentMap[<span class="number">7</span>] = <span class="string">"Jack"</span>;</span><br><span class="line">    studentMap[<span class="number">15</span>] = <span class="string">"John"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> ret = studentMap.erase(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; ret &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; m : studentMap) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; m.first &lt;&lt; <span class="string">" "</span> &lt;&lt; m.second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ret = studentMap.erase(<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; ret &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; m : studentMap) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; m.first &lt;&lt; <span class="string">" "</span> &lt;&lt; m.second &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>map 刪除不存在的元素並不會造成什麼 crash 這種嚴重問題，他反而會回傳一個數量告訴你它刪除了多少個元素，以這個例子來說 <code>erase(1)</code> 是刪除了 1 個元素，<code>erase(2)</code> 是刪除了 0 個元素，結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">7 Jack</span><br><span class="line">15 John</span><br><span class="line">0</span><br><span class="line">7 Jack</span><br><span class="line">15 John</span><br></pre></td></tr></table></figure></p>
-<p>map <code>erase()</code> 刪除元素還有另外兩種用法，有興趣的可以看<a href="/std-map-erase/" title="這一篇">這一篇</a>。  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="清空-map-容器">清空 map 容器</span></h2><p>要清空 map 容器的的話，要使用 <code>clear()</code>，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">1</span>, <span class="string">"Tom"</span>));</span><br><span class="line">studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">7</span>, <span class="string">"Jack"</span>));</span><br><span class="line">studentMap.insert(<span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt;(<span class="number">15</span>, <span class="string">"John"</span>));</span><br><span class="line"></span><br><span class="line">studentMap.clear();</span><br></pre></td></tr></table></figure></p>
-<h2><span id="判斷-map-容器是否為空">判斷 map 容器是否為空</span></h2><p>要判斷 map 是否為空或是裡面有沒有元素的話，可以用 <code>empty()</code>，寫法如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; studentMap;</span><br><span class="line">studentMap.clear();</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (studentMap.empty()) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"empty\n"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"not empty, size is "</span>&lt;&lt; studentMap.size() &lt;&lt;<span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>std::map - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/container/map" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/container/map</a><br>map - C++ Reference<br><a href="http://www.cplusplus.com/reference/map/map/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/reference/map/map/</a><br>Map in C++ Standard Template Library (STL) - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/map-associative-containers-the-c-standard-template-library-stl//" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/map-associative-containers-the-c-standard-template-library-stl//</a><br>C/C++ - Map (STL) 用法與心得完全攻略 | Mr. Opengate<br><a href="https://mropengate.blogspot.com/2015/12/cc-map-stl.html" rel="noopener external nofollow noreferrer" target="_blank">https://mropengate.blogspot.com/2015/12/cc-map-stl.html</a><br>[教學]C++ Map(STL)詳細用法 @ 一個小小工程師的心情抒發天地<br><a href="http://dangerlover9403.pixnet.net/blog/post/216833943" rel="noopener external nofollow noreferrer" target="_blank">http://dangerlover9403.pixnet.net/blog/post/216833943</a><br>C++ STL map 的小筆記 @ 伊卡洛斯之翼<br><a href="http://kamory0931.pixnet.net/blog/post/119251820" rel="noopener external nofollow noreferrer" target="_blank">http://kamory0931.pixnet.net/blog/post/119251820</a><br>C++中的STL中map用法详解 - Boblim - 博客园<br><a href="https://www.cnblogs.com/fnlingnzb-learner/p/5833051.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/fnlingnzb-learner/p/5833051.html</a><br>程式扎記: [C++ 範例代碼] 使用 STL 的 map 操作範例<br><a href="http://puremonkey2010.blogspot.com/2010/08/c-stl-map.html" rel="noopener external nofollow noreferrer" target="_blank">http://puremonkey2010.blogspot.com/2010/08/c-stl-map.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-multimap/" title="std::multimap 用法與範例">std::multimap 用法與範例</a><br><a href="/std-unordered_map/" title="std::unordered_map 用法與範例">std::unordered_map 用法與範例</a><br><a href="/std-vector/" title="std::vector 用法與範例">std::vector 用法與範例</a><br><a href="/std-deque/" title="std::deque 介紹與用法">std::deque 介紹與用法</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-map/" data-id="clylcuf9t00ar9fpqed4qj36a" data-title="C++ std::map 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -862,6 +892,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/ubuntu-wordpress/">Ubuntu 下安裝 wordpress</a>
+          </li>
+        
+          <li>
             <a href="/php-isset/">深入理解 PHP 中的 isset 用法、範例及最佳實踐</a>
           </li>
         
@@ -875,10 +909,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/ubuntu-prevent-accidental-deletion-with-rm-command/">Ubuntu 下使用 rm 指令如何避免誤刪除</a>
-          </li>
-        
-          <li>
-            <a href="/linux-nmap/">Linux 全面了解 Nmap：用途、範例及應用指南</a>
           </li>
         
       </ul>
