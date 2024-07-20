@@ -107,6 +107,89 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-python-socket" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/python-socket/" class="article-date">
+  <time datetime="2021-11-30T14:00:00.000Z" itemprop="datePublished">2021-11-30</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/python-socket/">Python Socket 網路通訊教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹如何寫 Python Socket 網路通訊程式，在這個網路盛行的時代，網路通訊已成為基礎，想要精通學習網路通訊必須先了解 TCP/IP 協定，其中以 TCP 與 UDP 兩種主要通訊方式最常被使用，接下來教學內容將介紹如何使用 Python Socket API 來搭建一個典型的 TCP &amp; UDP 通訊程式，甚至可以寫出一個聊天室的程式，或者像 LINE 或 Skype 這樣的通訊程式。  </p>
+<p>以下 Python Socket 教學內容將分為幾部分，分別為：  </p>
+<ul>
+<li>Python Socket TCP Server &amp; Client 基本範例  </li>
+<li>Python Socket UDP Server &amp; Client 基本範例  </li>
+</ul>
+<p>在 Python 中已經內建好 Socket API 供你使用，所以不需另外安裝額外的套件即可使用，接下來我們就來看看 Python Socket TCP Server 與 Client 的程式怎麼撰寫吧！  </p>
+<h2><span id="python-socket-tcp-server-amp-client-基本範例">Python Socket TCP Server &amp; Client 基本範例</span></h2><p>這邊介紹 Python Socket TCP 伺服器端與客戶端的網路通訊程式，TCP 這種連線協議具有可靠性，因為 TCP 協議有重傳的機制，所以收到的封包一定沒有錯誤，也因為 TCP 協議的關係在傳輸速度上會有所犧牲，在稍後會介紹 UDP 無重傳機制，提升傳輸性能，不過 TCP 還是給我們帶來很大的便利性，一般瀏覽網頁的 HTTP 協議就是基於 TCP 的基礎，接下來示範一下簡單的 Python Socket TCP Server 伺服器端程式，  </p>
+<p>如下例所示，伺服器端一開始建立 socket，<code>socket.AF_INET</code> 表示使用 Internet Protocol 的通訊協定，而 <code>socket.SOCK_STREAM</code> 表示傳輸方式為 TCP，用 <code>bind()</code> 綁定，這裡是使用 <code>0.0.0.0</code>, port 為 <code>7000</code>，  </p>
+<p>使用 <code>listen()</code> 開始監聽，上限連線數為<code>5</code>，之後進入主迴圈，<code>accept()</code> 等待接受客戶端的連線請求，一旦有客戶端連線的話，就會從 <code>accept()</code> 繼續往下執行，  </p>
+<p>接著從這個連線 <code>recv()</code> 接收資料與 <code>send()</code> 傳送資料，之後就關閉該連線，之後回到 <code>accept()</code> 等待新的客戶端連線，等到新的客戶端連線連上便跟之前的流程一樣，這樣便是一個完整的 Python Socket TCP 伺服器程式。<br><figure class="highlight python"><figcaption><span>python3-socket-tcp-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">'0.0.0.0'</span></span><br><span class="line">PORT = <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">s.bind((HOST, PORT))</span><br><span class="line">s.listen(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">print(<span class="string">'wait for connection...'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    conn, addr = s.accept()</span><br><span class="line">    print(<span class="string">'connected by '</span> + str(addr))</span><br><span class="line"></span><br><span class="line">    indata = conn.recv(<span class="number">1024</span>)</span><br><span class="line">    print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">    outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">    conn.send(outdata.encode())</span><br><span class="line">    conn.close()</span><br><span class="line">s.close()</span><br></pre></td></tr></table></figure></p>
+<p>下面範例是對應的 Python Socket TCP Client 客戶端端程式，如下例所示，客戶端一開始建立 socket，之後 <code>connect()</code> 連線伺服器主機的 host 與 port，<br>接著使用 <code>send()</code> 把 <code>&#39;hello tcp&#39;</code> 字串發送給伺服器端，然後使用 <code>recv()</code> 接收來至伺服器端的資料，接收到資料後就把它印出來，之後就關閉該連線，<br><figure class="highlight python"><figcaption><span>python3-socket-tcp-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">'0.0.0.0'</span></span><br><span class="line">PORT = <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">s.connect((HOST, PORT))</span><br><span class="line"></span><br><span class="line">outdata = <span class="string">'hello tcp'</span></span><br><span class="line">print(<span class="string">'send: '</span> + outdata)</span><br><span class="line">s.send(outdata.encode())</span><br><span class="line"></span><br><span class="line">indata = s.recv(<span class="number">1024</span>)</span><br><span class="line">print(<span class="string">'recv: '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">s.close()</span><br></pre></td></tr></table></figure></p>
+<p>先執行 TCP 伺服器端程式等著，接著再執行 TCP 客戶端端程式就可以將此範例完整體驗，TCP 伺服器端的輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-socket-tcp-server.py</span><br><span class="line">server start at: 0.0.0.0:7000</span><br><span class="line">wait for connection...</span><br><span class="line">connected by (&apos;127.0.0.1&apos;, 42202)</span><br><span class="line">recv: hello tcp</span><br></pre></td></tr></table></figure></p>
+<p>TCP 客戶端的輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-socket-tcp-client.py </span><br><span class="line">send: hello tcp</span><br><span class="line">recv: echo hello tcp</span><br></pre></td></tr></table></figure></p>
+<p>以上是最基本的 Python Socket TCP 用法與範例，本篇僅示範客戶端傳送一次資料便關閉連線，詳細的 Python Socket TCP 通訊程式範例可以參考 <a href="/python-tcp-socket/" title="Python TCP Socket Server/Client 網路通訊教學">Python TCP Socket Server/Client 網路通訊教學</a>這篇，裡面還會介紹伺服器端如何對同一客戶端多次通訊，以及客戶端如何不間斷地跟伺服器端溝通。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="python-socket-udp-server-amp-client-基本範例">Python Socket UDP Server &amp; Client 基本範例</span></h2><p>這邊介紹 Python Socket UDP 服器端與客戶端的網路通訊程式，UDP 無重傳機制，所以相對於 TCP 來說是傳輸效率較好，但因為不保證資料正確性的關係，意味著必須自己實作資料檢查機制，接下來示範一下簡單的 Python Socket UDP Server 伺服器端程式，  </p>
+<p>如下例所示，伺服器端一開始建立 socket，<code>socket.AF_INET</code> 表示使用 Internet Protocol 的通訊協定，而 <code>socket.SOCK_DGRAM</code> 表示傳輸方式為 UDP，用 <code>bind()</code> 綁定，這裡是使用 <code>0.0.0.0</code>, port 為 <code>7000</code>，  </p>
+<p>跟 TCP 不同的是 UDP 不需使用 <code>listen()</code> 與 <code>accept()</code>，直接使用 <code>recvfrom</code> 來接收任何一個 socket 地址的客戶端資料，以及 <code>sendto</code> 傳送資料給指定 socket 位址的客戶端，這邊用一個迴圈不斷地重複 <code>recvfrom()</code> 接收資料與 <code>sendto()</code> 傳送資料，這樣便是一個完整的 Python Socket UDP 伺服器程式。<br><figure class="highlight python"><figcaption><span>python3-socket-udp-server.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">'0.0.0.0'</span></span><br><span class="line">PORT = <span class="number">7000</span></span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</span><br><span class="line">s.bind((HOST, PORT))</span><br><span class="line"></span><br><span class="line">print(<span class="string">'server start at: %s:%s'</span> % (HOST, PORT))</span><br><span class="line">print(<span class="string">'wait for connection...'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    indata, addr = s.recvfrom(<span class="number">1024</span>)</span><br><span class="line">    print(<span class="string">'recvfrom '</span> + str(addr) + <span class="string">': '</span> + indata.decode())</span><br><span class="line"></span><br><span class="line">    outdata = <span class="string">'echo '</span> + indata.decode()</span><br><span class="line">    s.sendto(outdata.encode(), addr)</span><br><span class="line">s.close()</span><br></pre></td></tr></table></figure></p>
+<p>下面範例是對應的 Python Socket UDP Client 客戶端端程式，如下例所示，客戶端一開始建立 socket，跟 TCP 不同的是 UDP 不需要 <code>connect()</code> 而是直接用 <code>sendto()</code> 將資料送往指定的主機 host 與 port，<br>接著使用 <code>sendto()</code> 把 <code>&#39;hello udp&#39;</code> 字串發送給伺服器端，然後使用 <code>recvfrom()</code> 接收來至伺服器端的資料，接收到資料後就把它印出來，之後就關閉該連線，<br><figure class="highlight python"><figcaption><span>python3-socket-udp-client.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">'0.0.0.0'</span></span><br><span class="line">PORT = <span class="number">7000</span></span><br><span class="line">server_addr = (HOST, PORT)</span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</span><br><span class="line"></span><br><span class="line">outdata = <span class="string">'hello udp'</span></span><br><span class="line">print(<span class="string">'sendto '</span> + str(server_addr) + <span class="string">': '</span> + outdata)</span><br><span class="line">s.sendto(outdata.encode(), server_addr)</span><br><span class="line"></span><br><span class="line">indata, addr = s.recvfrom(<span class="number">1024</span>)</span><br><span class="line">print(<span class="string">'recvfrom '</span> + str(addr) + <span class="string">': '</span> + indata.decode())</span><br></pre></td></tr></table></figure></p>
+<p>先執行 UDP 伺服器端程式等著，接著再執行 UDP 客戶端端程式就可以將此範例完整體驗，TCP 伺服器端的輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-socket-udp-server.py </span><br><span class="line">server start at: 0.0.0.0:7000</span><br><span class="line">wait for connection...</span><br><span class="line">recvfrom (&apos;127.0.0.1&apos;, 44346): hello udp</span><br></pre></td></tr></table></figure></p>
+<p>UDP 客戶端的輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ python3 python3-socket-udp-client.py</span><br><span class="line">sendto (&apos;0.0.0.0&apos;, 7000): hello udp</span><br><span class="line">recvfrom (&apos;127.0.0.1&apos;, 7000): echo hello udp</span><br></pre></td></tr></table></figure></p>
+<p>以上是最基本的 Python Socket UDP 用法與範例，本篇僅示範客戶端傳送一次資料便關閉連線，詳細的 Python Socket UDP 通訊程式範例可以參考 <a href="/python-udp-socket/" title="Python UDP Socket Server/Client 網路通訊教學">Python UDP Socket Server/Client 網路通訊教學</a>這篇，裡面還會介紹伺服器端如何對同一客戶端多次通訊，以及客戶端如何不間斷地跟伺服器端溝通。  </p>
+<p>以上就是 Python Socket 網路通訊教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br>socket — Low-level networking interface — Python 3 documentation<br><a href="https://docs.python.org/3/library/socket.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3/library/socket.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/python-socket/" data-id="clyu2uemz00gnplpq3pxyw01x" data-title="Python Socket 網路通訊教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-pyqt-qvboxlayout" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-pyqt-qvboxlayout/" class="article-date">
@@ -165,7 +248,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyqt-qvboxlayout/" data-id="clysnej0j00gnrapqf6qvqaa6" data-title="Python PyQt5 QVBoxLayout 垂直佈局用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyqt-qvboxlayout/" data-id="clyu2uemz00gmplpq5gknzxgv" data-title="Python PyQt5 QVBoxLayout 垂直佈局用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -265,7 +348,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-udp-socket/" data-id="clysnej0i00gmrapqx535jefn" data-title="Python UDP Server/Client 網路通訊教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-udp-socket/" data-id="clyu2uemy00glplpqii20migh" data-title="Python UDP Server/Client 網路通訊教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -345,7 +428,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyqt-qradiobutton/" data-id="clysnej0i00glrapqob7t1dts" data-title="Python PyQt5 QRadioButton 單選框用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyqt-qradiobutton/" data-id="clyu2uemx00gkplpqvrv33xdm" data-title="Python PyQt5 QRadioButton 單選框用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -423,7 +506,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyqt-qpixmap/" data-id="clysnej0i00gkrapqsojjgmnz" data-title="Python PyQt5 QPixmap 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyqt-qpixmap/" data-id="clyu2uemw00gjplpqvliam8af" data-title="Python PyQt5 QPixmap 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -500,7 +583,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyqt-qtimer/" data-id="clysnej0h00gjrapqmnbhlqck" data-title="Python PyQt5 QTimer 定時器用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyqt-qtimer/" data-id="clyu2uemw00giplpqyyaicmaj" data-title="Python PyQt5 QTimer 定時器用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -575,7 +658,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyqt-qcheckbox/" data-id="clysnej0h00girapq4hj20kgd" data-title="Python PyQt5 QCheckBox 複選框用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyqt-qcheckbox/" data-id="clyu2uemv00ghplpq08pxxdfb" data-title="Python PyQt5 QCheckBox 複選框用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -649,7 +732,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyqt-qfiledialog/" data-id="clysnej0h00ghrapqsd6j3s72" data-title="Python PyQt5 QFileDialog 開啟檔案對話框" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pyqt-qfiledialog/" data-id="clyu2uemu00ggplpq4dqrusta" data-title="Python PyQt5 QFileDialog 開啟檔案對話框" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -723,7 +806,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-find-max-value/" data-id="clysnej0g00ggrapq2q5l607l" data-title="Python 求最大值的 3 個方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-find-max-value/" data-id="clyu2uemu00gfplpq9su6fu87" data-title="Python 求最大值的 3 個方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -787,86 +870,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-get-current-path/" data-id="clysnej0g00gfrapqsrsyxpl4" data-title="Python 2 種取得當前路徑的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-get-current-path/" data-id="clyu2uemu00geplpqofctgbny" data-title="Python 2 種取得當前路徑的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pyqt-qcombobox" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pyqt-qcombobox/" class="article-date">
-  <time datetime="2021-11-15T14:00:00.000Z" itemprop="datePublished">2021-11-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pyqt-qcombobox/">Python PyQt5 QComboBox 下拉式選單用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Python PyQt5 QComboBox 下拉式選單用法與範例，ComboBox 下拉式選單通常適用於讓使用者從多個選項中選擇一個的情境。  </p>
-<p>以下的 Python PyQt5 QComboBox 用法與範例將分為這幾部分，  </p>
-<ul>
-<li>PyQt5 建立 QComboBox  </li>
-<li>PyQt5 設定 QComboBox 預設的選項  </li>
-<li>PyQt5 取得目前 QComboBox 的選項  </li>
-<li>PyQt5 QComboBox 綁定事件  </li>
-</ul>
-<h2><span id="pyqt5-建立-qcombobox">PyQt5 建立 QComboBox</span></h2><p>PyQt5 建立 QComboBox 的用法如下，建立 <code>QComboBox()</code> 後，再用 <code>addItems()</code> 將選項的數值設定進去，這邊我們以水果的選項作為示範，<code>addItems()</code> 接受 list 作為引數，所以這邊我們一次把所有水果的選項一次傳進去。<br><figure class="highlight python"><figcaption><span>python-pyqt-qcombobox.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> (QApplication, QWidget, QComboBox)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyWidget</span><span class="params">(QWidget)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.setWindowTitle(<span class="string">'my window'</span>)</span><br><span class="line">        self.setGeometry(<span class="number">50</span>, <span class="number">50</span>, <span class="number">200</span>, <span class="number">150</span>)</span><br><span class="line"></span><br><span class="line">        self.mycombobox = QComboBox(self)</span><br><span class="line">        self.mycombobox.addItems([<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'orange'</span>, <span class="string">'lemon'</span>, <span class="string">'tomato'</span>])</span><br><span class="line">        self.mycombobox.move(<span class="number">60</span>, <span class="number">50</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app = QApplication(sys.argv)</span><br><span class="line">    w = MyWidget()</span><br><span class="line">    w.show()</span><br><span class="line">    sys.exit(app.exec_())</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-pyqt-qcombobox/pyqt-qcombobox-1.png" title="pyqt qcombobox">  </p>
-<p>QComboBox 的 <code>addItems()</code> 是用來加入多個選項，如果要加入單一選項的話可以使用 <code>addItem()</code>，所以上述範例你也可以這樣寫，<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">self.mycombobox.addItem(<span class="string">'apple'</span>)</span><br><span class="line">self.mycombobox.addItem(<span class="string">'banana'</span>)</span><br><span class="line">self.mycombobox.addItem(<span class="string">'orange'</span>)</span><br><span class="line">self.mycombobox.addItem(<span class="string">'lemon'</span>)</span><br><span class="line">self.mycombobox.addItem(<span class="string">'tomato'</span>)</span><br></pre></td></tr></table></figure></p>
-<h2><span id="pyqt5-設定-qcombobox-預設的選項">PyQt5 設定 QComboBox 預設的選項</span></h2><p>PyQt5 要設定 QComboBox 預設選項的話，可以透過 <code>QComboBox.setCurrentIndex()</code> 函式來設定，索引值從 0 開始，第一個選項的索引值為 0，如果設定的索引值超出範圍則會顯示空選項，以下示範設定索引值為 1，另外也可以使用 <code>QComboBox.setCurrentText()</code> 來設定預設的選項文字，如果設定的文字不在選項內的話則會顯示第一個選項。<br><figure class="highlight python"><figcaption><span>python-pyqt-qcombobox2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> (QApplication, QWidget, QComboBox)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyWidget</span><span class="params">(QWidget)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.setWindowTitle(<span class="string">'my window'</span>)</span><br><span class="line">        self.setGeometry(<span class="number">50</span>, <span class="number">50</span>, <span class="number">200</span>, <span class="number">150</span>)</span><br><span class="line"></span><br><span class="line">        self.mycombobox = QComboBox(self)</span><br><span class="line">        self.mycombobox.addItems([<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'orange'</span>, <span class="string">'lemon'</span>, <span class="string">'tomato'</span>])</span><br><span class="line">        self.mycombobox.setCurrentIndex(<span class="number">1</span>)</span><br><span class="line">        <span class="comment">#self.mycombobox.setCurrentText('banana')</span></span><br><span class="line">        self.mycombobox.move(<span class="number">60</span>, <span class="number">50</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app = QApplication(sys.argv)</span><br><span class="line">    w = MyWidget()</span><br><span class="line">    w.show()</span><br><span class="line">    sys.exit(app.exec_())</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-pyqt-qcombobox/pyqt-qcombobox-2.png" title="pyqt qcombobox">  </p>
-<h2><span id="pyqt5-取得目前-qcombobox-的選項">PyQt5 取得目前 QComboBox 的選項</span></h2><p>這邊示範按下按鈕顯示目前選取的 QComboBox 選項，<code>QComboBox.currentIndex()</code> 可以取得目前 QComboBox 的選項索引值，而 <code>QComboBox.currentText()</code> 則是取得目前 QComboBox 的選項文字，首先使用 <code>QPushButton.clicked.connect()</code> 先設定按鈕事件的對應處理函式，如下例中的 <code>onButtonClick()</code>，關於 QPushButton 詳細的用法與按鈕事件可以參考<a href="/python-pyqt-qpushbutton/" title="這篇">這篇</a>，當按下按鈕時在 <code>onButtonClick()</code> 把 mybutton 的按鈕文字設定成當前的 mycombobox 選項索引值跟選項文字。<br><figure class="highlight python"><figcaption><span>python-pyqt-qcombobox3.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> (QApplication, QWidget, QGridLayout,</span><br><span class="line">                             QComboBox, QPushButton)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyWidget</span><span class="params">(QWidget)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.setWindowTitle(<span class="string">'my window'</span>)</span><br><span class="line">        self.setGeometry(<span class="number">50</span>, <span class="number">50</span>, <span class="number">200</span>, <span class="number">150</span>)</span><br><span class="line"></span><br><span class="line">        gridlayout = QGridLayout()</span><br><span class="line">        self.setLayout(gridlayout)</span><br><span class="line"></span><br><span class="line">        self.mycombobox = QComboBox(self)</span><br><span class="line">        self.mycombobox.addItems([<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'orange'</span>, <span class="string">'lemon'</span>, <span class="string">'tomato'</span>])</span><br><span class="line">        gridlayout.addWidget(self.mycombobox, <span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        self.mybutton = QPushButton(<span class="string">'button'</span>, self)</span><br><span class="line">        self.mybutton.clicked.connect(self.onButtonClick)</span><br><span class="line">        gridlayout.addWidget(self.mybutton, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">onButtonClick</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.mybutton.setText(<span class="string">'idx: '</span> + str(self.mycombobox.currentIndex()) +</span><br><span class="line">                              <span class="string">', '</span> + self.mycombobox.currentText())</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app = QApplication(sys.argv)</span><br><span class="line">    w = MyWidget()</span><br><span class="line">    w.show()</span><br><span class="line">    sys.exit(app.exec_())</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-pyqt-qcombobox/pyqt-qcombobox-3.png" title="pyqt qcombobox">  </p>
-<h2><span id="pyqt5-qcombobox-綁定事件">PyQt5 QComboBox 綁定事件</span></h2><p>有時我們會希望當 Combobox 有變動時可以處理這個事件的邏輯，例如下列例子中，當 Combobox 發生改變時就讓 label 顯示對應的選項，這其中就要用到 <code>QComboBox.currentIndexChanged.connect</code> 來連結這個事件對應的處理函式，如下例中的 <code>onComboBoxChanged()</code>，當 Combobox 有改動時就在 <code>onComboBoxChanged()</code> 函式裡讓 mylabel 顯示文字設定成目前 Combobox 的選項文字，關於 QLabel 詳細的用法可以參考<a href="/python-pyqt-qlabel/" title="這篇">這篇</a>。<br><figure class="highlight python"><figcaption><span>python-pyqt-qcombobox4.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> PyQt5.QtWidgets <span class="keyword">import</span> (QApplication, QWidget, QGridLayout,</span><br><span class="line">                             QComboBox, QLabel)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyWidget</span><span class="params">(QWidget)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super().__init__()</span><br><span class="line">        self.initUI()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initUI</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.setWindowTitle(<span class="string">'my window'</span>)</span><br><span class="line">        self.setGeometry(<span class="number">50</span>, <span class="number">50</span>, <span class="number">200</span>, <span class="number">150</span>)</span><br><span class="line"></span><br><span class="line">        gridlayout = QGridLayout()</span><br><span class="line">        self.setLayout(gridlayout)</span><br><span class="line"></span><br><span class="line">        self.mycombobox = QComboBox(self)</span><br><span class="line">        self.mycombobox.addItems([<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'orange'</span>, <span class="string">'lemon'</span>, <span class="string">'tomato'</span>])</span><br><span class="line">        self.mycombobox.currentIndexChanged.connect(self.onComboBoxChanged)</span><br><span class="line">        gridlayout.addWidget(self.mycombobox, <span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        self.mylabel = QLabel(<span class="string">'label'</span>, self)</span><br><span class="line">        gridlayout.addWidget(self.mylabel, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">onComboBoxChanged</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.mylabel.setText(self.mycombobox.currentText())</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app = QApplication(sys.argv)</span><br><span class="line">    w = MyWidget()</span><br><span class="line">    w.show()</span><br><span class="line">    sys.exit(app.exec_())</span><br></pre></td></tr></table></figure></p>
-<p>結果圖如下，<br><img src="/python-pyqt-qcombobox/pyqt-qcombobox-4.png" title="pyqt qcombobox">  </p>
-<p>以上就是 Python PyQt5 QComboBox 下拉式選單用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！<br>下一篇將會介紹 <a href="/python-pyqt-qradiobutton/" title="PyQt5 QRadioButton 單選框用法與範例">PyQt5 QRadioButton 單選框用法與範例</a>   </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-tutorial/" title="Python 新手入門教學懶人包">Python 新手入門教學懶人包</a><br><a href="/python-pyqt-tutorial/" title="Python PyQt5 新手入門教學">Python PyQt5 新手入門教學</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pyqt-qcombobox/" data-id="clysnej0g00gerapqja1em23y" data-title="Python PyQt5 QComboBox 下拉式選單用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PyQt/">PyQt</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
 
     </footer>
   </div>
@@ -910,6 +917,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/php-uniqid/">如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性</a>
+          </li>
+        
+          <li>
             <a href="/ubuntu-wordpress/">Ubuntu 下安裝 wordpress</a>
           </li>
         
@@ -923,10 +934,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/mac-rdp-client/">macOS 下 RDP client 遠端桌面軟體</a>
-          </li>
-        
-          <li>
-            <a href="/ubuntu-prevent-accidental-deletion-with-rm-command/">Ubuntu 下使用 rm 指令如何避免誤刪除</a>
           </li>
         
       </ul>
@@ -945,7 +952,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
