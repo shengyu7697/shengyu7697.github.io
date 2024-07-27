@@ -107,6 +107,67 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-boost-use-cmake-visual-studio-in-windows" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/boost-use-cmake-visual-studio-in-windows/" class="article-date">
+  <time datetime="2019-12-22T14:00:00.000Z" itemprop="datePublished">2019-12-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/boost-use-cmake-visual-studio-in-windows/">在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹如何在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式，Windows 怎麼安裝 boost 請看這篇，確定系統有安裝 boost 後，就開始動手寫程式吧！</p>
+<h2><span id="用-cmake-來建立-visual-studio-專案">用 cmake 來建立 Visual Studio 專案</span></h2><p>要讓 cmake 能夠使用 boost，要先設定 BOOST_ROOT、BOOST_INCLUDEDIR、BOOST_LIBRARYDIR 三個變數才能順利找到 boost 的路徑與 cmake 相關變數<br>可以在下 cmake 時後面帶參數，也可以在CMakeList.txt裡用 set 設定。<br>這邊會用到的變數為 BOOST_ROOT、BOOST_INCLUDEDIR、BOOST_LIBRARYDIR，最後可在 CMakeList.txt 裡 確認Boost_FOUND 這個變數看看有沒有找到 Boost。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cmake .. \</span><br><span class="line">-G <span class="string">"Visual Studio 14 2015 Win64"</span> \</span><br><span class="line">-DBOOST_ROOT:PATH=C:/osvr/boost_1_66_0 \</span><br><span class="line">-DBOOST_INCLUDEDIR:PATH=C:/osvr/boost_1_66_0 \</span><br><span class="line">-DBOOST_LIBRARYDIR:PATH=C:/osvr/boost_1_66_0/libs</span><br></pre></td></tr></table></figure></p>
+<p>補充︰我使用到 cmake 版本是3.xx，按照它內部的 FindBoost.cmake 來看只能找到1.70以下</p>
+<h2><span id="寫專案的-cmakelisttxt">寫專案的 CMakeList.txt</span></h2><p>CMakeList.txt project 使用 Boost_INCLUDE_DIRS、Boost_LIBRARIES變數。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">find_package(Boost 1.66.0 COMPONENTS date_time filesystem system ...)</span><br><span class="line">if(Boost_FOUND)</span><br><span class="line">     include_directories($&#123;Boost_INCLUDE_DIRS&#125;)</span><br><span class="line">     add_executable(foo foo.cc)</span><br><span class="line">     target_link_libraries(foo $&#123;Boost_LIBRARIES&#125;)</span><br><span class="line">endif()</span><br></pre></td></tr></table></figure></p>
+<h2><span id="寫一個簡單的-boost-程式">寫一個簡單的 Boost 程式</span></h2><figure class="highlight cpp"><figcaption><span>boost_example.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/lambda/lambda.hpp&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iterator&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">using</span> <span class="keyword">namespace</span> boost::lambda;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="built_in">std</span>::istream_iterator&lt;<span class="keyword">int</span>&gt; in;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::for_each(</span><br><span class="line">        in(<span class="built_in">std</span>::<span class="built_in">cin</span>), in(), <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; (_1 * <span class="number">3</span>) &lt;&lt; <span class="string">" "</span> );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>執行程式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 1 2 3 | ./boost_example</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3 6 9</span><br></pre></td></tr></table></figure></p>
+<p>參考<br>[1] FindBoost — CMake 3.16.2 Documentation<br><a href="https://cmake.org/cmake/help/v3.16/module/FindBoost.html" rel="noopener external nofollow noreferrer" target="_blank">https://cmake.org/cmake/help/v3.16/module/FindBoost.html</a><br>[2] CMake/FindBoost.cmake at master · Kitware/CMake · GitHub<br><a href="https://github.com/Kitware/CMake/blob/master/Modules/FindBoost.cmake" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/Kitware/CMake/blob/master/Modules/FindBoost.cmake</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/boost-use-cmake-visual-studio-in-windows/" data-id="clz42xc03006wqypqi7vp5cvi" data-title="在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-boost-install-boost-in-windows" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/boost-install-boost-in-windows/" class="article-date">
@@ -154,7 +215,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-install-boost-in-windows/" data-id="clz2nhhcg006wy4pqtveppooy" data-title="在 Windows 下安裝 Boost" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-install-boost-in-windows/" data-id="clz42xc03006vqypqlpz8xzn6" data-title="在 Windows 下安裝 Boost" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -214,7 +275,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-install-boost-in-ubuntu/" data-id="clz2nhhcg006vy4pqizz99ach" data-title="在 Ubuntu 下安裝 Boost" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-install-boost-in-ubuntu/" data-id="clz42xc02006uqypqwlzq539q" data-title="在 Ubuntu 下安裝 Boost" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -278,7 +339,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-random_shuffle/" data-id="clz2nhhcf006uy4pqu4cfboh9" data-title="std::random_shuffle 產生不重複的隨機亂數" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-random_shuffle/" data-id="clz42xc01006tqypqc8xm67m9" data-title="std::random_shuffle 產生不重複的隨機亂數" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -342,7 +403,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-printf-size_t/" data-id="clz2nhhcf006ty4pqe1svl0re" data-title="C/C++ printf 列印 size_t 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-printf-size_t/" data-id="clz42xc01006sqypqoenn0mjl" data-title="C/C++ printf 列印 size_t 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -401,7 +462,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-tutorial/" data-id="clz2nhhce006sy4pqyl1ppdbs" data-title="Android 系列文章" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-tutorial/" data-id="clz42xc00006rqypqun6slw15" data-title="Android 系列文章" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -461,7 +522,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-write-a-android-bp/" data-id="clz2nhhce006ry4pqmcqlsvbz" data-title="如何寫 Android.bp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-write-a-android-bp/" data-id="clz42xc00006qqypqud75rp40" data-title="如何寫 Android.bp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -530,7 +591,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-filestorage/" data-id="clz2nhhcd006qy4pqm3wv93hm" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-filestorage/" data-id="clz42xbzz006pqypqru1urraj" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -588,7 +649,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-usb-tethering/" data-id="clz2nhhcd006py4pqpckzu3jm" data-title="Android USB Tethering 透過 USB 分享行動數據" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-usb-tethering/" data-id="clz42xbzy006oqypqy94ghpsm" data-title="Android USB Tethering 透過 USB 分享行動數據" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -676,176 +737,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-unordered_map/" data-id="clz2nhhcc006oy4pq9slokq3m" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-unordered_map/" data-id="clz42xbzy006nqypq5ovdtvmq" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-android-build-aosp" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/android-build-aosp/" class="article-date">
-  <time datetime="2019-12-12T14:00:00.000Z" itemprop="datePublished">2019-12-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/android-build-aosp/">如何編譯 Build Android AOSP</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>記錄下 Android 要怎麼編譯 build AOSP (Android Open Source Project)。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">source</span> build/envsetup.sh</span><br><span class="line">$ lunch</span><br><span class="line">$ make -j4</span><br></pre></td></tr></table></figure>
-<p><code>source build/envsetup.sh</code> 之後才能用 mm 或 mmm 指令。<br><code>lunch</code> 後面可接 target。<br>要跑模擬器的話選擇 <code>lunch aosp_arm-eng</code> 然後 make 完後下 <code>emulator</code> 指令。  </p>
-<p>aosp_arm-eng 的 aosp_arm 是產品名稱，後面的 eng 是 engineer 的意思，另外還有 user、userdebug  </p>
-<table>
-<thead>
-<tr>
-<th>Buildtype</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>user</td>
-<td>編譯出來的系統有一定的權限限制, 常用於產品發佈階段</td>
-</tr>
-<tr>
-<td>userdebug</td>
-<td>編譯出來的系統有 root 權限, 常用於開發測試除錯</td>
-</tr>
-<tr>
-<td>eng</td>
-<td>engineer 版本</td>
-</tr>
-</tbody>
-</table>
-<p><code>make -j4</code> 的 <code>-j4</code> 是代表讓電腦使用幾個執行緒進行編譯，這樣能提高編譯速度，這個值取決於開發機器的CPU數、核心數與執行緒數，以四核心CPU的電腦為例，就可以使用 <code>-j4</code> 這參數，<br>如果CPU有支援<a href="https://zh.wikipedia.org/wiki/%E8%B6%85%E5%9F%B7%E8%A1%8C%E7%B7%92" rel="noopener external nofollow noreferrer" target="_blank">超執行緒（HT, Hyper-Threading）</a>的話就可以使用 <code>-j8</code>。  </p>
-<p>要編譯單一模組的話，可以在 make 後面加上模組名稱，以下為常用的模組：  </p>
-<table>
-<thead>
-<tr>
-<th>make &lt;目標模組&gt;</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>make kernel</td>
-<td>編譯 kernel，輸出 boot.img</td>
-</tr>
-<tr>
-<td>make bootimage</td>
-<td>產生 boot.img</td>
-</tr>
-<tr>
-<td>make userdataimage</td>
-<td>產生 userdata.img</td>
-</tr>
-<tr>
-<td>make recoveryimage</td>
-<td>產生 recovery.img</td>
-</tr>
-<tr>
-<td>make cacheimage</td>
-<td>產生 cache.img</td>
-</tr>
-</tbody>
-</table>
-<p>產出的 boot.img、system.img 在out/target/product/<product_name>目錄下<br>接下來就介紹一下 Android 的各種映像檔  </product_name></p>
-<h2><span id="android-的映像檔">Android 的映像檔</span></h2><table>
-<thead>
-<tr>
-<th>名稱</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>boot.img</td>
-<td>包含kernel啟動參數, kernel等多個元素？</td>
-</tr>
-<tr>
-<td>ramdisk.img</td>
-<td>一個小型的檔案系統, 是 Android 系統啟動的關鍵</td>
-</tr>
-<tr>
-<td>system.img</td>
-<td>Android 的, framework 也在這裡, 將被掛載到 /system 目錄下</td>
-</tr>
-<tr>
-<td>recovery.img</td>
-<td>「救援模式」時使用的映像檔</td>
-</tr>
-<tr>
-<td>cache.img</td>
-<td>緩衝區, 將被掛載到 /cache 目錄下</td>
-</tr>
-<tr>
-<td>misc.img</td>
-<td>各種雜項</td>
-</tr>
-<tr>
-<td>userdata.img</td>
-<td>各程式的資料儲存地，將被掛載到 /data 目錄下</td>
-</tr>
-<tr>
-<td>metadata.img</td>
-<td></td>
-</tr>
-<tr>
-<td>vendor</td>
-<td></td>
-</tr>
-<tr>
-<td>radio</td>
-<td></td>
-</tr>
-<tr>
-<td>tos</td>
-</tr>
-</tbody>
-</table>
-<p>參考<br>[1] Building Android  |  Android Open Source Project<br><a href="https://source.android.com/setup/build/building" rel="noopener external nofollow noreferrer" target="_blank">https://source.android.com/setup/build/building</a><br>[2] 理解Android編譯命令- Gityuan博客<br><a href="http://gityuan.com/2016/03/19/android-build/" rel="noopener external nofollow noreferrer" target="_blank">http://gityuan.com/2016/03/19/android-build/</a><br>[3] Partitions and Images  |  Android Open Source Project<br><a href="https://source.android.com/devices/bootloader/partitions-images" rel="noopener external nofollow noreferrer" target="_blank">https://source.android.com/devices/bootloader/partitions-images</a><br><a href="https://blog.csdn.net/tuhuolong/article/details/44681037" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/tuhuolong/article/details/44681037</a><br><a href="https://www.twblogs.net/a/5b8e41662b7177188343df5e" rel="noopener external nofollow noreferrer" target="_blank">https://www.twblogs.net/a/5b8e41662b7177188343df5e</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-build-aosp/" data-id="clz2nhhcc006ny4pq02e3gdei" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
 
     </footer>
   </div>
@@ -889,6 +784,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/php-str_pad/">PHP str_pad 函式用途、語法與實用範例解析</a>
+          </li>
+        
+          <li>
             <a href="/php-uniqid/">如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性</a>
           </li>
         
@@ -902,10 +801,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-printf/">如何使用 C/C++ 中的 printf 函式：詳盡指南</a>
-          </li>
-        
-          <li>
-            <a href="/mac-rdp-client/">macOS 下 RDP client 遠端桌面軟體</a>
           </li>
         
       </ul>
@@ -924,7 +819,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
