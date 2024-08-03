@@ -107,6 +107,81 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-gdb" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/gdb/" class="article-date">
+  <time datetime="2022-06-20T14:00:00.000Z" itemprop="datePublished">2022-06-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/gdb/">gdb 除錯教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 gdb 除錯教學，全名為 GNU Debugger，是 GNU 軟體系統中的標準偵錯器 Debugger，在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 gdb 來替 C/C++ 程式偵錯。  </p>
+<p>以下 gdb 除錯教學的內容大概分為這幾部分，  </p>
+<ul>
+<li>gcc/g++ 編譯 C/C++ 程式  </li>
+<li>gdb 進行除錯  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2><span id="gccg-編譯-cc-程式">gcc/g++ 編譯 C/C++ 程式</span></h2><p>我的桌機環境為 Ubuntu 16.04，以下為一個簡單的 C/C++ 程式，使用 <code>g++ main.cpp -g -o a.out</code> 進行編譯，編譯成功後會產生 a.out 執行檔，<code>-g</code> 表示帶有除錯資訊，<br><figure class="highlight cpp"><figcaption><span>main.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ main.cpp -g -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> s = <span class="string">"hello world"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        sum += i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>程式輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hello world</span><br><span class="line">sum=10</span><br><span class="line">end</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="gdb-進行除錯">gdb 進行除錯</span></h2><p>接著使用 gdb 指令對 a.out 進行除錯，執行 <code>gdb ./a.out</code> 指令進入 gdb 交互介面，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ gdb ./a.out </span><br><span class="line">GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.5) 7.11.1</span><br><span class="line">Copyright (C) 2016 Free Software Foundation, Inc.</span><br><span class="line">License GPLv3+: GNU GPL version 3 or later &lt;http://gnu.org/licenses/gpl.html&gt;</span><br><span class="line">This is free software: you are free to change and redistribute it.</span><br><span class="line">There is NO WARRANTY, to the extent permitted by law.  Type <span class="string">"show copying"</span></span><br><span class="line">and <span class="string">"show warranty"</span> <span class="keyword">for</span> details.</span><br><span class="line">This GDB was configured as <span class="string">"x86_64-linux-gnu"</span>.</span><br><span class="line">Type <span class="string">"show configuration"</span> <span class="keyword">for</span> configuration details.</span><br><span class="line">For bug reporting instructions, please see:</span><br><span class="line">&lt;http://www.gnu.org/software/gdb/bugs/&gt;.</span><br><span class="line">Find the GDB manual and other documentation resources online at:</span><br><span class="line">&lt;http://www.gnu.org/software/gdb/documentation/&gt;.</span><br><span class="line">For <span class="built_in">help</span>, <span class="built_in">type</span> <span class="string">"help"</span>.</span><br><span class="line">Type <span class="string">"apropos word"</span> to search <span class="keyword">for</span> commands related to <span class="string">"word"</span>...</span><br><span class="line">Reading symbols from a.out...done.</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
+<p>輸入 <code>b main.cpp:14</code> 插入中斷點在 main.cpp 的 14 行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) b main.cpp:14</span><br><span class="line">Breakpoint 1 at 0x400c09: file main.cpp, line 14.</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
+<p>輸入 <code>info b</code> 印出目前設定的中斷點，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info b</span><br><span class="line">Num     Type           Disp Enb Address            What</span><br><span class="line">1       breakpoint     keep y   0x0000000000400c09 in main() at main.cpp:14</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>按下 <code>r</code> 開始執行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) r</span><br><span class="line">Starting program: /home/shengyu/a.out </span><br><span class="line">hello world</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main () at main.cpp:14</span><br><span class="line">14	    std::cout &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
+<p>再次輸入 <code>info b</code> 印出目前設定的中斷點，可以看到中斷點被觸發幾次，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info b</span><br><span class="line">Num     Type           Disp Enb Address            What</span><br><span class="line">1       breakpoint     keep y   0x0000000000400c09 <span class="keyword">in</span> main() at main.cpp:14</span><br><span class="line">	breakpoint already hit 1 time</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
+<p>接著按 <code>c</code> 繼續執行直到程式結束，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(gdb) c</span><br><span class="line">Continuing.</span><br><span class="line">sum=10</span><br><span class="line">end</span><br><span class="line">[Inferior 1 (process 14925) exited normally]</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>以下為 gdb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>info b</code>：印出目前設定的中斷點<br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
+<p>以上就是 gdb 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br>C語言工具使用，GDB個人學習筆記 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天<br><a href="https://ithelp.ithome.com.tw/articles/10257294" rel="noopener external nofollow noreferrer" target="_blank">https://ithelp.ithome.com.tw/articles/10257294</a>  </p>
+<p><strong>相關主題</strong><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a><br><a href="/lldb/" title="LLDB 除錯教學">LLDB 除錯教學</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/gdb/" data-id="clze30btk00inxzpq8891u0pz" data-title="gdb 除錯教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-vscode-debugging-on-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/vscode-debugging-on-ubuntu/" class="article-date">
@@ -176,7 +251,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-ubuntu/" data-id="clzcnkgaq00imxepqltwdt5x3" data-title="Ubuntu 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-ubuntu/" data-id="clze30btk00imxzpqrsz68qyl" data-title="Ubuntu 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -254,7 +329,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-debugging-with-vscode/" data-id="clzcnkgaq00ilxepq1f82ly8q" data-title="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-debugging-with-vscode/" data-id="clze30btj00ilxzpqfzd5eq2g" data-title="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -317,7 +392,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="clzcnkgap00ikxepqzzvz31po" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="clze30btj00ikxzpqk6e0m7oj" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -412,7 +487,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="clzcnkgap00ijxepq10mdpydy" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="clze30bti00iixzpqqyrcmovd" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -492,7 +567,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="clzcnkgap00iixepqlcotvjyd" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="clze30bti00ihxzpquygpr0hq" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -559,7 +634,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="clzcnkgao00ihxepq89n7vv7r" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="clze30bti00igxzpqpwdvqatx" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -633,7 +708,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="clzcnkgao00igxepq5i89qxsb" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="clze30bth00ifxzpq7nu0d4b7" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -696,7 +771,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="clzcnkgao00ifxepqamo4e18y" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="clze30bth00iexzpqmdb4wbxz" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -762,75 +837,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="clzcnkgan00iexepq69vtyanv" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="clze30btg00idxzpqx82pm08d" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-attribute-packed" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-attribute-packed/" class="article-date">
-  <time datetime="2022-05-16T14:00:00.000Z" itemprop="datePublished">2022-05-16</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-attribute-packed/">C/C++ __attribute__((__packed__)) 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ <code>__attribute__((__packed__))</code> 用法與範例。  </p>
-<p>現代的編譯器幾乎都會進行最佳化，所以有時候某資料結構佔用的 bytes 數可能不是你想像的，原因是因為編譯器會為了運行效能進行最佳化，如下列範例所示，<br><figure class="highlight cpp"><figcaption><span>cpp-attribute-packed.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-attribute-packed.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharChar</span>      &#123;</span> <span class="keyword">char</span> c; <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharCharInt</span>   &#123;</span> <span class="keyword">char</span> c; <span class="keyword">char</span> c2; <span class="keyword">int</span> i; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">IntCharChar</span>   &#123;</span> <span class="keyword">int</span> i;  <span class="keyword">char</span> c;  <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharIntChar</span>   &#123;</span> <span class="keyword">char</span> c; <span class="keyword">int</span> i;   <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharShortChar</span> &#123;</span> <span class="keyword">char</span> c; <span class="keyword">short</span> s; <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharChar)      "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharCharInt)   "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharCharInt) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(IntCharChar)   "</span> &lt;&lt; <span class="keyword">sizeof</span>(IntCharChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharIntChar)   "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharIntChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharShortChar) "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharShortChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>我的平台輸出如下，值得注意的是 CharCharInt 手算的話應該為 6，但是編譯器進行最佳化時會變成 8，<br>而 CharIntChar 會因為順序關係而造成最佳化結果不同變成 12，<br>CharShortChar 手算的話應該為 4，但是編譯器進行最佳化時會變成 6，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sizeof(CharChar)       2</span><br><span class="line">sizeof(CharCharInt)    8</span><br><span class="line">sizeof(IntCharChar)    8</span><br><span class="line">sizeof(CharIntChar)    12</span><br><span class="line">sizeof(CharShortChar)  6</span><br></pre></td></tr></table></figure></p>
-<p>通常在跨平台或資料結構的網路通訊中會需要資料對齊，<br>那麼如果要一定讓它強制對齊的話呢？Windows 與 Linux / macOS 作法不同，<br>在 Windows 下是使用 <code>#pragma pack</code>，這寫法原本只適用於 Visual C++ 編譯器，但後來 GCC 為了相容性也加入了這個語法的支援，詳細用法可看<a href="/cpp-pragma-pack/" title="這篇">這篇</a>。<br>在 Linux / macOS 下是這樣做，要加上 <code>__attribute__((__packed__))</code>，加在前或後都可以，適用於 GCC 編譯器，<br><figure class="highlight cpp"><figcaption><span>cpp-attribute-packed.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-attribute-packed2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">attribute__</span>((__<span class="title">packed__</span>)) <span class="title">CharChar</span> &#123;</span></span><br><span class="line">    <span class="keyword">char</span> c;</span><br><span class="line">    <span class="keyword">char</span> c2;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">attribute__</span>((__<span class="title">packed__</span>)) <span class="title">CharCharInt</span> &#123;</span></span><br><span class="line">    <span class="keyword">char</span> c;</span><br><span class="line">    <span class="keyword">char</span> c2;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">IntCharChar</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">char</span> c;</span><br><span class="line">    <span class="keyword">char</span> c2;</span><br><span class="line">&#125; __attribute__((__packed__));</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharIntChar</span> &#123;</span></span><br><span class="line">    <span class="keyword">char</span> c;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">char</span> c2;</span><br><span class="line">&#125; __attribute__((__packed__)) charintchar;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">CharShortChar</span> &#123;</span></span><br><span class="line">    <span class="keyword">char</span> c;</span><br><span class="line">    <span class="keyword">short</span> s;</span><br><span class="line">    <span class="keyword">char</span> c2;</span><br><span class="line">&#125; __attribute__((__packed__)) CharShortChar_t;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    charintchar.i = <span class="number">123</span>;</span><br><span class="line">    CharShortChar_t charshortchar;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharChar)       "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharCharInt)    "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharCharInt) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(IntCharChar)    "</span> &lt;&lt; <span class="keyword">sizeof</span>(IntCharChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharIntChar)    "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharIntChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharShortChar)  "</span> &lt;&lt; <span class="keyword">sizeof</span>(CharShortChar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>我的平台輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sizeof(CharChar)       2</span><br><span class="line">sizeof(CharCharInt)    6</span><br><span class="line">sizeof(IntCharChar)    6</span><br><span class="line">sizeof(CharIntChar)    6</span><br><span class="line">sizeof(CharShortChar)  4</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以上就是 C/C++ <code>__attribute__((__packed__))</code> 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C/C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-pragma-pack/" title="C/C++ pragma pack 用法與範例">C/C++ pragma pack 用法與範例</a><br><a href="/cpp-sizeof/" title="C/C++ sizeof 用法與範例">C/C++ sizeof 用法與範例</a><br><a href="/cpp-typedef/" title="C/C++ typedef 用法與範例">C/C++ typedef 用法與範例</a><br><a href="/cpp-define/" title="C/C++ define 用法與範例">C/C++ define 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-attribute-packed/" data-id="clzcnkgan00idxepqmnu7g0lc" data-title="C/C++ __attribute__((__packed__)) 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -874,6 +884,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/php-substr/">PHP substr 函式全面解析與應用範例</a>
+          </li>
+        
+          <li>
             <a href="/php-str_pad/">PHP str_pad 函式用途、語法與實用範例解析</a>
           </li>
         
@@ -887,10 +901,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/php-isset/">深入理解 PHP 中的 isset 用法、範例及最佳實踐</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-printf/">如何使用 C/C++ 中的 printf 函式：詳盡指南</a>
           </li>
         
       </ul>
@@ -909,7 +919,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
