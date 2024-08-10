@@ -107,6 +107,97 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-php-pdo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/php-pdo/" class="article-date">
+  <time datetime="2024-06-22T12:00:00.000Z" itemprop="datePublished">2024-06-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/PHP教學/">PHP教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/php-pdo/">使用 PHP 的 PDO 進行資料庫操作：入門指南</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 PHP 和 PDO 進行資料庫操作用法，在 PHP 開發中，與資料庫進行互動是一個常見的需求。PDO（PHP Data Objects）是一個提供一致接口來訪問多種資料庫的擴展。PDO 使得處理不同資料庫（如 MySQL、PostgreSQL、SQLite 等）變得更加容易和一致。本文將介紹如何使用 PDO 進行基本的資料庫操作，包括連線資料庫、執行查詢、插入、更新和刪除資料。</p>
+<h2><span id="什麼是-pdo">什麼是 PDO？</span></h2><p>PDO（PHP Data Objects）是一個物件導向的資料庫抽象層，旨在提高安全性和開發效率，同時提供一致的語法以支援多種資料庫。PDO 的功能和特點如下：</p>
+<ol>
+<li><p><strong>通用性強</strong>：PDO 支援多種資料庫系統，如 MySQL、MS SQL、ODBC、PostgreSQL、SQLite、Firebird、Informix 等。這意味著只要更換連線的資料庫驅動程式，程式碼無需更改即可適用於不同的資料庫系統。</p>
+</li>
+<li><p><strong>語法一致性</strong>：無論 PHP 版本如何，PDO 的語法在所有支援的資料庫系統中都是一致的。這與 MySQL 驅動（如 <code>mysql</code> 和 <code>mysqli</code>）不同，後者在不同 PHP 版本中可能需要不同的語法。</p>
+</li>
+<li><p><strong>物件導向設計</strong>：PDO 採用物件導向的設計，使得程式碼更具結構性和可讀性。物件導向的方式也更容易進行模組化和重用。</p>
+</li>
+<li><p><strong>增強安全性</strong>：PDO 提供了預處理語句和參數化查詢，有效防止 SQL 注入攻擊。這些功能允許開發者安全地處理來自使用者輸入的資料，減少潛在的安全風險。</p>
+</li>
+<li><p><strong>方便的資料操作</strong>：PDO 支援將查詢結果轉換為對應的 PHP 物件或陣列，使得資料操作更加方便和直觀。例如，使用 <code>fetchObject()</code> 方法可以直接將資料庫查詢結果轉換為 PHP 物件。</p>
+</li>
+<li><p><strong>內建於 PHP 5.5 以上版本</strong>：從 PHP 5.5 開始，PDO 已內建於 PHP 核心，無需額外安裝。這使得 PDO 成為一個非常方便和強大的選擇。</p>
+</li>
+</ol>
+<p>綜上所述，PDO 是 PHP 開發中一個強大且靈活的資料庫操作工具。它不僅提供了跨資料庫的通用語法，還透過物件導向和安全性增強的設計，提高了開發效率和應用程式的安全性。</p>
+<h2><span id="1-建立-pdo-連線">1. 建立 PDO 連線</span></h2><p>首先，我們需要建立一個 PDO 物件來連線資料庫。這需要提供資料來源名稱（DSN）、使用者名和密碼。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    $dsn = <span class="string">'mysql:host=localhost;dbname=testdb'</span>;</span><br><span class="line">    $username = <span class="string">'root'</span>;</span><br><span class="line">    $password = <span class="string">'password'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 建立 PDO 連線</span></span><br><span class="line">    $pdo = <span class="keyword">new</span> PDO($dsn, $username, $password);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 設定 PDO 錯誤模式為異常</span></span><br><span class="line">    $pdo-&gt;setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"連線成功"</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> (PDOException $e) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"連線失敗: "</span> . $e-&gt;getMessage();</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>這段程式碼中，我們建立了一個 PDO 實例並設定錯誤模式為異常，以便在出現錯誤時能夠更容易地進行除錯。</p>
+<h2><span id="2-執行-sql-查詢">2. 執行 SQL 查詢</span></h2><h3><span id="使用-query-方法">使用 <code>query</code> 方法</span></h3><p>對於不需要參數的簡單查詢，我們可以使用 <code>query</code> 方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"SELECT * FROM users"</span>;</span><br><span class="line"><span class="keyword">foreach</span> ($pdo-&gt;query($sql) <span class="keyword">as</span> $row) &#123;</span><br><span class="line">    print_r($row);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h3><span id="使用-prepare-和-execute-方法">使用 <code>prepare</code> 和 <code>execute</code> 方法</span></h3><p>對於需要參數的查詢，應使用 <code>prepare</code> 方法來防止 SQL 注入攻擊：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"SELECT * FROM users WHERE id = :id"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'id'</span> =&gt; <span class="number">1</span>]);</span><br><span class="line">$user = $stmt-&gt;fetch(PDO::FETCH_ASSOC);</span><br><span class="line"></span><br><span class="line">print_r($user);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h2><span id="3-插入資料">3. 插入資料</span></h2><p>使用 <code>prepare</code> 和 <code>execute</code> 方法插入資料：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"INSERT INTO users (username, email) VALUES (:username, :email)"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'username'</span> =&gt; <span class="string">'shengyu'</span>, <span class="string">'email'</span> =&gt; <span class="string">'shengyu@example.com'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"新記錄插入成功，ID: "</span> . $pdo-&gt;lastInsertId();</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h2><span id="4-更新資料">4. 更新資料</span></h2><p>同樣地，可以使用 <code>prepare</code> 和 <code>execute</code> 方法更新資料：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"UPDATE users SET email = :email WHERE id = :id"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'email'</span> =&gt; <span class="string">'newemail@example.com'</span>, <span class="string">'id'</span> =&gt; <span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"記錄更新成功"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h2><span id="5-刪除資料">5. 刪除資料</span></h2><p>使用 <code>prepare</code> 和 <code>execute</code> 方法刪除資料：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"DELETE FROM users WHERE id = :id"</span>;</span><br><span class="line">$stmt = $pdo-&gt;prepare($sql);</span><br><span class="line">$stmt-&gt;execute([<span class="string">'id'</span> =&gt; <span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">"記錄刪除成功"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<h2><span id="6-關閉連線">6. 關閉連線</span></h2><p>在 PHP 中，當 PDO 物件被銷毀時，連線會自動關閉。因此，不需要顯式地關閉連線。</p>
+<h2><span id="總結">總結</span></h2><p>PDO 提供了一個靈活且安全的方式來處理資料庫操作。透過使用 <code>prepare</code> 和 <code>execute</code> 方法，可以有效地防止 SQL 注入攻擊。PDO 的一致性和易用性使得它成為 PHP 開發人員處理資料庫操作的首選工具。</p>
+<p>以上就是 PHP 和 PDO 進行資料庫操作的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 PHP 相關技術，可以參考看看下面的文章，<br><a href="/php-mysqli/" title="PHP 和 MySQLi 進行資料庫操作">PHP 和 MySQLi 進行資料庫操作</a><br><a href="/php-display-errors/" title="PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤">PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/php-pdo/" data-id="clzo33ahr00mt8epq9rrqxcok" data-title="使用 PHP 的 PDO 進行資料庫操作：入門指南" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-google-sheets-sum-by-month" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/google-sheets-sum-by-month/" class="article-date">
@@ -251,7 +342,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/google-sheets-sum-by-month/" data-id="clznhav6u00mswopqpy0ut7jb" data-title="Google Sheets 累計月份金額或數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/google-sheets-sum-by-month/" data-id="clzo33ahq00ms8epqfxpe6c1n" data-title="Google Sheets 累計月份金額或數字" class="article-share-link">Share</a>
       
       
     </footer>
@@ -340,7 +431,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-watch/" data-id="clznhav6u00mrwopq75rznt52" data-title="Linux watch 指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-watch/" data-id="clzo33ahq00mr8epqpecibsxh" data-title="Linux watch 指令用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -428,7 +519,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-subprocess.run/" data-id="clznhav6t00mqwopqxowfl9s4" data-title="Python 中的 subprocess.run 完整指南與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-subprocess.run/" data-id="clzo33ahq00mq8epqdny7m18z" data-title="Python 中的 subprocess.run 完整指南與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -501,7 +592,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-dumpsys/" data-id="clznhav6t00mpwopqxat9jsn8" data-title="Android dumpsys 指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-dumpsys/" data-id="clzo33ahp00mp8epqhyemb39c" data-title="Android dumpsys 指令用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -569,7 +660,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-mysqli/" data-id="clznhav6t00mowopqp9ywmjfn" data-title="使用 PHP 和 MySQLi 進行資料庫操作的簡單指南" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-mysqli/" data-id="clzo33ahp00mo8epqzhh0lkpf" data-title="使用 PHP 和 MySQLi 進行資料庫操作的簡單指南" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -679,7 +770,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-subprocess.call/" data-id="clznhav6s00mnwopq7fpnwybq" data-title="Python subprocess.call 用法與範例解析" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-subprocess.call/" data-id="clzo33ahp00mn8epqoq03vylr" data-title="Python subprocess.call 用法與範例解析" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -776,7 +867,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sqlite/" data-id="clznhav6s00mmwopqihvlqjwl" data-title="如何在Python中使用SQLite：完整指南與實用範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sqlite/" data-id="clzo33aho00mm8epqtk16epw4" data-title="如何在Python中使用SQLite：完整指南與實用範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -844,7 +935,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/what-is-pdca/" data-id="clznhav6s00mlwopqrju814ih" data-title="什麼是PDCA循環？了解持續改進的管理利器" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/what-is-pdca/" data-id="clzo33aho00ml8epqznhrfxiw" data-title="什麼是PDCA循環？了解持續改進的管理利器" class="article-share-link">Share</a>
       
       
     </footer>
@@ -927,83 +1018,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-mongodb/" data-id="clznhav6r00mkwopqmn0qiz34" data-title="Python 與 MongoDB 的完美結合：詳細指南與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-mongodb/" data-id="clzo33aho00mk8epqx1hh3pym" data-title="Python 與 MongoDB 的完美結合：詳細指南與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-vmstat" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-vmstat/" class="article-date">
-  <time datetime="2024-06-09T12:00:00.000Z" itemprop="datePublished">2024-06-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-vmstat/">Linux vmstat 指令用法範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Linux vmstat 指令用法，<code>vmstat</code> 是一個用於顯示系統資源使用情況的 Linux 指令。它提供了關於虛擬記憶體、CPU、記憶體、磁碟、系統行程等方面的詳細資訊。現在讓我們來看一下它的基本用法以及其他常見和進階的用法。</p>
-<h2><span id="基本用法">基本用法</span></h2><p><code>vmstat</code> 指令的基本用法如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat [options] [delay [count]]</span><br></pre></td></tr></table></figure></p>
-<p>其中，<code>options</code> 是一些可選的參數，<code>delay</code> 是兩次回報之間的延遲時間（以秒為單位），<code>count</code> 是回報的次數。</p>
-<p>要查看當前系統的資源使用情況，只需在終端中輸入以下指令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat</span><br></pre></td></tr></table></figure></p>
-<p>這將顯示一系列資源使用指標，包括 CPU 使用率、記憶體使用、虛擬記憶體使用、IO 狀況等。</p>
-<img src="/linux-vmstat/vmstat.png" title="vmstat">  
-<h2><span id="其他常見用法">其他常見用法</span></h2><p><code>vmstat</code> 指令指定延遲時間和回報次數，用法如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat 5 3</span><br></pre></td></tr></table></figure></p>
-<p>這將每隔五秒回報一次資源使用情況，共回報三次。</p>
-<p><code>vmstat</code> 指令每隔1秒總共回報10次，用法如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat 1 10</span><br></pre></td></tr></table></figure></p>
-<p><code>vmstat</code> 指令顯示記憶體使用情況（以 KB 為單位），用法如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat -s</span><br></pre></td></tr></table></figure></p>
-<p>這將顯示更詳細的記憶體使用情況，包括可用記憶體、已使用記憶體、快取和緩衝區等。</p>
-<h2><span id="進階用法">進階用法</span></h2><p><code>vmstat</code> 指令監視系統資源使用情況，用法如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch vmstat -n 1</span><br></pre></td></tr></table></figure></p>
-<p>這將持續監視系統的資源使用情況，每秒更新一次。</p>
-<p><code>vmstat</code> 指令顯示指定項目的資源使用情況，用法如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat -s | grep <span class="string">"swap"</span></span><br></pre></td></tr></table></figure></p>
-<p>這將僅顯示與虛擬記憶體（swap）相關的資源使用情況。</p>
-<p><code>vmstat</code> 指令匯出 <code>vmstat</code> 輸出到檔案，用法如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmstat 5 10 &gt; vmstat_output.txt</span><br></pre></td></tr></table></figure></p>
-<p>這將將 <code>vmstat</code> 的輸出保存到指定的檔案中，方便後續分析。</p>
-<h2><span id="總結">總結</span></h2><p><code>vmstat</code> 指令是一個強大的工具，用於監視和分析系統資源使用情況。透過了解其基本用法、其他常見用法和進階用法，使用者可以更好地理解和管理 Linux 系統的性能。無論是用於故障排除、性能優化還是監視系統狀態，<code>vmstat</code> 都是一個非常有用的工具。</p>
-<p>以上就是 Linux vmstat 指令用法範例的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-wget/" title="Linux wget 下載檔案用法與範例">Linux wget 下載檔案用法與範例</a><br><a href="/linux-sed/" title="Linux sed 字串取代用法與範例">Linux sed 字串取代用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-xargs/" title="Linux xargs 參數列表轉換用法與範例">Linux xargs 參數列表轉換用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a><br><a href="/linux-du/" title="Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例">Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-vmstat/" data-id="clznhav6r00mjwopqhevefgxw" data-title="Linux vmstat 指令用法範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -1047,6 +1065,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/php-post/">PHP $_POST 變數用途、語法與實用範例詳解</a>
+          </li>
+        
+          <li>
             <a href="/php-substr/">PHP substr 函式全面解析與應用範例</a>
           </li>
         
@@ -1060,10 +1082,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/ubuntu-wordpress/">Ubuntu 下安裝 wordpress</a>
-          </li>
-        
-          <li>
-            <a href="/php-isset/">深入理解 PHP 中的 isset 用法、範例及最佳實踐</a>
           </li>
         
       </ul>
@@ -1082,7 +1100,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
