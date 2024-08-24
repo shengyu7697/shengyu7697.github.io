@@ -107,6 +107,66 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-android-write-a-android-bp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-write-a-android-bp/" class="article-date">
+  <time datetime="2019-12-16T14:00:00.000Z" itemprop="datePublished">2019-12-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/android-write-a-android-bp/">如何寫 Android.bp</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇記錄一下如何寫 Android.bp，並附上基本範例與原本的 Android.mk 對照。</p>
+<h2><span id="基本範例">基本範例</span></h2><p>以下就以AOSP上的sdcard模組來做作為範例，完整路徑在<code>system/core/sdcard/Android.bp</code>下。</p>
+<figure class="highlight"><figcaption><span>system/core/sdcard/Android.bp</span><a href="https://github.com/aosp-mirror/platform_system_core/blob/68e1093028185cde31dcacf34a59f6c08848d3d4/sdcard/Android.bp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">cc_binary &#123;</span><br><span class="line">    srcs: ["sdcard.cpp"],</span><br><span class="line">    name: "sdcard",</span><br><span class="line">    cflags: [</span><br><span class="line">        "-Wall",</span><br><span class="line">        "-Wno-unused-parameter",</span><br><span class="line">        "-Werror",</span><br><span class="line">    ],</span><br><span class="line">    shared_libs: [</span><br><span class="line">        "libbase",</span><br><span class="line">        "libcutils",</span><br><span class="line">        "libminijail",</span><br><span class="line">    ],</span><br><span class="line">    sanitize: &#123;</span><br><span class="line">        misc_undefined: ["integer"],</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>cc_binary</code>：表示編譯成執行檔<br><code>srcs</code>：原始檔<br><code>name</code>：模組名稱，也是執行檔名稱<br><code>cflags</code>：編譯參數<br><code>shared_libs</code>：連結的動態函式庫</p>
+<p>可以跟原先的 Android.mk 對照看就大概了解了，原本的 Android.mk 如下：<br><figure class="highlight makefile"><figcaption><span>system/core/sdcard/Android.mk</span><a href="https://github.com/aosp-mirror/platform_system_core/blob/178ede377a9b458cf3fa1aba29618ab9881f8449/sdcard/Android.mk" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := sdcard.cpp fuse.cpp</span><br><span class="line">LOCAL_MODULE := sdcard</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line">LOCAL_SHARED_LIBRARIES := libbase libcutils libminijail libpackagelistparser</span><br><span class="line"></span><br><span class="line">LOCAL_SANITIZE := integer</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure></p>
+<p><code>LOCAL_SRC_FILES</code> 對應到 <code>srcs</code><br><code>LOCAL_MODULE</code> 對應到 <code>cc_binary</code><br><code>LOCAL_CFLAGS</code> 對應到 <code>cflags</code><br><code>LOCAL_SHARED_LIBRARIES</code> 對應到 <code>shared_libs</code><br><code>BUILD_EXECUTABLE</code> 對應到 <code>cc_binary</code></p>
+<p>參考<br>[1] Android编译系统中的Android.bp、Blueprint与Soong · 零壹軒·笔记<br><a href="https://note.qidong.name/2017/08/android-blueprint/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-blueprint/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-write-a-android-bp/" data-id="cm083973u006r95pqfxrcfqbz" data-title="如何寫 Android.bp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-opencv-filestorage" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/opencv-filestorage/" class="article-date">
@@ -164,7 +224,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-filestorage/" data-id="cm06ntcyd006qsrpqauw8w5uh" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-filestorage/" data-id="cm083973t006q95pqrzrbi674" data-title="OpenCV FileStorage 用法與 YAML 檔案讀取寫入範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -222,7 +282,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-usb-tethering/" data-id="cm06ntcyc006psrpqg8koeq4v" data-title="Android USB Tethering 透過 USB 分享行動數據" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-usb-tethering/" data-id="cm083973t006p95pq4v3ofh26" data-title="Android USB Tethering 透過 USB 分享行動數據" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -310,7 +370,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-unordered_map/" data-id="cm06ntcyb006osrpqi1q266rr" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-unordered_map/" data-id="cm083973t006o95pqv4nuqmn5" data-title="C++ std::unordered_map 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -476,7 +536,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-build-aosp/" data-id="cm06ntcyb006nsrpqh33n9jlu" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-build-aosp/" data-id="cm083973s006n95pqjaz7y247" data-title="如何編譯 Build Android AOSP" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -542,7 +602,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-fastboot/" data-id="cm06ntcya006msrpqurxbr59p" data-title="Android fastboot 基本用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-fastboot/" data-id="cm083973s006m95pqv1wnaabr" data-title="Android fastboot 基本用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -599,7 +659,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-fastboot-get-current-active-slot/" data-id="cm06ntcy8006lsrpq0husk87x" data-title="Android fastboot 查詢當前使用的a/b槽" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-fastboot-get-current-active-slot/" data-id="cm083973q006l95pq645rrnvy" data-title="Android fastboot 查詢當前使用的a/b槽" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -655,7 +715,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-get-battery-level-via-adb/" data-id="cm06ntcy8006ksrpqikep1nss" data-title="Android adb 取得電池 battery 電量資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-get-battery-level-via-adb/" data-id="cm083973q006k95pq2oahbp9l" data-title="Android adb 取得電池 battery 電量資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -714,7 +774,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-android-mk-to-android-bp/" data-id="cm06ntcy8006jsrpqc01bu82w" data-title="從 Android.mk 到 Android.bp" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-android-mk-to-android-bp/" data-id="cm083973p006j95pqkf6x7t9x" data-title="從 Android.mk 到 Android.bp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -771,110 +831,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-how-android-mk-work/" data-id="cm06ntcy7006isrpqala0bedi" data-title="Android.mk 的運作原理" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-android-write-a-android-mk" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/android-write-a-android-mk/" class="article-date">
-  <time datetime="2019-12-06T14:00:00.000Z" itemprop="datePublished">2019-12-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/android-write-a-android-mk/">如何寫 Android.mk</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇記錄一下如何寫 Android.mk，雖然 Google 已經開始全面地改用 Android.bp，但這段過渡期可能還需幾年的時間，Android.mk 的了解以及如何撰寫還是值得學習的。</p>
-<p>從 Android 7 Nougat 開始逐漸地改用 Android.bp</p>
-<h2><span id="如何寫-androidmk">如何寫 Android.mk</span></h2><p>首先先清理變數<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH:= <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="指定模組名與模組變數">指定模組名與模組變數</span></h2><p><code>LOCAL_MODULE</code>︰模組名稱，這名稱必須是唯一，不能和既有模組相同。 如果 LOCAL_MODULE 未設定，則使用LOCAL_PACKAGE_NAME。 如果再沒有，就會編譯失敗。例如模組名叫做hello，那麼就可以透過 make hello 指令直接編譯hello這個模組。<br><code>LOCAL_SRC_FILES</code>︰原始碼檔案列表</p>
-<h2><span id="引用編譯規則">引用編譯規則</span></h2><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure>
-<p>以下這些用來給Android.mk引用的文件及其變數，定義在<code>build/core/config.mk</code>中。</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">BUILD_COMBOS:= <span class="variable">$(BUILD_SYSTEM)</span>/combo</span><br><span class="line"></span><br><span class="line">CLEAR_VARS:= <span class="variable">$(BUILD_SYSTEM)</span>/clear_vars.mk</span><br><span class="line">BUILD_HOST_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_static_library.mk</span><br><span class="line">BUILD_HOST_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_library.mk</span><br><span class="line">BUILD_STATIC_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_library.mk</span><br><span class="line">BUILD_SHARED_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/shared_library.mk</span><br><span class="line">BUILD_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/executable.mk</span><br><span class="line">BUILD_HOST_EXECUTABLE:= <span class="variable">$(BUILD_SYSTEM)</span>/host_executable.mk</span><br><span class="line">BUILD_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/package.mk</span><br><span class="line">BUILD_PHONY_PACKAGE:= <span class="variable">$(BUILD_SYSTEM)</span>/phony_package.mk</span><br><span class="line">BUILD_HOST_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/host_prebuilt.mk</span><br><span class="line">BUILD_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/prebuilt.mk</span><br><span class="line">BUILD_MULTI_PREBUILT:= <span class="variable">$(BUILD_SYSTEM)</span>/multi_prebuilt.mk</span><br><span class="line">BUILD_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/java_library.mk</span><br><span class="line">BUILD_STATIC_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/static_java_library.mk</span><br><span class="line">BUILD_HOST_JAVA_LIBRARY:= <span class="variable">$(BUILD_SYSTEM)</span>/host_java_library.mk</span><br><span class="line">BUILD_DROIDDOC:= <span class="variable">$(BUILD_SYSTEM)</span>/droiddoc.mk</span><br><span class="line">BUILD_COPY_HEADERS := <span class="variable">$(BUILD_SYSTEM)</span>/copy_headers.mk</span><br><span class="line">BUILD_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/native_test.mk</span><br><span class="line">BUILD_NATIVE_BENCHMARK := <span class="variable">$(BUILD_SYSTEM)</span>/native_benchmark.mk</span><br><span class="line">BUILD_HOST_NATIVE_TEST := <span class="variable">$(BUILD_SYSTEM)</span>/host_native_test.mk</span><br><span class="line"></span><br><span class="line">BUILD_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/shared_test_lib.mk</span><br><span class="line">BUILD_HOST_SHARED_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_shared_test_lib.mk</span><br><span class="line">BUILD_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/static_test_lib.mk</span><br><span class="line">BUILD_HOST_STATIC_TEST_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_static_test_lib.mk</span><br><span class="line"></span><br><span class="line">BUILD_NOTICE_FILE := <span class="variable">$(BUILD_SYSTEM)</span>/notice_files.mk</span><br><span class="line">BUILD_HOST_DALVIK_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_java_library.mk</span><br><span class="line">BUILD_HOST_DALVIK_STATIC_JAVA_LIBRARY := <span class="variable">$(BUILD_SYSTEM)</span>/host_dalvik_static_java_library.mk</span><br></pre></td></tr></table></figure>
-<h3><span id="範例編譯一個可執行檔">範例：編譯一個可執行檔</span></h3><p>模組名稱為 hellowrold，編譯出一個 hellowrold 的執行檔。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := main.cpp</span><br><span class="line">LOCAL_MODULE := hellowrold</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line">LOCAL_SHARED_LIBRARIES :=</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_EXECUTABLE)</span></span><br></pre></td></tr></table></figure></p>
-<h3><span id="範例編譯一個靜態函式庫">範例：編譯一個靜態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.a 的靜態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
-<h3><span id="範例編譯一個動態函式庫">範例：編譯一個動態函式庫</span></h3><p>模組名稱為 libfoo，編譯出一個 libfoo.so 的動態函式庫。<br><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := libfoo</span><br><span class="line">LOCAL_SRC_FILES := aaa.cpp</span><br><span class="line">LOCAL_CFLAGS := -Wall -Wno-unused-parameter -Werror</span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_SHARED_LIBRARY)</span></span><br></pre></td></tr></table></figure></p>
-<h3><span id="範例編譯一個-apk-文件">範例：編譯一個 APK 文件</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_STATIC_JAVA_LIBRARIES := static-library <span class="comment"># 當前模塊依賴的靜態 Java 庫，如果有多個以空格分隔</span></span><br><span class="line">LOCAL_PACKAGE_NAME := LocalPackage <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_PACKAGE)</span> <span class="comment"># 編譯 APK 文件</span></span><br></pre></td></tr></table></figure>
-<h3><span id="範例編譯一個-java-的靜態函式庫">範例：編譯一個 Java 的靜態函式庫</span></h3><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := <span class="variable">$(<span class="built_in">call</span> all-subdir-java-files)</span> <span class="comment"># 獲取所有子目錄中的 Java 文件</span></span><br><span class="line">LOCAL_JAVA_LIBRARIES := android.test.runner <span class="comment"># 當前模塊依賴的動態 Java 庫名稱</span></span><br><span class="line">LOCAL_MODULE := sample <span class="comment"># 當前模塊的名稱</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_STATIC_JAVA_LIBRARY)</span> <span class="comment"># 將當前模塊編譯成一個靜態的 Java 庫</span></span><br></pre></td></tr></table></figure>
-<p>下表格為常用與常見的編譯規則</p>
-<table>
-<thead>
-<tr>
-<th>引用編譯規則變數</th>
-<th>檔名</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>BUILD_EXECUTABLE</td>
-<td>executable.mk</td>
-<td>編譯成裝置上的可執行檔</td>
-</tr>
-<tr>
-<td>BUILD_STATIC_LIBRARY</td>
-<td>static_library.mk</td>
-<td>編譯成裝置上的靜態函式庫</td>
-</tr>
-<tr>
-<td>BUILD_SHARED_LIBRARY</td>
-<td>shared_library.mk</td>
-<td>編譯成裝置上的動態函式庫</td>
-</tr>
-<tr>
-<td>BUILD_PREBUILT</td>
-<td>prebuilt.mk</td>
-<td>處理一個預編譯好的檔案 (例如.a, .so, .jar)</td>
-</tr>
-<tr>
-<td>BUILD_PACKAGE</td>
-<td>package.mk</td>
-<td>編譯成apk</td>
-</tr>
-</tbody>
-</table>
-<p>參考<br>[1] Android.mk的深入介绍<br><a href="https://note.qidong.name/2017/08/android-mk/" rel="noopener external nofollow noreferrer" target="_blank">https://note.qidong.name/2017/08/android-mk/</a><br>[2] 理解 Android Build 系統<br><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/" rel="noopener external nofollow noreferrer" target="_blank">https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-write-a-android-mk/" data-id="cm06ntcy7006hsrpq2fwlxgcb" data-title="如何寫 Android.mk" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-how-android-mk-work/" data-id="cm083973p006i95pqdt35ssvk" data-title="Android.mk 的運作原理" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -890,7 +847,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/60/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/59/">59</a><a class="page-number" href="/page/60/">60</a><span class="page-number current">61</span><a class="page-number" href="/page/62/">62</a><a class="page-number" href="/page/63/">63</a><span class="space">&hellip;</span><a class="page-number" href="/page/84/">84</a><a class="extend next" rel="next" href="/page/62/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/60/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/59/">59</a><a class="page-number" href="/page/60/">60</a><span class="page-number current">61</span><a class="page-number" href="/page/62/">62</a><a class="page-number" href="/page/63/">63</a><span class="space">&hellip;</span><a class="page-number" href="/page/85/">85</a><a class="extend next" rel="next" href="/page/62/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -921,6 +878,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/php-base64_encode/">PHP base64_encode 編碼使用指南：方法與應用</a>
+          </li>
+        
+          <li>
             <a href="/php-session/">PHP 中的 Session 用途與實踐範例：完整指南</a>
           </li>
         
@@ -934,10 +895,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/php-str_pad/">PHP str_pad 函式用途、語法與實用範例解析</a>
-          </li>
-        
-          <li>
-            <a href="/php-uniqid/">如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性</a>
           </li>
         
       </ul>
@@ -956,7 +913,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

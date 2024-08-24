@@ -107,6 +107,104 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-thread" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-thread/" class="article-date">
+  <time datetime="2020-02-04T14:00:00.000Z" itemprop="datePublished">2020-02-04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-thread/">C++ std::thread 建立多執行緒用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹 C++ 的 std::thread 建立多執行緒的用法教學，並提供一些入門的 std::thread C++ 範例程式碼，std::thread 建立執行緒算是多執行緒的基本必學，這邊把常用到的用法與範例紀錄一下。  </p>
+<p>在c++11 thread 出來之前, 跨平台開發執行緒程式一直需要依賴平台的 api，例如 Windows 要呼叫 CreateThread, Unix-like 使用 pthread_create 等等情形。c++11 thread 出來之後最大的好處就是開發者只需寫一種 thread，到各平台去編譯就行了，這當然還要編譯器支援c++11。  </p>
+<p><strong>需要引入的標頭檔</strong>：<code>&lt;thread&gt;</code>  </p>
+<p>接下來就介紹簡單的 c++ thread 寫法，內容分為以下幾部分：  </p>
+<ul>
+<li><strong>基本 std::thread 的用法</strong>  </li>
+<li><strong>std::thread 常用的成員函式</strong>  </li>
+<li><strong>範例1. 建立新 thread 來執行一個函式，且帶入有/無參數</strong>  </li>
+<li><strong>範例2. 建立新 thread 來執行一個類別函式</strong>  </li>
+<li><strong>範例3. 建立新 thread 來執行 lambda expression</strong>  </li>
+<li><strong>範例4. join 等待 thread 執行結束</strong>  </li>
+<li><strong>範例5. detach 不等待 thread 執行結束</strong>  </li>
+<li><strong>std::thread 用陣列建立多個 thread</strong>  </li>
+<li><strong>std::thread 用 vector 建立多個 thread</strong>  </li>
+<li><strong>std::thread 參數傳遞使用傳參考的方法</strong>  </li>
+</ul>
+<h2><span id="基本-stdthread-的用法">基本 std::thread 的用法</span></h2><p>c++ 最簡單的 std::thread 範例如下所示，呼叫 thread 建構子時會立即同時地開始執行這個新建立的執行緒，之後 main() 的主執行緒也會繼續執行，基本上這就是一個基本的建立執行緒的功能了。詳細說明請看後面的範例。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"myfunc\n"</span>;</span><br><span class="line">    <span class="comment">// do something ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(myfunc)</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="stdthread-常用的成員函式">std::thread 常用的成員函式</span></h2><p>以下為 c++ std::thread 常用的成員函式，<br><code>get_id()</code>: 取得目前的執行緒的 id，回傳一個為 std::thread::id 的類型。<br><code>joinable()</code>: 檢查是否可join。<br><code>join()</code>: 等待執行緒完成。<br><code>detach()</code>: 與該執行緒分離，一旦該執行緒執行完後它所分配的資源會被釋放。<br><code>native_handle()</code>: 取得平台原生的native handle (例如Win32的Handle, unix的pthread_t)。  </p>
+<p>其他相關的常用函式有，<br><code>sleep_for()</code>: 停止目前執行緒一段指定的時間。<br><code>yield()</code>: 暫時放棄CPU一段時間，讓給其它執行緒。  </p>
+<h2><span id="範例1-建立新-thread-來執行一個函式且帶入有無參數">範例1. 建立新 thread 來執行一個函式，且帶入有/無參數</span></h2><p>以下例子為建立新 c++ thread 來執行一個函式，其中 t1 是呼叫無參數的 foo() 函式，而 t2 執行緒是呼叫 bar() 有參數的函式。<br><figure class="highlight cpp"><figcaption><span>std-thread1.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-thread1.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"foo\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">(<span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"bar\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>; <span class="comment">// 建立一個新執行緒且執行 foo 函式</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(bar, <span class="number">0</span>)</span></span>; <span class="comment">// 建立一個新執行緒且執行 bar 函式</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main, foo and bar now execute concurrently...\n"</span>; <span class="comment">// synchronize threads</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"sleep 1s\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"join t1\n"</span>;</span><br><span class="line">    t1.join(); <span class="comment">// 等待 t1 執行緒結束</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"join t2\n"</span>;</span><br><span class="line">    t2.join(); <span class="comment">// 等待 t2 執行緒結束</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"foo and bar completed.\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">main, foo and bar now execute concurrently...</span><br><span class="line">foo</span><br><span class="line">bar</span><br><span class="line">sleep 1s</span><br><span class="line">join t1</span><br><span class="line">join t2</span><br><span class="line">foo and bar completed.</span><br></pre></td></tr></table></figure></p>
+<p>注意！在多執行緒程式中常常會互相存取某段程式碼、某個函式、某個變數，<a href="/std-mutex/" title="需要對這些程式碼進行上鎖">需要對這些程式碼進行上鎖</a>，以確保同一時間只有某一個執行緒能進行存取。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="範例2-建立新-thread-來執行一個類別函式">範例2. 建立新 thread 來執行一個類別函式</span></h2><p>c++ std::thread 的建構子可以傳入 class 類別的函式，如下範例所示，<br>AA::start 分別建立 t1、t2 兩個執行緒，而 t1 建構子帶入 AA::a1 類別函式，AA::a1 前面記得要加上<code>&amp;</code>，第二參數代表的是哪個類別，之後的參數為帶入類別函式的參數就像 t2 這樣。<br><figure class="highlight cpp"><figcaption><span>std-thread2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-thread2.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AA</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">a1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"a1\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">a2</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"a2 "</span> &lt;&lt; n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(&amp;AA::a1, <span class="keyword">this</span>)</span></span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(&amp;AA::a2, <span class="keyword">this</span>, <span class="number">10</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    AA a;</span><br><span class="line">    a.start();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a1</span><br><span class="line">a2 10</span><br></pre></td></tr></table></figure></p>
+<h2><span id="範例3-建立新-thread-來執行-lambda-expression">範例3. 建立新 thread 來執行 lambda expression</span></h2><p>std::thread 的建構子也可以傳入來 lambda expression，如下範例所示：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">int</span> n) &#123;</span><br><span class="line">    <span class="comment">// Do Something</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(f, <span class="number">3</span>)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>也可以寫成<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">([](<span class="keyword">int</span> n) &#123;</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="comment">// Do Something</span></span></span></span><br><span class="line"><span class="function"><span class="params">&#125;;, <span class="number">3</span>)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="範例4-join-等待-thread-執行結束">範例4. join 等待 thread 執行結束</span></h2><p>在 main 主執行緒建立 t1 執行緒後，主執行緒便繼續往下執行，<br>如果主執行緒需要等 t1 執行完畢後才能繼續執行的話就需要使用 join，<br>即等待 t1 執行緒執行完 foo 後主執行緒才能繼續執行，<br>否則主執行緒會一直卡(blocking)在 join 這一行。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    this_thread::sleep_for(chrono::milliseconds(<span class="number">200</span>));</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"foo"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"main 1"</span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"main 2"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="範例5-detach-不等待-thread-執行結束">範例5. detach 不等待 thread 執行結束</span></h2><p>承上例子，如果主執行緒不想等或是可以不用等待 t1 執行緒的話，<br>就可以使用 detach 來讓 t1 執行緒分離，接著主執行緒就可以繼續執行，t1執行緒也在繼續執行，<br>在整個程式結束前最好養成好習慣確保所有子執行緒都已執行完畢，<br>因為在 linux 系統如果主執行緒執行結束還有子執行緒在執行的話會跳出個錯誤訊息。  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    this_thread::sleep_for(chrono::milliseconds(<span class="number">200</span>));</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"foo"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(foo)</span></span>;</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"main 1"</span>;</span><br><span class="line">    t1.detach();</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;<span class="string">"main 2"</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="stdthread-用陣列建立多個-thread">std::thread 用陣列建立多個 thread</span></h2><p>這邊示範建立多個執行緒，這個例子是建立 3 個執行緒，用陣列的方式來存放 std::thread，寫法如下，<br><figure class="highlight cpp"><figcaption><span>std-thread-array.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-thread-array.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"foo() "</span> &lt;&lt; n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::thread threads[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        threads[i] = <span class="built_in">std</span>::thread(foo, i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        threads[i].join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main() exit.\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">foo() 1</span><br><span class="line">foo() 0</span><br><span class="line">foo() 2</span><br><span class="line">main() exit.</span><br></pre></td></tr></table></figure></p>
+<h2><span id="stdthread-用-vector-建立多個-thread">std::thread 用 vector 建立多個 thread</span></h2><p>這邊示範建立多個執行緒，與上述例子不同，這是我們改用 vector 來存放 std::thread，寫法如下，<br><figure class="highlight cpp"><figcaption><span>std-thread-vector.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-thread-vector.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"foo() "</span> &lt;&lt; n &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::thread&gt; threads;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        threads.push_back(<span class="built_in">std</span>::thread(foo, i));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        threads[i].join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main() exit.\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">foo() 0</span><br><span class="line">foo() 2</span><br><span class="line">foo() 1</span><br><span class="line">main() exit.</span><br></pre></td></tr></table></figure></p>
+<h2><span id="stdthread-參數傳遞使用傳參考的方法">std::thread 參數傳遞使用傳參考的方法</span></h2><p>如果我今天有個 myfunc 參數傳遞方式為<a href="/cpp-call-by-value-pointer-reference/" title="傳參考">傳參考</a>，內容如下，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc</span><span class="params">(<span class="keyword">int</span>&amp; n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"myfunc n="</span> &lt;&lt; n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    n+=<span class="number">10</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我希望透過建立另外一個執行緒去執行 myfunc，之後我要取得這個 myfunc 的運算結果，那我建立執行緒時如果寫 <code>std::thread t1(myfunc, n);</code> 這樣的話馬上編譯會出現錯誤，為什麼會這樣呢？原因是因為在 std::thread 的參數傳遞方式為傳值，要傳參考的話需要透過 <a href="/std-ref/" title="std::ref">std::ref</a> 來輔助達成，所以程式就會寫成這樣，myfunc 與 myfunc2 的參數傳遞方式不同，可以看看這兩者之間的差異，<br><figure class="highlight cpp"><figcaption><span>std-thread3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-thread3.cpp -o a.out -std=c++11 -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc</span><span class="params">(<span class="keyword">int</span>&amp; n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"myfunc n="</span> &lt;&lt; n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    n+=<span class="number">10</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myfunc2</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"myfunc n="</span> &lt;&lt; n &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    n+=<span class="number">10</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n1 = <span class="number">5</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(myfunc, <span class="built_in">std</span>::ref(n1))</span></span>;</span><br><span class="line">    t1.join();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main n1="</span> &lt;&lt; n1 &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> n2 = <span class="number">5</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">t2</span><span class="params">(myfunc2, n2)</span></span>;</span><br><span class="line">    t2.join();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main n2="</span> &lt;&lt; n2 &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">myfunc n=5</span><br><span class="line">main n1=15</span><br><span class="line">myfunc n=5</span><br><span class="line">main n2=5</span><br></pre></td></tr></table></figure></p>
+<p>下一篇文章會告訴你在 <a href="/std-mutex/" title="多執行緒程式中使用 std::mutex 對程式碼進行上鎖">多執行緒程式中使用 std::mutex 對程式碼進行上鎖</a>的用法與範例。  </p>
+<p>其他參考<br>[1] thread - C++ Reference<br><a href="http://www.cplusplus.com/reference/thread/thread/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cplusplus.com/reference/thread/thread/</a><br>[2] std::thread - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/thread/thread" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/thread/thread</a><br>[3] Multithreading in C++ - GeeksforGeeks<br><a href="https://www.geeksforgeeks.org/multithreading-in-cpp/" rel="noopener external nofollow noreferrer" target="_blank">https://www.geeksforgeeks.org/multithreading-in-cpp/</a><br>[4] C++ std::thread | 菜鳥教程<br><a href="https://www.runoob.com/w3cnote/cpp-std-thread.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.runoob.com/w3cnote/cpp-std-thread.html</a><br>[5] C++ 的多執行序程式開發 Thread：基本使用 – Heresy’s Space<br><a href="https://kheresy.wordpress.com/2012/07/06/multi-thread-programming-in-c-thread-p1/" rel="noopener external nofollow noreferrer" target="_blank">https://kheresy.wordpress.com/2012/07/06/multi-thread-programming-in-c-thread-p1/</a>  </p>
+<p><strong>相關文章</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/how-to-get-std-thread-id/" title="如何取得 C++11 thread id">如何取得 C++11 thread id</a><br><a href="/std-this_thread-sleep_for/" title="std::this_thread::sleep_for 用法與範例">std::this_thread::sleep_for 用法與範例</a><br><a href="/std-mutex/" title="std::mutex 用法與範例">std::mutex 用法與範例</a><br><a href="/std-condition_variable/" title="std::condition_variable 用法與範例">std::condition_variable 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-thread/" data-id="cm083974a007l95pqw6rq10du" data-title="C++ std::thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-read-yaml-file" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-read-yaml-file/" class="article-date">
@@ -161,7 +259,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-read-yaml-file/" data-id="cm06ntcz1007ksrpqhac1pcdk" data-title="Python 讀取 yaml 檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-read-yaml-file/" data-id="cm083974a007k95pq364gxza9" data-title="Python 讀取 yaml 檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -249,7 +347,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-write-csv-file/" data-id="cm06ntcz0007jsrpqjv8do37j" data-title="Python 寫入 csv 檔案" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-write-csv-file/" data-id="cm0839749007j95pq84bkwiuy" data-title="Python 寫入 csv 檔案" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -325,7 +423,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-replace/" data-id="cm06ntcz0007isrpqio4v5o6c" data-title="Python replace 取代字串用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-replace/" data-id="cm0839749007i95pqphg01xav" data-title="Python replace 取代字串用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -389,7 +487,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-strip/" data-id="cm06ntcyz007hsrpq1hotcvpd" data-title="Python strip 去除空白與去除特殊字元用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-strip/" data-id="cm0839748007h95pq33m2wsf9" data-title="Python strip 去除空白與去除特殊字元用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -453,7 +551,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-join/" data-id="cm06ntcyz007gsrpq9qcs2ak9" data-title="Python join 連接字串用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-join/" data-id="cm0839748007g95pqtiaugr2k" data-title="Python join 連接字串用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -537,7 +635,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-split/" data-id="cm06ntcyy007fsrpqh6sisx8a" data-title="Python split 字串分割用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-split/" data-id="cm0839748007f95pqrq1ez207" data-title="Python split 字串分割用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -605,7 +703,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-is-not-accessible-for-the-namespace/" data-id="cm06ntcyy007esrpqes305c76" data-title="Android開發問題is not accessible for the namespace" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-is-not-accessible-for-the-namespace/" data-id="cm0839747007e95pqq31mchkk" data-title="Android開發問題is not accessible for the namespace" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -665,7 +763,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-nm/" data-id="cm06ntcyx007dsrpqu1v51ulf" data-title="nm 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-nm/" data-id="cm0839747007d95pqa4aqzz0q" data-title="nm 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -734,69 +832,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-readelf/" data-id="cm06ntcyx007csrpq74a4clnu" data-title="readelf 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-objdump" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-objdump/" class="article-date">
-  <time datetime="2020-01-12T14:00:00.000Z" itemprop="datePublished">2020-01-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-objdump/">objdump 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Linux objdump 用法與範例。  </p>
-<h2><span id="objdump-顯示符號表-symbols">objdump 顯示符號表 symbols</span></h2><p>這邊示範 objdump 顯示符號表 symbols，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -TC xxx.so</span><br></pre></td></tr></table></figure></p>
-<p>-T<br>–dynamic-syms<br>  顯示文件的動態符號表入口，僅僅對動態目標文件意義，比如某些共享庫。它顯示的資訊類似於 nm -D|–dynamic 顯示的資訊。</p>
-<p>-C<br>–demangle[=style]<br>  將低階符號名稱解碼成用戶級名稱，除了去掉所開頭的下劃線之外，還使得C++函式名稱以可理解的方式顯示出來。</p>
-<h2><span id="objdump-反組譯">objdump 反組譯</span></h2><p>這邊示範 objdump 反組譯，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -S xxx.so</span><br></pre></td></tr></table></figure></p>
-<p>-S –source 儘可能反彙編出原始碼，尤其當編譯時指定-g參數時，效果比較明顯。  </p>
-<p>以上就是 objdump 用法與範例的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>參考<br>GNU 程式設計 – Objdump 目的檔觀察工具 - 陳鍾誠的網站<br><a href="http://ccckmit.wikidot.com/gnu:objdump" rel="noopener external nofollow noreferrer" target="_blank">http://ccckmit.wikidot.com/gnu:objdump</a><br>objdump命令_Linux objdump 命令用法详解：显示二进制文件信息<br><a href="https://man.linuxde.net/objdump" rel="noopener external nofollow noreferrer" target="_blank">https://man.linuxde.net/objdump</a><br>老陳獨白: 二進位實用程式(objdump, readelf,ar, nm等)<br><a href="http://myblog-maurice.blogspot.com/2011/12/objdump-readelfar-nm.html" rel="noopener external nofollow noreferrer" target="_blank">http://myblog-maurice.blogspot.com/2011/12/objdump-readelfar-nm.html</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-readelf/" title="readelf 用法與範例">readelf 用法與範例</a><br><a href="/linux-nm/" title="nm 用法與範例">nm 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-objdump/" data-id="cm06ntcyw007bsrpqjyt6v0s7" data-title="objdump 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-readelf/" data-id="cm0839747007c95pqyzykhlc9" data-title="readelf 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -812,7 +848,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/57/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/56/">56</a><a class="page-number" href="/page/57/">57</a><span class="page-number current">58</span><a class="page-number" href="/page/59/">59</a><a class="page-number" href="/page/60/">60</a><span class="space">&hellip;</span><a class="page-number" href="/page/84/">84</a><a class="extend next" rel="next" href="/page/59/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/57/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/56/">56</a><a class="page-number" href="/page/57/">57</a><span class="page-number current">58</span><a class="page-number" href="/page/59/">59</a><a class="page-number" href="/page/60/">60</a><span class="space">&hellip;</span><a class="page-number" href="/page/85/">85</a><a class="extend next" rel="next" href="/page/59/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -843,6 +879,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/php-base64_encode/">PHP base64_encode 編碼使用指南：方法與應用</a>
+          </li>
+        
+          <li>
             <a href="/php-session/">PHP 中的 Session 用途與實踐範例：完整指南</a>
           </li>
         
@@ -856,10 +896,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/php-str_pad/">PHP str_pad 函式用途、語法與實用範例解析</a>
-          </li>
-        
-          <li>
-            <a href="/php-uniqid/">如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性</a>
           </li>
         
       </ul>
@@ -878,7 +914,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">192</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
