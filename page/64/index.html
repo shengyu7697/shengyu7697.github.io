@@ -107,6 +107,142 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp11-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp11-how/" class="article-date">
+  <time datetime="2019-11-18T14:00:00.000Z" itemprop="datePublished">2019-11-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp11-how/">C++11 在各平台下如何實現？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇簡單介紹 C++11 在各平台下如何實現，<br>C++11其實它是個標準，定義出通用標準的api接口，在各平台下各編譯器各自實作，以答到標準，</p>
+<p>類似工業標準 大家制定好規範，各家去實現該功能，</p>
+<p>由於該標準的一些功能在各平台下，大多有已經有各自的實作了，例如：std::thread, std::mutex, std::condition_variable，所以基本只是將這些接口在各平台下轉換成該平台的對應的接口就可以了，</p>
+<p>舉例，在 LLVM 原始碼裡頭可以發現 std::thread 建立一條 thread 在 unix 平台下是靠 pthread 的 pthread_create 去實作，在 windows 平台下則是靠 _beginthreadex<br>所以其實可以想成 C++11 的 thread 是多了一層封裝，當然還有加上一些 C++ 好用的特性，</p>
+<p>以下整理出各平台的對應api，對於 LLVM 原始碼是如何在各平台實作可以參考下方的相關連結。</p>
+<table>
+<thead>
+<tr>
+<th><strong>std::thread</strong></th>
+<th><strong>unix</strong></th>
+<th><strong>windows</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>std::thread</code></td>
+<td><code>pthread_create</code></td>
+<td><code>_beginthreadex</code></td>
+</tr>
+<tr>
+<td><code>std::thread::join</code></td>
+<td><code>pthread_join</code></td>
+<td><code>WaitForSingleObjectEx</code></td>
+</tr>
+<tr>
+<td><code>std::thread::detach</code></td>
+<td><code>pthread_detach</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::thread::get_id</code></td>
+<td><code>pthread_self</code></td>
+<td><code>GetCurrentThreadId</code></td>
+</tr>
+<tr>
+<td><code>std::thread::yield</code></td>
+<td><code>sched_yield</code></td>
+<td><code>SwitchToThread</code></td>
+</tr>
+<tr>
+<td><code>std::this_thread::sleep_for</code></td>
+<td><code>nanosleep</code></td>
+<td><code>Sleep</code></td>
+</tr>
+<tr>
+<td><strong>std::mutex</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::mutex::lock</code></td>
+<td><code>pthread_mutex_lock</code></td>
+<td><code>AcquireSRWLockExclusive</code></td>
+</tr>
+<tr>
+<td><code>std::mutex::unlock</code></td>
+<td><code>pthread_mutex_unlock</code></td>
+<td><code>LeaveCriticalSection</code></td>
+</tr>
+<tr>
+<td><strong>std::condition_variable</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::condition_variable::notify_one</code></td>
+<td><code>pthread_cond_signal</code></td>
+<td><code>WakeConditionVariable</code></td>
+</tr>
+<tr>
+<td><code>std::condition_variable::notify_all</code></td>
+<td><code>pthread_cond_broadcast</code></td>
+<td><code>WakeAllConditionVariable</code></td>
+</tr>
+<tr>
+<td><code>std::condition_variable::wait</code></td>
+<td><code>pthread_cond_wait</code></td>
+<td><code>SleepConditionVariableSRW</code></td>
+</tr>
+</tbody>
+</table>
+<p>參考資源<br>從 pthread 轉換到 std::thread<br><a href="https://www.cntofu.com/book/46/linux_system/cong_pthread_zhuan_huan_dao_std__thread.md" rel="noopener external nofollow noreferrer" target="_blank">https://www.cntofu.com/book/46/linux_system/cong_pthread_zhuan_huan_dao_std__thread.md</a><br>C++ 11是如何封裝Thread庫的？<br><a href="https://www.zhihu.com/question/30553807" rel="noopener external nofollow noreferrer" target="_blank">https://www.zhihu.com/question/30553807</a><br>C++並發編程實戰-讀書簡記<br><a href="http://lanbing510.info/2017/09/29/Cpp-Concurrency-In-Action.html" rel="noopener external nofollow noreferrer" target="_blank">http://lanbing510.info/2017/09/29/Cpp-Concurrency-In-Action.html</a><br>第 7 章 並行與並發 - 現代 C++ 教程: 高速上手 C++ 11/14/17/20<br><a href="https://changkun.de/modern-cpp/zh-cn/07-thread/index.html" rel="noopener external nofollow noreferrer" target="_blank">https://changkun.de/modern-cpp/zh-cn/07-thread/index.html</a></p>
+<p><strong>相關主題</strong><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-condition_variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp11-how/" data-id="cm0b22fdu00607tpql9fowjjx" data-title="C++11 在各平台下如何實現？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-std-mutex-how" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/std-mutex-how/" class="article-date">
@@ -162,7 +298,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-mutex-how/" data-id="cm0ay4w38005ydnpqw4ptao0i" data-title="std::mutex 怎麼實作的？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-mutex-how/" data-id="cm0b22fdu005z7tpq87y80j1k" data-title="std::mutex 怎麼實作的？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -229,7 +365,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="cm0ay4w38005xdnpqd5usos6p" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="cm0b22fdt005y7tpqid65d076" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -300,7 +436,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="cm0ay4w37005wdnpqlsk03k0s" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="cm0b22fdt005x7tpqqxj70es3" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -385,7 +521,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="cm0ay4w36005vdnpqot3l5c5a" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="cm0b22fds005w7tpqb8r32shq" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -456,7 +592,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="cm0ay4w36005udnpqjuog60xm" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="cm0b22fds005v7tpqo31h18cl" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -521,7 +657,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-for/" data-id="cm0ay4w36005tdnpq9om38rrv" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-for/" data-id="cm0b22fdr005u7tpqpc6c6olj" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -586,7 +722,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="cm0ay4w35005sdnpqg4renfss" data-title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="cm0b22fdq005t7tpqaggp6fmn" data-title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -687,7 +823,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="cm0ay4w35005rdnpqt52zdmog" data-title="Python OpenCV resize 圖片縮放" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="cm0b22fdq005s7tpqgxj46glp" data-title="Python OpenCV resize 圖片縮放" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -768,71 +904,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="cm0ay4w34005qdnpqn26rmg1z" data-title="Python thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-exif" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-exif/" class="article-date">
-  <time datetime="2019-11-08T14:00:00.000Z" itemprop="datePublished">2019-11-08</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-exif/">Python 取得圖片Exif資訊</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python 讀取圖片的 Exif 資訊，在做圖片處理時常常會需要根據 Exif 資訊作處理，例如這張圖片有無旋轉，接下就來介紹怎麼使用 python 的 PIL 模組來讀取圖片的 Exif 資訊。</p>
-<h2><span id="安裝-pil">安裝 PIL</span></h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。</p>
-<h2><span id="使用範例">使用範例</span></h2><p>以下範例 ShengYu 是使用一張有 exif 的照片來測試，<br>print(img) 可印出該檔案的基本資料，如模式，大小，記憶體所在位置，<br>使用 _getexif 會回傳個字典 dict，之後在用迴圈將 exif 字典裡的東西全部印出來。<br><figure class="highlight python"><figcaption><span>pil-read-image-exif.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">from</span> PIL.ExifTags <span class="keyword">import</span> TAGS</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"IMG_20181205_xxxxxx.jpg"</span>)</span><br><span class="line">print(img)</span><br><span class="line">exif = img._getexif()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> exif <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">for</span> (tag, value) <span class="keyword">in</span> exif.items():</span><br><span class="line">	    key = TAGS.get(tag, tag)</span><br><span class="line">	    print(key + <span class="string">' = '</span> + str(value))</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">ImageWidth = 4048</span><br><span class="line">ImageLength = 3036</span><br><span class="line">ApertureValue = (200, 100)</span><br><span class="line">ExifImageHeight = 3036</span><br><span class="line">DateTimeDigitized = 2018:12:05 11:10:19</span><br><span class="line">MaxApertureValue = (200, 100)</span><br><span class="line">ExifVersion = b&apos;0220&apos;</span><br><span class="line">ColorSpace = 1</span><br><span class="line">Contrast = 0</span><br><span class="line">Saturation = 0</span><br><span class="line">FocalLength = (4670, 1000)</span><br><span class="line">SubjectDistanceRange = 1</span><br><span class="line">ExposureMode = 0</span><br><span class="line">Make = Google</span><br><span class="line">Model = Pixel XL</span><br><span class="line">SubsecTimeOriginal = 253505</span><br><span class="line">Orientation = 1</span><br><span class="line">YCbCrPositioning = 1</span><br><span class="line">SensingMethod = 2</span><br><span class="line">ExposureBiasValue = (0, 6)</span><br><span class="line">XResolution = (72, 1)</span><br><span class="line">YResolution = (72, 1)</span><br><span class="line">ExposureTime = (33333, 1000000)</span><br><span class="line">ExifInteroperabilityOffset = 18588</span><br><span class="line">ExposureProgram = 2</span><br><span class="line">SceneCaptureType = 0</span><br><span class="line">ISOSpeedRatings = 1208</span><br><span class="line">ResolutionUnit = 2</span><br><span class="line">WhiteBalance = 0</span><br><span class="line">MeteringMode = 2</span><br><span class="line">ComponentsConfiguration = b&apos;\x01\x02\x03\x00&apos;</span><br><span class="line">FNumber = (200, 100)</span><br><span class="line">Software = HDR+ 1.0.163413028z</span><br><span class="line">DateTime = 2018:12:05 11:10:19</span><br><span class="line">ShutterSpeedValue = (491, 100)</span><br><span class="line">Flash = 16</span><br><span class="line">SceneType = b&apos;\x01&apos;</span><br><span class="line">Sharpness = 0</span><br><span class="line">ExifImageWidth = 4048</span><br><span class="line">CustomRendered = 1</span><br><span class="line">FlashPixVersion = b&apos;0100&apos;</span><br><span class="line">SubjectDistance = (337, 1000)</span><br><span class="line">DateTimeOriginal = 2018:12:05 11:10:19</span><br><span class="line">SubsecTime = 253505</span><br><span class="line">ExifOffset = 230</span><br><span class="line">SubsecTimeDigitized = 253505</span><br><span class="line">BrightnessValue = (-169, 100)</span><br><span class="line">MakerNote = b&apos;HDRP...&apos;</span><br></pre></td></tr></table></figure></p>
-<p>PIL.ExifTags 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/latest/reference/ExifTags.html" rel="noopener external nofollow noreferrer" target="_blank">這裡</a></p>
-<p>其他參考資料<br><a href="https://zh.wikipedia.org/wiki/EXIF" rel="noopener external nofollow noreferrer" target="_blank">https://zh.wikipedia.org/wiki/EXIF</a></p>
-<p><strong>相關主題</strong><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-draw-text-on-image/" title="Python 在圖片上繪製文字">Python 在圖片上繪製文字</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="cm0ay4w34005pdnpq0dvdllyt" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="cm0b22fdo005r7tpqenxzk27r" data-title="Python thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -883,6 +955,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>
         
           <li>
+            <a href="/cpp-strategy-pattern/">C++ 設計模式 - 策略模式 Strategy Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-design-patterns/">C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？</a>
           </li>
         
@@ -892,10 +968,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/php-post/">PHP $_POST 變數用途、語法與實用範例詳解</a>
-          </li>
-        
-          <li>
-            <a href="/php-substr/">PHP substr 函式全面解析與應用範例</a>
           </li>
         
       </ul>
@@ -914,7 +986,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">193</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">194</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
