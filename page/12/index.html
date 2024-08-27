@@ -107,6 +107,78 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-sem_wait" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-sem_wait/" class="article-date">
+  <time datetime="2023-01-12T14:00:00.000Z" itemprop="datePublished">2023-01-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-sem_wait/">C/C++ Linux sem_wait 與 sem_post 用法範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>今天 ShengYu 來介紹 C/C++ Linux sem_wait 與 sem_post 用法範例，Semaphore 跟 Mutex 相比，雖然 Semaphore 同樣可以用來保護 Critical section，不過它更常被用來確保多執行緒的執行順序。在 Semaphore 中是用 sem_wait 減少與 sem_post 增加 Semaphore 號誌，不像是 Mutex 解鎖還需要同一個人解的 owner ship 特性，也就像解鈴還需繫鈴人概念，以下就來看看 sem_wait 與 sem_post 用法範例吧！  </p>
+<p>sem_wait() 函式原型：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sem_wait</span><span class="params">(<span class="keyword">sem_t</span> *sem)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>解釋：若 semaphore 為非 0，則 semaphore 值減 1；若 semaphore 為 0，則呼叫此 function 的 thread 會被 block ，直到 semaphore 值大於 0。  </p>
+<p>sem_post() 函式原型：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sem_post</span><span class="params">(<span class="keyword">sem_t</span> *sem)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>解釋：對 semaphore 值加 1。  </p>
+<h2><span id="同行程內的-sem_wait-跟-sem_post-用法">同行程內的 sem_wait() 跟 sem_post() 用法</span></h2><p>以下範例是在一個行程內使用 sem_wait() 跟 sem_post()，在 main 函式 會產生 producer 執行緒跟 consumer 執行緒，producer 執行緒負責產生 1-20 之間的亂數並呼叫 insert_item 放入 buffer 中，而 consumer 執行緒負責用 remove_item 來消耗這 中的亂數。  </p>
+<p>如果 consumer 都沒有消耗任何變數的情況下，在 producer 會因為 <code>sem_wait(&amp;empty)</code> 從初始值 5 一直減 1 直到 0 不能再減的情況下就會被 block 卡住，直到大於 0 為止才會繼續往下執行。  </p>
+<p>反之，如果 producer 都沒有生產任何變數的情況下，在 consumer 會因為 <code>sem_wait(&amp;full)</code> 從初始值 0 一直減 1 直到 0 不能再減的情況下就會被 block 卡住，直到大於 0 為止才會繼續往下執行。<br><figure class="highlight c"><figcaption><span>linux-sem_wait.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// gcc linux-sem_wait.c -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;semaphore.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BUFFER_SIZE 5</span></span><br><span class="line"><span class="keyword">int</span> buffer[BUFFER_SIZE];</span><br><span class="line"></span><br><span class="line"><span class="keyword">pthread_mutex_t</span> mutex;</span><br><span class="line"><span class="keyword">sem_t</span> empty;</span><br><span class="line"><span class="keyword">sem_t</span> full;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> insertPointer = <span class="number">0</span>, removePointer = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">producer</span><span class="params">(<span class="keyword">void</span> *param)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">consumer</span><span class="params">(<span class="keyword">void</span> *param)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">display_int_array</span><span class="params">(<span class="keyword">char</span> *prog, <span class="keyword">int</span> *arr, <span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s: "</span>, prog);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d%c"</span>, arr[i], ((i+<span class="number">1</span>)%<span class="number">16</span>) ? <span class="string">' '</span> : <span class="string">'\n'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">insert_item</span><span class="params">(<span class="keyword">int</span> item)</span> </span>&#123;</span><br><span class="line">    <span class="comment">/* Acquire Empty Semaphore */</span></span><br><span class="line">    sem_wait(&amp;empty);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Acquire mutex lock to protect buffer */</span></span><br><span class="line">    pthread_mutex_lock(&amp;mutex);</span><br><span class="line"></span><br><span class="line">    buffer[insertPointer++] = item;</span><br><span class="line">    insertPointer = insertPointer % BUFFER_SIZE;</span><br><span class="line">    display_int_array(<span class="string">"prod"</span>, buffer, BUFFER_SIZE);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Release mutex lock and full semaphore */</span></span><br><span class="line">    pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">    sem_post(&amp;full);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">remove_item</span><span class="params">(<span class="keyword">int</span> *item)</span> </span>&#123;</span><br><span class="line">    <span class="comment">/* Acquire Full Semaphore */</span></span><br><span class="line">    sem_wait(&amp;full);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Acquire mutex lock to protect buffer */</span></span><br><span class="line">    pthread_mutex_lock(&amp;mutex);</span><br><span class="line"></span><br><span class="line">    *item = buffer[removePointer];</span><br><span class="line">    buffer[removePointer++] = <span class="number">-1</span>;</span><br><span class="line">    removePointer = removePointer % BUFFER_SIZE;</span><br><span class="line">    display_int_array(<span class="string">"cons"</span>, buffer, BUFFER_SIZE);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Release mutex lock and empty semaphore */</span></span><br><span class="line">    pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">    sem_post(&amp;empty);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sleepTime = <span class="number">10</span>, producerThreads, consumerThreads;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Initialize the synchronization tools */</span></span><br><span class="line">    pthread_mutex_init(&amp;mutex, <span class="literal">NULL</span>);</span><br><span class="line">    sem_init(&amp;empty, <span class="number">0</span>, BUFFER_SIZE);</span><br><span class="line">    sem_init(&amp;full, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    srand(time(<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Create the producer and consumer threads */</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">pthread_t</span> tid;</span><br><span class="line">        <span class="keyword">pthread_attr_t</span> attr;</span><br><span class="line">        pthread_attr_init(&amp;attr);</span><br><span class="line">        pthread_create(&amp;tid, &amp;attr, producer, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">pthread_t</span> tid;</span><br><span class="line">        <span class="keyword">pthread_attr_t</span> attr;</span><br><span class="line">        pthread_attr_init(&amp;attr);</span><br><span class="line">        pthread_create(&amp;tid, &amp;attr, consumer, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Sleep for user specified time */</span></span><br><span class="line">    sleep(sleepTime);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">producer</span><span class="params">(<span class="keyword">void</span> *param)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> random;</span><br><span class="line">    <span class="keyword">int</span> r;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        r = rand() % <span class="number">3</span>;</span><br><span class="line">        sleep(r);</span><br><span class="line">        random = rand() % <span class="number">20</span> + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (insert_item(random))</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Producer produced %d \n"</span>, random);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">consumer</span><span class="params">(<span class="keyword">void</span> *param)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> random;</span><br><span class="line">    <span class="keyword">int</span> r;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        r = rand() % <span class="number">3</span>;</span><br><span class="line">        sleep(r);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (remove_item(&amp;random))</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error Consuming"</span>);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"Consumer consumed %d \n"</span>, random);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">prod: 7 0 0 0 0 </span><br><span class="line">Producer produced 7 </span><br><span class="line">cons: -1 0 0 0 0 </span><br><span class="line">Consumer consumed 7 </span><br><span class="line">prod: -1 14 0 0 0 </span><br><span class="line">Producer produced 14 </span><br><span class="line">cons: -1 -1 0 0 0 </span><br><span class="line">Consumer consumed 14 </span><br><span class="line">prod: -1 -1 3 0 0 </span><br><span class="line">Producer produced 3 </span><br><span class="line">cons: -1 -1 -1 0 0 </span><br><span class="line">Consumer consumed 3 </span><br><span class="line">prod: -1 -1 -1 8 0 </span><br><span class="line">Producer produced 8 </span><br><span class="line">cons: -1 -1 -1 -1 0 </span><br><span class="line">Consumer consumed 8 </span><br><span class="line">prod: -1 -1 -1 -1 10 </span><br><span class="line">Producer produced 10 </span><br><span class="line">cons: -1 -1 -1 -1 -1 </span><br><span class="line">Consumer consumed 10 </span><br><span class="line">prod: 10 -1 -1 -1 -1 </span><br><span class="line">Producer produced 10</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="跨行程的-sem_wait-跟-sem_post-用法">跨行程的 sem_wait() 跟 sem_post() 用法</span></h2><p>跨行程的 sem_wait() 跟 sem_post() 用法，用 fork 分離出兩個行程，並在這父行程與子行程兩行程間用共享記憶體傳遞資料，使用 mmap 共享記憶體來當作 mutex，原理跟上述範例類似，只是這是跨行程。  </p>
+<p>shm_open / ftruncate / mmap 跟 sem_open 這兩種方式都可以成功。<br><figure class="highlight c"><figcaption><span>linux-sem_wait-2.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// gcc linux-sem_wait-2.c -lrt -pthread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;semaphore.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">(<span class="keyword">char</span> *prog, <span class="keyword">char</span> *bytes, <span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s: "</span>, prog);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%02x%c"</span>, bytes[i], ((i+<span class="number">1</span>)%<span class="number">16</span>) ? <span class="string">' '</span> : <span class="string">'\n'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> fd, i, count = <span class="number">0</span>,nloop = <span class="number">2</span>,zero = <span class="number">0</span>, *ptr;</span><br><span class="line">    <span class="keyword">sem_t</span> *mutex;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> shm;</span><br><span class="line">    <span class="keyword">if</span> ((shm = shm_open(<span class="string">"myshm"</span>, O_RDWR | O_CREAT, S_IRWXU)) == <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"shm_open"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ftruncate(shm, <span class="keyword">sizeof</span>(<span class="keyword">sem_t</span>)) &lt; <span class="number">0</span> ) &#123;</span><br><span class="line">        perror(<span class="string">"ftruncate"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((mutex = mmap(<span class="literal">NULL</span>, <span class="keyword">sizeof</span>(<span class="keyword">sem_t</span>), PROT_READ | PROT_WRITE,</span><br><span class="line">                      MAP_SHARED, shm, <span class="number">0</span>)) == MAP_FAILED) &#123;</span><br><span class="line">        perror(<span class="string">"mmap"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// open a file and map it into memory</span></span><br><span class="line">    fd = open(<span class="string">"tmp.txt"</span>,O_RDWR | O_CREAT, S_IRWXU);</span><br><span class="line">    write(fd, &amp;zero, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    ptr = mmap(<span class="literal">NULL</span>, <span class="keyword">sizeof</span>(<span class="keyword">int</span>), PROT_READ | PROT_WRITE, MAP_SHARED, fd, <span class="number">0</span>);</span><br><span class="line">    close(fd);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*if ((mutex = sem_open("mysemaphore", O_CREAT, 0644, 1)) == SEM_FAILED) &#123;</span></span><br><span class="line"><span class="comment">        perror("semaphore initilization");</span></span><br><span class="line"><span class="comment">        exit(1);</span></span><br><span class="line"><span class="comment">    &#125;*/</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// create, initialize semaphore</span></span><br><span class="line">    <span class="keyword">if</span> (sem_init(mutex, <span class="number">1</span>, <span class="number">1</span>) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"semaphore initilization"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (fork() == <span class="number">0</span>) &#123; <span class="comment">// child process</span></span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nloop; i++) &#123;</span><br><span class="line">            sem_wait(mutex);</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"child entered crititical section: %d\n"</span>, (*ptr)++);</span><br><span class="line">            display(<span class="string">"child"</span>, (<span class="keyword">char</span> *)ptr, <span class="number">16</span>);</span><br><span class="line">            sleep(<span class="number">2</span>);</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"child leaving critical section\n"</span>);</span><br><span class="line">            sem_post(mutex);</span><br><span class="line">            sleep(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// back to parent process</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nloop; i++) &#123;</span><br><span class="line">        sem_wait(mutex);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"parent entered critical section: %d\n"</span>, (*ptr)++);</span><br><span class="line">        display(<span class="string">"parent"</span>, (<span class="keyword">char</span> *)ptr, <span class="number">16</span>);</span><br><span class="line">        sleep(<span class="number">2</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"parent leaving critical section\n"</span>);</span><br><span class="line">        sem_post(mutex);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上就是 C/C++ Linux sem_wait 與 sem_post 用法範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其它參考<br>Semaphores on Linux - sem_init() vs sem_open() - Superpatterns<br><a href="https://blog.superpat.com/semaphores-on-linux-sem_init-vs-sem_open" rel="noopener external nofollow noreferrer" target="_blank">https://blog.superpat.com/semaphores-on-linux-sem_init-vs-sem_open</a><br>在這篇當中提到 shm_open / ftruncate / mmap 跟 sem_open 這兩種方式  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-linux-shared-memory-mmap/" title="C/C++ Linux shared memory 與 mmap 用法範例">C/C++ Linux shared memory 與 mmap 用法範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-sem_wait/" data-id="cm0cg2uen00khlcpq0iaz8uaw" data-title="C/C++ Linux sem_wait 與 sem_post 用法範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-windows-tcp-socket" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-windows-tcp-socket/" class="article-date">
@@ -205,7 +277,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-windows-tcp-socket/" data-id="cm0cdkr4300kg0mpq690hawow" data-title="C/C++ Windows Socket (Winsock) TCP Socket Server/Client 網路通訊教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-windows-tcp-socket/" data-id="cm0cg2uem00kglcpq78v7hnb2" data-title="C/C++ Windows Socket (Winsock) TCP Socket Server/Client 網路通訊教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
@@ -265,7 +337,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-su/" data-id="cm0cdkr4300kf0mpqy9rv4rb1" data-title="Linux su 切換使用者指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-su/" data-id="cm0cg2uem00kflcpqfgbl4ynw" data-title="Linux su 切換使用者指令用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -375,7 +447,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-linux-tcp-socket/" data-id="cm0cdkr4200ke0mpqrjzj1z8n" data-title="C/C++ Linux TCP Socket Server/Client 網路通訊教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-linux-tcp-socket/" data-id="cm0cg2uem00kelcpq9rmow2l2" data-title="C/C++ Linux TCP Socket Server/Client 網路通訊教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
@@ -436,7 +508,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-hexdiff/" data-id="cm0cdkr4200kd0mpqhjhbzia3" data-title="Linux hexdiff 比較二進制檔案差異用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-hexdiff/" data-id="cm0cg2uel00kdlcpqttwvwlib" data-title="Linux hexdiff 比較二進制檔案差異用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -510,7 +582,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-fseek/" data-id="cm0cdkr4100kc0mpqqso1qzgu" data-title="C/C++ fseek 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-fseek/" data-id="cm0cg2uel00kclcpqv3iq8ejj" data-title="C/C++ fseek 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -588,7 +660,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-diff-binary-file/" data-id="cm0cdkr4100kb0mpqsxhj616k" data-title="Linux 比較二進制檔案差異的工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-diff-binary-file/" data-id="cm0cg2uel00kblcpqc3jfk4if" data-title="Linux 比較二進制檔案差異的工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -650,7 +722,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gimp-pixelate/" data-id="cm0cdkr4000ka0mpqiodnkawi" data-title="GIMP 馬賽克處理" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/gimp-pixelate/" data-id="cm0cg2uek00kalcpq3phftitu" data-title="GIMP 馬賽克處理" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GIMP/">GIMP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li></ul>
@@ -711,7 +783,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/convert-webp-to-jpg/" data-id="cm0cdkr4000k90mpqiajuobs5" data-title="webp 轉換 jpg 的 command line 指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/convert-webp-to-jpg/" data-id="cm0cg2uek00k9lcpqrlwtobid" data-title="webp 轉換 jpg 的 command line 指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -785,78 +857,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ftell/" data-id="cm0cdkr3z00k80mpq1yt2guu2" data-title="C/C++ ftell 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ftell/" data-id="cm0cg2uek00k8lcpqbtf9ndw2" data-title="C/C++ ftell 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-google-sheet-add-alternating-colors" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/google-sheet-add-alternating-colors/" class="article-date">
-  <time datetime="2022-12-12T14:00:00.000Z" itemprop="datePublished">2022-12-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/google-sheet-add-alternating-colors/">Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色的方法教學。  </p>
-<p>以下 Google Sheet 用替代顏色來幫表格隔行上色的介紹分為這幾部分，  </p>
-<ul>
-<li>Google Sheet 用替代顏色來幫表格隔行上色  </li>
-<li>Google Sheet 調整上色的顏色樣式  </li>
-<li>Google Sheet 調整上色的頁首或頁尾樣式  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2><span id="google-sheet-用替代顏色來幫表格隔行上色">Google Sheet 用替代顏色來幫表格隔行上色</span></h2><p>首先先選擇好要上色的表格範圍，<br><img src="/google-sheet-add-alternating-colors/google-sheet-add-alternating-colors-1.png" title="google sheet add alternating colors">  </p>
-<p>接著點選功能選單的<code>格式</code> &gt; <code>替代顏色</code>，英文介面的話則是 <code>Format</code> &gt; <code>Alternating colors</code>，<br><img src="/google-sheet-add-alternating-colors/google-sheet-add-alternating-colors-2.png" title="google sheet add alternating colors">  </p>
-<p>這樣就完成表格上色了！是不是很快速！然後畫面右側會出現<code>替代顏色</code>的其他選項，<br><img src="/google-sheet-add-alternating-colors/google-sheet-add-alternating-colors-3.png" title="google sheet add alternating colors">  </p>
-<h2><span id="google-sheet-調整上色的顏色樣式">Google Sheet 調整上色的顏色樣式</span></h2><p>我們可以透過右側<code>替代顏色</code>的選項更改表格的顏色樣式，點選下去即可馬上看到效果，<br><img src="/google-sheet-add-alternating-colors/google-sheet-add-alternating-colors-4.png" title="google sheet add alternating colors">  </p>
-<h2><span id="google-sheet-調整上色的頁首或頁尾樣式">Google Sheet 調整上色的頁首或頁尾樣式</span></h2><p>如果要有頁尾的樣式可以勾選右側<code>替代顏色</code>的<code>頁尾</code>選項，要取消頁首的樣式也一樣從右側<code>替代顏色</code>的<code>頁首</code>選項做取消勾選，<br><img src="/google-sheet-add-alternating-colors/google-sheet-add-alternating-colors-5.png" title="google sheet add alternating colors">  </p>
-<p>除了預設的顏色樣式以外，你也可以透過<code>自訂樣式</code>來決定每一列的顏色，<br><img src="/google-sheet-add-alternating-colors/google-sheet-add-alternating-colors-6.png" width="250" title="google sheet add alternating colors">  </p>
-<p>以上就是 Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/google-sheet-add-alternating-colors/" data-id="cm0cdkr3z00k70mpq70icysho" data-title="Google Sheet 用替代顏色來幫表格隔行上色/奇偶上色" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Sheet/">Google Sheet</a></li></ul>
 
     </footer>
   </div>
@@ -904,6 +908,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>
         
           <li>
+            <a href="/cpp-observer-pattern/">C++ 設計模式 - xxx模式 xxx Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-strategy-pattern/">C++ 設計模式 - 策略模式 Strategy Pattern</a>
           </li>
         
@@ -913,10 +921,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/php-session/">PHP 中的 Session 用途與實踐範例：完整指南</a>
-          </li>
-        
-          <li>
-            <a href="/php-post/">PHP $_POST 變數用途、語法與實用範例詳解</a>
           </li>
         
       </ul>
@@ -935,7 +939,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">194</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">195</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
