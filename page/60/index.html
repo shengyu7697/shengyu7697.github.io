@@ -107,6 +107,69 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cmake-cmakelists" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cmake-cmakelists/" class="article-date">
+  <time datetime="2020-01-01T14:00:00.000Z" itemprop="datePublished">2020-01-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cmake-cmakelists/">撰寫 cmake 的 CMakeLists.txt</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹如何撰寫 cmake 的 CMakeLists.txt，  </p>
+<h2><span id="新增-cmake-到-cmake_module_path">新增 .cmake 到 CMAKE_MODULE_PATH</span></h2><p>用來定義自己的 cmake 模組所在的路徑。如果你的工程比較複雜,有可能會自己編寫一些 cmake 模組,這些 cmake 模組是隨你的工程釋出的,為了讓 cmake 在處理 CMakeLists.txt 時找到這些模組,你需要通過 SET 指令,將自己的 cmake 模組路徑設定一下。<br>比如<br><code>SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)</code><br>這時候你就可以通過 INCLUDE 指令來呼叫自己的模組了。</p>
+<p>用append在之前的變數裡也可以<br><code>list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)</code></p>
+<p>例如：想要抓取最新的 FindZLIB.cmake，但目前系統使用的 cmake 不支援，可以到<a href="https://github.com/Kitware/CMake/tree/master/Modules" rel="noopener external nofollow noreferrer" target="_blank">這裡下載</a>最新版本。</p>
+<p>參考<br>[1] Kitware/CMake: Mirror of CMake upstream repository<br><a href="https://github.com/Kitware/CMake" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/Kitware/CMake</a><br>[2] cmake中cmakelists的编写_cmake,cmakelists,c++_Usper-CSDN博客<br><a href="https://blog.csdn.net/uniqueyyc/article/details/80916779" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/uniqueyyc/article/details/80916779</a><br>[3] cmake 学习笔记(三)_1+1=10-CSDN博客<br><a href="https://blog.csdn.net/dbzhang800/article/details/6329314" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/dbzhang800/article/details/6329314</a></p>
+<h2><span id="cmake-改變編譯完的輸出路徑">cmake 改變編譯完的輸出路徑</span></h2><p>在 CMakeLists.txt 設定一下這些變數即可改變輸出路徑<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $&#123;CMAKE_BINARY_DIR&#125;/lib)</span><br><span class="line">set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $&#123;CMAKE_BINARY_DIR&#125;/lib)</span><br><span class="line">set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $&#123;CMAKE_BINARY_DIR&#125;/bin)</span><br></pre></td></tr></table></figure></p>
+<p>也可以不要全部都改變，只指定某個 targets 改變就好<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">set_target_properties( targets...</span><br><span class="line">    PROPERTIES</span><br><span class="line">    ARCHIVE_OUTPUT_DIRECTORY &quot;$&#123;CMAKE_BINARY_DIR&#125;/lib&quot;</span><br><span class="line">    LIBRARY_OUTPUT_DIRECTORY &quot;$&#123;CMAKE_BINARY_DIR&#125;/lib&quot;</span><br><span class="line">    RUNTIME_OUTPUT_DIRECTORY &quot;$&#123;CMAKE_BINARY_DIR&#125;/bin&quot;</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>CMAKE_ARCHIVE_OUTPUT_DIRECTORY 是改變 xxx.lib 的輸出路徑<br>CMAKE_LIBRARY_OUTPUT_DIRECTORY 是改變 ??????? 的輸出路徑<br>CMAKE_RUNTIME_OUTPUT_DIRECTORY 是改變 xxx.dll 的輸出路徑<br>在 Windows 下 設定 CMAKE_RUNTIME_OUTPUT_DIRECTORY 為 <code>build/bin</code> 後用debug編譯完可能會輸出到 <code>build/bin/Debug</code>，<br>不想要 Debug 的路徑可以直接設定 CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG 就不會有，會變成 <code>build/bin</code><br>Release 也是，不想要 Release 的路徑可以直接設定 CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE 就不會有了。</p>
+<p>參考<br>c++ - How do I make CMake output into a ‘bin’ dir? - Stack Overflow<br><a href="https://stackoverflow.com/questions/6594796/how-do-i-make-cmake-output-into-a-bin-dir" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/6594796/how-do-i-make-cmake-output-into-a-bin-dir</a>  </p>
+<p><strong>相關文章</strong><br><a href="/cmake-gui-build-install-in-windows/" title="Windows 編譯 cmake-gui">Windows 編譯 cmake-gui</a><br><a href="/cmake-include-cmake-file/" title="CMake 專案裡 include .cmake 檔案">CMake 專案裡 include .cmake 檔案</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cmake-cmakelists/" data-id="cm0dv5ti600754vpqkmnyelac" data-title="撰寫 cmake 的 CMakeLists.txt" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-media-play-and-control-webpage" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-media-play-and-control-webpage/" class="article-date">
@@ -161,7 +224,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-media-play-and-control-webpage/" data-id="cm0dt0l2r0074nvpq4aew84e5" data-title="[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-media-play-and-control-webpage/" data-id="cm0dv5ti500744vpqrt97jjh1" data-title="[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -229,7 +292,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sys-argv/" data-id="cm0dt0l2r0073nvpqu21cacm5" data-title="Python sys.argv 用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sys-argv/" data-id="cm0dv5ti500734vpqdnn7oebm" data-title="Python sys.argv 用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -302,7 +365,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ternary-operator/" data-id="cm0dt0l2r0072nvpqnwmaol4r" data-title="C/C++ 三元運算子" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ternary-operator/" data-id="cm0dv5ti400724vpqrabcee3p" data-title="C/C++ 三元運算子" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -364,7 +427,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-mac/" data-id="cm0dt0l2q0071nvpq7q9q6i8s" data-title="在 Mac OSX 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-mac/" data-id="cm0dv5ti400714vpqiavglhcc" data-title="在 Mac OSX 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -426,7 +489,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-ubuntu/" data-id="cm0dt0l2q0070nvpqm2j2yr15" data-title="在 Ubuntu 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-ubuntu/" data-id="cm0dv5ti300704vpq87n4xxpb" data-title="在 Ubuntu 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -488,7 +551,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-interprocess-shared-memory/" data-id="cm0dt0l2q006znvpq5ba7m1yw" data-title="boost::interprocess 共享記憶體 shared memory" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-interprocess-shared-memory/" data-id="cm0dv5ti3006z4vpq6qsn6b8a" data-title="boost::interprocess 共享記憶體 shared memory" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -547,7 +610,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-filesystem-create-directory/" data-id="cm0dt0l2p006ynvpq2drqsy1p" data-title="boost::filesystem 建立資料夾" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-filesystem-create-directory/" data-id="cm0dv5ti3006y4vpqttj1s8pm" data-title="boost::filesystem 建立資料夾" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -608,7 +671,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-use-cmake-visual-studio-in-windows/" data-id="cm0dt0l2p006xnvpqmje9ld8i" data-title="在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-use-cmake-visual-studio-in-windows/" data-id="cm0dv5ti2006x4vpq947gnyzk" data-title="在 Windows 用 cmake 產生 Visual Studio 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -667,67 +730,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-install-boost-in-windows/" data-id="cm0dt0l2o006wnvpqwoin6lfy" data-title="在 Windows 下安裝 Boost" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-boost-install-boost-in-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/boost-install-boost-in-ubuntu/" class="article-date">
-  <time datetime="2019-12-20T14:00:00.000Z" itemprop="datePublished">2019-12-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/boost-install-boost-in-ubuntu/">在 Ubuntu 下安裝 Boost</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>Boost C++ Libraries 是 C++ 開發利器，在 Ubuntu 下安裝 Boost 的方式有兩種，第一種是透過 apt 來安裝 Boost，第二種是用原始碼編譯安裝 Boost。  </p>
-<p>以下為我的系統環境：<br>作業系統：Ubuntu 16.04  </p>
-<h2><span id="方法1-使用-apt-套件安裝">方法1. 使用 apt 套件安裝</span></h2><p>Ubuntu 16.04 透過 apt 會安裝 boost 1.58.0，如何知道 apt 安裝會安裝到什麼版本可以用 <code>apt-cache search libboost-all-dev</code> 搜尋到相關資訊。apt 安裝 boost 的指令如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libboost-all-dev</span><br></pre></td></tr></table></figure></p>
-<h2><span id="方法2-下載原始碼編譯與安裝">方法2. 下載原始碼編譯與安裝</span></h2><p>Ubuntu 請看 <a href="/boost-1-70-0-build-install-in-ubuntu/" title="在 Ubuntu 下編譯安裝 Boost 1.70.0">在 Ubuntu 下編譯安裝 Boost 1.70.0</a> 這篇<br>Windows 請看 <a href="/boost-1-70-0-build-install-in-windows/" title="在 Windows 下編譯安裝 Boost 1.70.0">在 Windows 下編譯安裝 Boost 1.70.0</a> 這篇  </p>
-<p>安裝完 Boost 環境後馬上就開始來寫<a href="/boost-first-program-in-ubuntu/" title="第一支 Boost 程式">第一支 Boost 程式</a>吧～  </p>
-<p><strong>相關主題</strong><br><a href="/boost-install-boost-in-windows/" title="在 Windows 下安裝 Boost">在 Windows 下安裝 Boost</a>  </p>
-<p>參考<br>How to install latest Boost library on Raspberry Pi<br><a href="http://osdevlab.blogspot.tw/2016/02/how-to-install-latest-boost-library-on.html" rel="noopener external nofollow noreferrer" target="_blank">http://osdevlab.blogspot.tw/2016/02/how-to-install-latest-boost-library-on.html</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-install-boost-in-ubuntu/" data-id="cm0dt0l2l006vnvpq3u2oopr8" data-title="在 Ubuntu 下安裝 Boost" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-install-boost-in-windows/" data-id="cm0dv5ti2006w4vpq4f81861m" data-title="在 Windows 下安裝 Boost" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -778,6 +781,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </li>
         
           <li>
+            <a href="/cpp-decorator-pattern/">C++ 設計模式 - 裝飾者模式 Decorator Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-observer-pattern/">C++ 設計模式 - 觀察者模式 Observer Pattern</a>
           </li>
         
@@ -787,10 +794,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-design-patterns/">C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？</a>
-          </li>
-        
-          <li>
-            <a href="/php-session/">PHP 中的 Session 用途與實踐範例：完整指南</a>
           </li>
         
       </ul>
@@ -809,7 +812,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">195</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">196</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
