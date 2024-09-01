@@ -107,6 +107,84 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-check-if-directory-exists" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-check-if-directory-exists/" class="article-date">
+  <time datetime="2020-04-28T14:00:00.000Z" itemprop="datePublished">2020-04-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-check-if-directory-exists/">C/C++ 判斷資料夾是否存在</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇記錄一下 C/C++ 在 Windows / Linux / MacOS 各平台判斷資料夾是否存在的方法，<br>其中介紹順序以多平台適用的方法優先，其次是特定平台的方法。  </p>
+<p>判斷資料夾是否存在大約分為下列幾種方法，  </p>
+<ul>
+<li>stat() (Windows / Linux / MacOS / Unix-like)  </li>
+<li>boost::filesystem::exists() (Boost)  </li>
+<li>std::filesystem::exists() (C++17)  </li>
+<li>GetFileAttributesA() (Windows)  </li>
+</ul>
+<h2><span id="stat-windows-linux-macos-unix-like">stat() (Windows / Linux / MacOS / Unix-like)</span></h2><p>stat() 用於 Linux, UNIX 和 Windows 也適用    </p>
+<p>函式原型：<code>int stat(const char *path, struct stat *buf);</code>，使用範例如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">info</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (stat(path, &amp;info) != <span class="number">0</span>)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"cannot access %s\n"</span>, path);</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (info.st_mode &amp; S_IFDIR)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s is a directory\n"</span>, path);</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s is no directory\n"</span>, path);</span><br></pre></td></tr></table></figure></p>
+<p>常見的資料夾判斷函式<br>以下範例我自己在 Windows / Linux 都可以成功判斷.<br><figure class="highlight cpp"><figcaption><span>cpp-is-dir-exists.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-is-dir-exists.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">dirExists</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;path)</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">info</span>;</span></span><br><span class="line">    <span class="keyword">if</span> (stat(path.c_str(), &amp;info) == <span class="number">0</span> &amp;&amp; info.st_mode &amp; S_IFDIR) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; dirExists(<span class="string">"foo"</span>) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="boostfilesystemexists-boost">boost::filesystem::exists() (Boost)</span></h2><p>TBD  </p>
+<h2><span id="stdfilesystemexists-c17">std::filesystem::exists() (C++17)</span></h2><p>or std::filesystem::is_directory() 待驗證  </p>
+<h2><span id="getfileattributesa-windows">GetFileAttributesA() (Windows)</span></h2><p>函式原型：<code>DWORD GetFileAttributesA(const char* filename);</code>，使用範例如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;windows.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">dirExists</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; path)</span> </span>&#123;</span><br><span class="line">      DWORD ftyp = GetFileAttributesA(path.c_str());</span><br><span class="line">      <span class="keyword">if</span> (ftyp == INVALID_FILE_ATTRIBUTES)</span><br><span class="line">           <span class="keyword">return</span> <span class="literal">false</span>;  <span class="comment">//something is wrong with your path!</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (ftyp &amp; FILE_ATTRIBUTE_DIRECTORY)</span><br><span class="line">          <span class="keyword">return</span> <span class="literal">true</span>;   <span class="comment">// this is a directory!</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;    <span class="comment">// this is not a directory!</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>參考<br><a href="https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c</a><br><a href="https://blog.csdn.net/caroline_wendy/article/details/21734915" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/caroline_wendy/article/details/21734915</a><br><a href="http://stackoverflow.com/questions/8233842/how-to-check-if-directory-exist-using-c-and-winapi" rel="noopener external nofollow noreferrer" target="_blank">http://stackoverflow.com/questions/8233842/how-to-check-if-directory-exist-using-c-and-winapi</a><br><a href="https://caojingyou.github.io/2017/02/15/C++%E4%B8%AD%E5%88%A4%E6%96%AD%E6%9F%90%E4%B8%80%E6%96%87%E4%BB%B6%E6%88%96%E7%9B%AE%E5%BD%95%E6%98%AF%E5%90%A6%E5%AD%98%E5%9C%A8/" rel="noopener external nofollow noreferrer" target="_blank">https://caojingyou.github.io/2017/02/15/C++%E4%B8%AD%E5%88%A4%E6%96%AD%E6%9F%90%E4%B8%80%E6%96%87%E4%BB%B6%E6%88%96%E7%9B%AE%E5%BD%95%E6%98%AF%E5%90%A6%E5%AD%98%E5%9C%A8/</a></p>
+<ul>
+<li>stat  </li>
+<li>boost的filesystem类库的exists函数  </li>
+</ul>
+<p>std::filesystem::exists() (C++17) 相關參考<br>std::filesystem::exists - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/filesystem/exists" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/filesystem/exists</a><br>std::filesystem::is_directory - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/filesystem/is_directory" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/filesystem/is_directory</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-check-if-file-exists/" title="C/C++ 判斷檔案是否存在">C/C++ 判斷檔案是否存在</a><br><a href="/std-filesystem-copy/" title="std::filesystem::copy 複製檔案的用法與範例">std::filesystem::copy 複製檔案的用法與範例</a><br><a href="/std-filesystem-create_directory/" title="std::filesystem::create_directory 建立資料夾的用法與範例">std::filesystem::create_directory 建立資料夾的用法與範例</a><br><a href="/std-filesystem-exists/" title="std::filesystem::exists 判斷檔案是否存在的用法與範例">std::filesystem::exists 判斷檔案是否存在的用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-check-if-directory-exists/" data-id="cm0j1msvw008yu8pqyp730kun" data-title="C/C++ 判斷資料夾是否存在" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-check-if-file-exists" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-check-if-file-exists/" class="article-date">
@@ -178,7 +256,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-check-if-file-exists/" data-id="cm0iw9w79008xpmpqi661m75r" data-title="C/C++ 判斷檔案是否存在" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-check-if-file-exists/" data-id="cm0j1msvw008xu8pqf6lrdku0" data-title="C/C++ 判斷檔案是否存在" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -248,7 +326,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-arithmetic/" data-id="cm0iw9w78008vpmpqn6i0pda7" data-title="Python 四則運算，加法、減法、乘法、除法用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-arithmetic/" data-id="cm0j1msvw008wu8pqso4ijygx" data-title="Python 四則運算，加法、減法、乘法、除法用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -311,7 +389,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-list-length/" data-id="cm0iw9w78008wpmpq047u0l5u" data-title="Python 計算 list 串列長度" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-list-length/" data-id="cm0j1msvv008vu8pqvpwxdmgl" data-title="Python 計算 list 串列長度" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -367,7 +445,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-tutorial/" data-id="cm0iw9w77008upmpqfigz5zea" data-title="Shell Script 新手入門教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-tutorial/" data-id="cm0j1msvv008uu8pqv8c8aklu" data-title="Shell Script 新手入門教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -437,7 +515,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-for/" data-id="cm0iw9w77008tpmpquqmmyhm2" data-title="Shell Script for 迴圈" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-for/" data-id="cm0j1msvv008tu8pqylbed0mj" data-title="Shell Script for 迴圈" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -502,7 +580,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-arithmetic/" data-id="cm0iw9w77008spmpq0jyqmcq8" data-title="Shell Script 變數相加、相減、相乘、相除" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-arithmetic/" data-id="cm0j1msvu008su8pqsvwo83o3" data-title="Shell Script 變數相加、相減、相乘、相除" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -561,7 +639,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-read-text-file/" data-id="cm0iw9w76008rpmpqvwavwhrv" data-title="Shell Script 讀檔，讀取 txt 文字檔" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-read-text-file/" data-id="cm0j1msvu008ru8pqrf20y3g3" data-title="Shell Script 讀檔，讀取 txt 文字檔" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -622,7 +700,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-str-length/" data-id="cm0iw9w75008qpmpq815ka49c" data-title="Python 計算 str 字串長度" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-str-length/" data-id="cm0j1msvt008qu8pq0ta64h4f" data-title="Python 計算 str 字串長度" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -692,88 +770,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tornado/" data-id="cm0iw9w75008ppmpqk7l1yqv4" data-title="Python 建立簡單的 Tornado Web" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-logging" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-logging/" class="article-date">
-  <time datetime="2020-04-14T14:00:00.000Z" itemprop="datePublished">2020-04-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-logging/">Python logging 日誌用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇將介紹 Python 內建的 logging 用法與範例，Python 的 logging 可以將 log 輸出到 console 與輸出到日誌檔裡，接下來就開始本篇的 Python logging 教學吧。  </p>
-<p>Python logging 的 log level 有五種等級，分別為DEBUG、INFO、WARNING、ERROR、CRITICAL，預設 log level 等級是 WARNING。<br>log level 等級與分別對應的 api 如下：<br>DEBUG：<code>logging.debug()</code><br>INFO：<code>logging.info()</code><br>WARNING：<code>logging.warning()</code><br>ERROR：<code>logging.error()</code><br>CRITICAL：<code>logging.critical()</code>  </p>
-<h2><span id="範例-簡單的基本-logging">範例. 簡單的基本 logging</span></h2><p>Python logging 基本用法與範例如下，預設的 log level 是 WARNING，代表大於或等於 WARNING 以上的 log 才會記錄（WARNING、ERROR、CRITICAL），不會記錄 DEBUG 與 INFO，</p>
-<p>Python 的 logging 如果沒有設定 log filename 檔名的話就不會將日誌紀錄在檔案裡只會輸出顯示在 console 上，預設是沒有設定日誌檔名，  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.debug(<span class="string">'debug'</span>)</span><br><span class="line">logging.info(<span class="string">'info'</span>)</span><br><span class="line">logging.warning(<span class="string">'warning'</span>)</span><br><span class="line">logging.error(<span class="string">'error'</span>)</span><br><span class="line">logging.critical(<span class="string">'critical'</span>)</span><br></pre></td></tr></table></figure>
-<p>輸出如下，可以發現<code>logging.debug()</code>與<code>logging.info()</code>的訊息都沒有出現，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARNING:root:warning</span><br><span class="line">ERROR:root:error</span><br><span class="line">CRITICAL:root:critical</span><br></pre></td></tr></table></figure></p>
-<p>根據上面的範例進行修改，<br>將 log level 修改成 DEBUG，讓 DEBUG level 與 INFO level 的 log 都顯示出來。<br><figure class="highlight python"><figcaption><span>python-logging.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.basicConfig(level=logging.DEBUG)</span><br><span class="line">logging.debug(<span class="string">'debug'</span>)</span><br><span class="line">logging.info(<span class="string">'info'</span>)</span><br><span class="line">logging.warning(<span class="string">'warning'</span>)</span><br><span class="line">logging.error(<span class="string">'error'</span>)</span><br><span class="line">logging.critical(<span class="string">'critical'</span>)</span><br></pre></td></tr></table></figure></p>
-<p>輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">DEBUG:root:debug</span><br><span class="line">INFO:root:info</span><br><span class="line">WARNING:root:warning</span><br><span class="line">ERROR:root:error</span><br><span class="line">CRITICAL:root:critical</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="範例-進階的日誌使用方式">範例. 進階的日誌使用方式</span></h2><p>以下範例為實際上使用情形，使用 logging.basicConfig 來設定，設定時可以指定 log level 這樣 debug info 就可以顯示出來了，設定 log 的 filename 後只會輸出到檔案不會輸出在 console，<br><code>filemode=&#39;w&#39;</code>表示為覆寫模式，之前的檔案會被覆蓋過去，預設是添加模式，會將內容接在上次檔案的尾端繼續寫入，<br><figure class="highlight python"><figcaption><span>python-logging2.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.basicConfig(level=logging.INFO, filename=<span class="string">'log.txt'</span>, filemode=<span class="string">'w'</span>,</span><br><span class="line">	format=<span class="string">'[%(asctime)s %(levelname)-8s] %(message)s'</span>,</span><br><span class="line">	datefmt=<span class="string">'%Y%m%d %H:%M:%S'</span>,</span><br><span class="line">	)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">	logging.debug(<span class="string">'debug'</span>)</span><br><span class="line">	logging.info(<span class="string">'info'</span>)</span><br><span class="line">	logging.warning(<span class="string">'warning'</span>)</span><br><span class="line">	logging.error(<span class="string">'error'</span>)</span><br><span class="line">	logging.critical(<span class="string">'critical'</span>)</span><br></pre></td></tr></table></figure></p>
-<p>輸出log檔內容如下：<br><figure class="highlight plain"><figcaption><span>log.txt</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[20200414 21:34:40 INFO    ] info</span><br><span class="line">[20200414 21:34:40 WARNING ] warning</span><br><span class="line">[20200414 21:34:40 ERROR   ] error</span><br><span class="line">[20200414 21:34:40 CRITICAL] critical</span><br></pre></td></tr></table></figure></p>
-<h2><span id="範例-簡潔的日誌風格">範例. 簡潔的日誌風格</span></h2><p>這邊示範簡潔的日誌的格式，將 level 縮短變成一個字母，format 裡還能指定 module 名稱與程式碼行數，<br>你也可以將 log 的檔名依照日期時間來命名，<br><figure class="highlight python"><figcaption><span>python-logging3.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line">log_filename = datetime.datetime.now().strftime(<span class="string">"%Y-%m-%d_%H_%M_%S.log"</span>)</span><br><span class="line">logging.basicConfig(level=logging.INFO, filename=log_filename, filemode=<span class="string">'w'</span>,</span><br><span class="line">	<span class="comment">#format='[%(levelname).1s %(asctime)s] %(message)s',</span></span><br><span class="line">	format=<span class="string">'[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d] %(message)s'</span>,</span><br><span class="line">	datefmt=<span class="string">'%Y%m%d %H:%M:%S'</span>,</span><br><span class="line">	)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">	logging.debug(<span class="string">'debug'</span>)</span><br><span class="line">	logging.info(<span class="string">'info'</span>)</span><br><span class="line">	logging.warning(<span class="string">'warning'</span>)</span><br><span class="line">	logging.error(<span class="string">'error'</span>)</span><br><span class="line">	logging.critical(<span class="string">'critical'</span>)</span><br></pre></td></tr></table></figure></p>
-<p>輸出log檔內容如下：<br><figure class="highlight plain"><figcaption><span>2020-04-14_21_34_59.log</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[I 20200414 21:34:40 python-logging3:14] info</span><br><span class="line">[W 20200414 21:34:40 python-logging3:15] warning</span><br><span class="line">[E 20200414 21:34:40 python-logging3:16] error</span><br><span class="line">[C 20200414 21:34:40 python-logging3:17] critical</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="範例-同時輸出到-console-與日誌檔">範例. 同時輸出到 console 與日誌檔</span></h2><p>使用 logging 如果想要同時輸出到 console 與日誌檔只能手動加一些程式碼去設定，<br>在 Python logging 套件的 basicConfig() 裡的<a href="https://github.com/python/cpython/blob/master/Lib/logging/__init__.py" rel="noopener external nofollow noreferrer" target="_blank">原始碼</a>可以發現 console(StreamHandler) 與 日誌檔(FileHandler) 這兩種功能只能擇一使用，<br>手動加一些程式碼同時輸出到 console 與日誌檔的範例如下，<br>先使用 StreamHandler 輸出到console，<br>再使用 FileHandler 輸出到日誌檔，<br>最後在添加這兩個 Handler  </p>
-<figure class="highlight python"><figcaption><span>python-logging4.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line">logger = logging.getLogger()</span><br><span class="line">logger.setLevel(logging.DEBUG)</span><br><span class="line">formatter = logging.Formatter(</span><br><span class="line">	<span class="string">'[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d] %(message)s'</span>,</span><br><span class="line">	datefmt=<span class="string">'%Y%m%d %H:%M:%S'</span>)</span><br><span class="line"></span><br><span class="line">ch = logging.StreamHandler()</span><br><span class="line">ch.setLevel(logging.DEBUG)</span><br><span class="line">ch.setFormatter(formatter)</span><br><span class="line"></span><br><span class="line">log_filename = datetime.datetime.now().strftime(<span class="string">"%Y-%m-%d_%H_%M_%S.log"</span>)</span><br><span class="line">fh = logging.FileHandler(log_filename)</span><br><span class="line">fh.setLevel(logging.DEBUG)</span><br><span class="line">fh.setFormatter(formatter)</span><br><span class="line"></span><br><span class="line">logger.addHandler(ch)</span><br><span class="line">logger.addHandler(fh)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">	logging.debug(<span class="string">'debug'</span>)</span><br><span class="line">	logging.info(<span class="string">'info'</span>)</span><br><span class="line">	logging.warning(<span class="string">'warning'</span>)</span><br><span class="line">	logging.error(<span class="string">'error'</span>)</span><br><span class="line">	logging.critical(<span class="string">'critical'</span>)</span><br></pre></td></tr></table></figure>
-<p>結果如先前一樣。  </p>
-<h2><span id="loggingbasicconfig-常用參數">logging.basicConfig 常用參數</span></h2><p>以下為 logging.basicConfig 常用的參數與說明，<br><code>level</code>：顯示日誌的等級<br><code>filename</code>：log 的檔名<br><code>format</code>：log 的輸出格式<br><code>datefmt</code>：輸出時間的格式<br><code>filemode</code>：日誌開啟模式<br><code>handlers</code>：與filename與stream不相容，無法同時使用<br><code>stream</code>：與handlers不相容，無法同時使用<br><code>style</code>：formatter 使用 ％ 還是 {} 還是 $  </p>
-<p>使用 logging.basicConfig 可以對 logging 進行設定外，也可以透過另一個 logging.fileConfig 的方式來對 logging 進行設定，logging.fileConfig 就是將 config 檔案裡的設定值讀取進來作設定，詳細使用請參考<a href="https://docs.python.org/3/library/logging.config.html#logging.config.fileConfig" rel="noopener external nofollow noreferrer" target="_blank">logging.config.fileConfig()</a>與<a href="https://docs.python.org/3/library/logging.config.html#configuration-file-format" rel="noopener external nofollow noreferrer" target="_blank">Configuration file format</a>  </p>
-<h2><span id="logging-format-常用輸出格式">logging format 常用輸出格式</span></h2><p>以下為 logging format 常用輸出格式與說明，<br><code>%(asctime)s</code>：日期時間<br><code>%(filename)s</code>：模組檔名<br><code>%(funcName)s</code>：函式名稱<br><code>%(levelno)s</code>：行數<br><code>%(levelname)s</code>：logging level<br><code>%(levelno)s</code>：logging level 的數值<br><code>%(message)s</code>：訊息<br><code>%(module)s</code>：模組名稱  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以上就是 Python logging 日誌用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>參考<br>Python 3 官方教學<br><a href="https://docs.python.org/3/library/logging.html" rel="noopener external nofollow noreferrer" target="_blank">https://docs.python.org/3/library/logging.html</a><br>[Python] logging 教學 – Max的程式語言筆記<br><a href="https://stackoverflow.max-everyday.com/2017/10/python-logging/" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.max-everyday.com/2017/10/python-logging/</a><br>Python - 日誌 (logging) 模組 | Titangene Blog<br><a href="https://titangene.github.io/article/python-logging.html" rel="noopener external nofollow noreferrer" target="_blank">https://titangene.github.io/article/python-logging.html</a><br>小狐狸事務所: Python 學習筆記 : 日誌 (logging) 模組測試<br><a href="http://yhhuang1966.blogspot.com/2018/04/python-logging_24.html" rel="noopener external nofollow noreferrer" target="_blank">http://yhhuang1966.blogspot.com/2018/04/python-logging_24.html</a><br>tornado/log.py at master · tornadoweb/tornado<br><a href="https://github.com/tornadoweb/tornado/blob/master/tornado/log.py" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/tornadoweb/tornado/blob/master/tornado/log.py</a><br>Python logging同时输出到屏幕和文件 - 孤鸿的天空<br><a href="https://xnathan.com/2017/03/09/logging-output-to-screen-and-file/" rel="noopener external nofollow noreferrer" target="_blank">https://xnathan.com/2017/03/09/logging-output-to-screen-and-file/</a><br>Python logging浅尝（将log同时输出到Console和日志文件）_小桔的博客-CSDN博客<br><a href="https://blog.csdn.net/u010895119/article/details/79470443" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/u010895119/article/details/79470443</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/python-read-text-file/" title="Python 讀檔，讀取 txt 文字檔">Python 讀檔，讀取 txt 文字檔</a><br><a href="/python-split/" title="Python 字串分割 split">Python 字串分割 split</a><br><a href="/python-replace/" title="Python 取代字元或取代字串 replace">Python 取代字元或取代字串 replace</a><br><a href="/python-multi-thread/" title="Python 建立多執行緒 thread">Python 建立多執行緒 thread</a><br><a href="/python-opencv-resize/" title="Python OpenCV resize 圖片縮放">Python OpenCV resize 圖片縮放</a><br><a href="/python-opencv-camera/" title="Python OpenCV 顯示camera攝影機串流影像">Python OpenCV 顯示camera攝影機串流影像</a><br><a href="/python-simple-web-server/" title="Python 快速建立簡單網頁伺服器 http websever">Python 快速建立簡單網頁伺服器 http websever</a><br><a href="/python-tornado/" title="Python 建立簡單的 Tornado Web">Python 建立簡單的 Tornado Web</a><br><a href="/python-media-play-and-control-webpage/" title="[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁">[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-logging/" data-id="cm0iw9w74008opmpqmtkzfi70" data-title="Python logging 日誌用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tornado/" data-id="cm0j1msvt008pu8pqvm9cfy75" data-title="Python 建立簡單的 Tornado Web" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -820,6 +817,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-proxy-pattern/">C++ 設計模式 - xxx模式 xxx Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-simple-factory-pattern/">C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern</a>
           </li>
         
@@ -833,10 +834,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-template-method-pattern/">C++ 設計模式 - 樣板方法模式 Template Method Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/php-base64_encode/">PHP base64_encode 編碼使用指南：方法與應用</a>
           </li>
         
       </ul>
@@ -855,7 +852,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">200</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">201</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
