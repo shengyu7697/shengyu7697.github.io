@@ -107,6 +107,73 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-condition_variable-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-condition_variable-how/" class="article-date">
+  <time datetime="2019-11-16T14:00:00.000Z" itemprop="datePublished">2019-11-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-condition_variable-how/">std::condition_variable 怎麼實作的？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::condition_variable 的。  </p>
+<p>接下來我們來 trace llvm 的 libc++ 是怎麼實作 std::condition_variable 的。  </p>
+<h2><span id="1-stdcondition_variablenotify_one-的實作">1. std::condition_variable::notify_one 的實作</span></h2><p><code>notify_one</code> 轉換成內部的 <code>__libcpp_condvar_signal</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/condition_variable.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/condition_variable.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">condition_variable::notify_one() _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    __libcpp_condvar_signal(&amp;__cv_);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-1-stdcondition_variablenotify_one-在-unix-平台的實作內容">1-1. std::condition_variable::notify_one 在 unix 平台的實作內容</span></h3><p><code>__libcpp_condvar_signal</code> 在 unix 平台是呼叫 <code>pthread_cond_signal</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_signal(<span class="keyword">__libcpp_condvar_t</span> *__cv)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_cond_signal(__cv);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-2-stdcondition_variablenotify_one-在-windows-平台的實作內容">1-2. std::condition_variable::notify_one 在 windows 平台的實作內容</span></h3><p><code>__libcpp_condvar_signal</code> 在 windows 平台是呼叫 <code>WakeConditionVariable</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://code.woboq.org/llvm/libcxx/src/support/win32/thread_win32.cpp.html" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_signal(<span class="keyword">__libcpp_condvar_t</span> *__cv)</span><br><span class="line">&#123;</span><br><span class="line">  WakeConditionVariable((PCONDITION_VARIABLE)__cv);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="2-stdcondition_variablewait-的實作">2. std::condition_variable::wait 的實作</span></h2><p><code>wait</code> 轉換成內部的 <code>__libcpp_condvar_wait</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/condition_variable.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/condition_variable.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">condition_variable::wait(unique_lock&lt;mutex&gt;&amp; lk) _NOEXCEPT</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!lk.owns_lock())</span><br><span class="line">        __throw_system_error(EPERM,</span><br><span class="line">                                  <span class="string">"condition_variable::wait: mutex not locked"</span>);</span><br><span class="line">    <span class="keyword">int</span> ec = __libcpp_condvar_wait(&amp;__cv_, lk.mutex()-&gt;native_handle());</span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"condition_variable wait failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-1-stdcondition_variablewait-在-unix-平台的實作內容">2-1. std::condition_variable::wait 在 unix 平台的實作內容</span></h3><p><code>__libcpp_condvar_wait</code> 在 unix 平台是呼叫 <code>pthread_cond_wait</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_wait(<span class="keyword">__libcpp_condvar_t</span> *__cv, <span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_cond_wait(__cv, __m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-2-stdcondition_variablewait-在-windows-平台的實作內容">2-2. std::condition_variable::wait 在 windows 平台的實作內容</span></h3><p><code>__libcpp_condvar_wait</code> 在 windows 平台是呼叫 <code>SleepConditionVariableSRW</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_condvar_wait(<span class="keyword">__libcpp_condvar_t</span> *__cv, <span class="keyword">__libcpp_mutex_t</span> *__m)</span><br><span class="line">&#123;</span><br><span class="line">  SleepConditionVariableSRW((PCONDITION_VARIABLE)__cv, (PSRWLOCK)__m, INFINITE, <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="總結">總結</span></h2><p>在一番 trace code 的結果後，std::condition_variable 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::condition_variable::notify_one</code> 轉換成 <code>pthread_cond_signal</code><br><code>std::condition_variable::wait</code> 轉換成 <code>pthread_cond_wait</code><br>在 windows 下<br><code>std::condition_variable::notify_one</code> 轉換成 <code>WakeConditionVariable</code><br><code>std::condition_variable::wait</code> 轉換成 <code>SleepConditionVariableSRW</code>  </p>
+<p><strong>相關主題</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-thread-how/" title="std::thread 怎麼實作的？">std::thread 怎麼實作的？</a><br><a href="/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-condition_variable-how/" data-id="cm0jn2edq005x8spqjqkpbynn" data-title="std::condition_variable 怎麼實作的？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-python-tutorial" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/python-tutorial/" class="article-date">
@@ -166,7 +233,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="cm0jis0d0005wcppqkd55qp2n" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-tutorial/" data-id="cm0jn2edp005w8spqziyilznq" data-title="Python 基礎教學目錄" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -251,7 +318,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="cm0jis0d0005vcppqgzcalx8z" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sort/" data-id="cm0jn2edo005v8spqhcq9lklb" data-title="Python sort 排序用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -322,7 +389,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="cm0jis0cz005ucppqpcrt9dhj" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-generate-non-repeating-random-numbers/" data-id="cm0jn2edo005u8spqgk6ik9t8" data-title="Python 產生 random 隨機不重複的數字 list" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -387,7 +454,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-for/" data-id="cm0jis0cz005tcppqf02nc2u7" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-for/" data-id="cm0jn2edn005t8spqvrvmrw4t" data-title="Python for 迴圈用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -452,7 +519,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="cm0jis0cz005scppq1sc5hruw" data-title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-vconcat-hconcat/" data-id="cm0jn2edm005s8spqfbpu6od8" data-title="Python OpenCV 垂直vconcat 和水平hconcat 影像拼接" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -553,7 +620,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="cm0jis0cy005rcppqau21gg0d" data-title="Python OpenCV resize 圖片縮放" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-resize/" data-id="cm0jn2edm005r8spqxe67u3cl" data-title="Python OpenCV resize 圖片縮放" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -634,7 +701,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="cm0jis0cy005qcppqjlmfscuo" data-title="Python thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-multi-thread/" data-id="cm0jn2edk005q8spqwg5ylkuq" data-title="Python thread 建立多執行緒用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -698,7 +765,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="cm0jis0cx005pcppql5n923zh" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pil-exif/" data-id="cm0jn2edk005p8spqrbt52nvq" data-title="Python 取得圖片Exif資訊" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -766,71 +833,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-paste-image/" data-id="cm0jis0cx005ocppq2v3oera5" data-title="Python 圖片貼上 paste" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-python-pil-read-image-and-show-image" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/python-pil-read-image-and-show-image/" class="article-date">
-  <time datetime="2019-11-06T14:00:00.000Z" itemprop="datePublished">2019-11-06</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Python教學/">Python教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/python-pil-read-image-and-show-image/">Python 讀取圖片並顯示</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 將介紹如何使用 Python PIL 讀取圖片並且將圖片顯示出來，在做影像處理時常常會需要對圖片作處理，而第一步最常遇到要怎麼讀取圖片跟顯示圖片，接下來介紹怎麼使用 python 的 PIL 模組來讀取圖片跟顯示。  </p>
-<h2><span id="安裝-pil">安裝 PIL</span></h2><p>基本上新版本的 Python 應該都有內建 PIL，如果還未安裝 PIL 的話請參考<a href="/python-pil-and-pillow/" title="這篇">這篇</a>。  </p>
-<h2><span id="使用範例">使用範例</span></h2><p>以下範例 ShengYu 是使用 Image.open() 讀取 lena.jpg 這張圖片，<br>Image.open() 會回傳一個 Image 物件，<br>之後取出 Image 物件的 size 用 print 把這張圖片的寬和高印出來，<br>最後再使用 show() 將這張圖片顯示出來。  </p>
-<figure class="highlight python"><figcaption><span>read-image-and-show-image.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"></span><br><span class="line">img = Image.open(<span class="string">"lena.jpg"</span>)</span><br><span class="line">(w, h) = img.size</span><br><span class="line">print(<span class="string">'w=%d, h=%d'</span> % (w, h))</span><br><span class="line">img.show()</span><br></pre></td></tr></table></figure>
-<p>結果如下圖所示：<br>左邊為原圖，右邊為縮放後的圖。<br><img src="/python-pil-read-image-and-show-image/read-image-and-show-image.jpg" width="320" title="結果圖">  </p>
-<p>Image.open 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open" rel="noopener external nofollow noreferrer" target="_blank">這裡</a><br>Image.show 參數的詳細細節請參考<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show" rel="noopener external nofollow noreferrer" target="_blank">這裡</a>  </p>
-<p><strong>相關主題</strong><br><a href="/python-first-program/" title="Python 第一支 Python 程式">Python 第一支 Python 程式</a><br><a href="/python-pil-resize-image/" title="Python 縮放圖片 resize">Python 縮放圖片 resize</a><br><a href="/python-pil-crop-image/" title="Python 裁切裁剪圖片 crop">Python 裁切裁剪圖片 crop</a><br><a href="/python-pil-blur-image/" title="Python 圖片模糊化 blur">Python 圖片模糊化 blur</a><br><a href="/python-pil-draw-text-on-image/" title="Python 在圖片上繪製文字">Python 在圖片上繪製文字</a><br><a href="/python-pil-rotate-image/" title="Python 旋轉圖片 rotate">Python 旋轉圖片 rotate</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-pil-read-image-and-show-image/" data-id="cm0jis0cx005ncppqzzpx9pjp" data-title="Python 讀取圖片並顯示" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-pil-paste-image/" data-id="cm0jn2edk005o8spqphg340i2" data-title="Python 圖片貼上 paste" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -846,7 +849,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/64/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/63/">63</a><a class="page-number" href="/page/64/">64</a><span class="page-number current">65</span><a class="page-number" href="/page/66/">66</a><a class="page-number" href="/page/67/">67</a><span class="space">&hellip;</span><a class="page-number" href="/page/85/">85</a><a class="extend next" rel="next" href="/page/66/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/64/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/63/">63</a><a class="page-number" href="/page/64/">64</a><span class="page-number current">65</span><a class="page-number" href="/page/66/">66</a><a class="page-number" href="/page/67/">67</a><span class="space">&hellip;</span><a class="page-number" href="/page/86/">86</a><a class="extend next" rel="next" href="/page/66/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -877,6 +880,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-command-pattern/">C++ 設計模式 - 命令模式 Command Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-proxy-pattern/">C++ 設計模式 - 代理模式 Proxy Pattern</a>
           </li>
         
@@ -890,10 +897,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-factory-method-pattern/">C++ 設計模式 - 工廠方法模式 Factory Method Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-template-method-pattern/">C++ 設計模式 - 樣板方法模式 Template Method Pattern</a>
           </li>
         
       </ul>
@@ -912,7 +915,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">201</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">202</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

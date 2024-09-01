@@ -107,6 +107,65 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-conversion-euler-to-matrix" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/conversion-euler-to-matrix/" class="article-date">
+  <time datetime="2018-03-30T14:00:00.000Z" itemprop="datePublished">2018-03-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/conversion-euler-to-matrix/">旋轉矩陣 轉 尤拉角 (Conversion Euler To Matrix)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>我寫出了屬於我自己的兩種版本, 如下</p>
+<h2><span id="版本一">版本一</span></h2><p><a href="http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToEuler/index.htm" rel="noopener external nofollow noreferrer" target="_blank">參考來源</a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** this conversion uses conventions as described on page:</span></span><br><span class="line"><span class="comment">*   https://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm</span></span><br><span class="line"><span class="comment">*   Coordinate System: right hand</span></span><br><span class="line"><span class="comment">*   Positive angle: right hand</span></span><br><span class="line"><span class="comment">*   Order of euler angles: heading first, then attitude, then bank</span></span><br><span class="line"><span class="comment">*   matrix row column ordering:</span></span><br><span class="line"><span class="comment">*   [m00 m01 m02]</span></span><br><span class="line"><span class="comment">*   [m10 m11 m12]</span></span><br><span class="line"><span class="comment">*   [m20 m21 m22]*/</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">rotate</span><span class="params">(matrix  m)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Assuming the angles are in radians.</span></span><br><span class="line">	<span class="keyword">if</span> (m.m10 &gt; <span class="number">0.998</span>) &#123; <span class="comment">// singularity at north pole</span></span><br><span class="line">		heading = Math.atan2(m.m02,m.m22);</span><br><span class="line">		attitude = Math.PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (m.m10 &lt; -<span class="number">0.998</span>) &#123; <span class="comment">// singularity at south pole</span></span><br><span class="line">		heading = Math.atan2(m.m02,m.m22);</span><br><span class="line">		attitude = -Math.PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	heading = Math.atan2(-m.m20,m.m00);</span><br><span class="line">	bank = Math.atan2(-m.m12,m.m11);</span><br><span class="line">	attitude = Math.asin(m.m10);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>轉成 opencv 的版本, 且對應到我的座標系 (x, z 對調), 最後 x y 軸還加上負號.<br>bank(x) -&gt; attitude(x)<br>heading(y) -&gt; heading(y)<br>attitude(z) -&gt; bank(z)<br>euclideanspace -&gt; 我的座標系(OpennGL)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Assuming the angles are in radians.</span></span><br><span class="line">	<span class="keyword">float</span> heading, attitude, bank;</span><br><span class="line">	<span class="keyword">if</span> (R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) &gt; <span class="number">0.998</span>) &#123; <span class="comment">// singularity at north pole</span></span><br><span class="line">		heading = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">		attitude = M_PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span> Vec3f(bank, heading, attitude);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) &lt; <span class="number">-0.998</span>) &#123; <span class="comment">// singularity at south pole</span></span><br><span class="line">		heading = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">		attitude = -M_PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span> Vec3f(bank, heading, attitude);</span><br><span class="line">	&#125;</span><br><span class="line">	heading = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">	bank = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">	attitude = <span class="built_in">asin</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> Vec3f(-bank, -heading, attitude);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="版本二">版本二</span></h2><p><a href="https://www.learnopencv.com/rotation-matrix-to-euler-angles/" rel="noopener external nofollow noreferrer" target="_blank">參考來源</a><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Checks if a matrix is a valid rotation matrix.</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">isRotationMatrix</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Mat Rt;</span><br><span class="line">    transpose(R, Rt);</span><br><span class="line">    Mat shouldBeIdentity = Rt * R;</span><br><span class="line">    Mat I = Mat::eye(<span class="number">3</span>,<span class="number">3</span>, shouldBeIdentity.type());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> norm(I, shouldBeIdentity) &lt; <span class="number">1e-6</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** rotation matrix to euler angles</span></span><br><span class="line"><span class="comment">*   Coordinate System: right hand</span></span><br><span class="line"><span class="comment">*   Positive angle: right hand</span></span><br><span class="line"><span class="comment">*   Order of euler angles: heading first, then attitude, then bank</span></span><br><span class="line"><span class="comment">*   matrix row column ordering:</span></span><br><span class="line"><span class="comment">*   [m00 m01 m02]</span></span><br><span class="line"><span class="comment">*   [m10 m11 m12]</span></span><br><span class="line"><span class="comment">*   [m20 m21 m22]*/</span></span><br><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(isRotationMatrix(R));</span><br><span class="line">    <span class="keyword">float</span> sy = <span class="built_in">sqrt</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) +  R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) );</span><br><span class="line">    <span class="keyword">bool</span> singular = sy &lt; <span class="number">1e-6</span>; <span class="comment">// If</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> x, y, z;</span><br><span class="line">    <span class="keyword">if</span> (!singular)</span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">1</span>) , R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Vec3f(x, y, z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>轉成 我的座標系 (z 軸加上負號).<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(isRotationMatrix(R));</span><br><span class="line">    <span class="keyword">float</span> sy = <span class="built_in">sqrt</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) +  R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) );</span><br><span class="line">    <span class="keyword">bool</span> singular = sy &lt; <span class="number">1e-6</span>; <span class="comment">// If</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> x, y, z;</span><br><span class="line">    <span class="keyword">if</span> (!singular)</span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">1</span>) , R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Vec3f(x, y, -z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/conversion-euler-to-matrix/" data-id="cm0jn2eb0001r8spq09fg95ub" data-title="旋轉矩陣 轉 尤拉角 (Conversion Euler To Matrix)" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-git-submodule" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/git-submodule/" class="article-date">
@@ -157,7 +216,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/git-submodule/" data-id="cm0jis0ae001qcppqvt0tolc6" data-title="Git submodule 子模組" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/git-submodule/" data-id="cm0jn2eb0001q8spqs750u552" data-title="Git submodule 子模組" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
@@ -240,7 +299,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/browser-extensions/" data-id="cm0jis0ad001pcppqzwd5cmtk" data-title="常用的瀏覽器外掛" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/browser-extensions/" data-id="cm0jn2eaz001p8spqm1z2u0zk" data-title="常用的瀏覽器外掛" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/瀏覽器外掛/">瀏覽器外掛</a></li></ul>
@@ -303,7 +362,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/git-tag/" data-id="cm0jis0ac001ncppq5te6i1j9" data-title="Git tag 標籤使用" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/git-tag/" data-id="cm0jn2eay001n8spqo2eolmkj" data-title="Git tag 標籤使用" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
@@ -361,7 +420,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-screen-recorder/" data-id="cm0jis0ad001ocppq4m7z0q2m" data-title="Ubuntu 桌面錄影軟體" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-screen-recorder/" data-id="cm0jn2eaz001o8spqrl9lx7r1" data-title="Ubuntu 桌面錄影軟體" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -424,7 +483,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-cross-platform/" data-id="cm0jis0ac001mcppqw95ns57l" data-title="C語言跨平台寫法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-cross-platform/" data-id="cm0jn2eay001m8spqxamqclgr" data-title="C語言跨平台寫法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -497,7 +556,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-tinytcp/" data-id="cm0jis0ab001lcppq2ubteo57" data-title="開源專案TinyTcp-輕巧的網路程式框架" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-tinytcp/" data-id="cm0jn2eax001l8spqc9ytbeza" data-title="開源專案TinyTcp-輕巧的網路程式框架" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Socket/">Socket</a></li></ul>
@@ -566,7 +625,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-debug-print/" data-id="cm0jis0a8001fcppqcp0jfn5g" data-title="慣C除錯" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-debug-print/" data-id="cm0jn2eau001f8spqkdpm8pp4" data-title="慣C除錯" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -614,7 +673,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-snippets/" data-id="cm0jis0a9001gcppq9w3kgyzb" data-title="C/C++ snippets 程式碼片段" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-snippets/" data-id="cm0jn2eav001g8spq89akrkkl" data-title="C/C++ snippets 程式碼片段" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -674,67 +733,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-gflags/" data-id="cm0jis0a9001hcppquumpacnk" data-title="Ubuntu 2 種安裝 Google gflags 的方法" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ubuntu-glog" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/ubuntu-glog/" class="article-date">
-  <time datetime="2018-03-16T14:00:00.000Z" itemprop="datePublished">2018-03-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/ubuntu-glog/">Ubuntu 2 種安裝 glog 的方法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇紀錄 Ubuntu 下 2種安裝 glog 的方法，第一種為使用 apt 安裝，第二種為下載原始碼編譯安裝，<br>glog 全名為 Google Logging Library，<br>Github: <a href="https://github.com/google/glog" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/google/glog</a> - library that implements application-level logging.  </p>
-<p>使用環境：<br>Ubuntu 16.04  </p>
-<h2><span id="方法1-使用-distribution-package-安裝">方法1. 使用 distribution package 安裝</span></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libgoogle-glog-dev</span><br></pre></td></tr></table></figure>
-<p>可以用 <code>apt-cache search glog</code> 搜尋到</p>
-<h2><span id="方法2-下載原始碼編譯與安裝">方法2. 下載原始碼編譯與安裝</span></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/google/glog</span><br><span class="line">cd glog</span><br><span class="line">./autogen.sh &amp;&amp; ./configure &amp;&amp; make &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure>
-<p>先泡杯咖啡, 再開啟 <code>glog/doc/glog.html</code> 慢慢享用～</p>
-<p><strong>相關文章</strong><br><a href="/ubuntu-protobuf/" title="Ubuntu 安裝 protobuf">Ubuntu 安裝 protobuf</a><br><a href="/ubuntu-gflags/" title="Ubuntu 安裝 gflags">Ubuntu 安裝 gflags</a><br><a href="/ubuntu-libevent/" title="Ubuntu 安裝 libevent">Ubuntu 安裝 libevent</a><br><a href="/ubuntu-glfw/" title="Ubuntu 編譯安裝 GLFW">Ubuntu 編譯安裝 GLFW</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-glog/" data-id="cm0jis0aa001icppq1gul9m9l" data-title="Ubuntu 2 種安裝 glog 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-gflags/" data-id="cm0jn2eav001h8spq07s972j9" data-title="Ubuntu 2 種安裝 Google gflags 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google/">Google</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -750,7 +749,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/79/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/78/">78</a><a class="page-number" href="/page/79/">79</a><span class="page-number current">80</span><a class="page-number" href="/page/81/">81</a><a class="page-number" href="/page/82/">82</a><span class="space">&hellip;</span><a class="page-number" href="/page/85/">85</a><a class="extend next" rel="next" href="/page/81/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/79/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/78/">78</a><a class="page-number" href="/page/79/">79</a><span class="page-number current">80</span><a class="page-number" href="/page/81/">81</a><a class="page-number" href="/page/82/">82</a><span class="space">&hellip;</span><a class="page-number" href="/page/86/">86</a><a class="extend next" rel="next" href="/page/81/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -781,6 +780,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-command-pattern/">C++ 設計模式 - 命令模式 Command Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-proxy-pattern/">C++ 設計模式 - 代理模式 Proxy Pattern</a>
           </li>
         
@@ -794,10 +797,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-factory-method-pattern/">C++ 設計模式 - 工廠方法模式 Factory Method Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-template-method-pattern/">C++ 設計模式 - 樣板方法模式 Template Method Pattern</a>
           </li>
         
       </ul>
@@ -816,7 +815,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">201</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">202</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
