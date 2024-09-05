@@ -107,6 +107,162 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-nextcloud" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/nextcloud/" class="article-date">
+  <time datetime="2024-06-28T12:00:00.000Z" itemprop="datePublished">2024-06-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/nextcloud/">NextCloud 安裝教學、使用方式與常見問題</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 NextCloud 安裝教學、使用方式與常見問題，NextCloud是一個開源的雲端儲存和檔案同步解決方案，讓使用者可以在自己的伺服器上建立和管理私有雲。它類似於商業服務如 Dropbox 或 Google Drive，但提供了更高的隱私和控制權。目前 NextCloud 已經不支援 SQLite 只有支援 MySQL/MariaDB。NextCloud是一個靈活、安全且功能豐富的私有雲解決方案，特別適合希望保護資料隱私並需要自定義功能的使用者和企業，詳細介紹請見本文。</p>
+<p>以下為本篇內容的目錄，</p>
+<ul>
+<li>Ubuntu NextCloud 安裝步驟</li>
+<li>更換 nextcloud 儲存路徑</li>
+<li>調整 PHP 的記憶體限制</li>
+<li>Nextcloud 影片沒有預覽圖(縮圖)的問題</li>
+<li>為什麼 nextcloud 手機版 app 的功能沒有網頁版完整</li>
+<li>QA. NextCloud 設定檔位置在哪？</li>
+<li>QA. nextcloud log 檔位置在哪？</li>
+<li>遇到 Internal Server Error 問題怎麼看 log</li>
+<li>遇到 Nextcloud 硬碟容量滿的問題</li>
+<li>增加信任的網域及內網的 IP</li>
+<li>QA. 怎麼分享照片給別人，即使別人沒有帳號的情況下</li>
+<li>QA. 手機照片備份後，我手機刪了某張照片後，nextcloud 遠端備份的那張會刪除嗎？</li>
+<li>QA. 反過來的話，手機照片備份後，nextcloud 遠端備份刪了某張照片後，我手機那張會刪除嗎？</li>
+<li>QA. 通常檢視、整理、刪減照片這個動作應該在手機端操作還是 nextcloud 遠端上？</li>
+<li>資料安全建議</li>
+</ul>
+<h2><span id="ubuntu-nextcloud-安裝步驟">Ubuntu NextCloud 安裝步驟</span></h2><p>以下為 Ubuntu 22.04 的 NextCloud 安裝方式，在 Ubuntu 22.04 中 php 版本已更新到 8.1，以下為安裝步驟，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update &amp;&amp; sudo apt upgrade</span><br><span class="line">sudo apt install apache2 mariadb-server libapache2-mod-php php-gd php-mysql \</span><br><span class="line">php-curl php-mbstring php-intl php-gmp php-bcmath php-xml php-imagick php-zip</span><br></pre></td></tr></table></figure></p>
+<p>使用 MySQL 指令執行以下步驟，建立一個名為 nextcloud 的mysql 資料庫及使用者，<code>your-password</code> 部分的密碼改用你自己的設定。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo mysql</span><br><span class="line">CREATE USER &apos;nextcloud&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;your-password&apos;;</span><br><span class="line">CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;</span><br><span class="line">GRANT ALL PRIVILEGES ON nextcloud.* TO &apos;nextcloud&apos;@&apos;localhost&apos;;</span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line">quit;</span><br></pre></td></tr></table></figure></p>
+<p>到目前為止，已經完成 nextcloud 所有依賴套件的安裝，接下來準備安裝 nextcloud，<br>下載 nextcloud，現在最新版的 nectcloud是 29.0.3，然後解壓縮到 <code>/var/www/html</code> 目錄下，官網說明是解壓縮到 <code>/var/www/</code> 這邊我採用常見的作法，如果沒有安裝unzip程式會無法解壓縮，要先用 <code>sudo apt install unzip</code> 安裝 unzip 程式，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://download.nextcloud.com/server/releases/nextcloud-29.0.3.zip</span><br><span class="line">sudo unzip nextcloud-29.0.3.zip -d /var/www/html</span><br><span class="line">sudo chown -R www-data:www-data /var/www/html/nextcloud/</span><br></pre></td></tr></table></figure></p>
+<p>以下 apache2 的設定有兩種方式，一種方式是用 IP 或是 <code>https://www.example.com/nextcloud/</code> 這種方式。另一種是用 vhost 虛擬主機的方式，例如你想要你的 Nextcloud 能夠像 <a href="https://cloud.example.com/" rel="noopener external nofollow noreferrer" target="_blank">https://cloud.example.com/</a> 這樣的子網域存取的話.。</p>
+<p>這邊先介紹第一種方式，新增 nextcloud.conf 設定檔到 apache2 下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/apache2/sites-available/nextcloud.conf</span><br></pre></td></tr></table></figure></p>
+<p>nextcloud.conf 設定檔如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Alias /nextcloud &quot;/var/www/html/nextcloud/&quot;</span><br><span class="line"></span><br><span class="line">&lt;Directory /var/www/html/nextcloud/&gt;</span><br><span class="line">  Require all granted</span><br><span class="line">  AllowOverride All</span><br><span class="line">  Options FollowSymLinks MultiViews</span><br><span class="line"></span><br><span class="line">  &lt;IfModule mod_dav.c&gt;</span><br><span class="line">    Dav off</span><br><span class="line">  &lt;/IfModule&gt;</span><br><span class="line">&lt;/Directory&gt;</span><br></pre></td></tr></table></figure></p>
+<p>這是第二種 vhost 虛擬主機方式，建立 apache2 的虛擬主機設定檔，如果有多個主機名稱，需要個別建立。</p>
+<p>nextcloud.conf 設定檔如下，ServerName 的 <code>your.server.com</code> 要換成你自己的網域名稱，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">  DocumentRoot /var/www/html/nextcloud/</span><br><span class="line">  ServerName  your.server.com</span><br><span class="line"></span><br><span class="line">  &lt;Directory /var/www/html/nextcloud/&gt;</span><br><span class="line">    Require all granted</span><br><span class="line">    AllowOverride All</span><br><span class="line">    Options FollowSymLinks MultiViews</span><br><span class="line"></span><br><span class="line">    &lt;IfModule mod_dav.c&gt;</span><br><span class="line">      Dav off</span><br><span class="line">    &lt;/IfModule&gt;</span><br><span class="line">  &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br></pre></td></tr></table></figure></p>
+<p>之後啟用這個網站設定，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo a2ensite nextcloud</span><br></pre></td></tr></table></figure></p>
+<p>啟用 apache2 的相關模組，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo a2enmod rewrite headers env dir mime setenvif ssl</span><br></pre></td></tr></table></figure></p>
+<p>重新啟動 apache2，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl restart apache2</span><br></pre></td></tr></table></figure></p>
+<p>在瀏覽器上輸入: <code>http://xx.xx.xx.xx/nextcloud/</code>(第一種設定) 或是 <code>http://your.server.com</code> (第二種設定)</p>
+<p>接下來就可以看到 nextcloud 的設定畫面，最上面是準備要新增 nextcloud 的管理員帳號，中間是 server 上資料的存放位置，下面是資料庫的相關設定。<br><img src="/nextcloud/nextcloud-1.png" title="nextcloud">  </p>
+<p>設定資料庫內容，輸入在剛剛前面 mysql 設定的帳號密碼，<br><img src="/nextcloud/nextcloud-2.png" title="nextcloud">  </p>
+<p>按下 Install 等一段時間安裝後，之後就會跳轉頁面，這樣就可以開始使用 nextcloud 了唷！耶！<br><img src="/nextcloud/nextcloud-3.png" title="nextcloud">  </p>
+<p>相關參考<br><a href="https://docs.nextcloud.com/server/latest/admin_manual/installation/example_ubuntu.html" rel="noopener external nofollow noreferrer" target="_blank">Example installation on Ubuntu 22.04 LTS</a><br><a href="https://docs.nextcloud.com/server/latest/admin_manual/installation/source_installation.html#apache-configuration-label" rel="noopener external nofollow noreferrer" target="_blank">Apache Web server configuration</a><br><a href="https://luyaku.pixnet.net/blog/post/355073992" rel="noopener external nofollow noreferrer" target="_blank">Ubuntu Server 22.04 LTS的架設 8. Nextcloud server架設</a></p>
+<p>安裝完基本上已經可以使用，但是想要或提更加的使用體驗的話，最好確認你的環境是否有調整到最佳狀態，可以利用<code>概覽</code>確認建議修正事項，詳細看後續介紹。</p>
+<h2><span id="更換-nextcloud-儲存路徑">更換 nextcloud 儲存路徑</span></h2><p>預設的檔案路徑是放在 /var/www/html/nextcloud/data ，但 /var 這個目錄磁碟空間往往比較小，<br>所以我個人是把檔案放在 /home/nextcloud 這個目錄下。<br>所以要先在 /home 目錄下建立 nextcloud目錄並把owner及權限設好，執行:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir /home/nextcloud</span><br><span class="line">sudo chown -R www-data:www-data /home/nextcloud</span><br><span class="line">sudo chmod 755 /home/nextcloud</span><br></pre></td></tr></table></figure></p>
+<h2><span id="設定-crontab-機制">設定 crontab 機制</span></h2><p>在網頁版裡的<code>基本設定</code>&gt;<code>背景工作</code>裡將 AJAX 換成 Cron。</p>
+<p>其他相關參考<br><a href="https://docs.ossii.com.tw/books/nextcloud-G0B/page/nextcloud-Acd" rel="noopener external nofollow noreferrer" target="_blank">Nextcloud 基本參數調校作業</a></p>
+<h2><span id="調整-php-的記憶體限制">調整 PHP 的記憶體限制</span></h2><p>在網頁版裡的<code>管理</code>&gt;<code>概覽</code>裡會出現「目前的 PHP 的記憶體限制設定低於建議值 512 MB。」的訊息</p>
+<p>編輯 php 設定檔<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/php/8.1/apache2/php.ini</span><br></pre></td></tr></table></figure></p>
+<p>從原本的 128M 改成 512M，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">memory_limit = 512M</span><br></pre></td></tr></table></figure></p>
+<p>之後在重啟 Apache 服務，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl restart apache2</span><br></pre></td></tr></table></figure></p>
+<h2><span id="nextcloud-影片沒有預覽圖縮圖的問題">Nextcloud 影片沒有預覽圖(縮圖)的問題</span></h2><p>Nextcloud 安裝後上傳影片檔案發現影片沒有預覽圖(縮圖)，預設就是這樣，影片要一個一個打開看才知道是哪個影片，這樣實在很不方便，解決方法如下，</p>
+<p>Nextcloud 依賴 ffmpeg 來產生影片預覽縮圖。請確保已安裝並正確設定了 ffmpeg。<br>在 Debian/Ubuntu 系統上，可以使用以下指令安裝 ffmpeg：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install ffmpeg</span><br></pre></td></tr></table></figure></p>
+<p>在 Nextcloud 的 config.php 檔案中，確保預覽功能已啟用。<br><code>sudo vim /var/www/html/nextcloud/config/config.php</code><br>新增或確保以下設定存在：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&apos;enable_previews&apos; =&gt; true,</span><br><span class="line">&apos;enabledPreviewProviders&apos; =&gt; [</span><br><span class="line">    &apos;OC\Preview\Movie&apos;,</span><br><span class="line">    &apos;OC\Preview\PNG&apos;,</span><br><span class="line">    &apos;OC\Preview\JPEG&apos;,</span><br><span class="line">    &apos;OC\Preview\GIF&apos;,</span><br><span class="line">],</span><br></pre></td></tr></table></figure></p>
+<p>有時，調整 enabledPreviewProviders 的順序也能解決問題。確保 <code>OC\Preview\Movie</code> 位於清單的頂部。</p>
+<p>存檔後重新整理網頁或APP即可，到這邊為止網頁版與手機版就可以看到影片預覽縮圖了</p>
+<p>查看 Nextcloud 日誌檔案中的錯誤資訊，可能會給出更多關於問題的線索。日誌檔案位於<br><code>/var/www/html/nextcloud/data/nextcloud.log</code></p>
+<p>但網頁版播放影片失敗是另外的問題？</p>
+<h2><span id="為什麼-nextcloud-手機版-app-的功能沒有網頁版完整">為什麼 nextcloud 手機版 app 的功能沒有網頁版完整</span></h2><p>Nextcloud 的手機版 app 一般不如網頁介面功能全面。這是因為手機應用主要專注於檔案同步和基本功能，以保持輕便和易於使用。網頁介面則提供了更廣泛的功能和設定選項，適合進行更深入的管理和設定。</p>
+<p>以下是一些在手機版 app 上可能缺少的功能：</p>
+<ol>
+<li><strong>詳細的管理設定</strong>：如使用者管理、組織管理和應用管理等。</li>
+<li><strong>應用擴展</strong>：一些應用和擴展功能僅能透過網頁介面訪問和設定。</li>
+<li><strong>詳細日誌和報告</strong>：更詳細的日誌和報告功能通常需要在網頁介面中查看。</li>
+<li><strong>高級設定</strong>：如共享設定、高級安全設定等。</li>
+</ol>
+<p>如果你需要使用這些更高級的功能，建議使用網頁介面訪問 Nextcloud。手機版應用更多是用於日常的檔案訪問和簡單的同步操作。</p>
+<h2><span id="qa-nextcloud-設定檔位置在哪">QA. NextCloud 設定檔位置在哪？</span></h2><p>NextCloud 設定檔設定位置在 <code>/var/www/html/nextcloud/config/config.php</code></p>
+<h2><span id="qa-nextcloud-log-檔位置在哪">QA. nextcloud log 檔位置在哪？</span></h2><p>Nextcloud 的 log 檔位置通常在安裝目錄下的 <code>data</code> 資料夾內。預設情況下的路徑是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/var/www/nextcloud/data/nextcloud.log # 官網設定</span><br><span class="line">或</span><br><span class="line">/var/www/html/nextcloud/data/nextcloud.log # 其他常見設定</span><br></pre></td></tr></table></figure>
+<p>網頁版要怎麼查看的話，可以看這篇<br><a href="https://rangotec.com/blog/46.html" rel="noopener external nofollow noreferrer" target="_blank">https://rangotec.com/blog/46.html</a></p>
+<h2><span id="遇到-internal-server-error-問題怎麼看-log">遇到 Internal Server Error 問題怎麼看 log</span></h2><p>查看 log<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tail -f /var/log/apache2/error.log</span><br><span class="line">or</span><br><span class="line">tail -f /usr/local/apache2/logs/error.log</span><br></pre></td></tr></table></figure></p>
+<h2><span id="遇到-nextcloud-硬碟容量滿的問題">遇到 Nextcloud 硬碟容量滿的問題</span></h2><p>首先先確認是不是真的硬碟容量滿了，使用 df -h 指令查看，我就遇過我的 VM 開 40GB 空間，但VM開啟安裝好後檢查空間上限結果是變成19 GB<br><a href="https://www.coder17.com/posts/nextcloud-storage-full/" rel="noopener external nofollow noreferrer" target="_blank">Nextcloud 誤報儲存已滿</a><br><a href="https://blog.csdn.net/gyro1/article/details/101280541" rel="noopener external nofollow noreferrer" target="_blank">NextCloud 在Nginx下報告報告空間不足</a><br>它使用NGINX，NextCloud 是透過 /index.php/apps/files/ajax/getstoragestats.php 來取得可用空間的，但是如果設定不正確的nginx的pathinfo，就會壞掉，看起新版沒有這個檔案了。</p>
+<h2><span id="增加信任的網域及內網的-ip">增加信任的網域及內網的 IP</span></h2><p>新增加信任的網域及內網的 IP，如果未來有設要跟 NextCloud 結合會建在這裡增網域及 IP<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&apos;trusted_domains&apos; =&gt; </span><br><span class="line">array (</span><br><span class="line">  0 =&gt; &apos;[sub.domain].com&apos;,</span><br><span class="line">  1 =&gt; &apos;192.168.1.10&apos;,</span><br><span class="line">),</span><br></pre></td></tr></table></figure></p>
+<h2><span id="qa-怎麼分享照片給別人即使別人沒有帳號的情況下">QA. 怎麼分享照片給別人，即使別人沒有帳號的情況下</span></h2><p>選照片後，可以按分享連結後就可以產生一個短連結分享給其他人，這就很像google 雲端硬碟分享照片設定權限給任何知道連結的人都能觀看的那個功能。</p>
+<h2><span id="qa-手機照片備份後我手機刪了某張照片後nextcloud-遠端備份的那張會刪除嗎">QA. 手機照片備份後，我手機刪了某張照片後，nextcloud 遠端備份的那張會刪除嗎？</span></h2><p>手機照片備份到 Nextcloud 後，如果你在手機上刪除了某張照片，Nextcloud 遠端備份的那張照片通常不會自動刪除。Nextcloud 主要是用於備份和同步檔案，但它不會預設同步刪除操作，除非你啟用了特定的同步選項。</p>
+<h2><span id="qa-反過來的話手機照片備份後nextcloud-遠端備份刪了某張照片後我手機那張會刪除嗎">QA. 反過來的話，手機照片備份後，nextcloud 遠端備份刪了某張照片後，我手機那張會刪除嗎？</span></h2><p>如果你在 Nextcloud 遠端備份中刪除了某張照片，通常情況下，你手機上的那張照片不會被刪除。這是因為大多數情況下，Nextcloud 的自動上傳功能是單向的（從手機上傳到伺服器），而不是雙向同步。</p>
+<h2><span id="qa-通常檢視-整理-刪減照片這個動作應該在手機端操作還是-nextcloud-遠端上">QA. 通常檢視、整理、刪減照片這個動作應該在手機端操作還是 nextcloud 遠端上？</span></h2><p>通常情況下，建議在手機端進行檢視、整理和刪除照片，因為手機端的操作更加直觀和方便，並且可以確保你只刪除真正不需要的照片。下面是一些詳細的理由和建議：</p>
+<h3><span id="在手機端操作的優勢">在手機端操作的優勢</span></h3><ol>
+<li><strong>直觀方便</strong>：手機端可以直接預覽照片，放大細節，更容易判斷照片的質量和是否需要保留。</li>
+<li><strong>立即效果</strong>：在手機端刪除或整理照片可以立即看到效果，不需要等待同步。</li>
+<li><strong>避免誤刪</strong>：在手機端操作，可以更好地控制刪除的內容，減少誤刪重要照片的風險。</li>
+</ol>
+<h3><span id="nextcloud-遠端操作的優勢">Nextcloud 遠端操作的優勢</span></h3><ol>
+<li><strong>節省手機儲存</strong>：如果你的手機儲存空間有限，可以將不常用的照片備份到 Nextcloud 後再從手機上刪除。</li>
+<li><strong>集中管理</strong>：Nextcloud 端可以更方便地集中管理和備份大量照片，特別是如果你有多台裝置需要統一管理照片。</li>
+</ol>
+<h3><span id="推薦的操作流程">推薦的操作流程</span></h3><ol>
+<li><p><strong>在手機端進行初步整理</strong>：</p>
+<ul>
+<li>定期在手機端查看和刪除不需要的照片（例如模糊、不合格或重覆的照片）。</li>
+<li>保留重要的和需要備份的照片。</li>
+</ul>
+</li>
+<li><p><strong>將整理後的照片備份到 Nextcloud</strong>：</p>
+<ul>
+<li>使用 Nextcloud 自動上傳功能，備份整理後的照片到伺服器。</li>
+</ul>
+</li>
+<li><p><strong>在 Nextcloud 端進行二次整理（可選）</strong>：</p>
+<ul>
+<li>如果需要進一步分類或刪除不需要的備份照片，可以在 Nextcloud 端進行。</li>
+<li>注意確保不會影響手機端的照片。</li>
+</ul>
+</li>
+</ol>
+<h2><span id="資料安全建議">資料安全建議</span></h2><ol>
+<li><strong>多重備份</strong>：除了 Nextcloud，可以考慮將重要照片備份到其他雲服務或外部儲存裝置，增加資料的安全性。</li>
+<li><strong>定期檢查</strong>：定期檢查手機和 Nextcloud 上的照片，確保所有重要照片都已經備份，並且沒有誤刪。</li>
+</ol>
+<h2><span id="其他網友遇到的問題">其他網友遇到的問題</span></h2><p><a href="https://rangotec.com/blog/29.html" rel="noopener external nofollow noreferrer" target="_blank">Nextcloud 局域网上传速度慢</a><br>不確定新版本還有沒有這個問題，待確認</p>
+<p>其他相關參考<br><a href="https://www.asustor.com/zh-tw/online/College_topic?topic=273" rel="noopener external nofollow noreferrer" target="_blank">使用 Nextcloud 在 ASUSTOR NAS 上進行協同作業</a><br>在 ASUSTOR NAS 上安裝 Nextcloud 並將其與 OnlyOffice 結合使用以進行協同作業</p>
+<p>以上就是 NextCloud 安裝教學與使用方式介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/nextcloud/" data-id="cm0pctt7300myzbpqundk4luo" data-title="NextCloud 安裝教學、使用方式與常見問題" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-xinyi101" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/xinyi101/" class="article-date">
@@ -163,7 +319,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/xinyi101/" data-id="cm0p8jexa00mx2upqt632sfer" data-title="信義101健康管理診所 體驗心得" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/xinyi101/" data-id="cm0pctt7300mxzbpqslq6iw48" data-title="信義101健康管理診所 體驗心得" class="article-share-link">Share</a>
       
       
     </footer>
@@ -230,7 +386,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-search-strings-ignore-case/" data-id="cm0p8jexa00mw2upqorztqmwa" data-title="3 種 Python 字串搜尋並且忽略大小寫方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-search-strings-ignore-case/" data-id="cm0pctt7200mwzbpq3xcjdwmt" data-title="3 種 Python 字串搜尋並且忽略大小寫方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -303,7 +459,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-search-keywords-in-string/" data-id="cm0p8jex900mv2upqbwfas9qo" data-title="4 種 Python 字串中搜尋關鍵字的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-search-keywords-in-string/" data-id="cm0pctt7200mvzbpqfb3tte5a" data-title="4 種 Python 字串中搜尋關鍵字的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -371,7 +527,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-pstree/" data-id="cm0p8jex900mu2upqrsv99y6k" data-title="Linux pstree 指令用法範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-pstree/" data-id="cm0pctt7200muzbpq95e0ae5t" data-title="Linux pstree 指令用法範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -462,7 +618,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-pdo/" data-id="cm0p8jex800mt2upqr0bcjm7x" data-title="使用 PHP 的 PDO 進行資料庫操作：入門指南" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-pdo/" data-id="cm0pctt7100mtzbpqm2hv74ve" data-title="使用 PHP 的 PDO 進行資料庫操作：入門指南" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -618,7 +774,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/google-sheets-sum-by-month/" data-id="cm0p8jex800ms2upqdw01d4le" data-title="Google Sheets 累計月份金額或數字" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/google-sheets-sum-by-month/" data-id="cm0pctt7100mszbpqbs9cwxub" data-title="Google Sheets 累計月份金額或數字" class="article-share-link">Share</a>
       
       
     </footer>
@@ -707,7 +863,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-watch/" data-id="cm0p8jex800mr2upqr3fjy6h5" data-title="Linux watch 指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-watch/" data-id="cm0pctt7100mrzbpq1yon2obh" data-title="Linux watch 指令用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -795,7 +951,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-subprocess.run/" data-id="cm0p8jex700mq2upquaghot0f" data-title="Python 中的 subprocess.run 完整指南與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-subprocess.run/" data-id="cm0pctt7000mqzbpqhfovxb4q" data-title="Python 中的 subprocess.run 完整指南與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -868,78 +1024,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-dumpsys/" data-id="cm0p8jex700mp2upqh8k0xtwa" data-title="Android dumpsys 指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-dumpsys/" data-id="cm0pctt7000mpzbpqvfa3j27y" data-title="Android dumpsys 指令用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-php-mysqli" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/php-mysqli/" class="article-date">
-  <time datetime="2024-06-15T12:00:00.000Z" itemprop="datePublished">2024-06-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/PHP教學/">PHP教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/php-mysqli/">使用 PHP 和 MySQLi 進行資料庫操作的簡單指南</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 PHP 和 MySQLi 進行資料庫操作用法，在這篇文章中，我們將介紹如何使用 PHP 和 MySQLi 來進行基本的資料庫操作。MySQLi（MySQL Improved）是一個用於訪問 MySQL 資料庫的 PHP 擴展，提供了比舊的 MySQL 擴展更好的功能和性能。</p>
-<h2><span id="1-連線資料庫">1. 連線資料庫</span></h2><p>首先，我們需要連線 MySQL 資料庫。這可以透過 <code>mysqli_connect()</code> 函式來實現。以下是範例程式碼：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$servername = <span class="string">"localhost"</span>;</span><br><span class="line">$username = <span class="string">"root"</span>;</span><br><span class="line">$password = <span class="string">""</span>;</span><br><span class="line">$database = <span class="string">"test_db"</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 建立連線</span></span><br><span class="line">$conn = mysqli_connect($servername, $username, $password, $database);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 檢查連線</span></span><br><span class="line"><span class="keyword">if</span> (!$conn) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"Connection failed: "</span> . mysqli_connect_error());</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"Connected successfully"</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>這段程式碼嘗試連線到名為 <code>test_db</code> 的資料庫。如果連線失敗，會輸出錯誤資訊並終止腳本。</p>
-<h2><span id="2-執行-sql-查詢">2. 執行 SQL 查詢</span></h2><p>連線成功後，我們可以使用 <code>mysqli_query()</code> 函式來執行 SQL 查詢。以下是插入資料和查詢資料的範例。</p>
-<h3><span id="插入資料">插入資料</span></h3><p>我們可以使用如下程式碼插入一條新記錄到 <code>users</code> 表中：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"INSERT INTO users (username, email) VALUES ('shengyu', 'shengyu@example.com')"</span>;</span><br><span class="line"><span class="keyword">if</span> (mysqli_query($conn, $sql)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"New record created successfully"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"Error: "</span> . $sql . <span class="string">"&lt;br&gt;"</span> . mysqli_error($conn);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<h3><span id="查詢資料">查詢資料</span></h3><p>接下來，我們來查詢 <code>users</code> 表中的資料：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$sql = <span class="string">"SELECT id, username, email FROM users"</span>;</span><br><span class="line">$result = mysqli_query($conn, $sql);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (mysqli_num_rows($result) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">// 輸出資料</span></span><br><span class="line">    <span class="keyword">while</span>($row = mysqli_fetch_assoc($result)) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"id: "</span> . $row[<span class="string">"id"</span>]. <span class="string">" - Name: "</span> . $row[<span class="string">"username"</span>]. <span class="string">" - Email: "</span> . $row[<span class="string">"email"</span>]. <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"0 results"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="3-關閉連線">3. 關閉連線</span></h2><p>操作完成後，別忘了關閉連線：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">mysqli_close($conn);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="完整範例">完整範例</span></h2><p>最後，我們將上述步驟整合成一個完整的範例，展示如何連線到資料庫、插入資料、查詢資料以及關閉連線：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$servername = <span class="string">"localhost"</span>;</span><br><span class="line">$username = <span class="string">"root"</span>;</span><br><span class="line">password = <span class="string">""</span>;</span><br><span class="line">$database = <span class="string">"test_db"</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 建立連線</span></span><br><span class="line">$conn = mysqli_connect($servername, $username, $password, $database);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 檢查連線</span></span><br><span class="line"><span class="keyword">if</span> (!$conn) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">"Connection failed: "</span> . mysqli_connect_error());</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"Connected successfully&lt;br&gt;"</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 插入資料</span></span><br><span class="line">$sql = <span class="string">"INSERT INTO users (username, email) VALUES ('shengyu', 'shengyu@example.com')"</span>;</span><br><span class="line"><span class="keyword">if</span> (mysqli_query($conn, $sql)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"New record created successfully&lt;br&gt;"</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"Error: "</span> . $sql . <span class="string">"&lt;br&gt;"</span> . mysqli_error($conn);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 查詢資料</span></span><br><span class="line">$sql = <span class="string">"SELECT id, username, email FROM users"</span>;</span><br><span class="line">$result = mysqli_query($conn, $sql);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (mysqli_num_rows($result) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">// 輸出資料</span></span><br><span class="line">    <span class="keyword">while</span>($row = mysqli_fetch_assoc($result)) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"id: "</span> . $row[<span class="string">"id"</span>]. <span class="string">" - Name: "</span> . $row[<span class="string">"username"</span>]. <span class="string">" - Email: "</span> . $row[<span class="string">"email"</span>]. <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"0 results"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 關閉連線</span></span><br><span class="line">mysqli_close($conn);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>這個範例展示了如何使用 MySQLi 進行基本的資料庫操作，包括連線到資料庫、插入資料、查詢資料以及關閉連線。在實際應用中，應該新增更多的錯誤處理和安全措施，比如使用預處理語句來防止 SQL 注入攻擊。希望這篇文章能夠幫助你更好地理解和使用 MySQLi。</p>
-<p>以上就是 PHP 和 MySQLi 進行資料庫操作用法的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 PHP 相關技術，可以參考看看下面的文章，<br><a href="/php-pdo/" title="PHP 和 PDO 進行資料庫操作">PHP 和 PDO 進行資料庫操作</a><br><a href="/php-display-errors/" title="PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤">PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-mysqli/" data-id="cm0p8jex700mo2upqic6yct0g" data-title="使用 PHP 和 MySQLi 進行資料庫操作的簡單指南" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
 
     </footer>
   </div>
@@ -983,6 +1071,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-composite-pattern/">C++ 設計模式 - 組合模式 Composite Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-adapter-pattern/">C++ 設計模式 - 轉接器模式 Adapter Pattern</a>
           </li>
         
@@ -996,10 +1088,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-proxy-pattern/">C++ 設計模式 - 代理模式 Proxy Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-simple-factory-pattern/">C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern</a>
           </li>
         
       </ul>
@@ -1018,7 +1106,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">204</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">205</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

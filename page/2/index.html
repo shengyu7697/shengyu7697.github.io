@@ -107,6 +107,74 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-decorator-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-decorator-pattern/" class="article-date">
+  <time datetime="2024-08-23T12:00:00.000Z" itemprop="datePublished">2024-08-23</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-decorator-pattern/">C++ 設計模式 - 裝飾者模式 Decorator Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>在日常生活中，我們經常會去咖啡店買咖啡，但如果想要來點變化，像是加一點牛奶或糖，就可以讓平凡的咖啡多一點風味。同樣地，在程式設計中，我們有時也需要在不改變原有功能的前提下，為某些物件「加點料」。這就是裝飾者模式 Decorator Pattern 所要解決的問題。  </p>
+<h2><span id="什麼是裝飾者模式">什麼是裝飾者模式？</span></h2><p>裝飾者模式是一種結構型設計模式，它允許你動態地為物件添加功能，而不需要修改其原有的程式碼。換句話說，裝飾者模式讓你可以根據不同的需求，隨時為一個物件「增添佐料」，就像你為咖啡加牛奶或糖一樣，都會改變咖啡的口感和價格，但我們並沒有改變咖啡本身。  </p>
+<h2><span id="裝飾者模式在咖啡店的應用">裝飾者模式在咖啡店的應用</span></h2><p>讓我們用一個簡單的例子來說明。假設我們有一個基本的咖啡類別 <code>Coffee</code>，它代表一杯不加任何配料的黑咖啡。你可以根據需求選擇加入牛奶、糖或其他配料。使用裝飾者模式，我們可以輕鬆地計算出各種組合的價格，而不需要為每種可能的組合建立新的類別。  </p>
+<p>首先，我們定義一個 <code>Coffee</code> 類別，並為它計算基本價錢的功能：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Coffee</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getDescription</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"黑咖啡"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">cost</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">50</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">virtual</span> ~Coffee() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>假設你想在咖啡中加牛奶，我們可以建立一個裝飾者類別 <code>MilkDecorator</code>，這個類別將會裝飾（也就是包裝）<code>Coffee</code> 類別，並在其基礎上增加牛奶的功能：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MilkDecorator</span> :</span> <span class="keyword">public</span> Coffee &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Coffee&gt; coffee;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    MilkDecorator(<span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Coffee&gt; c) : coffee(<span class="built_in">std</span>::move(c)) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getDescription</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> coffee-&gt;getDescription() + <span class="string">"+牛奶"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">cost</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> coffee-&gt;cost() + <span class="number">15</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>如果你想再加點糖，可以再建立一個 <code>SugarDecorator</code> 類別：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SugarDecorator</span> :</span> <span class="keyword">public</span> Coffee &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Coffee&gt; coffee;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    SugarDecorator(<span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Coffee&gt; c) : coffee(<span class="built_in">std</span>::move(c)) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getDescription</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> coffee-&gt;getDescription() + <span class="string">"+糖"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">cost</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> coffee-&gt;cost() + <span class="number">5</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>最後我們就可以根據自己的需求自由組合這些裝飾者：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Coffee&gt; coffee = <span class="built_in">std</span>::make_unique&lt;Coffee&gt;();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; coffee-&gt;getDescription() &lt;&lt; <span class="string">"價格："</span></span><br><span class="line">              &lt;&lt; coffee-&gt;cost() &lt;&lt; <span class="string">"元\n"</span>;</span><br><span class="line">    coffee = <span class="built_in">std</span>::make_unique&lt;MilkDecorator&gt;(<span class="built_in">std</span>::move(coffee));</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; coffee-&gt;getDescription() &lt;&lt; <span class="string">"價格："</span></span><br><span class="line">              &lt;&lt; coffee-&gt;cost() &lt;&lt; <span class="string">"元\n"</span>;</span><br><span class="line">    coffee = <span class="built_in">std</span>::make_unique&lt;SugarDecorator&gt;(<span class="built_in">std</span>::move(coffee));</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; coffee-&gt;getDescription() &lt;&lt; <span class="string">"價格："</span></span><br><span class="line">              &lt;&lt; coffee-&gt;cost() &lt;&lt; <span class="string">"元\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">黑咖啡價格：50元</span><br><span class="line">黑咖啡+牛奶價格：65元</span><br><span class="line">黑咖啡+牛奶+糖價格：70元</span><br></pre></td></tr></table></figure></p>
+<p>在這個範例中，我們從一杯基本的黑咖啡開始，然後動態地添加牛奶和糖，最終計算出一杯加了牛奶和糖的咖啡價格。每次添加新配料時，我們不需要修改現有的咖啡類別，只需透過裝飾者來實現功能的擴展。這樣的設計讓我們可以靈活地擴展功能，也讓程式碼更加易於維護。  </p>
+<h2><span id="裝飾者模式的優點">裝飾者模式的優點</span></h2><p>裝飾者模式的最大優點就是靈活性，你可以任意組合裝飾者成各種不同的組合。當你面對需要不斷添加新功能的情況時，使用裝飾者模式可以避免類別數量的膨脹，讓程式碼更易於維護和擴展。同時它也保持了開放封閉原則，也就是添加新的裝飾者不需要修改原始類別，也符合單一職責原則，即每個裝飾者只負責一項特定的功能增強。  </p>
+<h2><span id="總結">總結</span></h2><p>裝飾者模式就像是在咖啡裡添加牛奶和糖，讓原本簡單的東西變得更加豐富多樣。在程式設計中，它能幫助我們以一種靈活的方式，擴展物件的功能，同時保持程式碼的清晰與可維護性。下次當你面臨需要擴展物件功能的需求時，考慮一下裝飾者模式，它或許就是你需要的解決方案！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-decorator-pattern/" data-id="cm0pctt7b00njzbpqrxry0srr" data-title="C++ 設計模式 - 裝飾者模式 Decorator Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-observer-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-observer-pattern/" class="article-date">
@@ -165,7 +233,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-observer-pattern/" data-id="cm0p8jexi00ni2upqbsmm14ob" data-title="C++ 設計模式 - 觀察者模式 Observer Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-observer-pattern/" data-id="cm0pctt7a00nizbpq603gc8wk" data-title="C++ 設計模式 - 觀察者模式 Observer Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -235,7 +303,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strategy-pattern/" data-id="cm0p8jexi00nh2upqgsnv98sn" data-title="C++ 設計模式 - 策略模式 Strategy Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strategy-pattern/" data-id="cm0pctt7a00nhzbpqc0qiwuxf" data-title="C++ 設計模式 - 策略模式 Strategy Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -306,7 +374,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm0p8jexi00ng2upqibq80rx7" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm0pctt7a00ngzbpq37tx39zu" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -391,7 +459,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm0p8jexh00nf2upqo1t3kxhn" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm0pctt7900nfzbpqmrsql54s" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -479,7 +547,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-post/" data-id="cm0p8jexh00ne2upqouok6ssy" data-title="PHP $_POST 變數用途、語法與實用範例詳解" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-post/" data-id="cm0pctt7900nezbpqbgt70v7g" data-title="PHP $_POST 變數用途、語法與實用範例詳解" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -574,7 +642,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-substr/" data-id="cm0p8jexh00nd2upqzvzdgze0" data-title="PHP substr 函式全面解析與應用範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-substr/" data-id="cm0pctt7900ndzbpqpgdxq5fv" data-title="PHP substr 函式全面解析與應用範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -672,7 +740,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-str_pad/" data-id="cm0p8jexg00nc2upq656xm8hs" data-title="PHP str_pad 函式用途、語法與實用範例解析" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-str_pad/" data-id="cm0pctt7800nczbpqpavnt656" data-title="PHP str_pad 函式用途、語法與實用範例解析" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -758,7 +826,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-uniqid/" data-id="cm0p8jexg00nb2upqfdvu48od" data-title="如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-uniqid/" data-id="cm0pctt7800nbzbpqhtjc032v" data-title="如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -822,96 +890,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-wordpress/" data-id="cm0p8jexf00na2upq5nd39gvm" data-title="Ubuntu 下安裝 wordpress" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-wordpress/" data-id="cm0pctt7800nazbpqi020k6aq" data-title="Ubuntu 下安裝 wordpress" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-php-isset" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/php-isset/" class="article-date">
-  <time datetime="2024-07-13T12:00:00.000Z" itemprop="datePublished">2024-07-13</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/PHP教學/">PHP教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/php-isset/">深入理解 PHP 中的 isset 用法、範例及最佳實踐</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 PHP <code>isset</code> 用法與範例，在PHP編程中，<code>isset</code> 是 PHP 內建的函式，它用於檢查變數是否已設定且其值不為 <code>null</code>。了解和正確使用 <code>isset</code> 對於避免未定義變數錯誤和提高程式碼穩定性至關重要。本文將詳細介紹 <code>isset</code> 的用途、語法，並透過多個範例展示其在不同場景中的應用。</p>
-<h2><span id="isset-的用途"><code>isset</code> 的用途</span></h2><p><code>isset</code> 函式主要用於以下幾個方面：</p>
-<ol>
-<li><strong>檢查表單送出中的變數是否存在</strong>：這有助於避免在處理使用者送出的表單資料時遇到未定義變數的錯誤。</li>
-<li><strong>檢查陣列中的key是否存在</strong>：在處理陣列資料時，這樣做可以確保某個key確實存在並且有值。</li>
-<li><strong>檢查物件屬性是否已設定</strong>：這在面向物件編程中尤為重要，用來確保某個屬性已經被初始化。</li>
-</ol>
-<h2><span id="isset-的語法"><code>isset</code> 的語法</span></h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool <span class="keyword">isset</span>(mixed $var, mixed ...$vars)</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>$var</code>：要檢查的變數。</li>
-<li><code>$vars</code>：可選的額外變數，可以一次檢查多個變數。</li>
-</ul>
-<h2><span id="isset-的基本用法"><code>isset</code> 的基本用法</span></h2><p>下面是一個基本的 <code>isset</code> 使用範例，展示了如何檢查單個變數是否被設定：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$var1 = <span class="string">"Hello, World!"</span>;</span><br><span class="line">$var2 = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($var1)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$var1 is set and not null'</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$var1 is not set or is null'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 輸出：$var1 is set and not null</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($var2)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$var2 is set and not null'</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$var2 is not set or is null'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 輸出：$var2 is not set or is null</span></span><br></pre></td></tr></table></figure>
-<p>在這個範例中，<code>$var1</code> 被設定為一個字串，因此 <code>isset($var1)</code> 回傳 <code>true</code>，而 <code>$var2</code> 被設定為 <code>null</code>，因此 <code>isset($var2)</code> 回傳 <code>false</code>。</p>
-<h2><span id="檢查陣列key">檢查陣列key</span></h2><p>使用 <code>isset</code> 可以方便地檢查陣列中的某個key是否存在：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$array = <span class="keyword">array</span>(<span class="string">'key1'</span> =&gt; <span class="string">'value1'</span>, <span class="string">'key2'</span> =&gt; <span class="string">'value2'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($array[<span class="string">'key1'</span>])) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$array["key1"] is set and not null'</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$array["key1"] is not set or is null'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 輸出：$array["key1"] is set and not null</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($array[<span class="string">'key3'</span>])) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$array["key3"] is set and not null'</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'$array["key3"] is not set or is null'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 輸出：$array["key3"] is not set or is null</span></span><br></pre></td></tr></table></figure>
-<p>這裡展示了如何檢查陣列中某個key是否存在。<code>$array[&#39;key1&#39;]</code> 存在且有值，因此 <code>isset($array[&#39;key1&#39;])</code> 回傳 <code>true</code>。而 <code>$array[&#39;key3&#39;]</code> 不存在，因此 <code>isset($array[&#39;key3&#39;])</code> 回傳 <code>false</code>。</p>
-<h2><span id="一次檢查多個變數">一次檢查多個變數</span></h2><p><code>isset</code> 可以一次檢查多個變數，只要其中任何一個變數未設定或為 <code>null</code>，就會回傳 <code>false</code>：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$var1 = <span class="string">"Hello"</span>;</span><br><span class="line">$var2 = <span class="string">"World"</span>;</span><br><span class="line">$var3 = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($var1, $var2, $var3)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'All variables are set and not null'</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'One or more variables are not set or are null'</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 輸出：One or more variables are not set or are null</span></span><br></pre></td></tr></table></figure>
-<p>在這個範例中，雖然 <code>$var1</code> 和 <code>$var2</code> 都被設定且不為 <code>null</code>，但 <code>$var3</code> 為 <code>null</code>，因此 <code>isset($var1, $var2, $var3)</code> 回傳 <code>false</code>。</p>
-<h2><span id="檢查表單送出">檢查表單送出</span></h2><p>在處理使用者送出的表單時，<code>isset</code> 可以用來檢查表單字段是否被設定，從而避免處理未定義變數的錯誤。假設我們有一個簡單的HTML表單：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">method</span>=<span class="string">"post"</span> <span class="attr">action</span>=<span class="string">"process.php"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">name</span>=<span class="string">"username"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"password"</span> <span class="attr">name</span>=<span class="string">"password"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"submit"</span> <span class="attr">value</span>=<span class="string">"Login"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>在 <code>process.php</code> 中，我們可以使用 <code>isset</code> 來檢查表單字段是否被設定：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_POST[<span class="string">'username'</span>]) &amp;&amp; <span class="keyword">isset</span>($_POST[<span class="string">'password'</span>])) &#123;</span><br><span class="line">    $username = $_POST[<span class="string">'username'</span>];</span><br><span class="line">    $password = $_POST[<span class="string">'password'</span>];</span><br><span class="line">    <span class="comment">// 處理登錄邏輯</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"Username: "</span> . $username . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"Password: "</span> . $password;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"Please fill in both username and password."</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>透過這種方式，我們可以確保使用者送出的 <code>username</code> 和 <code>password</code> 字段已經被設定並且不為 <code>null</code>，從而避免處理未定義變數的錯誤。</p>
-<h2><span id="總結">總結</span></h2><p><code>isset</code> 是 PHP 中非常實用的函式，透過檢查變數是否被設定且不為 <code>null</code>，它幫助開發者避免了許多常見的錯誤。無論是在處理表單送出、檢查陣列key還是檢查物件屬性，<code>isset</code> 都能發揮重要作用。透過正確理解和使用 <code>isset</code>，我們可以編寫出更加健壯和可靠的PHP程式碼。</p>
-<p>希望這篇文章能幫助你更好地理解 PHP <code>isset</code> 的用途和最佳實踐。<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 PHP 相關技術，可以參考看看下面的文章，<br><a href="/php-post/" title="PHP $_POST 變數用途、語法與實用範例詳解">PHP $_POST 變數用途、語法與實用範例詳解</a><br><a href="/php-session/" title="PHP 中的 Session 用途與實踐範例：完整指南">PHP 中的 Session 用途與實踐範例：完整指南</a><br><a href="/php-pdo/" title="PHP 和 PDO 進行資料庫操作">PHP 和 PDO 進行資料庫操作</a><br><a href="/php-display-errors/" title="PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤">PHP 執行發生錯誤在 Chrome/Firefox 上顯示 Error 500，要怎麼讓 PHP 顯示錯誤</a><br><a href="/php-session_start/" title="了解 PHP 中的 session_start() 函式用途與範例">了解 PHP 中的 session_start() 函式用途與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-isset/" data-id="cm0p8jexf00n92upqftf4290e" data-title="深入理解 PHP 中的 isset 用法、範例及最佳實踐" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
 
     </footer>
   </div>
@@ -955,6 +937,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-composite-pattern/">C++ 設計模式 - 組合模式 Composite Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-adapter-pattern/">C++ 設計模式 - 轉接器模式 Adapter Pattern</a>
           </li>
         
@@ -968,10 +954,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-proxy-pattern/">C++ 設計模式 - 代理模式 Proxy Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-simple-factory-pattern/">C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern</a>
           </li>
         
       </ul>
@@ -990,7 +972,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">204</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">205</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

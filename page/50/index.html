@@ -107,6 +107,80 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-ubuntu-tplink-t4u-driver" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/ubuntu-tplink-t4u-driver/" class="article-date">
+  <time datetime="2020-08-27T14:00:00.000Z" itemprop="datePublished">2020-08-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/ubuntu-tplink-t4u-driver/">Ubuntu 安裝 TP-Link Archer T4U Driver 筆記</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇紀錄 Ubuntu 安裝 TP-Link Archer T4U Driver 筆記與心得，最近買了一隻 wireless dongle，升級成5G(802.11ac)網速，當然家中還要搭配 AP 也是要支援到5G，但之前我早已把家裡網路上升級成 Giga 等級以及具備有 5G 的 AP 了，但我常用環境為 Ubuntu，但這隻 dongle 似乎還沒被預設的 Ubuntu 系統支援，我試了Ubuntu 16.04、18.04、20.04 內建驅動都無法支援，雖然當初在買的時候就從外包裝盒發現沒有 linux 的圖示，只有 windows 與 macOS 圖示，但憑著一股熱情，只好自己手動來編譯安裝了。  </p>
+<h2><span id="查詢-wireless-dongle-的-chipset">查詢 wireless dongle 的 chipset</span></h2><p>接下來要首先需要確定的是這隻 wireless dongle 用的是什麼 chipset，這對於曾經在網通廠工作經驗豐富的我不算什麼問題，  </p>
+<ol>
+<li><p>找一下該 wireless dongle 是第幾版，我購買的 TP-Link Archer T4U 的版本是 v3.20，通常在外盒上可以找到或者 dongle 本體上的標籤，為什麼要查詢版本呢？因為有時候同型號，廠商可能後來改用不同的 chipset，通常都是 costdown，也有可能是其他因素。  </p>
+</li>
+<li><p>在網路上 Google 一下，即可發現 TP-Link Archer T4U V3 用的 chipset 為 Realtek 的 RTL8812BU，<br>而 TP-Link Archer T4U V2 以前都是使用 RTL8812AU，<br>所以要找的驅動是要找 RTL8812BU 而不是 RTL8812AU，不然就會安裝後也無法使用，<br><a href="http://en.techinfodepot.shoutwiki.com/wiki/TP-LINK_Archer_T4U_v3" rel="noopener external nofollow noreferrer" target="_blank">http://en.techinfodepot.shoutwiki.com/wiki/TP-LINK_Archer_T4U_v3</a>  </p>
+</li>
+</ol>
+<h2><span id="編譯驅動並安裝">編譯驅動並安裝</span></h2><p>我是參考 <a href="https://askubuntu.com/questions/802205/how-to-install-tp-link-archer-t4u-driver" rel="noopener external nofollow noreferrer" target="_blank">https://askubuntu.com/questions/802205/how-to-install-tp-link-archer-t4u-driver</a><br>這篇的第二個方法，適用於 RTL8812BU chipset，<br>第一個方法是 RTL8812AU  </p>
+<p>這裡就順便記錄一下我的步驟<br>以下步驟我在 Ubuntu 18.04, 16.04 編譯後安裝後都是可以成功連線的，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/EntropicEffect/rtl8822bu</span><br><span class="line">sudo apt-get install build-essential dkms <span class="comment"># 安裝編譯所需套件</span></span><br><span class="line"><span class="built_in">cd</span> rtl8822bu</span><br><span class="line">make <span class="comment"># 編譯</span></span><br><span class="line">sudo make install <span class="comment"># 安裝至系統</span></span><br><span class="line">sudo modprobe 88x2bu <span class="comment"># 載入驅動模組</span></span><br></pre></td></tr></table></figure></p>
+<p>到這裡以上的步驟就可以連線了，可以發現網路管理員已經可以掃描的到其他 WiFi 的 SSID 了，<br>不論是 2.4G 或 5G 都掃得到了，也可以成功連線～YA！  </p>
+<p>輸入下列指令完善一下整個安裝，<br>其目的是讓 Linux 核心升級也自動重新編譯一下該驅動程式，<br>否則之後 Linux 核心升級後該驅動不匹配就會無法使用，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms add . <span class="comment"># 將驅動程式加入 DKMS 管理表中</span></span><br><span class="line">sudo dkms install -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
+<p>其他未驗證的參考<br><a href="https://itectec.com/ubuntu/ubuntu-cant-install-tp-link-archer-t4u-v3-driver-on-19-04/" rel="noopener external nofollow noreferrer" target="_blank">https://itectec.com/ubuntu/ubuntu-cant-install-tp-link-archer-t4u-v3-driver-on-19-04/</a><br><a href="https://gist.github.com/tchelit/289881a73df5189431cd6070b72f3f61" rel="noopener external nofollow noreferrer" target="_blank">https://gist.github.com/tchelit/289881a73df5189431cd6070b72f3f61</a>  </p>
+<h2><span id="其他補充">其他補充</span></h2><p>查看目前 dkms 內有什麼<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms status</span><br></pre></td></tr></table></figure></p>
+<p>安裝驅動模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms install -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
+<p>解除安裝驅動模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms uninstall -m 88x2bu -v 1.1</span><br></pre></td></tr></table></figure></p>
+<p>完整移除整個驅動程式模組<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dkms remove 88x2bu/1.1 --all</span><br></pre></td></tr></table></figure></p>
+<p>modprobe 指令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo modprobe 88x2bu # 載入模組</span><br><span class="line">sudo modprobe -r 88x2bu # 卸載模組</span><br></pre></td></tr></table></figure></p>
+<p>insmod、rmmod 與 lsmod<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">insmod 88x2bu.ko # 載入模組</span><br><span class="line">rmmod 88x2bu # 卸載模組</span><br><span class="line">lsmod # 查看載入的模組</span><br></pre></td></tr></table></figure></p>
+<p>其他參考<br>核心模組的載入與移除： insmod, modprobe, rmmod<br><a href="http://mingyi-ulinux.blogspot.com/2009/01/insmod-modprobe-rmmod.html" rel="noopener external nofollow noreferrer" target="_blank">http://mingyi-ulinux.blogspot.com/2009/01/insmod-modprobe-rmmod.html</a><br>Linux DKMS 機制導入筆記 - 石頭閒語<br><a href="http://rocksaying.tw/archives/2015/Linux_DKMS_%E6%A9%9F%E5%88%B6%E5%B0%8E%E5%85%A5%E7%AD%86%E8%A8%98.html" rel="noopener external nofollow noreferrer" target="_blank">http://rocksaying.tw/archives/2015/Linux_DKMS_%E6%A9%9F%E5%88%B6%E5%B0%8E%E5%85%A5%E7%AD%86%E8%A8%98.html</a><br>DKMS简介 - wwang - 博客园<br><a href="https://www.cnblogs.com/wwang/archive/2011/06/21/2085571.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/wwang/archive/2011/06/21/2085571.html</a><br>DKMS的流程圖邏輯很清晰  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/ubuntu-netbootin-live-usb/" title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料">使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料</a><br><a href="/ubuntu-apt-update-error/" title="Ubuntu apt update 的一堆 error 問題與解決方法">Ubuntu apt update 的一堆 error 問題與解決方法</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/ubuntu-tplink-t4u-driver/" data-id="cm0pctt1y00a7zbpq16ue8mky" data-title="Ubuntu 安裝 TP-Link Archer T4U Driver 筆記" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-glossary" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-glossary/" class="article-date">
@@ -158,7 +232,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-glossary/" data-id="cm0p8jery00a52upqojqjgaus" data-title="C/C++ 一堆名詞解釋" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-glossary/" data-id="cm0pctt1y00a5zbpqnrea0c6x" data-title="C/C++ 一堆名詞解釋" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -221,7 +295,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-apt-update-error/" data-id="cm0p8jerx00a42upqa3ekzqgm" data-title="Ubuntu apt update 的一堆 error 問題與解決方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-apt-update-error/" data-id="cm0pctt1x00a4zbpqwlm21e9b" data-title="Ubuntu apt update 的一堆 error 問題與解決方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -293,7 +367,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-img2char/" data-id="cm0p8jerx00a32upqfpvv0kma" data-title="Python OpenCV 圖片轉字元圖畫" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-img2char/" data-id="cm0pctt1x00a3zbpqacm4bq68" data-title="Python OpenCV 圖片轉字元圖畫" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -353,7 +427,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-netbootin-live-usb/" data-id="cm0p8jerx00a22upqvmunkk2g" data-title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-netbootin-live-usb/" data-id="cm0pctt1w00a2zbpqlbi05nzv" data-title="使用 Unetbootin 建立 Ubuntu Live USB 且可以儲存資料" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -422,7 +496,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-execute-command-and-get-output/" data-id="cm0p8jerw00a12upqakzfae9p" data-title="C/C++ 取得 shell 指令的螢幕輸出字串" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-execute-command-and-get-output/" data-id="cm0pctt1w00a1zbpq8cif8ye4" data-title="C/C++ 取得 shell 指令的螢幕輸出字串" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -492,7 +566,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-string-reverse/" data-id="cm0p8jerw00a02upqfsno3kn9" data-title="C/C++ 字串反轉 reverse" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-string-reverse/" data-id="cm0pctt1w00a0zbpq61z4wd5a" data-title="C/C++ 字串反轉 reverse" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -560,7 +634,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-virtual/" data-id="cm0p8jerw009z2upqgxrdvb3s" data-title="C++ virtual 的兩種用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-virtual/" data-id="cm0pctt1v009zzbpqj7c9g7ow" data-title="C++ virtual 的兩種用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -673,7 +747,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-shortcuts/" data-id="cm0p8jerv009y2upqg4bxqma0" data-title="Visual Studio Code 常用快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-shortcuts/" data-id="cm0pctt1v009yzbpqnpju5mqd" data-title="Visual Studio Code 常用快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
@@ -729,67 +803,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-go-to-matching-bracket/" data-id="cm0p8jerv009x2upqzro6obgj" data-title="Visual Studio Code 找對應大括號的快捷鍵" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-go-to-matching-bracket/" data-id="cm0pctt1v009xzbpqeskkzy4p" data-title="Visual Studio Code 找對應大括號的快捷鍵" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-tmux" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-tmux/" class="article-date">
-  <time datetime="2020-07-23T14:00:00.000Z" itemprop="datePublished">2020-07-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-tmux/">Linux tmux 終端機管理工具用法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇將介紹如何使用 Linux 下的 tmux 終端機管理工具，  </p>
-<h2><span id="分割視窗">分割視窗</span></h2><p>左右垂直分割：<code>Ctrl+b %</code><br>上下水平分割：<code>Ctrl+b &quot;</code><br>分割完後要切換分割視窗要按 <code>Ctrl+b &lt;方向鍵上/下/左/右&gt;</code>  </p>
-<p>其他參考<br>tmux 快速入門筆記 | DEVLOG of andyyou<br><a href="https://andyyou.github.io/2017/11/27/tmux-notes/" rel="noopener external nofollow noreferrer" target="_blank">https://andyyou.github.io/2017/11/27/tmux-notes/</a><br>tmux：管理終端 Session、分割視窗的神器<br><a href="https://noob.tw/tmux/" rel="noopener external nofollow noreferrer" target="_blank">https://noob.tw/tmux/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-sed/" title="Linux sed 字串取代用法與範例">Linux sed 字串取代用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-xargs/" title="Linux xargs 參數列表轉換用法與範例">Linux xargs 參數列表轉換用法與範例</a><br><a href="/linux-du/" title="Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例">Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例</a><br><a href="/linux-wget/" title="Linux wget 下載檔案用法與範例">Linux wget 下載檔案用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-tmux/" data-id="cm0p8jerv009w2upqatpsx050" data-title="Linux tmux 終端機管理工具用法" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -833,6 +850,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-composite-pattern/">C++ 設計模式 - 組合模式 Composite Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-adapter-pattern/">C++ 設計模式 - 轉接器模式 Adapter Pattern</a>
           </li>
         
@@ -846,10 +867,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-proxy-pattern/">C++ 設計模式 - 代理模式 Proxy Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-simple-factory-pattern/">C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern</a>
           </li>
         
       </ul>
@@ -868,7 +885,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">204</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">205</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
