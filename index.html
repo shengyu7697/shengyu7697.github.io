@@ -107,6 +107,76 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-state-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-state-pattern/" class="article-date">
+  <time datetime="2024-09-04T12:00:00.000Z" itemprop="datePublished">2024-09-04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-state-pattern/">C++ 設計模式 - 狀態模式 State Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>當你在使用某些應用程式時，是否曾經發現它們的行為會隨著某些條件或狀態的改變而改變？例如音樂播放器，當它處於「播放」狀態時去按下「播放」按鈕是沒有反應的，但當處於「暫停」狀態時，按下相同按鈕就會繼續播放音樂。這樣的設計就是狀態模式的核心概念。  </p>
+<h2><span id="什麼是狀態模式">什麼是狀態模式？</span></h2><p>狀態模式是一種行為型設計模式，用於當物件內部狀態發生改變時，自動改變其行為。這個模式的關鍵在於將行為與狀態解耦，讓物件在不同的狀態下有不同的表現方式。換句話說，物件的行為是由當前所處的狀態決定的，而不是依賴於外部的控制邏輯。  </p>
+<p>透過狀態模式，我們可以避免大量的 <code>if-else</code> 或 <code>switch</code> 判斷，讓程式碼更加清晰並易於擴展。  </p>
+<h2><span id="狀態模式在音樂播放器中的應用">狀態模式在音樂播放器中的應用</span></h2><p>以音樂播放器為例，我們可以用狀態模式來處理不同的播放狀態，如「播放」、「暫停」和「停止」。每一個狀態都代表著播放器不同的行為，而狀態的切換可以由使用者操作或其他事件來驅動。  </p>
+<p>讓我們來看看如何一步步定義這個音樂播放器的狀態系統。  </p>
+<p>我們首先需要定義一個狀態的介面，讓不同的具體狀態類別去實現。例如，我們定義了 <code>play()</code>、<code>pause()</code> 和 <code>stop()</code> 這三個動作，每個狀態可以根據自己的邏輯來實現這些動作，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 前向宣告，避免迴圈引用</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AudioPlayer</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 狀態基底類別</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">State</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">play</span><span class="params">(AudioPlayer* player)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">pause</span><span class="params">(AudioPlayer* player)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">stop</span><span class="params">(AudioPlayer* player)</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>接著我們可以定義具體的狀態類別，例如「播放中」和「暫停中」狀態。每一個具體狀態都會根據當前的情況來決定該如何處理使用者的操作，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體狀態：「播放中」</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PlayingState</span> :</span> <span class="keyword">public</span> State &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">play</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pause</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">stop</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 具體狀態：「暫停中」</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PausedState</span> :</span> <span class="keyword">public</span> State &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">play</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pause</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">stop</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 具體狀態：「停止中」</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">StoppedState</span> :</span> <span class="keyword">public</span> State &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">play</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pause</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">stop</span><span class="params">(AudioPlayer* player)</span> override</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> PlayingState::play(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Already playing."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> PlayingState::pause(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Pausing the audio."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    player-&gt;setState(<span class="keyword">new</span> PausedState()); <span class="comment">// 切換到暫停狀態</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> PlayingState::stop(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Stopping the audio."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    player-&gt;setState(<span class="keyword">new</span> StoppedState()); <span class="comment">// 切換到停止狀態</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> PausedState::play(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Resuming the audio."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    player-&gt;setState(<span class="keyword">new</span> PlayingState()); <span class="comment">// 切換回播放狀態</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> PausedState::pause(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Already paused."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> PausedState::stop(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Stopping the audio."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    player-&gt;setState(<span class="keyword">new</span> StoppedState()); <span class="comment">// 切換到停止狀態</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> StoppedState::play(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Starting to play audio."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    player-&gt;setState(<span class="keyword">new</span> PlayingState()); <span class="comment">// 切換到播放狀態</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> StoppedState::pause(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Can't pause. The audio is stopped."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> StoppedState::stop(AudioPlayer* player) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Already stopped."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>音樂播放器本身只需要依賴狀態物件來決定它的行為，當狀態發生變化時，播放器自動切換狀態。這樣播放器不需要自己處理具體行為，所有的行為交給不同狀態來處理，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 播放器類別</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AudioPlayer</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    State* state; <span class="comment">// 當前狀態</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    AudioPlayer(State* initState) : state(initState) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    ~AudioPlayer() &#123;</span><br><span class="line">        <span class="keyword">delete</span> state; <span class="comment">// 釋放當前狀態</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setState</span><span class="params">(State* newState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">delete</span> state; <span class="comment">// 切換狀態前釋放舊狀態</span></span><br><span class="line">        state = newState;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">play</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        state-&gt;play(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pause</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        state-&gt;pause(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">stop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        state-&gt;stop(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>現在我們可以在客戶端直接使用這個播放器來進行播放、暫停、停止操作，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 建立播放器並初始化為停止狀態</span></span><br><span class="line">    <span class="function">AudioPlayer <span class="title">audioPlayer</span><span class="params">(<span class="keyword">new</span> StoppedState())</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 嘗試播放、暫停、停止操作</span></span><br><span class="line">    audioPlayer.play();    <span class="comment">// 開始播放</span></span><br><span class="line">    audioPlayer.pause();   <span class="comment">// 暫停播放</span></span><br><span class="line">    audioPlayer.play();    <span class="comment">// 恢復播放</span></span><br><span class="line">    audioPlayer.stop();    <span class="comment">// 停止播放</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Starting to play audio.</span><br><span class="line">Pausing the audio.</span><br><span class="line">Resuming the audio.</span><br><span class="line">Stopping the audio.</span><br></pre></td></tr></table></figure></p>
+<h2><span id="狀態模式的優缺點">狀態模式的優缺點</span></h2><p>狀態模式的優點是它可以讓物件的行為與其狀態緊密相關，當狀態變化時，行為也會隨之變化，這讓系統變得更加靈活且容易擴展。舉例來說，如果未來想新增「快進」狀態，我們只需定義新的 <code>FastForwardState</code> 類別，然後無需改動其他類別的邏輯。  </p>
+<p>狀態模式的缺點在於會增加類別的數量。每個狀態都必須有一個對應的類別，這在狀態非常多的情況下，可能會讓程式變得繁瑣。另外動態切換狀態的過程中，可能會有一定的記憶體管理問題，需要小心處理。  </p>
+<h2><span id="總結">總結</span></h2><p>狀態模式特別適合那些行為會隨著狀態改變而改變的系統。透過將狀態封裝成獨立的類別，系統可以變得更具擴展性，且更加容易維護。雖然可能會引入更多的類別和稍微複雜的結構，但它能有效地減少程式中繁瑣的判斷邏輯，讓程式碼更加清晰易懂。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm0rzul3s00nv7kpq2pusq62d" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-facade-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-facade-pattern/" class="article-date">
@@ -167,7 +237,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm0rh9vmc00nujxpqd270igjr" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm0rzul3s00nu7kpqpbdgoety" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -245,7 +315,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm0rh9vmc00ntjxpqijrr84dc" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm0rzul3r00nt7kpqnqgw19oa" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -323,7 +393,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm0rh9vmc00nsjxpqny6azx2z" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm0rzul3r00ns7kpqk9w79s3j" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -399,7 +469,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-builder-pattern/" data-id="cm0rh9vmb00nrjxpqg88egsvj" data-title="C++ 設計模式 - 建造者模式 Builder Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-builder-pattern/" data-id="cm0rzul3r00nr7kpqm9su8a98" data-title="C++ 設計模式 - 建造者模式 Builder Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -475,7 +545,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-command-pattern/" data-id="cm0rh9vmb00nqjxpqgf5se5jy" data-title="C++ 設計模式 - 命令模式 Command Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-command-pattern/" data-id="cm0rzul3q00nq7kpqo4d2al0x" data-title="C++ 設計模式 - 命令模式 Command Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -551,7 +621,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-proxy-pattern/" data-id="cm0rh9vmb00npjxpqyo9vuavc" data-title="C++ 設計模式 - 代理模式 Proxy Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-proxy-pattern/" data-id="cm0rzul3q00np7kpqp4ckpcx1" data-title="C++ 設計模式 - 代理模式 Proxy Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -628,7 +698,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-simple-factory-pattern/" data-id="cm0rh9vma00nojxpqy8vmhfm9" data-title="C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-simple-factory-pattern/" data-id="cm0rzul3q00no7kpqgoiyw4h6" data-title="C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -702,7 +772,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-abstract-factory-pattern/" data-id="cm0rh9vma00nnjxpq4ny2ha1q" data-title="C++ 設計模式 - 抽象工廠模式 Abstract Factory Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-abstract-factory-pattern/" data-id="cm0rzul3p00nn7kpqe7sf5sln" data-title="C++ 設計模式 - 抽象工廠模式 Abstract Factory Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -780,90 +850,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-factory-method-pattern/" data-id="cm0rh9vma00nmjxpqeg0g8va4" data-title="C++ 設計模式 - 工廠方法模式 Factory Method Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-template-method-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-template-method-pattern/" class="article-date">
-  <time datetime="2024-08-25T12:00:00.000Z" itemprop="datePublished">2024-08-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-template-method-pattern/">C++ 設計模式 - 樣板方法模式 Template Method Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>在資料分析領域中，我們需要從海量的資料中提取有價值的資訊。但是面對不同格式的資料，例如：XML、CSV、JSON 等格式，我們該如何設計一個靈活又高效的分析工具呢？然而不論資料格式種類不同，分析的步驟通常是相似的，今天讓我們一起來探討設計模式中的樣板方法模式 Template Method Pattern ，看看它如何幫助我們解決這個問題。  </p>
-<h2><span id="什麼是樣板方法模式">什麼是樣板方法模式？</span></h2><p>樣板方法模式是一種行為設計模式，它在一個方法中定義了一個演算法的骨架，而將一些通用步驟的實作延遲到子類中。樣板方法使得子類可以在不改變演算法結構的情況下，重新定義演算法中的某些步驟的內容。換句話說，樣板方法確保了演算法的骨架（例如流程的步驟）是一致的，但細節部分可以由不同的子類自行定義。  </p>
-<p>聽起來有點抽象？別擔心，讓我們用一個生活中的例子來解釋。  </p>
-<p>想像你在煮一鍋湯。無論你煮的是什麼湯，基本步驟都是相似的：  </p>
-<ol>
-<li>準備食材</li>
-<li>加水並煮沸</li>
-<li>加入主要食材</li>
-<li>調味</li>
-<li>盛盤</li>
-</ol>
-<p>這個流程就是一個「樣板方法」。不同的湯可能在食材準備和調味方式上有所不同，但整體流程是一致的。  </p>
-<h2><span id="樣板方法模式資料分析工具的應用">樣板方法模式資料分析工具的應用</span></h2><p>回到資料分析的情景，假設我們正在開發一個資料分析工具，這個工具可以讀取不同格式的資料（XML、CSV、JSON），並產生分析報告。無論資料來源為何，我們的分析流程大致相同，包括讀取資料、分析資料、生成報告。  </p>
-<p>我們可以定義一個 <code>DataAnalyzer</code> 基類，來統一處理通用的分析步驟，但將具體的資料讀取方式交給子類別來實作。  </p>
-<p>首先，定義 <code>DataAnalyzer</code> 基類，其中包含了樣板方法 <code>analyze()</code>，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DataAnalyzer</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">analyze</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        readData();</span><br><span class="line">        processData();</span><br><span class="line">        generateReport();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">virtual</span> ~DataAnalyzer() = <span class="keyword">default</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">readData</span><span class="params">()</span> </span>= <span class="number">0</span>; <span class="comment">// 抽象方法，由子類別實作</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">processData</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Processing data..."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="comment">// 通用的資料處理邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">generateReport</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Generating report..."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="comment">// 通用的報告生成邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>接著，我們可以為每種資料格式建立不同的子類別，並各自實作 <code>readData()</code> 方法。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">XMLDataAnalyzer</span> :</span> <span class="keyword">public</span> DataAnalyzer &#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">readData</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Reading data from XML file..."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="comment">// 具體的 XML 資料讀取邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CSVDataAnalyzer</span> :</span> <span class="keyword">public</span> DataAnalyzer &#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">readData</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Reading data from CSV file..."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="comment">// 具體的 CSV 資料讀取邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSONDataAnalyzer</span> :</span> <span class="keyword">public</span> DataAnalyzer &#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">readData</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Reading data from JSON file..."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="comment">// 具體的 JSON 資料讀取邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>當我們使用這些子類別時，無需擔心具體的資料讀取邏輯，只需關注分析流程的整體結構，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ClientCode</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;DataAnalyzer&gt; analyzer)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    analyzer-&gt;analyze();</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;XMLDataAnalyzer&gt; xmlAnalyzer = <span class="built_in">std</span>::make_unique&lt;XMLDataAnalyzer&gt;();</span><br><span class="line">    ClientCode(<span class="built_in">std</span>::move(xmlAnalyzer)); <span class="comment">// 分析 XML 資料</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;DataAnalyzer&gt; csvAnalyzer =  <span class="built_in">std</span>::make_unique&lt;CSVDataAnalyzer&gt;();</span><br><span class="line">    ClientCode(<span class="built_in">std</span>::move(csvAnalyzer)); <span class="comment">// 分析 CSV 資料</span></span><br><span class="line"></span><br><span class="line">    ClientCode(<span class="built_in">std</span>::make_unique&lt;JSONDataAnalyzer&gt;()); <span class="comment">// 分析 JSON 資料</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Reading data from XML file...</span><br><span class="line">Processing data...</span><br><span class="line">Generating report...</span><br><span class="line">Reading data from CSV file...</span><br><span class="line">Processing data...</span><br><span class="line">Generating report...</span><br><span class="line">Reading data from JSON file...</span><br><span class="line">Processing data...</span><br><span class="line">Generating report...</span><br></pre></td></tr></table></figure></p>
-<p>在這個範例中，我們展示了如何使用樣板方法模式來處理不同資料格式的分析流程。透過定義通用的分析步驟，我們確保了分析邏輯的一致性，同時又保留了靈活性，讓我們可以根據實際不同需求來實作對應的資料讀取方式。</p>
-<h2><span id="樣板方法模式的優點">樣板方法模式的優點</span></h2><p>樣板方法模式的優點如下，主要優勢在於統一流程和靈活擴展，  </p>
-<ul>
-<li>程式碼複用性：將通用的分析步驟寫在基類中，避免了在每個子類別中重複寫相同的邏輯。  </li>
-<li>靈活與擴展性：可以輕鬆添加新的資料格式，只需建立新的子類別並實現對應的讀取方法，而不需要改變整體的分析流程。  </li>
-<li>容易維護：分析流程的改動只需修改基類，而不需要修改每個子類別，這使得系統更加易於維護。  </li>
-</ul>
-<h2><span id="總結">總結</span></h2><p>樣板方法模式在軟體開發中，就像是一個烹飪配方，固定的步驟確保了整體的流程不會亂套，而細節上的變化則由各種料理的需求來決定。這樣的設計不僅讓程式更具結構性，也讓開發者能夠輕鬆地應對需求的變更或擴展。如果你在日常的開發工作中需要處理類似的問題，不妨考慮使用樣板方法模式來優雅地解決。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-template-method-pattern/" data-id="cm0rh9vm900nljxpqd9wqsxu7" data-title="C++ 設計模式 - 樣板方法模式 Template Method Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-factory-method-pattern/" data-id="cm0rzul3p00nm7kpqhyftugrz" data-title="C++ 設計模式 - 工廠方法模式 Factory Method Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -910,6 +897,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-state-pattern/">C++ 設計模式 - 狀態模式 State Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-facade-pattern/">C++ 設計模式 - 門面模式 Facade Pattern</a>
           </li>
         
@@ -923,10 +914,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-builder-pattern/">C++ 設計模式 - 建造者模式 Builder Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-command-pattern/">C++ 設計模式 - 命令模式 Command Pattern</a>
           </li>
         
       </ul>
@@ -945,7 +932,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">206</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">207</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

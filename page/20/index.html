@@ -107,6 +107,84 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-android-debugging-with-vscode" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/android-debugging-with-vscode/" class="article-date">
+  <time datetime="2022-06-13T14:00:00.000Z" itemprop="datePublished">2022-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/android-debugging-with-vscode/">Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 Android 使用 gdb 與 gdbserver 以及搭配 Visual Studio Code(VS Code) 來遠端除錯，gdb 可以透過網路對遠端的程式進行除錯，需要遠端執行 gdbserver 以及搭配本地端 gdb 一起使用，而 gdbserver 是 server 的角色，而 gdb 是 client 的角色，一旦 gdb 連上遠端的 gdbserver 後，之後就使用 gdb 進行除錯，跟平常的 gdb 使用上沒有差異，我的桌機環境為 Ubuntu 16.04，  </p>
+<p>以下 Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學內容大概分為這幾部分，  </p>
+<ul>
+<li>adb forward 轉發通訊埠  </li>
+<li>Android 下 gdb 與 gdbserver 使用方法  </li>
+<li>VS Code 遠端偵錯設定  </li>
+<li>VS Code 錯誤排除  </li>
+</ul>
+<h2><span id="adb-forward-轉發通訊埠">adb forward 轉發通訊埠</span></h2><p>用 <a href="/android-adb-forward/" title="adb forward">adb forward</a> 將 PC 的 port 20001 對應到 Android Device 的 port 20002，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb forward tcp:20001 tcp:20002</span><br></pre></td></tr></table></figure></p>
+<p>可以使用 <code>adb forward --list</code> 檢查目前的轉發列表。  </p>
+<h2><span id="android-下-gdb-與-gdbserver-使用方法">Android 下 gdb 與 gdbserver 使用方法</span></h2><p>將編譯好的執行檔推到 Android Device，假設這個執行檔名稱叫 samplehello，在編譯時要確保有 <code>-g</code> 選項以及 <code>-O0</code> 不使用最佳化，以便提供足夠的偵錯資訊，  </p>
+<p>gdb 與 gdbserver 不用自己編譯，直接拿 Android 預編譯好的執行檔即可，以 <a href="https://github.com/android/ndk/wiki/Unsupported-Downloads" rel="noopener external nofollow noreferrer" target="_blank">NDK r13b</a> 為例的話，也可以使用<a href="https://github.com/android/ndk/wiki" rel="noopener external nofollow noreferrer" target="_blank">最新的 NDK</a>，要注意的是 NDK r24 就移除 gdb/gdbserver 改用 lldb 了，所以 NDK r24 之後的版本改用 lldb，<br>gdb 執行檔路徑如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android-ndk-r13b-windows-x86_64.zip -&gt; android-ndk-r13b/prebuilt/windows-x86_64/bin/gdb.exe</span><br><span class="line">android-ndk-r13b-linux-x86_64.zip   -&gt; android-ndk-r13b/prebuilt/linux-x86_64/bin/gdb</span><br><span class="line">android-ndk-r13b-darwin-x86_64.zip  -&gt; android-ndk-r13b/prebuilt/darwin-x86_64/bin/gdb</span><br></pre></td></tr></table></figure></p>
+<p>gdbserver 執行檔路徑如下，gdbserver 是在 Android Device 端執行的程式，視你要除錯的執行檔類型選擇對應架構的 gdbserver，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">android-ndk-r13b-windows-x86_64.zip -&gt; android-ndk-r13b/prebuilt/android-arm/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-windows-x86_64.zip -&gt; android-ndk-r13b/prebuilt/android-arm64/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-linux-x86_64.zip   -&gt; android-ndk-r13b/prebuilt/android-arm/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-linux-x86_64.zip   -&gt; android-ndk-r13b/prebuilt/android-arm64/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-darwin-x86_64.zip  -&gt; android-ndk-r13b/prebuilt/android-arm/gdbserver/gdbserver</span><br><span class="line">android-ndk-r13b-darwin-x86_64.zip  -&gt; android-ndk-r13b/prebuilt/android-arm64/gdbserver/gdbserver</span><br></pre></td></tr></table></figure></p>
+<p>或者使用 Android BSP / AOSP source code 裡附帶的也可以，預編譯好的 gdb 與 gdbserver 就在 prebuilts 目錄下。  </p>
+<p><strong>Android Device 端</strong><br>在 Android Device 端執行 gdbserver 或 gdbserver64，假使要除錯的執行檔 (samplehello) 是 64bit 架構的就使用 gdbserver64，反之使用 gdbserver，使用錯誤的話到時 gdb 端會顯示錯誤訊息，執行 gdbserver 後面參數加上 <code>&lt;ip:port&gt;</code> 監聽的ip位址與port通訊埠以及要偵錯的執行檔路徑，這邊範例使用 port 20002，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gdbserver64 :20002 /vendor/bin/samplehello</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">gdbserver64 127.0.0.1:20002 /vendor/bin/samplehello</span><br></pre></td></tr></table></figure></p>
+<p>gdbserver 要使用 attach 的方式的話，後面接上程式的 pid 即可，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdbserver64 :20002 --attach &lt;pid&gt;</span><br></pre></td></tr></table></figure></p>
+<p><strong>PC 端</strong><br>在 PC 端執行 gdb，後面參數接上執行檔(debug 版本，no striped)，這裡使用 codebase 預編譯好的 gdb，執行 gdb 後使用 <code>target remote &lt;ip:port&gt;</code> 來連上遠端的 gdbserver，這邊範例是連上本地端的 port 20001，因為稍早的 adb forward 設定會將 PC 本地端的 port 20001 轉發到 Android Device 遠端的 port 20002，使得 Android Device 上的 gdbserver 收到連線請求，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./prebuilts/gdb/linux-x86/bin/gdb ./out/target/product/&lt;product_name&gt;/symbols/vendor/bin/samplehello</span><br><span class="line">(gdb) target remote :20001</span><br><span class="line"># or</span><br><span class="line">(gdb) target remote 127.0.0.1:20001</span><br></pre></td></tr></table></figure></p>
+<p>一般 gdb 除錯時是使用 r 開始執行程式。不過遠端除錯時，遠端的 gdbserver 已經 run 了，所以 gdb 要用 c 來繼續執行，不能用 r。  </p>
+<p>以下為 gdb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b samplehello.cpp:14</code>：設定中斷點<br><code>info b</code>：印出目前設定的中斷點<br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
+<p>確定基本的 gdbserver 與 gdb 都可以正常地遠端偵錯後，我們就來開始進行 VS Code 遠端偵錯的設定吧！</p>
+<h2><span id="vs-code-遠端偵錯設定">VS Code 遠端偵錯設定</span></h2><p>VS Code 的 <code>.vscode/launch.json</code> 設定檔資訊如下，其中重點是 <code>miDebuggerServerAddress</code> 要設定對，例如本範例的 PC 本地端 port 20001 (轉發到 Android Device 遠端的 port 20002)，<code>miDebuggerPath</code> 是 gdb 執行檔的路徑，最後是 <code>program</code> 要除錯的執行檔路徑，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Remote GDB"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppdbg"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/out/target/product/&lt;product_name&gt;/symbols/vendor/bin/samplehello"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceFolder&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"gdb"</span>,</span><br><span class="line">            <span class="attr">"setupCommands"</span>: [</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="attr">"description"</span>: <span class="string">"Enable pretty-printing for gdb"</span>,</span><br><span class="line">                    <span class="attr">"text"</span>: <span class="string">"-enable-pretty-printing"</span>,</span><br><span class="line">                    <span class="attr">"ignoreFailures"</span>: <span class="literal">true</span></span><br><span class="line">                &#125;</span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"miDebuggerServerAddress"</span>: <span class="string">"localhost:20001"</span>,</span><br><span class="line">            <span class="attr">"miDebuggerPath"</span>: <span class="string">"$&#123;workspaceFolder&#125;/prebuilts/gdb/linux-x86/bin/gdb"</span></span><br><span class="line">            //<span class="string">"miDebuggerPath"</span>: <span class="string">"/opt/android-ndk-r13b/prebuilt/linux-x86_64/bin/gdb"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="vs-code-錯誤排除">VS Code 錯誤排除</span></h2><p>如果在除錯的過程中逐步執行發現跳不到原始碼遇到 <code>Could not load source ... &#39;SourceRequest&#39; not supported</code> 這樣的錯誤訊息的話，可能就是找不到原始碼的路徑，可能就是因為執行檔跟原始碼擺放路徑不同，解決方式就是在 launch.json 使用 <code>sourceFileMap</code> 將正確的路徑對應好，再次啟動就可以正確找到了～～  </p>
+<p>類似的狀況與解法可以在<a href="https://medium.com/@fengyu214/v8-playbook-1ac3b4b83cb1" rel="noopener external nofollow noreferrer" target="_blank">medium這篇</a>與<a href="https://github.com/microsoft/vscode-cpptools/issues/3831" rel="noopener external nofollow noreferrer" target="_blank">vscode-cpptools issues</a>這兩篇中發現。  </p>
+<p>其他參考<br>Android Debugging with Visual Studio Code - General and Gameplay Programming - Tutorials - GameDev.net<br><a href="https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/android-debugging-with-visual-studio-code-r4820/" rel="noopener external nofollow noreferrer" target="_blank">https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/android-debugging-with-visual-studio-code-r4820/</a><br>GDBServer on Android<br><a href="https://appleapplecat.pixnet.net/blog/post/32464205" rel="noopener external nofollow noreferrer" target="_blank">https://appleapplecat.pixnet.net/blog/post/32464205</a><br>Using Debuggers  |  Android Open Source Project 官方最新文件<br><a href="https://source.android.google.cn/devices/tech/debug/gdb" rel="noopener external nofollow noreferrer" target="_blank">https://source.android.google.cn/devices/tech/debug/gdb</a><br>Debugging with GDB | Android Open Source 很舊的文件<br><a href="https://wladimir-tm4pda.github.io/porting/debugging_gdb.html" rel="noopener external nofollow noreferrer" target="_blank">https://wladimir-tm4pda.github.io/porting/debugging_gdb.html</a><br>(在 Android 6 及更低版本，gdbclient 的 shell 腳本，Android 6 以上是 gdbclient.py 的 python 腳本)<br>使用GDB在VS Code調試Android C/C++代碼（無需Android源碼）_陳六生的博客-CSDN博客<br><a href="https://blog.csdn.net/u011057800/article/details/108094858" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/u011057800/article/details/108094858</a><br>(launch.json 使用 <code>${env:ANDROID_NDK}</code> 取得環境變數的設定值)  </p>
+<p><strong>相關主題</strong><br><a href="/android-adb-forward/" title="Android adb forward 通訊埠轉發用法教學">Android adb forward 通訊埠轉發用法教學</a><br><a href="/vscode-debugging-on-mac/" title="macOS 使用 VS Code Debugger 除錯">macOS 使用 VS Code Debugger 除錯</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/android-debugging-with-vscode/" data-id="cm0rzul1t00ij7kpqgajeav3u" data-title="Android 使用 gdb 搭配 Visual Studio Code 遠端除錯教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-android-adb-forward" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/android-adb-forward/" class="article-date">
@@ -158,7 +236,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="cm0rh9vkc00ikjxpql1s41to3" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-forward/" data-id="cm0rzul1t00ii7kpqb160lnpa" data-title="Android adb forward 通訊埠轉發用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -253,7 +331,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="cm0rh9vkc00ijjxpqw63v5pgk" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="cm0rzul1s00ih7kpqr18j1k4b" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -333,7 +411,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cm0rh9vkb00iijxpq7pj2ye40" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cm0rzul1s00ig7kpqrhvugryt" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -400,7 +478,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cm0rh9vkb00ihjxpqol17t0ey" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cm0rzul1s00if7kpq8nzwwe71" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -474,7 +552,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cm0rh9vkb00igjxpqmdxcnszv" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cm0rzul1r00ie7kpqb90y6fjd" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -537,7 +615,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cm0rh9vka00ifjxpqs2mb8mko" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cm0rzul1r00id7kpq6hq70brf" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -603,7 +681,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cm0rh9vka00iejxpq0l5iidlw" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cm0rzul1r00ic7kpqfz02hqek" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -668,7 +746,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-attribute-packed/" data-id="cm0rh9vka00idjxpqc0w1a4g3" data-title="C/C++ __attribute__((__packed__)) 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-attribute-packed/" data-id="cm0rzul1q00ib7kpq7wttz3hq" data-title="C/C++ __attribute__((__packed__)) 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -729,66 +807,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-uid/" data-id="cm0rh9vk900icjxpq76jmgvjp" data-title="Android UID 定義" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-android-su" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/android-su/" class="article-date">
-  <time datetime="2022-05-09T14:00:00.000Z" itemprop="datePublished">2022-05-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/android-su/">Android su 切換使用者指令用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹 Android su 指令用法與範例，su 指令可以用來切換使用者，切換使用者後可以測試該使用者的執行權限。  </p>
-<p>su 後面接使用者名稱或者接使用者 id 也可以，範例如下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 切換成 root</span></span><br><span class="line">su root <span class="comment"># 或 su 0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 切換成 system</span></span><br><span class="line">su system <span class="comment"># 或 su 1000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 切換成 shell</span></span><br><span class="line">su shell</span><br><span class="line"></span><br><span class="line"><span class="comment"># 切換成 user</span></span><br><span class="line">su app_0 <span class="comment"># 舊版 android, 或 su 10000</span></span><br><span class="line">su u0_a0 <span class="comment"># 新版 android, u0 表示 user 0, 或 su 10000</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="su-執行檔路徑在哪">su 執行檔路徑在哪</span></h2><p>su 在 <code>/system/xbin/</code> 下，可以透過 <code>which su</code> 查詢得知，<br>如果想要知道目前的使用者是誰的話可以使用 <code>whoami</code>，  </p>
-<p>userdebug build 會有 su 指令，但 user build 不會有 su 指令。  </p>
-<h2><span id="su-原始碼在哪">su 原始碼在哪</span></h2><p>su 原始碼在 <code>system/extras/su/su.cpp</code> 裡，整體來說還是一個 C 程式。  </p>
-<p>其它參考<br>Android UID的分配、查看及相关知识<br><a href="https://www.jianshu.com/p/b33dd49f2ae6" rel="noopener external nofollow noreferrer" target="_blank">https://www.jianshu.com/p/b33dd49f2ae6</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-su/" data-id="cm0rh9vk900ibjxpq3hwv1vl7" data-title="Android su 切換使用者指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-uid/" data-id="cm0rzul1q00ia7kpq7sdc192f" data-title="Android UID 定義" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -835,6 +854,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-state-pattern/">C++ 設計模式 - 狀態模式 State Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-facade-pattern/">C++ 設計模式 - 門面模式 Facade Pattern</a>
           </li>
         
@@ -848,10 +871,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-builder-pattern/">C++ 設計模式 - 建造者模式 Builder Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-command-pattern/">C++ 設計模式 - 命令模式 Command Pattern</a>
           </li>
         
       </ul>
@@ -870,7 +889,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">206</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">207</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
