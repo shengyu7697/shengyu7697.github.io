@@ -107,6 +107,77 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-segmentation-fault-core-dumped-dmesg-addr2line" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/segmentation-fault-core-dumped-dmesg-addr2line/" class="article-date">
+  <time datetime="2020-01-06T14:00:00.000Z" itemprop="datePublished">2020-01-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/segmentation-fault-core-dumped-dmesg-addr2line/">程式segmentation fault後, 用dmesg和addr2line來除錯</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇紀錄如何從程式的 segmentation fault，配合 dmesg 和 addr2line 來除錯，<br>查出程式是掛(死)在哪個原始碼的第幾行。  </p>
+<p>首先先來寫一個會讓程式崩潰的程式，<br>再來配合使用 dmesg 查 kernel log 看是掛在哪個記憶體位置，<br>再來配合使用 addr2line 查出該記憶體位置是在程式碼的那一行<br>開始吧！  </p>
+<h2><span id="寫一個會讓程式崩潰的程式">寫一個會讓程式崩潰的程式</span></h2><p>讓一個 ptr 指標指向 NULL, 使用 printf 印出 ptr 指向的值，<br>使用 <code>g++ cpp-crash.cpp -o a.out</code> 進行編譯，<br>之後再執行 <code>a.out</code> 就會發現程式執行到一半發生segmentation fault (core dumped) 了！<br><figure class="highlight cpp"><figcaption><span>cpp-crash.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-crash.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">myprint</span><span class="params">(<span class="keyword">int</span>* ptr)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, *ptr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> *ptr = <span class="literal">NULL</span>;</span><br><span class="line">    myprint(ptr);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Segmentation fault (core dumped)</span><br></pre></td></tr></table></figure></p>
+<h2><span id="使用-dmesg-查-kernel-log-看是掛在哪個記憶體位置">使用 dmesg 查 kernel log 看是掛在哪個記憶體位置</span></h2><p>接著 dmesg 指令可以查看發生段錯誤的程式名稱、造成錯誤發生的記憶體地址、指令指標地址、堆疊指標地址、錯誤程式碼、錯誤原因等，<br>接著使用 dmesg 看看記憶體位置，找到顯示的 ip 為 0000000000400536<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a.out[14306]: segfault at 0 ip 0000000000400536 sp 00007ffce9c58050 error 4 in a.out[400000+1000]</span><br></pre></td></tr></table></figure></p>
+<p>也可用 Android logcat 上 backtrace 的 pc 記憶體位置來去查。  </p>
+<h2><span id="配合使用-addr2line-查出該記憶體位置是在程式碼的那一行">配合使用 addr2line 查出該記憶體位置是在程式碼的那一行</span></h2><p>最後使用 addr2line 找出 ip 0000000000400536 在程式碼第幾行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ addr2line -Cfie ./a.out 0000000000400536</span><br></pre></td></tr></table></figure></p>
+<p>輸出結果如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myprint(int*)</span><br><span class="line">??:?</span><br></pre></td></tr></table></figure></p>
+<p>上列資訊顯示程式死在 myprint 這個函式裡，但是看不到行數，<br>原因是因為使用 g++ 時沒用 <code>-g</code> 參數讓它編譯出有除錯的資訊<br>使用 <code>g++ cpp-crash.cpp -o a.out -g</code> 再編譯一次吧！<br>之後在執行一次，將 ip 拿去用 addr2line 查出的結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myprint(int*)</span><br><span class="line">/home/xxx/cpp-crash.cpp:5</span><br></pre></td></tr></table></figure></p>
+<p>這次就可以很清楚看到原始檔名稱與行數了！<br>這樣就可以回去程式碼裡好好看看是哪裡寫錯了。  </p>
+<h2><span id="使用-nm-查詢">使用 nm 查詢</span></h2><p>使用 nm 指令 <code>nm -gC a.out</code> 可以導出 symbol，<br>如下所示，發現 myprint 的位置是 0000000000400526 跟上面的 ip 很接近  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">0000000000601038 B __bss_start</span><br><span class="line">0000000000601028 D __data_start</span><br><span class="line">0000000000601028 W data_start</span><br><span class="line">0000000000601030 D __dso_handle</span><br><span class="line">0000000000601038 D _edata</span><br><span class="line">0000000000601040 B _end</span><br><span class="line">00000000004005e4 T _fini</span><br><span class="line">                 w __gmon_start__</span><br><span class="line">00000000004003c8 T _init</span><br><span class="line">00000000004005f0 R _IO_stdin_used</span><br><span class="line">                 w _ITM_deregisterTMCloneTable</span><br><span class="line">                 w _ITM_registerTMCloneTable</span><br><span class="line">                 w _Jv_RegisterClasses</span><br><span class="line">00000000004005e0 T __libc_csu_fini</span><br><span class="line">0000000000400570 T __libc_csu_init</span><br><span class="line">                 U __libc_start_main@@GLIBC_2.2.5</span><br><span class="line">000000000040054c T main</span><br><span class="line">                 U printf@@GLIBC_2.2.5</span><br><span class="line">0000000000400430 T _start</span><br><span class="line">0000000000601038 D __TMC_END__</span><br><span class="line">0000000000400526 T myprint(int*)</span><br></pre></td></tr></table></figure>
+<p>參考<br>[1] 使用dmesg和addr2line查找程序崩潰後的現場報告 | cpper<br><a href="http://www.cpper.cn/2016/09/09/develop/dmesg-addr2line/" rel="noopener external nofollow noreferrer" target="_blank">http://www.cpper.cn/2016/09/09/develop/dmesg-addr2line/</a>  </p>
+<p>[2] gdb調試core dump入門實踐（順便複習一下之前介紹過的addr2line命令調試） - stpeace的專欄<br><a href="https://blog.csdn.net/stpeace/article/details/49806473" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/stpeace/article/details/49806473</a>  </p>
+<p>[3] 關於Segmentation fault (core dumped)幾個簡單問題的整理<br><a href="https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/560380/" rel="noopener external nofollow noreferrer" target="_blank">https://codertw.com/%E7%A8%8B%E5%BC%8F%E8%AA%9E%E8%A8%80/560380/</a><br>什麼是Core Dump，可以看看這篇的介紹  </p>
+<p>[4]【已解決】Linux下出現Segmentation Fault（core dump）錯誤 - YSBJ123的博客<br><a href="https://blog.csdn.net/YSBJ123/article/details/50035169" rel="noopener external nofollow noreferrer" target="_blank">https://blog.csdn.net/YSBJ123/article/details/50035169</a><br>其他也不錯的文章，這篇有好幾種讓你產生 Segmentation Fault 的程式<br>從 <a href="https://www.cnblogs.com/panfeng412/archive/2011/11/06/segmentation-fault-in-linux.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.cnblogs.com/panfeng412/archive/2011/11/06/segmentation-fault-in-linux.html</a> 轉載  </p>
+<p>[5] 内核 segfault 报错分析 - Jamin Zhang<br><a href="https://jaminzhang.github.io/linux/Kernel-Segfault-Analysis/" rel="noopener external nofollow noreferrer" target="_blank">https://jaminzhang.github.io/linux/Kernel-Segfault-Analysis/</a><br>解釋 error 4 代表什麼意思  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/linux-addr2line/" title="addr2line 用法">addr2line 用法</a><br><a href="/linux-nm/" title="nm 用法與範例">nm 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/segmentation-fault-core-dumped-dmesg-addr2line/" data-id="cm0v15ry00078q4pqx4mirn66" data-title="程式segmentation fault後, 用dmesg和addr2line來除錯" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-use-breakpoint-in-visual-studio-release-mode" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/use-breakpoint-in-visual-studio-release-mode/" class="article-date">
@@ -151,7 +222,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/use-breakpoint-in-visual-studio-release-mode/" data-id="cm0uyatnc00773upq73zoqc5q" data-title="在 Visual Studio 的 Release 模式下使用中斷點" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/use-breakpoint-in-visual-studio-release-mode/" data-id="cm0v15ry00077q4pq284dpmtd" data-title="在 Visual Studio 的 Release 模式下使用中斷點" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio/">Visual Studio</a></li></ul>
@@ -284,7 +355,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-string/" data-id="cm0uyatnb00763upqpj3sfbr2" data-title="C++ std::string 用法與完整範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-string/" data-id="cm0v15rxy0076q4pqh4ylcr2j" data-title="C++ std::string 用法與完整範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -347,7 +418,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cmake-cmakelists/" data-id="cm0uyatnb00753upq59rul79s" data-title="撰寫 cmake 的 CMakeLists.txt" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cmake-cmakelists/" data-id="cm0v15rxy0075q4pq10a9ribr" data-title="撰寫 cmake 的 CMakeLists.txt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CMake/">CMake</a></li></ul>
@@ -413,7 +484,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-media-play-and-control-webpage/" data-id="cm0uyatna00743upq3ueiok1k" data-title="[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-media-play-and-control-webpage/" data-id="cm0v15rxx0074q4pq0z1ovp6y" data-title="[Python小專案] Tornado+PyAutoGUI 多媒體控制播放的網頁" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -481,7 +552,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-sys-argv/" data-id="cm0uyatn900733upqr9wxnuct" data-title="Python sys.argv 用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-sys-argv/" data-id="cm0v15rxx0073q4pqvy0x9n58" data-title="Python sys.argv 用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -554,7 +625,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-ternary-operator/" data-id="cm0uyatn900723upqvbpke14r" data-title="C/C++ 三元運算子" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-ternary-operator/" data-id="cm0v15rxx0072q4pq4gz3xkpp" data-title="C/C++ 三元運算子" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -616,7 +687,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-mac/" data-id="cm0uyatn800713upq1ye5oew1" data-title="在 Mac OSX 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-mac/" data-id="cm0v15rxw0071q4pqzcixakgh" data-title="在 Mac OSX 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -678,7 +749,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-ubuntu/" data-id="cm0uyatn800703upqjkut3ecw" data-title="在 Ubuntu 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-use-cmake-in-ubuntu/" data-id="cm0v15rxw0070q4pqksib5bbs" data-title="在 Ubuntu 用 cmake 專案寫 Boost 程式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -740,66 +811,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-interprocess-shared-memory/" data-id="cm0uyatn8006z3upqk84bjub8" data-title="boost::interprocess 共享記憶體 shared memory" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-boost-filesystem-create-directory" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/boost-filesystem-create-directory/" class="article-date">
-  <time datetime="2019-12-23T14:00:00.000Z" itemprop="datePublished">2019-12-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/boost-filesystem-create-directory/">boost::filesystem 建立資料夾</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹使用 boost C++ 的 filesystem 模組來建立資料夾。</p>
-<p>幾年前為了寫 C++ 跨平台程式，研究了一下怎麼用 boost 的 filesystem 模組來完成這個功能，最近在整理 boost 的筆記就順便記錄下來吧！<br>這個功能最新的 C++17 也已經加入這個功能了，相信再過幾年就很普及了。</p>
-<h2><span id="安裝-boost">安裝 boost</span></h2><p>還沒安裝 boost 的話請參考 <a href="/boost-install-boost-in-windows/" title="windows 安裝方式">windows 安裝方式</a> / <a href="/boost-install-boost-in-ubuntu/" title="ubuntu 安裝方式">ubuntu 安裝方式</a>。</p>
-<h2><span id="使用範例">使用範例</span></h2><p>可以一次建立多層資料夾目錄<br><figure class="highlight cpp"><figcaption><span>boost-filesystem-create-directory.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ boost-filesystem-create-directory.cpp -o a.out -lboost_filesystem</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;boost/filesystem.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> boost::filesystem;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    create_directories(<span class="string">"image/out"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="編譯">編譯</span></h2><p>在 linux 下使用 g++ 編譯需要連結 boost_filesystem 函式庫<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ g++ boost-filesystem-create-directory.cpp -o a.out -lboost_filesystem</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>[1] Filesystem Tutorial 1.47.0<br><a href="http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/doc/tutorial.html" rel="noopener external nofollow noreferrer" target="_blank">http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/doc/tutorial.html</a><br>[2] Filesystem Tutorial 1.66.0<br><a href="https://www.boost.org/doc/libs/1_66_0/libs/filesystem/doc/tutorial.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.boost.org/doc/libs/1_66_0/libs/filesystem/doc/tutorial.html</a><br>[3] C++ 檔案、資料夾、路徑處理函式庫：boost::filesystem<br><a href="https://kheresy.wordpress.com/2010/10/25/boost_filesystem/" rel="noopener external nofollow noreferrer" target="_blank">https://kheresy.wordpress.com/2010/10/25/boost_filesystem/</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-filesystem-create-directory/" data-id="cm0uyatn7006y3upqgnfyjtru" data-title="boost::filesystem 建立資料夾" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-interprocess-shared-memory/" data-id="cm0v15rxv006zq4pq1vf564is" data-title="boost::interprocess 共享記憶體 shared memory" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -846,6 +858,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-mediator-pattern/">C++ 設計模式 - 中介者模式 Mediator Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-iterator-pattern/">C++ 設計模式 - 迭代器模式 Iterator Pattern</a>
           </li>
         
@@ -859,10 +875,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-composite-pattern/">C++ 設計模式 - 組合模式 Composite Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-adapter-pattern/">C++ 設計模式 - 轉接器模式 Adapter Pattern</a>
           </li>
         
       </ul>
@@ -881,7 +893,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">208</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">209</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

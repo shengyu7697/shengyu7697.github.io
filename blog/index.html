@@ -107,6 +107,74 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-mediator-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-mediator-pattern/" class="article-date">
+  <time datetime="2024-09-06T12:00:00.000Z" itemprop="datePublished">2024-09-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-mediator-pattern/">C++ 設計模式 - 中介者模式 Mediator Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>有時候我們在開發大型系統時，會發現各個物件之間的溝通漸漸變得複雜無比，像是織了一張錯綜複雜的蜘蛛網。每個物件彼此依賴，要新增或修改功能時牽一髮而動全身。這時候中介者模式 Mediator Pattern 就像是一個「協調者」，能讓物件之間的溝通變得有條不紊，不用每個物件都互相認識。今天我們來聊聊這個神奇的模式！  </p>
+<h2><span id="什麼是中介者模式">什麼是中介者模式？</span></h2><p>中介者模式是一種行為型設計模式，用來定義一個物件，負責協調其他多個物件之間的互動。這個模式的核心概念是：物件之間不直接溝通，而是透過一個「中介者」來傳遞訊息或協調行為。這樣做的好處是，我們可以減少物件之間的耦合度，使系統更易於維護與擴展。  </p>
+<p>打個比方，想像你在公司裡面工作，當你需要和不同部門溝通時，不需要直接找每個部門的人，而是透過人力資源部門（HR）。HR 就是這裡的「中介者」，它負責協調你與各部門之間的溝通，讓事情變得更簡單明瞭。  </p>
+<h2><span id="中介者模式在聊天室應用中的實例">中介者模式在聊天室應用中的實例</span></h2><p>最經典的中介者模式應用場景之一就是「聊天室」。在一個聊天室中，每個使用者都可以發訊息給其他使用者。如果沒有中介者模式，所有使用者都需要相互認識才能互相溝通，這會讓系統變得非常混亂且難以擴展。而有了中介者後，每個使用者只需要和中介者溝通，中介者再把訊息傳遞給其他相關的使用者。  </p>
+<p>首先我們先定義中介者介面，中介者需要有一個統一的介面，定義訊息如何在物件間傳遞，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Participant</span>;</span> <span class="comment">// 前向宣告</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 中介者介面</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ChatRoom</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">showMessage</span><span class="params">(<span class="keyword">const</span> Participant* sender, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message)</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>這個具體的中介者負責管理聊天室中的使用者，並將訊息傳遞給正確的接收者，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體中介者</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ConcreteChatRoom</span> :</span> <span class="keyword">public</span> ChatRoom &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Participant*&gt; participants;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addParticipant</span><span class="params">(Participant* participant)</span> </span>&#123;</span><br><span class="line">        participants.push_back(participant);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">showMessage</span><span class="params">(<span class="keyword">const</span> Participant* sender, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (Participant* p : participants) &#123;</span><br><span class="line">            <span class="keyword">if</span> (p != sender) &#123;</span><br><span class="line">                <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; sender-&gt;getName() &lt;&lt; <span class="string">" 發送: "</span> &lt;&lt; message &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>聊天室的使用者實作一個可以和中介者溝通的介面，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 參與者</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Participant</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    ChatRoom* chatRoom;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Participant(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name, ChatRoom* room) : name(name), chatRoom(room) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message)</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        chatRoom-&gt;showMessage(<span class="keyword">this</span>, message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getName</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>在客戶端，使用者透過中介者來發送和接收訊息，而不需要知道其他使用者的存在，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 客戶端使用</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ConcreteChatRoom room;</span><br><span class="line">    </span><br><span class="line">    <span class="function">Participant <span class="title">john</span><span class="params">(<span class="string">"John"</span>, &amp;room)</span></span>;</span><br><span class="line">    <span class="function">Participant <span class="title">alice</span><span class="params">(<span class="string">"Alice"</span>, &amp;room)</span></span>;</span><br><span class="line"></span><br><span class="line">    room.addParticipant(&amp;john);</span><br><span class="line">    room.addParticipant(&amp;alice);</span><br><span class="line"></span><br><span class="line">    john.sendMessage(<span class="string">"Hello, Alice!"</span>);</span><br><span class="line">    alice.sendMessage(<span class="string">"Hi, John!"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="中介者模式的優缺點">中介者模式的優缺點</span></h2><p>中介者模式最大的優勢是「解耦」，它避免了各個物件直接互相依賴，這使得系統結構更加清晰，新增或移除物件時，不需要修改其他物件的程式碼。同時，這也讓我們可以更靈活地修改中介者的行為，達到自訂溝通規則的目的。  </p>
+<p>中介者模式也有其潛在的缺點。隨著系統的擴展，中介者本身可能會變得非常複雜，尤其當有很多物件要透過中介者溝通時，這個中介者可能會變成一個大型的、難以維護的類別，反而會增加系統的負擔。  </p>
+<h2><span id="總結">總結</span></h2><p>中介者模式特別適合應用於多個物件需要互相溝通的情況下，比如聊天室、事件處理系統等。透過中介者可以有效地減少物件之間的耦合，讓系統更加靈活。當然和其他設計模式一樣，我們也要根據具體的需求謹慎使用，避免讓中介者本身變得過於複雜。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm0v15s5900nxq4pqjnchzmcl" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-iterator-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-iterator-pattern/" class="article-date">
@@ -162,7 +230,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm0uyatuj00nw3upqz14wue5q" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm0v15s5800nwq4pq2udyrsu2" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -232,7 +300,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm0uyatuj00nv3upqk5jtrham" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm0v15s5700nvq4pqhjyycdn1" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -304,7 +372,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm0uyatui00nu3upqh7vc8zt6" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm0v15s5700nuq4pq41s3gx6o" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -382,7 +450,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm0uyatui00nt3upqnqnye42d" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm0v15s5700ntq4pqen7tlv5l" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -460,7 +528,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm0uyatui00ns3upqabhiv8cz" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm0v15s5600nsq4pqmzfjp1ft" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -536,7 +604,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-builder-pattern/" data-id="cm0uyatuh00nr3upq4p5r2njo" data-title="C++ 設計模式 - 建造者模式 Builder Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-builder-pattern/" data-id="cm0v15s5600nrq4pqzhduly0l" data-title="C++ 設計模式 - 建造者模式 Builder Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -612,7 +680,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-command-pattern/" data-id="cm0uyatuh00nq3upqk8bu4zls" data-title="C++ 設計模式 - 命令模式 Command Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-command-pattern/" data-id="cm0v15s5600nqq4pqoj8ktfkk" data-title="C++ 設計模式 - 命令模式 Command Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -688,7 +756,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-proxy-pattern/" data-id="cm0uyatuh00np3upqsjbbzptf" data-title="C++ 設計模式 - 代理模式 Proxy Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-proxy-pattern/" data-id="cm0v15s5500npq4pq5tt082gn" data-title="C++ 設計模式 - 代理模式 Proxy Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -766,82 +834,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-simple-factory-pattern/" data-id="cm0uyatug00no3upqhj84cfze" data-title="C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-abstract-factory-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-abstract-factory-pattern/" class="article-date">
-  <time datetime="2024-08-27T12:00:00.000Z" itemprop="datePublished">2024-08-27</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-abstract-factory-pattern/">C++ 設計模式 - 抽象工廠模式 Abstract Factory Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>在學習設計模式時，你可能會遇到一個問題：「為什麼有這麼多工廠模式？他們到底在解決什麼問題？」工廠方法模式（Factory Method Pattern）提供了一個方法來建立物件，這個方法可以在子類中覆蓋，以便建立不同類型的物件。而抽象工廠模式（Abstract Factory Pattern）則進一步擴展，允許你建立一系列相關的物件，這對於組織和管理大型系統非常有幫助。今天我們將透過一個GUI（圖形使用者界面）的例子來解釋這個概念。  </p>
-<h2><span id="什麼是抽象工廠模式">什麼是抽象工廠模式？</span></h2><p>抽象工廠模式的核心思想是提供一個接口，讓客戶端程式能夠產生一系列相關的或相互依賴的物件，而不必指定具體的類型。這種模式特別適合用於需要產生不同風格或主題的GUI元件的場景。假設我們正在開發一個跨平台的應用程式，該應用可以執行在Windows、macOS、Linux等多個平台上，並且每個平台都有自己獨特的GUI風格。在這種情況下使用抽象工廠模式可以讓我們輕鬆地為不同平台產生相應風格的GUI元件。  </p>
-<p>在解釋具體範例之前，讓我們先來看一下抽象工廠模式中的幾個核心角色：<br>抽象工廠（Abstract Factory）：定義建立一系列相關物件的方法接口。這些方法通常與產品家族有關，例如在GUI應用中，這些方法可能包括建立按鈕（Button）、文字框（TextBox）等。<br>具體工廠（Concrete Factory）：實現抽象工廠的接口，負責產生具體的產品。每一個具體工廠對應一個具體的產品家族。例如，Windows 工廠負責產生 Windows 風格的按鈕和文字框，而 macOS 工廠則產生 Mac 風格的物件。<br>抽象產品（Abstract Product）：定義產品的接口。這些接口將由具體產品來實現。例如，Button 和 TextBox 分別是兩個不同的抽象產品接口。<br>具體產品（Concrete Product）：實現抽象產品接口的具體類。每一個具體產品都由相應的具體工廠來建立。  </p>
-<h2><span id="抽象工廠模式在gui元件的應用">抽象工廠模式在GUI元件的應用</span></h2><p>假設我們要在需要 Windows 與 Mac 下建立不同平台的按鈕（Button）和文字框（TextBox）。  </p>
-<p>首先我們需要定義這些元件的抽象產品介面，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 抽象產品 Abstract Product</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Button</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">render</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~Button() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TextBox</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">render</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~TextBox() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>接著我們定義一個抽象工廠介面來產生這些GUI元件，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 抽象工廠 Abstract Factory</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GUIFactory</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Button&gt; createButton() = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;TextBox&gt; createTextBox() = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~GUIFactory() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>然後我們定義具體產品，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體產品 Concrete Product</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WindowsButton</span> :</span> <span class="keyword">public</span> Button &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">render</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Render a Windows style button."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WindowsTextBox</span> :</span> <span class="keyword">public</span> TextBox &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">render</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Render a Windows style text box."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MacButton</span> :</span> <span class="keyword">public</span> Button &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">render</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Render a Mac style button."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MacTextBox</span> :</span> <span class="keyword">public</span> TextBox &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">render</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Render a Mac style text box."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>每個平台會有自己的具體工廠來產生相應風格的GUI元件，我們來定義具體的工廠來產生這些元件，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體工廠 Concrete Factory</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WindowsGUIFactory</span> :</span> <span class="keyword">public</span> GUIFactory &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Button&gt; createButton() override &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;WindowsButton&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;TextBox&gt; createTextBox() override &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;WindowsTextBox&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MacGUIFactory</span> :</span> <span class="keyword">public</span> GUIFactory &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Button&gt; createButton() override &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;MacButton&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;TextBox&gt; createTextBox() override &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;MacTextBox&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>現在我們可以寫一些客戶端程式碼來產生和使用這些GUI元件，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">clientCode</span><span class="params">(GUIFactory&amp; factory)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> button = factory.createButton();</span><br><span class="line">    <span class="keyword">auto</span> textBox = factory.createTextBox();</span><br><span class="line"></span><br><span class="line">    button-&gt;render();</span><br><span class="line">    textBox-&gt;render();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    WindowsGUIFactory windowsFactory;</span><br><span class="line">    MacGUIFactory macFactory;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Using Windows GUI Factory:\n"</span>;</span><br><span class="line">    clientCode(windowsFactory);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Using Mac GUI Factory:\n"</span>;</span><br><span class="line">    clientCode(macFactory);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在這段程式碼中，我們只需要告訴客戶端(使用者)使用哪個工廠，它就能夠產生適合該平台的GUI元件，而不需要知道具體的類型。這讓程式碼更加靈活以及容易擴展。  </p>
-<h2><span id="抽象工廠模式的優缺點">抽象工廠模式的優缺點</span></h2><p>抽象工廠模式優點就像一個能夠保持風格統一的工具箱，比如說當你需要開發一個跨平台的應用程式時，它讓你能夠輕鬆地在不同平台之間切換，並確保你的界面風格一致。當你需要支持新的平台或者改變應用的整體外觀風格時，只需要新增一個新的工廠類，現有的程式碼幾乎不需要做任何改動。這種擴展性讓你能夠輕鬆應對未來的需求變化，而不需要擔心系統的核心結構被打亂。</p>
-<p>然而抽象工廠模式也不是沒有缺點的，當你匯入抽象工廠模式後，你的系統架構會變得複雜，特別是當你的專案規模不大時，這種複雜性可能會讓人感覺程式碼變得繁瑣。就好像你本來只需要一個簡單的工具箱，但卻因為引入了這麼多「多功能」工具而變得過於複雜。另外當你想在現有的工廠中新增一個產品類型時，可能會遇到一些困難。你必須去修改所有相關的工廠類，這樣的改動有時候會違背開放封閉原則。這意味著，每當你有新的需求時，你都得花一些時間去調整原本的程式碼，這可能會讓你覺得有些麻煩。  </p>
-<p>整體來說，抽象工廠模式就像是一把雙刃劍，它能夠幫助你打造出一個統一、靈活的系統，但同時也會增加系統的複雜性和維護成本。所以在選擇是否使用這個模式時，還是得根據實際的需求來決定，不要「為了模式而模式」。  </p>
-<h2><span id="抽象工廠模式與工廠方法模式的區別">抽象工廠模式與工廠方法模式的區別</span></h2><p>抽象工廠模式是專注於建立一系列相關聯的產品。適合需要建立整套相關物件（例如一整個產品家族）的場合。  </p>
-<p>工廠方法模式專注於為一個產品家族中的單一產品建立對應的工廠。也就是說如果你只需要產生某一類型的物件（例如按鈕、文字框等），工廠方法模式是理想的選擇。每一個工廠方法只關心如何產生單一類型的產品，而不是整個產品家族。  </p>
-<p>例如在 GUI 開發中，假設你只需要根據不同的平台（Windows 或 Mac）產生特定風格的按鈕，那麼你可以使用工廠方法模式來為每個平台建立對應的按鈕工廠。這樣當你需要一個按鈕時，你只需呼叫對應的工廠方法來取得相應平台的按鈕。  </p>
-<h2><span id="總結">總結</span></h2><p>抽象工廠模式讓我們能夠優雅地管理和組織大型系統中的物件建立過程。在GUI開發中這種模式可以讓我們輕鬆地產生不同平台的元件，還有很多應用場合，例如：特斯拉工廠不僅生產不同的車型，還能生產不同的零組件，比如「標準版」或「高性能版」的輪胎和引擎，或者假設你正在開發一個需要支援多個資料庫（如MySQL、SQL Server、Oracle）的應用程式。每個資料庫有自己特定的連線方式、查詢語法和資料處理方式等等例子，下次當你面對需要建立一系列相關物件的場景時，不妨考慮使用抽象工廠模式。  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習設計模式相關技術，可以參考看看下面的文章，<br><a href="/cpp-simple-factory-pattern/" title="簡單工廠模式 Simple Factory Pattern">簡單工廠模式 Simple Factory Pattern</a><br><a href="/cpp-factory-method-pattern/" title="工廠方法模式 Factory Method Pattern">工廠方法模式 Factory Method Pattern</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-abstract-factory-pattern/" data-id="cm0uyatug00nn3upqp7nkcbyg" data-title="C++ 設計模式 - 抽象工廠模式 Abstract Factory Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-simple-factory-pattern/" data-id="cm0v15s5500noq4pqe34vak7s" data-title="C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -888,6 +881,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-mediator-pattern/">C++ 設計模式 - 中介者模式 Mediator Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-iterator-pattern/">C++ 設計模式 - 迭代器模式 Iterator Pattern</a>
           </li>
         
@@ -901,10 +898,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-composite-pattern/">C++ 設計模式 - 組合模式 Composite Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-adapter-pattern/">C++ 設計模式 - 轉接器模式 Adapter Pattern</a>
           </li>
         
       </ul>
@@ -923,7 +916,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">208</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">209</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
