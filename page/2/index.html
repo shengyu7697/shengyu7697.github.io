@@ -107,6 +107,84 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-simple-factory-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-simple-factory-pattern/" class="article-date">
+  <time datetime="2024-08-28T12:00:00.000Z" itemprop="datePublished">2024-08-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-simple-factory-pattern/">C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>在設計模式中，簡單工廠方法模式 Simple Factory Pattern 是一個常見的設計模式，特別適合用來解決物件建立的問題。今天我們就來用一個大家耳熟能詳的特斯拉汽車工廠例子來解釋這個模式。  </p>
+<p>而工廠模式的核心思想是，將物件的建立過程封裝起來，客戶端只需要知道自己需要什麼，而不需要關心如何製作。  </p>
+<h2><span id="什麼是簡單工廠模式">什麼是簡單工廠模式？</span></h2><p>簡單工廠模式是非正式的設計模式，它比較是一個寫程式技巧，一般在講工廠模式通常指的是簡單工廠模式，在設計模式中，簡單工廠模式通常指的是建立者（工廠）沒有子類，而產品可以有子類。  </p>
+<p>具體來說，簡單工廠模式中工廠本身是一個靜態的方法或單一的類別，根據給定的參數來決定建立哪一種類型的物件。這個工廠類別通常不會有子類，因為它的目的就是統一處理產品的建立邏輯。然而工廠所產生的產品類別可以有不同的子類，以實現不同的具體產品。  </p>
+<p>例如有一個簡單工廠負責生產汽車，這個工廠可以根據需求產生不同類型的汽車（如電動車、油車）。在這個場景下，工廠本身不會有子類，但生產出來的產品（汽車）可能有多個子類，代表不同類型的汽車。  </p>
+<h2><span id="簡單工廠模式在特斯拉汽車工廠的應用">簡單工廠模式在特斯拉汽車工廠的應用</span></h2><p>讓我們用特斯拉的汽車工廠來說明這個概念。這座汽車工廠能夠生產四種不同的車型：Model 3、Model Y、Model S 和 Model X。在這個例子裡我們將這四種車型視為不同的「產品類別」，而工廠則是負責建立這些車型物件的地方。  </p>
+<p>假設我們沒有使用工廠模式，每當需要建立一輛新的車，我們就必須自己手動選擇車型的類別並建立物件，像這樣寫，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Car&gt; myCar = <span class="built_in">std</span>::make_unique&lt;Model3&gt;();</span><br><span class="line"><span class="comment">// 或傳統指標</span></span><br><span class="line">Car* myCar = <span class="keyword">new</span> Model3();</span><br></pre></td></tr></table></figure></p>
+<p>這種方式看起來簡單直接，但當我們的應用程式需要根據不同的條件來建立不同的車型時，程式碼就會變得很複雜，而且如果未來需要增加新的車型，我們就需要到每一處使用這段程式碼的地方進行修改，這非常容易出錯。  </p>
+<p>我們首先定義一個簡單的工廠類別 <code>CarFactory</code>，這個類別有一個靜態方法 <code>createCar</code>，根據傳入的車型名稱來建立對應的車型物件，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CarFactory</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">static</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Car&gt; createCar(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; carType) &#123;</span><br><span class="line">        <span class="keyword">if</span> (carType == <span class="string">"Model 3"</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;Model3&gt;();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (carType == <span class="string">"Model S"</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;ModelS&gt;();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (carType == <span class="string">"Model X"</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;ModelX&gt;();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (carType == <span class="string">"Model Y"</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">std</span>::make_unique&lt;ModelY&gt;();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>使用工廠模式後，我們只需要簡單地告訴工廠我們需要什麼車型即可，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Car&gt; myCar = CarFactory::createCar(<span class="string">"Model 3"</span>);</span><br><span class="line"><span class="comment">// 或傳統指標</span></span><br><span class="line">Car* myCar = CarFactory::createCar(<span class="string">"Model 3"</span>);</span><br></pre></td></tr></table></figure></p>
+<p>這樣一來，如果未來特斯拉推出了新的車型，例如 <code>Model Z</code>，我們只需修改 <code>CarFactory</code> 類別，新增對 <code>Model Z</code> 的支援，而不需要去改動使用了 <code>CarFactory</code> 的所有地方。  </p>
+<h2><span id="簡單工廠方法模式的優缺點">簡單工廠方法模式的優缺點</span></h2><p>簡單工廠模式的最大優點就是它的「簡單」。你只需要告訴工廠你想要什麼，它就能幫你生產出來。這讓程式碼變得更直觀，容易理解。所有的建立邏輯都集中在一個地方（工廠類別），如果我們要修改或新增新產品，只需要動這個工廠類別內的邏輯，其他地方的程式碼不受影響，也不需要去修改客戶端的程式碼，這樣即使需求變動，也可以輕鬆應對。  </p>
+<p>簡單工廠模式的缺點就是所有的建立邏輯都集中在工廠類別中，如果這個工廠要處理很多不同的產品類別，它會變得非常龐大和複雜，違反了「單一職責原則」。雖然新增新產品相對容易，但如果工廠需要產生的產品越來越多，工廠類別的邏輯也會越來越複雜，導致它變得難以維護和修改。簡單工廠適合處理簡單的物件建立需求，但如果每個產品的建立過程都很複雜，工廠就會變得難以維持。  </p>
+<h2><span id="簡單工廠模式跟工廠方法模式的差別">簡單工廠模式跟工廠方法模式的差別</span></h2><p>簡單工廠模式和工廠方法模式是兩種不同的設計模式，各自有不同的用途和適用場景，但它們確實有一定的關聯性。  </p>
+<p>簡單工廠模式（Simple Factory Pattern）並不被視為一個正式的設計模式，更像是一個寫程式技巧。它集中了一個工廠類來生產產品，通常使用一個靜態方法根據參數決定要建立的物件。這樣做的好處是簡單易用，但缺點在於違反了「開放封閉原則」，也就是如果需要擴展產品類型，就必須修改工廠的程式碼。  </p>
+<p>工廠方法模式（Factory Method Pattern）是一個正式的設計模式，屬於建立型設計模式之一。它的核心思想是將建立物件的過程延遲到子類別，透過定義一個工廠接口，讓子類別決定具體要實例化的產品類型。這樣，工廠方法模式解決了簡單工廠的缺點，符合「開放封閉原則」，因為新增產品類型時不需要修改已有的程式碼，只需擴展子類別即可。  </p>
+<p>可以說簡單工廠模式是工廠方法模式的簡化，而工廠方法模式是簡單工廠模式的改良版，更靈活但也更複雜。工廠方法模式讓系統更具擴展性，特別是在需要經常擴展產品種類的場景中更有優勢。  </p>
+<p>在實際開發中，選擇哪種模式取決於項目的複雜度和未來的擴展需求。如果產品類型較少且變化不大，簡單工廠模式是一個快速且簡單的選擇；如果產品類型多且經常變化，工廠方法模式則能提供更好的擴展性和可維護性。  </p>
+<h2><span id="總結">總結</span></h2><p>工廠模式的核心思想是：<strong>把物件的建立過程封裝起來，使得客戶端（使用者）不需要關心具體物件是如何建立的，只需透過工廠來取得所需的物件。</strong>這樣不僅減少了客戶端的複雜度，也增加了系統的靈活性，因為我們可以輕鬆地改變建立物件的方式，而不影響使用者的程式碼。  </p>
+<p>簡單工廠模式就像是一個自動化的汽車生產工廠，讓我們能夠方便地建立不同的物件。透過這個例子，我們能夠看到這種設計模式如何讓我們的程式碼變得更簡潔、更易於維護。就像特斯拉工廠能夠快速應對市場需求，生產出各式各樣的車型，我們的程式碼也能夠靈活地產生各種物件來應對不同的需求。  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習設計模式相關技術，可以參考看看下面的文章，<br><a href="/cpp-factory-method-pattern/" title="工廠方法模式 Factory Method Pattern">工廠方法模式 Factory Method Pattern</a><br><a href="/cpp-abstract-factory-pattern/" title="抽象工廠模式 Abstract Factory Pattern">抽象工廠模式 Abstract Factory Pattern</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-simple-factory-pattern/" data-id="cm0whbcec00nolbpqfwyr2zz8" data-title="C++ 設計模式 - 簡單工廠模式 Simple Factory Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-abstract-factory-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-abstract-factory-pattern/" class="article-date">
@@ -170,7 +248,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-abstract-factory-pattern/" data-id="cm0wdqohu00nnt2pqr2y0m1ff" data-title="C++ 設計模式 - 抽象工廠模式 Abstract Factory Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-abstract-factory-pattern/" data-id="cm0whbceb00nnlbpqb3r64wqq" data-title="C++ 設計模式 - 抽象工廠模式 Abstract Factory Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -249,7 +327,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-factory-method-pattern/" data-id="cm0wdqohu00nmt2pqcvzq8f40" data-title="C++ 設計模式 - 工廠方法模式 Factory Method Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-factory-method-pattern/" data-id="cm0whbceb00nmlbpqmshxn9cf" data-title="C++ 設計模式 - 工廠方法模式 Factory Method Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -332,7 +410,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-template-method-pattern/" data-id="cm0wdqohu00nlt2pqc9idlc7d" data-title="C++ 設計模式 - 樣板方法模式 Template Method Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-template-method-pattern/" data-id="cm0whbcea00nllbpqpsl9i883" data-title="C++ 設計模式 - 樣板方法模式 Template Method Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -410,7 +488,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-base64_encode/" data-id="cm0wdqoht00nkt2pq4bncncrz" data-title="PHP base64_encode 編碼使用指南：方法與應用" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-base64_encode/" data-id="cm0whbcea00nklbpqwt2eabqr" data-title="PHP base64_encode 編碼使用指南：方法與應用" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -478,7 +556,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-decorator-pattern/" data-id="cm0wdqoht00njt2pqg4roa985" data-title="C++ 設計模式 - 裝飾者模式 Decorator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-decorator-pattern/" data-id="cm0whbcea00njlbpq6bby3tfs" data-title="C++ 設計模式 - 裝飾者模式 Decorator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -548,7 +626,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-observer-pattern/" data-id="cm0wdqoht00nit2pq2cg1yem5" data-title="C++ 設計模式 - 觀察者模式 Observer Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-observer-pattern/" data-id="cm0whbce900nilbpq652fe7gd" data-title="C++ 設計模式 - 觀察者模式 Observer Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -618,7 +696,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strategy-pattern/" data-id="cm0wdqohs00nht2pq10neb5i1" data-title="C++ 設計模式 - 策略模式 Strategy Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strategy-pattern/" data-id="cm0whbce900nhlbpqzznzbvha" data-title="C++ 設計模式 - 策略模式 Strategy Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -723,7 +801,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm0wdqohs00ngt2pqcandhjl4" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm0whbce900nglbpqrmjo6iiz" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -808,95 +886,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm0wdqohs00nft2pq8ydcmlrc" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-php-post" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/php-post/" class="article-date">
-  <time datetime="2024-08-10T12:00:00.000Z" itemprop="datePublished">2024-08-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/PHP教學/">PHP教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/php-post/">PHP $_POST 變數用途、語法與實用範例詳解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 PHP <code>substr</code> 用法與範例，在現代的網頁開發中，表單資料的處理是非常常見的需求之一。PHP 提供了許多方便的方法來處理表單資料，其中 <code>_POST</code> 超全域變數尤為重要。這篇文章將詳細介紹 PHP 的 <code>_POST</code> 變數，包括其用途、語法和多個實用範例，幫助開發者更好地理解和應用這個功能。</p>
-<h2><span id="什麼是-_post-變數">什麼是 <code>_POST</code> 變數？</span></h2><p><code>_POST</code> 是 PHP 中的超全域變數（superglobal），用來收集透過 HTTP POST 方法送出的表單資料。當使用者送出表單後，表單資料會被儲存在 <code>_POST</code> 變數中，並可以在伺服器端進行訪問和處理。這種方法通常用於需要保密或較大資料量的表單送出，例如使用者登錄、註冊和檔案上傳。</p>
-<h2><span id="_post-的主要用途"><code>$_POST</code> 的主要用途</span></h2><ol>
-<li><strong>表單資料接收</strong>：用於處理表單送出時傳遞的資料，例如使用者註冊、登錄表單等。</li>
-<li><strong>檔案上傳</strong>：用於處理檔案上傳時傳遞的資料。</li>
-<li><strong>安全性</strong>：相比 GET 方法，POST 方法不會將資料顯示在 URL 中，因此更適合傳遞敏感資訊（例如密碼）。</li>
-</ol>
-<h2><span id="_post-變數的使用方法"><code>_POST</code> 變數的使用方法</span></h2><p>要使用 <code>_POST</code> 變數，首先需要建立一個使用 POST 方法送出的 HTML 表單。然後，在 PHP 腳本中訪問 <code>_POST</code> 變數來處理送出的資料。</p>
-<h2><span id="範例一簡單表單處理">範例一：簡單表單處理</span></h2><p>以下是一個簡單的例子，展示如何使用 <code>$_POST</code> 接收和處理來自表單的資料。<br>首先，我們建立一個簡單的 HTML 表單，讓使用者輸入名字和電子郵件地址。</p>
-<p><strong>HTML 表單：</strong></p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>POST 表單範例<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">"process_form.php"</span> <span class="attr">method</span>=<span class="string">"post"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">"name"</span>&gt;</span>名字:<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">id</span>=<span class="string">"name"</span> <span class="attr">name</span>=<span class="string">"name"</span>&gt;</span><span class="tag">&lt;<span class="name">br</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">"email"</span>&gt;</span>電子郵件:<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"email"</span> <span class="attr">id</span>=<span class="string">"email"</span> <span class="attr">name</span>=<span class="string">"email"</span>&gt;</span><span class="tag">&lt;<span class="name">br</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"submit"</span> <span class="attr">value</span>=<span class="string">"送出"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p><strong>PHP 腳本 (process_form.php)：</strong></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span> ($_SERVER[<span class="string">"REQUEST_METHOD"</span>] == <span class="string">"POST"</span>) &#123;</span><br><span class="line">    $name = $_POST[<span class="string">'name'</span>];</span><br><span class="line">    $email = $_POST[<span class="string">'email'</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"名字: "</span> . htmlspecialchars($name) . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"電子郵件: "</span> . htmlspecialchars($email);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>在這個範例中，使用者送出表單後，資料會被發送到 <code>process_form.php</code>。PHP 腳本檢查請求方法是否為 POST，然後透過 <code>_POST</code> 變數訪問表單資料，並使用 <code>htmlspecialchars</code> 函式進行輸出，防止 XSS 攻擊。</p>
-<h2><span id="範例二帶有驗證的表單處理">範例二：帶有驗證的表單處理</span></h2><p>除了基本的表單處理，我們還可以新增一些資料驗證來確保送出的資料是有效的。</p>
-<p><strong>HTML 表單：</strong></p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>帶驗證的 POST 表單<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">"process_form_with_validation.php"</span> <span class="attr">method</span>=<span class="string">"post"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">"name"</span>&gt;</span>名字:<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">id</span>=<span class="string">"name"</span> <span class="attr">name</span>=<span class="string">"name"</span>&gt;</span><span class="tag">&lt;<span class="name">br</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">"email"</span>&gt;</span>電子郵件:<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"email"</span> <span class="attr">id</span>=<span class="string">"email"</span> <span class="attr">name</span>=<span class="string">"email"</span>&gt;</span><span class="tag">&lt;<span class="name">br</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"submit"</span> <span class="attr">value</span>=<span class="string">"送出"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p><strong>PHP 腳本 (process_form_with_validation.php)：</strong></p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$name = $email = <span class="string">""</span>;</span><br><span class="line">$nameErr = $emailErr = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ($_SERVER[<span class="string">"REQUEST_METHOD"</span>] == <span class="string">"POST"</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">empty</span>($_POST[<span class="string">'name'</span>])) &#123;</span><br><span class="line">        $nameErr = <span class="string">"名字是必填項"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $name = test_input($_POST[<span class="string">'name'</span>]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">empty</span>($_POST[<span class="string">'email'</span>])) &#123;</span><br><span class="line">        $emailErr = <span class="string">"電子郵件是必填項"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        $email = test_input($_POST[<span class="string">'email'</span>]);</span><br><span class="line">        <span class="keyword">if</span> (!filter_var($email, FILTER_VALIDATE_EMAIL)) &#123;</span><br><span class="line">            $emailErr = <span class="string">"無效的電子郵件格式"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">test_input</span><span class="params">($data)</span> </span>&#123;</span><br><span class="line">    $data = trim($data);</span><br><span class="line">    $data = stripslashes($data);</span><br><span class="line">    $data = htmlspecialchars($data);</span><br><span class="line">    <span class="keyword">return</span> $data;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=<span class="string">"en"</span>&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=<span class="string">"UTF-8"</span>&gt;</span><br><span class="line">    &lt;title&gt;表單結果&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;h2&gt;表單驗證結果&lt;/h2&gt;</span><br><span class="line">    &lt;p&gt;&lt;span class="error"&gt;* 必填字段&lt;/span&gt;&lt;/p&gt;</span><br><span class="line">    &lt;form method=<span class="string">"post"</span> action=<span class="string">"&lt;?php echo htmlspecialchars($_SERVER["</span>PHP_SELF<span class="string">"]);?&gt;"</span>&gt;</span><br><span class="line">        &lt;label <span class="keyword">for</span>=<span class="string">"name"</span>&gt;名字:&lt;/label&gt;</span><br><span class="line">        &lt;input type=<span class="string">"text"</span> id=<span class="string">"name"</span> name=<span class="string">"name"</span> value=<span class="string">"&lt;?php echo $name;?&gt;"</span>&gt;</span><br><span class="line">        &lt;span class="error"&gt;* &lt;?php echo $nameErr;?&gt;&lt;/span&gt;</span><br><span class="line">        &lt;br&gt;&lt;br&gt;</span><br><span class="line">        &lt;label <span class="keyword">for</span>=<span class="string">"email"</span>&gt;電子郵件:&lt;/label&gt;</span><br><span class="line">        &lt;input type=<span class="string">"email"</span> id=<span class="string">"email"</span> name=<span class="string">"email"</span> value=<span class="string">"&lt;?php echo $email;?&gt;"</span>&gt;</span><br><span class="line">        &lt;span class="error"&gt;* &lt;?php echo $emailErr;?&gt;&lt;/span&gt;</span><br><span class="line">        &lt;br&gt;&lt;br&gt;</span><br><span class="line">        &lt;input type=<span class="string">"submit"</span> value=<span class="string">"送出"</span>&gt;</span><br><span class="line">    &lt;/form&gt;</span><br><span class="line"></span><br><span class="line">    <span class="meta">&lt;?php</span></span><br><span class="line">    <span class="keyword">if</span> ($_SERVER[<span class="string">"REQUEST_METHOD"</span>] == <span class="string">"POST"</span> &amp;&amp; $nameErr == <span class="string">""</span> &amp;&amp; $emailErr == <span class="string">""</span>) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&lt;h3&gt;表單資料已送出成功&lt;/h3&gt;"</span>;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"名字: "</span> . $name . <span class="string">"&lt;br&gt;"</span>;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"電子郵件: "</span> . $email;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">?&gt;</span></span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-<p>在這個範例中，我們新增了基本的資料驗證。<code>test_input</code> 函式對輸入資料進行處理，防止注入攻擊和 XSS 攻擊。表單送出後，資料會被檢查，如果有錯誤，錯誤資訊會顯示在表單旁邊。只有當所有字段都正確填寫時，表單資料才會被顯示。</p>
-<h2><span id="為什麼要使用-_post">為什麼要使用 <code>$_POST</code>？</span></h2><h3><span id="保護資料隱私">保護資料隱私</span></h3><p>相比 GET 方法，POST 方法不會將資料顯示在 URL 中，因此更適合傳遞敏感資訊。例如，當使用者送出包含密碼的表單時，使用 POST 方法可以避免密碼在 URL 中曝光。</p>
-<h3><span id="傳輸大資料量">傳輸大資料量</span></h3><p>POST 方法沒有 GET 方法的 URL 長度限制，這意味著我們可以使用 POST 方法來傳輸更大的資料量，例如檔案上傳。</p>
-<h2><span id="安全性考量">安全性考量</span></h2><p>使用 <code>$_POST</code> 處理表單資料時，我們需要注意以下幾點，以確保資料的安全：</p>
-<ol>
-<li><strong>資料驗證</strong>：對接收到的資料進行驗證，確保資料符合預期。例如，檢查電子郵件地址是否有效。</li>
-<li><strong>資料消毒</strong>：使用 <code>htmlspecialchars</code> 或其他合適的函式來消毒資料，防止 XSS 攻擊。</li>
-<li><strong>SQL 注入防護</strong>：如果將資料儲存到資料庫中，應使用預處理語句或其他方法防止 SQL 注入。</li>
-</ol>
-<h2><span id="結論">結論</span></h2><p><code>_POST</code> 變數是 PHP 中一個非常重要的工具，用於收集和處理來自 HTML 表單的資料。透過理解其基本用法和結合資料驗證技術，我們可以更安全有效地處理使用者輸入的資料。</p>
-<p>希望這篇文章能幫助你更好地理解 PHP $_POST 變數的用途和實踐方式。<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 PHP 相關技術，可以參考看看下面的文章，<br><a href="/php-pdo/" title="PHP 和 PDO 進行資料庫操作">PHP 和 PDO 進行資料庫操作</a><br><a href="/php-session/" title="PHP 中的 Session 用途與實踐範例：完整指南">PHP 中的 Session 用途與實踐範例：完整指南</a><br><a href="/php-substr/" title="PHP substr 函式全面解析與應用範例">PHP substr 函式全面解析與應用範例</a><br><a href="/php-isset/" title="深入理解 PHP 中的 isset 用法、範例及最佳實踐">深入理解 PHP 中的 isset 用法、範例及最佳實踐</a><br><a href="/php-session_start/" title="了解 PHP 中的 session_start() 函式用途與範例">了解 PHP 中的 session_start() 函式用途與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-post/" data-id="cm0wdqohr00net2pqoppf203w" data-title="PHP $_POST 變數用途、語法與實用範例詳解" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm0whbce800nflbpq4ir0esis" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -943,6 +933,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-memento-pattern/">C++ 設計模式 - 備忘錄模式 Memento Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-mediator-pattern/">C++ 設計模式 - 中介者模式 Mediator Pattern</a>
           </li>
         
@@ -956,10 +950,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-facade-pattern/">C++ 設計模式 - 門面模式 Facade Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-composite-pattern/">C++ 設計模式 - 組合模式 Composite Pattern</a>
           </li>
         
       </ul>
@@ -978,7 +968,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">209</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">210</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
