@@ -107,6 +107,74 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-chain-of-responsibility-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-chain-of-responsibility-pattern/" class="article-date">
+  <time datetime="2024-09-08T12:00:00.000Z" itemprop="datePublished">2024-09-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-chain-of-responsibility-pattern/">C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>想像你在公司工作，遇到一個問題，你先向主管反映，如果主管無法解決，再往上報告給更高層級的主管，直到有人能解決問題。這就是「責任鏈模式」的核心概念。這種模式允許你把任務逐層傳遞，直到某個物件可以處理它。在軟體設計中，這可以讓系統更加靈活，避免固定的條件判斷，提升維護性。  </p>
+<h2><span id="什麼是責任鏈模式">什麼是責任鏈模式？</span></h2><p>責任鏈模式是一種行為型設計模式，允許多個物件按順序處理請求。每個物件有機會決定是否處理請求，或者將其轉交給下一個物件。這樣一來我們可以將不同的職責模組化，讓每個物件專注於自己的職責範圍，而不用關心整個處理流程。  </p>
+<p>想像你正在玩一個熱門的多人線上遊戲。當你遇到問題需要幫助時，你可能會先詢問遊戲內的自動客服系統。如果自動客服無法解決，問題會被轉到人工客服。如果人工客服也無法處理，問題可能會被上報給技術支援團隊。這就是一個典型的責任鏈模式應用場景。  </p>
+<h2><span id="責任鏈模式在客戶支援系統中的應用">責任鏈模式在客戶支援系統中的應用</span></h2><p>一個常見的應用例子是客戶支援系統，當客戶送出問題時，問題可能由多個不同層級的支援人員來處理：自動客服、人工客服、技術支援團隊等。每個層級都會檢查問題，如果無法解決，就會向上級遞交，直到問題被解決。  </p>
+<p>首先我們定義一個抽象的處理者類，每個 Handler（如客服）都有一個處理請求的方法，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 處理者 Handler</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CustomerServiceHandler</span> &#123;</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    CustomerServiceHandler* nextHandler;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~CustomerServiceHandler() = <span class="keyword">default</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">setNext</span><span class="params">(CustomerServiceHandler* handler)</span> </span>&#123;</span><br><span class="line">        nextHandler = handler;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>然後我們實現具體的處理者類，具體的 Handler 如自動客服、人工客服和技術支援團隊繼承這個介面，並實現處理方法，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體處理者 Concrete Handlers</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AutomatedSystem</span> :</span> <span class="keyword">public</span> CustomerServiceHandler &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (request == <span class="string">"簡單問題"</span>) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"自動系統：我可以回答這個簡單問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nextHandler != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            nextHandler-&gt;handleRequest(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HumanAgent</span> :</span> <span class="keyword">public</span> CustomerServiceHandler &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (request == <span class="string">"複雜問題"</span>) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"人工客服：我來處理這個複雜問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nextHandler != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            nextHandler-&gt;handleRequest(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TechnicalSupport</span> :</span> <span class="keyword">public</span> CustomerServiceHandler &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (request == <span class="string">"技術問題"</span>) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"技術支持：我們會深入研究並解決這個問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nextHandler != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            nextHandler-&gt;handleRequest(request);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"無法解決這個問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>最後客戶端可以這樣使用，當客戶發出請求時，系統會從自動客服開始，如果無法處理，請求會傳遞到下一個層級，直到問題解決，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 建立三個處理者</span></span><br><span class="line">    AutomatedSystem* autoSystem = <span class="keyword">new</span> AutomatedSystem();</span><br><span class="line">    HumanAgent* humanAgent = <span class="keyword">new</span> HumanAgent();</span><br><span class="line">    TechnicalSupport* techSupport = <span class="keyword">new</span> TechnicalSupport();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 設定責任鏈</span></span><br><span class="line">    autoSystem-&gt;setNext(humanAgent);</span><br><span class="line">    humanAgent-&gt;setNext(techSupport);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 測試不同請求</span></span><br><span class="line">    autoSystem-&gt;handleRequest(<span class="string">"簡單問題"</span>);</span><br><span class="line">    autoSystem-&gt;handleRequest(<span class="string">"複雜問題"</span>);</span><br><span class="line">    autoSystem-&gt;handleRequest(<span class="string">"技術問題"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> autoSystem;</span><br><span class="line">    <span class="keyword">delete</span> humanAgent;</span><br><span class="line">    <span class="keyword">delete</span> techSupport;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">自動系統：我可以回答這個簡單問題。</span><br><span class="line">人工客服：我來處理這個複雜問題。</span><br><span class="line">技術支持：我們會深入研究並解決這個問題。</span><br></pre></td></tr></table></figure></p>
+<h2><span id="責任鏈模式的優缺點">責任鏈模式的優缺點</span></h2><p>責任鏈模式的一大優點是它讓系統更加靈活。新增一個 Handler 不需要修改其他 Handler 的程式碼，只需要在責任鏈中插入新的 Handler 即可，這極大地提高了擴展性。同時 Handler 之間的耦合度降低，每個 Handler 只專注於自己能解決的問題。  </p>
+<p>然而這個模式也有一些的缺點。如果鏈條過長請求可能會經過很多 Handler ，增加了系統的處理時間。此外如果沒有適當的終止條件，請求可能會在處理鏈中無限傳遞。  </p>
+<h2><span id="總結">總結</span></h2><p>責任鏈模式讓我們能夠將職責分散到不同的 Handler 中，提升了系統的可擴展性和維護性。在某些需要多層處理的場景，像是客戶支援系統或是事件處理系統中，這是一種非常有效的解決方案。這個模式避免了一堆 <code>if-else</code> 的條件判斷，讓系統更靈活但也需要注意過長的處理鏈條可能帶來的效率問題。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-chain-of-responsibility-pattern/" data-id="cm0x3tjf800nzj1pqxqvfzuvd" data-title="C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-memento-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-memento-pattern/" class="article-date">
@@ -170,7 +238,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-memento-pattern/" data-id="cm0wi13bn00nyrepqz95ritli" data-title="C++ 設計模式 - 備忘錄模式 Memento Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-memento-pattern/" data-id="cm0x3tjf700nyj1pqbei5wb20" data-title="C++ 設計模式 - 備忘錄模式 Memento Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -239,7 +307,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm0wi13bn00nxrepqwknicrsx" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm0x3tjf700nxj1pqrcvdnsqb" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -306,7 +374,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm0wi13bn00nwrepqrth21i31" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm0x3tjf600nwj1pqr0xfwfyc" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -376,7 +444,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm0wi13bm00nvrepq45sl0gvs" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm0x3tjf500nvj1pq347tlale" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -448,7 +516,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm0wi13bm00nurepq2p9xiwrt" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm0x3tjf500nuj1pq7dfrp6nq" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -526,7 +594,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm0wi13bm00ntrepquk33gcpe" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm0x3tjf500ntj1pqh5q082v5" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -604,7 +672,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm0wi13bl00nsrepqpvvsn52c" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm0x3tjf400nsj1pqgysuk3yv" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -680,7 +748,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-builder-pattern/" data-id="cm0wi13bl00nrrepqf03zwiw5" data-title="C++ 設計模式 - 建造者模式 Builder Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-builder-pattern/" data-id="cm0x3tjf400nrj1pqjd3pjmjo" data-title="C++ 設計模式 - 建造者模式 Builder Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -756,83 +824,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-command-pattern/" data-id="cm0wi13bl00nqrepq1u3t0j73" data-title="C++ 設計模式 - 命令模式 Command Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-proxy-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-proxy-pattern/" class="article-date">
-  <time datetime="2024-08-29T12:00:00.000Z" itemprop="datePublished">2024-08-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-proxy-pattern/">C++ 設計模式 - 代理模式 Proxy Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>在日常生活中，我們常常遇到這樣的情況：你想要完成某件事情，但由於種種原因，你無法直接接觸到那個目標，於是你請來了一個「代理」來幫你處理一切。例如你需要買一台很難找的限量版遊戲機，但由於時間或距離問題，你沒辦法親自去購買，所以你委託了一個代購服務。而這個代購就是你的「代理」。在軟體設計中，代理模式 Proxy Pattern 就是利用類似的概念，讓一個物件（代理）代表另一個物件來控制對它的存取。聽起來有點抽象？別擔心，我們馬上進入正題。  </p>
-<h2><span id="什麼是代理模式">什麼是代理模式？</span></h2><p>代理模式是一種結構型設計模式，代理模式的核心思想是：為某個物件提供一個替代者，以控制對這個物件的存取。這樣做的好處是你可以在不改變原物件的情況下，新增一些額外的功能，或是對存取進行控制。代理模式可以被看作是一個中間層，這個中間層負責把客戶端的請求轉發給真實物件，並在過程中執行一些額外的邏輯。  </p>
-<p>假如你是一位繁忙的企業高階經理，每天都有無數的會議和決策要處理。這時候一個得力的助理就顯得重要。助理可以幫你過濾不重要的事物，安排你的行程，甚至代表你參加一些會議。這個助理就是現實生活中的「代理」。  </p>
-<p>簡單來說，代理模式中有三個角色：  </p>
-<ol>
-<li>Subject：定義了客戶端可以呼叫的方法。  </li>
-<li>RealSubject：實際執行請求的真實物件。  </li>
-<li>Proxy：代理物件，負責控制對 RealSubject 的存取。  </li>
-</ol>
-<h2><span id="代理模式在網頁載入中的應用">代理模式在網頁載入中的應用</span></h2><p>讓我們以網頁載入的例子來解釋代理模式的實際應用。假設我們有一個網站，其中包含許多高解析度的圖片，這些圖片可能會因為其大容量而導致網頁載入緩慢。為了優化使用者體驗，我們可以使用代理模式，先顯示一個縮圖，等使用者真的需要查看大圖時，再去載入原圖。  </p>
-<p>首先我們定義一個 <code>Image</code> 介面，裡面有一個方法 <code>display</code>，用來顯示圖片，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 抽象介面 Subject</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Image</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~Image() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>接下來我們實現這個介面來載入並顯示實際的圖片，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 實際主題 RealSubject</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RealImage</span> :</span> <span class="keyword">public</span> Image &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">loadFromDisk</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Loading "</span> &lt;&lt; filename &lt;&lt; <span class="string">" from disk\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    RealImage(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename) : filename(filename) &#123;</span><br><span class="line">        loadFromDisk();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Displaying "</span> &lt;&lt; filename &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>最後我們實現一個 <code>ProxyImage</code> 來控制對 <code>RealImage</code> 的存取，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 代理物件 Proxy</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ProxyImage</span> :</span> <span class="keyword">public</span> Image &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;RealImage&gt; realImage;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ProxyImage(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename) : filename(filename), realImage(<span class="literal">nullptr</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!realImage) &#123;</span><br><span class="line">            <span class="comment">// lazy initialization</span></span><br><span class="line">            realImage = <span class="built_in">std</span>::make_unique&lt;RealImage&gt;(filename);</span><br><span class="line">        &#125;</span><br><span class="line">        realImage-&gt;display();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>在客戶端只需透過代理物件來存取圖片，而不必直接接觸到大圖片本身：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 客戶端程式碼</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Image&gt; image1 = <span class="built_in">std</span>::make_unique&lt;ProxyImage&gt;(<span class="string">"photo1.jpg"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Image&gt; image2 = <span class="built_in">std</span>::make_unique&lt;ProxyImage&gt;(<span class="string">"photo2.jpg"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 圖像將從磁碟載入</span></span><br><span class="line">    image1-&gt;display();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 圖像不會再次從磁碟載入，直接顯示</span></span><br><span class="line">    image1-&gt;display();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 圖像將從磁碟載入</span></span><br><span class="line">    image2-&gt;display();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在這個例子中，第一次呼叫 <code>display()</code> 方法時，代理會建立並載入真實圖片。當第二次呼叫時，圖片已經被載入過，因此不會再次載入，直接顯示圖片內容。這樣的處理方式避免了不必要的效能消耗，還提升了效率。  </p>
-<h2><span id="代理模式的優缺點">代理模式的優缺點</span></h2><p>代理模式帶來了許多好處，最顯而易見的是它能讓我們有效地控制對目標物件的存取。這表示我們可以根據需求延遲載入資源、設定存取權限，甚至在某些情況下，讓一個代理物件負責管理多個請求，進而優化系統的效能。另外代理模式提供了一種優雅的方式，在不改變原有類別的基礎上新增額外功能，這讓我們的程式設計更加靈活，能更好地應對未來的變化。  </p>
-<p>代理模式也不是沒有缺點，導入代理會在客戶端和真實物件之間增加一個間接層，這可能會導致系統變得更加複雜。如果代理類別中包含了太多額外的邏輯，可能會影響效能。  </p>
-<h2><span id="總結">總結</span></h2><p>代理模式是一個實用且靈活的設計模式，適合用於需要控制存取或增加功能的場景中。它的應用非常廣泛，例如虛擬代理、保護代理、智慧代理等，每一種代理模式都有其獨特的價值。但我們也要注意避免因為濫用代理模式而導致系統過度複雜。  </p>
-<p>就像現實生活中的經紀人或助理一樣，代理為我們處理了許多複雜的細節，讓我們能夠專注於更重要的事務。下次當你面臨需要控制對對象的存取，或者需要在存取前後添加額外邏輯的情況時，不妨考慮使用代理模式。它可能正是你所需要的解決方案。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-proxy-pattern/" data-id="cm0wi13bk00nprepqsfx7pisr" data-title="C++ 設計模式 - 代理模式 Proxy Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-command-pattern/" data-id="cm0x3tjf400nqj1pqw72cy2m7" data-title="C++ 設計模式 - 命令模式 Command Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -879,6 +871,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-chain-of-responsibility-pattern/">C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-memento-pattern/">C++ 設計模式 - 備忘錄模式 Memento Pattern</a>
           </li>
         
@@ -892,10 +888,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-state-pattern/">C++ 設計模式 - 狀態模式 State Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-facade-pattern/">C++ 設計模式 - 門面模式 Facade Pattern</a>
           </li>
         
       </ul>
@@ -914,7 +906,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">210</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">211</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
