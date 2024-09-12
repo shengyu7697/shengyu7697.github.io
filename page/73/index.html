@@ -107,6 +107,79 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-thread-how" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-thread-how/" class="article-date">
+  <time datetime="2019-04-25T14:00:00.000Z" itemprop="datePublished">2019-04-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-thread-how/">std::thread 怎麼實作的？</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹一下一般各個作業系統的 C++ 編譯器是怎麼實作 std::thread 的，<br>在一番 trace code 的結果後，llvm 的 libc++ 實作是這樣的，<br>在 unix 平台下開 thread 就是轉換到 pthread 的 pthread_create。<br>在 windows 平台下開 thread 就是轉換到 win32 的 _beginthreadex。<br>gcc 的 libstdc++ 實作也是如此。  </p>
+<p>簡單介紹這兩種 c++ 庫差異：  </p>
+<ul>
+<li>libc++ (LLVM C++ standard library with C++ 11 support)  </li>
+<li>libstdc++ (GNU C++ standard library)  </li>
+</ul>
+<p>以下是 llvm 下 libc++ 怎麼實作的 code snippet，  </p>
+<h2><span id="1-stdthreadthread-的實作">1. std::thread::thread 的實作</span></h2><p>建構子 <code>thread</code> 轉換成內部的 <code>__libcpp_thread_create</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/thread</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/thread" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> _<span class="title">Fp</span>, <span class="title">class</span> ..._<span class="title">Args</span>,</span></span><br><span class="line"><span class="class">          <span class="title">class</span></span></span><br><span class="line"><span class="class">         &gt;</span></span><br><span class="line"><span class="class"><span class="title">thread</span>:</span>:thread(_Fp&amp;&amp; __f, _Args&amp;&amp;... __args)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="built_in">unique_ptr</span>&lt;__thread_struct&gt; _TSPtr;</span><br><span class="line">    _TSPtr __tsp(<span class="keyword">new</span> __thread_struct);</span><br><span class="line">    <span class="keyword">typedef</span> tuple&lt;_TSPtr, <span class="keyword">typename</span> decay&lt;_Fp&gt;::type, <span class="keyword">typename</span> decay&lt;_Args&gt;::type...&gt; _Gp;</span><br><span class="line">    _VSTD::<span class="built_in">unique_ptr</span>&lt;_Gp&gt; __p(</span><br><span class="line">            <span class="keyword">new</span> _Gp(<span class="built_in">std</span>::move(__tsp),</span><br><span class="line">                    __decay_copy(_VSTD::forward&lt;_Fp&gt;(__f)),</span><br><span class="line">                    __decay_copy(_VSTD::forward&lt;_Args&gt;(__args))...));</span><br><span class="line">    <span class="keyword">int</span> __ec = __libcpp_thread_create(&amp;__t_, &amp;__thread_proxy&lt;_Gp&gt;, __p.get());</span><br><span class="line">    <span class="keyword">if</span> (__ec == <span class="number">0</span>)</span><br><span class="line">        __p.release();</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        __throw_system_error(__ec, <span class="string">"thread constructor failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-1-stdthreadthread-在-unix-平台的實作內容">1-1. std::thread::thread 在 unix 平台的實作內容</span></h3><p><code>__libcpp_thread_create</code> 在 unix 平台是呼叫 <code>pthread_create</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">pthread_t</span> <span class="keyword">__libcpp_thread_t</span>;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">int</span> __libcpp_thread_create(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>, <span class="keyword">void</span> *(*__func)(<span class="keyword">void</span> *),</span><br><span class="line">                           <span class="keyword">void</span> *__arg)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_create(<span class="keyword">__t</span>, <span class="number">0</span>, __func, __arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="1-2-stdthreadthread-在-windows-平台的實作內容">1-2. std::thread::thread 在 windows 平台的實作內容</span></h3><p><code>__libcpp_thread_create</code> 在 windows 平台是呼叫 <code>_beginthreadex</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_thread_create(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>, <span class="keyword">void</span> *(*__func)(<span class="keyword">void</span> *),</span><br><span class="line">                           <span class="keyword">void</span> *__arg)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">auto</span> *__data = <span class="keyword">new</span> __libcpp_beginthreadex_thunk_data;</span><br><span class="line">  __data-&gt;__func = __func;</span><br><span class="line">  __data-&gt;__arg = __arg;</span><br><span class="line"></span><br><span class="line">  *<span class="keyword">__t</span> = <span class="keyword">reinterpret_cast</span>&lt;HANDLE&gt;(_beginthreadex(<span class="literal">nullptr</span>, <span class="number">0</span>,</span><br><span class="line">                                                 __libcpp_beginthreadex_thunk,</span><br><span class="line">                                                 __data, <span class="number">0</span>, <span class="literal">nullptr</span>));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (*<span class="keyword">__t</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> GetLastError();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="2-stdthreadjoin-的實作">2. std::thread::join 的實作</span></h2><p><code>join</code> 轉換成內部的 <code>__libcpp_thread_join</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/thread.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/thread.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">thread::join()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ec = EINVAL;</span><br><span class="line">    <span class="keyword">if</span> (!__libcpp_thread_isnull(&amp;__t_))</span><br><span class="line">    &#123;</span><br><span class="line">        ec = __libcpp_thread_join(&amp;__t_);</span><br><span class="line">        <span class="keyword">if</span> (ec == <span class="number">0</span>)</span><br><span class="line">            __t_ = _LIBCPP_NULL_THREAD;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ec)</span><br><span class="line">        __throw_system_error(ec, <span class="string">"thread::join failed"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-1-stdthreadjoin-在-unix-平台的實作內容">2-1. std::thread::join 在 unix 平台的實作內容</span></h3><p><code>__libcpp_thread_join</code> 在 unix 平台是呼叫 <code>pthread_join</code><br><figure class="highlight cpp"><figcaption><span>libcxx/include/__threading_support</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/include/__threading_support" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_thread_join(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> pthread_join(*<span class="keyword">__t</span>, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3><span id="2-2-stdthreadjoin-在-windows-平台的實作內容">2-2. std::thread::join 在 windows 平台的實作內容</span></h3><p><code>__libcpp_thread_join</code> 在 windows 平台是呼叫 <code>WaitForSingleObjectEx</code> 和 <code>CloseHandle</code><br><figure class="highlight cpp"><figcaption><span>libcxx/src/support/win32/thread_win32.cpp</span><a href="https://github.com/llvm/llvm-project/blob/master/libcxx/src/support/win32/thread_win32.cpp" rel="noopener external nofollow noreferrer" target="_blank">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> __libcpp_thread_join(<span class="keyword">__libcpp_thread_t</span> *<span class="keyword">__t</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (WaitForSingleObjectEx(*<span class="keyword">__t</span>, INFINITE, FALSE) == WAIT_FAILED)</span><br><span class="line">    <span class="keyword">return</span> GetLastError();</span><br><span class="line">  <span class="keyword">if</span> (!CloseHandle(*<span class="keyword">__t</span>))</span><br><span class="line">    <span class="keyword">return</span> GetLastError();</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="總結">總結</span></h2><p>在一番 trace code 的結果後，std::thread 在 llvm 的 libc++ 實作是這樣的，<br>在 unix 下<br><code>std::thread::thread</code> 轉換成 <code>pthread_create</code><br><code>std::thread::join</code> 轉換成 <code>pthread_join</code><br>在 windows 下<br><code>std::thread::thread</code> 轉換成 <code>_beginthreadex</code><br><code>std::thread::join</code> 轉換成 <code>WaitForSingleObjectEx</code> 和 <code>CloseHandle</code>  </p>
+<h2><span id="線上-trace-code-工具">線上 trace code 工具</span></h2><p>介紹一下 <a href="https://code.woboq.org/" rel="noopener external nofollow noreferrer" target="_blank">Woboq</a> 這個線上 trace code 網頁，可以點擊關鍵字跳至定義處，trace code 起來很方便，減少很多搜尋的時間。<br><a href="https://code.woboq.org/llvm/libcxx/include/thread.html#_ZNSt3__16threadC1EOT_DpOT0_" rel="noopener external nofollow noreferrer" target="_blank">thread::thread()</a><br><a href="https://code.woboq.org/llvm/libcxx/include/__threading_support.html#_ZNSt3__122__libcpp_thread_createEPmPFPvS1_ES1_" rel="noopener external nofollow noreferrer" target="_blank">__libcpp_thread_create()</a>  </p>
+<p><strong>相關主題</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-condition_variable-how/" title="std::condition_variable 怎麼實作的？">std::condition_variable 怎麼實作的？</a><br><a href="/std-mutex-how/" title="std::mutex 怎麼實作的？">std::mutex 怎麼實作的？</a><br><a href="/cpp11-how/" title="C++11 在各平台下如何實現？">C++11 在各平台下如何實現？</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-thread-how/" data-id="cm0yjm98o003ypdpqq6htim3m" data-title="std::thread 怎麼實作的？" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-boost-1-70-0-build-install-in-windows" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/boost-1-70-0-build-install-in-windows/" class="article-date">
@@ -140,7 +213,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-1-70-0-build-install-in-windows/" data-id="cm0xx41s3003ya6pqird8ailq" data-title="在 Windows 下編譯安裝 Boost 1.70.0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-1-70-0-build-install-in-windows/" data-id="cm0yjm98n003xpdpqsdfnq9yf" data-title="在 Windows 下編譯安裝 Boost 1.70.0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
@@ -208,7 +281,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-screencapture/" data-id="cm0xx41s3003xa6pqoeb9pr9l" data-title="開源專案ScreenCapture-螢幕截圖自動存檔小工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-screencapture/" data-id="cm0yjm98n003wpdpqbi1m317i" data-title="開源專案ScreenCapture-螢幕截圖自動存檔小工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li></ul>
@@ -270,7 +343,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-cursorjail/" data-id="cm0xx41s2003wa6pq64vg2xii" data-title="開源專案CursorJail-滑鼠鎖定工具" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-cursorjail/" data-id="cm0yjm98m003vpdpq7iuiywio" data-title="開源專案CursorJail-滑鼠鎖定工具" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Projects/">Projects</a></li></ul>
@@ -387,7 +460,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/event-driven-programming/" data-id="cm0xx41s1003ua6pqtmrzwlq8" data-title="事件驅動框架列表" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/event-driven-programming/" data-id="cm0yjm98l003tpdpqh7ck615z" data-title="事件驅動框架列表" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原始碼分析/">原始碼分析</a></li></ul>
@@ -435,7 +508,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-create-project-page/" data-id="cm0xx41s2003va6pq0pvqe0ka" data-title="GitHub 建立專案首頁 project page" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-create-project-page/" data-id="cm0yjm98m003updpqhs0z9sur" data-title="GitHub 建立專案首頁 project page" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -480,7 +553,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-1-70-0-build-install-in-ubuntu/" data-id="cm0xx41s0003ra6pqbfh73seb" data-title="在 Ubuntu 下編譯安裝 Boost 1.70.0" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-1-70-0-build-install-in-ubuntu/" data-id="cm0yjm98i003qpdpq8jm348ea" data-title="在 Ubuntu 下編譯安裝 Boost 1.70.0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -525,7 +598,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/boost-asio-epoll-reactor/" data-id="cm0xx41s0003sa6pq36yy4in3" data-title="boost::asio epoll_reactor 源碼分析" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/boost-asio-epoll-reactor/" data-id="cm0yjm98j003rpdpq5gwvcmv7" data-title="boost::asio epoll_reactor 源碼分析" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Boost/">Boost</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -617,7 +690,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-markdown/" data-id="cm0xx41s1003ta6pqgyqn1zqh" data-title="Ubuntu 下3種 Markdown 軟體" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-markdown/" data-id="cm0yjm98l003spdpqqqb03afv" data-title="Ubuntu 下3種 Markdown 軟體" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -662,69 +735,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-find-package-owning-file/" data-id="cm0xx41rz003qa6pqge0kf6vi" data-title="在 Ubuntu 下找某個指令的來源套件" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-find-package-owning-file/" data-id="cm0yjm98i003ppdpq3utudvjm" data-title="在 Ubuntu 下找某個指令的來源套件" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-eclipse-shortcuts" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/eclipse-shortcuts/" class="article-date">
-  <time datetime="2019-04-13T14:00:00.000Z" itemprop="datePublished">2019-04-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/eclipse-shortcuts/">Eclipse 常用快捷鍵</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>篇記錄一下 Eclipse 常用快捷鍵，特別是trace code時，善用快捷鍵會快很多，效率大幅提升。  </p>
-<h2><span id="eclipse-常用快捷鍵">Eclipse 常用快捷鍵</span></h2><p>開啟宣告該引用的檔案/跳至定義處/Open Declaration：<code>F3</code><br>跳到前一次/後一次的編輯位置：<code>Alt</code>+<code>左方向鍵</code>/<code>Alt</code>+<code>右方向鍵</code><br>找對應大括號的快捷鍵：先把游標移到大括號右邊，再按 <code>Ctrl</code>+<code>Shift</code>+<code>P</code>就可以跳到另一個大括號了。  </p>
-<h2><span id="修改-eclipse-編譯的快捷鍵">修改 Eclipse 編譯的快捷鍵</span></h2><p>在 Eclipse 的選單上選擇 <code>Window</code> -&gt; <code>Preferences</code>, 在左側選單 sidebar 延伸 <code>General</code> -&gt; <code>Keys</code>,<br>右側選單會顯示目前所有的快捷鍵, 快速地找到 Build Project 然後加上快捷鍵,<br>預設 Build All 的快捷鍵是 Ctrl+B, 我自己個人是習慣按 Ctrl+B 是 Build Project<br>所以我就把 Build All 的快捷鍵取消換成 Build Project, 如下圖。  </p>
-  
-<p>參考<br>Eclipse快捷鍵—–原來Eclipse完全不許用滑鼠的，不用羨慕VI了<br><a href="https://www.itread01.com/content/1550643846.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.itread01.com/content/1550643846.html</a><br>丟掉滑鼠吧,使用最好用的Eclipse快捷鍵<br><a href="https://www.itread01.com/content/1547813885.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.itread01.com/content/1547813885.html</a><br>Eclipse和Intellij idea切換<br><a href="https://www.itread01.com/content/1548813091.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.itread01.com/content/1548813091.html</a>  </p>
-<p><strong>相關主題</strong><br><a href="/eclipse-import-cmake-project/" title="Eclipse 匯入 cmake 專案">Eclipse 匯入 cmake 專案</a><br><a href="/eclipse-index/" title="Eclipse 索引(index)額外的定義">Eclipse 索引(index)額外的定義</a><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/qt-shortcuts/" title="Qt Creator 常用快捷鍵">Qt Creator 常用快捷鍵</a><br><a href="/eclipse-go-to-matching-bracket/" title="Eclipse 找對應大括號的快捷鍵">Eclipse 找對應大括號的快捷鍵</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/eclipse-shortcuts/" data-id="cm0xx41rz003pa6pqyrx0oiop" data-title="Eclipse 常用快捷鍵" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Eclipse/">Eclipse</a></li></ul>
 
     </footer>
   </div>
@@ -737,7 +751,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/72/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/71/">71</a><a class="page-number" href="/page/72/">72</a><span class="page-number current">73</span><a class="page-number" href="/page/74/">74</a><a class="page-number" href="/page/75/">75</a><span class="space">&hellip;</span><a class="page-number" href="/page/86/">86</a><a class="extend next" rel="next" href="/page/74/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/72/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/71/">71</a><a class="page-number" href="/page/72/">72</a><span class="page-number current">73</span><a class="page-number" href="/page/74/">74</a><a class="page-number" href="/page/75/">75</a><span class="space">&hellip;</span><a class="page-number" href="/page/87/">87</a><a class="extend next" rel="next" href="/page/74/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -768,6 +782,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-bridge-pattern/">C++ 設計模式 - 橋接模式 Bridge Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-chain-of-responsibility-pattern/">C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern</a>
           </li>
         
@@ -781,10 +799,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-iterator-pattern/">C++ 設計模式 - 迭代器模式 Iterator Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-state-pattern/">C++ 設計模式 - 狀態模式 State Pattern</a>
           </li>
         
       </ul>
@@ -803,7 +817,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">211</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">212</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

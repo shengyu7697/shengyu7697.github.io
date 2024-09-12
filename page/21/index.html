@@ -107,6 +107,80 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-ubuntu-openssl" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/ubuntu-openssl/" class="article-date">
+  <time datetime="2022-05-26T14:00:00.000Z" itemprop="datePublished">2022-05-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/ubuntu-openssl/">Ubuntu 2 種安裝 OpenSSL 的方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇紀錄 Ubuntu 下 2 種安裝 OpenSSL 的方法，第一種為使用 apt 安裝，第二種為下載 OpenSSL 原始碼編譯安裝。  </p>
+<p>我的使用環境為 Ubuntu 16.04，也適用於 Ubuntu 18.04 跟 Ubuntu 20.04。  </p>
+<p>以下 Ubuntu 安裝 OpenSSL 的方法內容大概分為這幾部分，  </p>
+<ul>
+<li>方法1. 使用 distribution package 安裝 OpenSSL  </li>
+<li>方法2. 下載 OpenSSL 原始碼編譯與安裝 OpenSSL  </li>
+<li>備份舊版本 OpenSSL  </li>
+</ul>
+<h2><span id="方法1-使用-distribution-package-安裝-openssl">方法1. 使用 distribution package 安裝 OpenSSL</span></h2><p>安裝前記得先 <code>apt-get update</code> 一下，以下為 ubuntu apt-get 安裝 OpenSSL 的指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install openssl</span><br></pre></td></tr></table></figure></p>
+<p>安裝後可以使用 <code>openssl version</code> 確認一下 openssl 的版本，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ openssl version</span><br><span class="line">OpenSSL 1.0.2g  1 Mar 2016</span><br></pre></td></tr></table></figure></p>
+<h2><span id="方法2-下載-openssl-原始碼編譯與安裝-openssl">方法2. 下載 OpenSSL 原始碼編譯與安裝 OpenSSL</span></h2><p>由於 apt-get 上安裝的 OpenSSL 版本太舊，不符合我的需求，那就只能自己去下載 source code 下來編譯安裝了，使用下列指令下載 OpenSSL 1.1.1o 原始碼並且解壓縮，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/src/</span><br><span class="line">sudo wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz</span><br><span class="line">sudo tar xvf openssl-1.1.1o.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>如果你 wget 下載時會出現憑證問題，可以使用 –no-check-certificate 選項不檢查憑證，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz --no-check-certificate</span><br></pre></td></tr></table></figure></p>
+<p>接下來進行編譯與安裝 OpenSSL，zlib 選項非必要，無壓縮需求可以不加，預設安裝在 /usr/local/ssl 目錄下，也可自行指定 <code>--prefix</code> 選項帶入目錄，如果不用 shared 的方式則 <code>sudo ./config no-shared</code> 即可，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd openssl-1.1.1o</span><br><span class="line">sudo ./config shared</span><br><span class="line">#sudo ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib # 指定路徑</span><br><span class="line">sudo make -j4</span><br><span class="line">sudo make test</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
+<p>在 /etc/ld.so.conf.d/ 目錄下新增一個 openssl-1.1.1o.conf 設定檔，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/ld.so.conf.d/openssl-1.1.1o.conf</span><br></pre></td></tr></table></figure></p>
+<p>開啟 openssl-1.1.1o.conf 後加入這一行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/ssl/lib</span><br></pre></td></tr></table></figure></p>
+<p>重新載入動態連結，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ldconfig -v</span><br></pre></td></tr></table></figure></p>
+<p>測試 openssl 安裝的版本，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ openssl version</span><br><span class="line">OpenSSL 1.1.1o  3 May 2022</span><br></pre></td></tr></table></figure></p>
+<p>如果要看更詳細的參數的話可以使用 <code>openssl version -a</code></p>
+<h2><span id="備份舊版本-openssl">備份舊版本 OpenSSL</span></h2><p>如果你已經從 apt-get 安裝過 OpenSSL，但又要編譯安裝新版本的 OpenSSL 的話，可以先將舊版本的 OpenSSL 備份起來，<br>把原本的 <code>/usr/bin/openssl</code> 重新命名成 <code>/usr/bin/openssl-1.0.2g</code>，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv /usr/bin/openssl /usr/bin/openssl-1.0.2g</span><br></pre></td></tr></table></figure></p>
+<p>建立軟連結，將 <code>/usr/bin/openssl</code> 指向 <code>/usr/local/bin/openssl</code> (1.1.1)，這一步可能不需要，新版本 make install 應該會順便覆蓋 <code>/usr/bin/openssl</code> 的版本，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln -sf /usr/local/bin/openssl /usr/bin/openssl</span><br></pre></td></tr></table></figure></p>
+<p><strong>其它相關文章推薦</strong><br><a href="/mac-openssl/" title="macOS 2 種安裝 OpenSSL 的方法">macOS 2 種安裝 OpenSSL 的方法</a><br><a href="/openssl-aes-encryption/" title="OpenSSL AES encryption 對稱式加密指令用法與範例">OpenSSL AES encryption 對稱式加密指令用法與範例</a><br><a href="/cpp-openssl-aes/" title="C/C++ OpenSSL AES encryption/decryption 加密解密範例">C/C++ OpenSSL AES encryption/decryption 加密解密範例</a><br><a href="/ubuntu-protobuf/" title="Ubuntu 安裝 protobuf">Ubuntu 安裝 protobuf</a><br><a href="/ubuntu-gflags/" title="Ubuntu 安裝 gflags">Ubuntu 安裝 gflags</a><br><a href="/ubuntu-libevent/" title="Ubuntu 安裝 libevent">Ubuntu 安裝 libevent</a><br><a href="/ubuntu-glfw/" title="Ubuntu 編譯安裝 GLFW">Ubuntu 編譯安裝 GLFW</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cm0yjm9f600ifpdpqa8139qzy" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ubuntu-suspend-command" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/ubuntu-suspend-command/" class="article-date">
@@ -158,7 +232,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cm0xx41z400ida6pqe251512j" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cm0yjm9f600iepdpquqebxa65" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -224,7 +298,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cm0xx41z400ica6pq8l6uv1hu" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cm0yjm9f600idpdpq57m71apu" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -289,7 +363,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-attribute-packed/" data-id="cm0xx41z400iba6pqdje6vcms" data-title="C/C++ __attribute__((__packed__)) 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-attribute-packed/" data-id="cm0yjm9f500icpdpqfrp57h7y" data-title="C/C++ __attribute__((__packed__)) 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -350,7 +424,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-uid/" data-id="cm0xx41z300iaa6pqtm69c5yv" data-title="Android UID 定義" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-uid/" data-id="cm0yjm9f500ibpdpqx1izpca5" data-title="Android UID 定義" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -409,7 +483,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-su/" data-id="cm0xx41z300i9a6pqfecv52yq" data-title="Android su 切換使用者指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-su/" data-id="cm0yjm9f400iapdpqy3ucyorj" data-title="Android su 切換使用者指令用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -482,7 +556,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cm0xx41z300i8a6pqwb9rlbq6" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cm0yjm9f400i9pdpqdi6p6ciu" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -551,7 +625,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-snprintf/" data-id="cm0xx41z200i7a6pqpej1mhdc" data-title="C/C++ snprintf 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-snprintf/" data-id="cm0yjm9f400i8pdpq7v84ga42" data-title="C/C++ snprintf 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -620,7 +694,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sprintf/" data-id="cm0xx41z200i6a6pqmql145xc" data-title="C/C++ sprintf 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sprintf/" data-id="cm0yjm9f300i7pdpq9vhanna2" data-title="C/C++ sprintf 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -688,75 +762,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-memcmp/" data-id="cm0xx41z100i5a6pq6blc1ixv" data-title="C/C++ memcmp 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-strncmp" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-strncmp/" class="article-date">
-  <time datetime="2022-04-21T14:00:00.000Z" itemprop="datePublished">2022-04-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-strncmp/">C/C++ strncmp 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ strncmp 用法與範例，strncmp 是用來作字串比較的函式，除了可以用來判斷兩個字串是否相同以外，還可以判斷兩字串前 n 個字元是否相等，以下介紹如何使用 strncmp 函式。  </p>
-<p>C/C++ 要判斷 c-style 字串前 n 個字元是否相同可以使用 strncmp，要使用 strncmp 的話需要引入的標頭檔 <code>&lt;string.h&gt;</code>，如果要使用 C++ 的標頭檔則是引入 <code>&lt;cstring&gt;</code>，<br>strncmp 函式原型為<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">strncmp</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * str1, <span class="keyword">const</span> <span class="keyword">char</span> * str2, <span class="keyword">size_t</span> num)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p><code>strncmp()</code> 如果判斷兩字串相同的話會回傳 0，這必須牢記因為很容易混搖，很多程式 bug 就是這樣產生的，所以 <code>if (strncmp(str1, str2, strlen(str1))) printf(&quot;not equal\n&quot;);</code> 這樣寫的話結果會是 not equal 唷！來看看下面的 strncmp 用法範例吧！<br><figure class="highlight cpp"><figcaption><span>cpp-strncmp.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strncmp.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str1 = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str2 = <span class="string">"hello world"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">strncmp</span>(str1, str2, <span class="built_in">strlen</span>(str1)) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"equal\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"not equal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">equal</span><br></pre></td></tr></table></figure></p>
-<p>再來看看字串不相同的例子，strncmp 是大小寫都判斷不同的，<br><figure class="highlight cpp"><figcaption><span>cpp-strncmp2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strncmp2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str1 = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str2 = <span class="string">"HELLO WORLD"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> ret = <span class="built_in">strncmp</span>(str1, str2, <span class="built_in">strlen</span>(str1));</span><br><span class="line">    <span class="keyword">if</span> (ret &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"str1 is greater than str2\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"str1 is less than str2\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123; <span class="comment">// ret == 0</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"str1 is equal to str2\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">str1 is greater than str2</span><br></pre></td></tr></table></figure></p>
-<p>再來判斷兩字串前 n 個字元是否相同，以下範例是判斷兩字串前 6 個字元是否相同，<br><figure class="highlight cpp"><figcaption><span>cpp-strncmp3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strncmp3.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str1 = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *str2 = <span class="string">"hello WORLD"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">strncmp</span>(str1, str2, <span class="number">6</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"equal\n"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"not equal\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">equal</span><br></pre></td></tr></table></figure></p>
-<p>以上就是 C/C++ strncmp 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其它參考<br>strncmp - C++ Reference<br><a href="https://www.cplusplus.com/reference/cstring/strncmp/" rel="noopener external nofollow noreferrer" target="_blank">https://www.cplusplus.com/reference/cstring/strncmp/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-string-compare/" title="C/C++ 字串比較的3種方法">C/C++ 字串比較的3種方法</a><br><a href="/cpp-strcmp/" title="C/C++ strcmp 用法與範例">C/C++ strcmp 用法與範例</a><br><a href="/cpp-memcmp/" title="C/C++ memcmp 用法與範例">C/C++ memcmp 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strncmp/" data-id="cm0xx41z100i4a6pqk9lboamm" data-title="C/C++ strncmp 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-memcmp/" data-id="cm0yjm9f300i6pdpq69n79daz" data-title="C/C++ memcmp 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -772,7 +778,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/20/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><a class="page-number" href="/page/20/">20</a><span class="page-number current">21</span><a class="page-number" href="/page/22/">22</a><a class="page-number" href="/page/23/">23</a><span class="space">&hellip;</span><a class="page-number" href="/page/86/">86</a><a class="extend next" rel="next" href="/page/22/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/20/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><a class="page-number" href="/page/20/">20</a><span class="page-number current">21</span><a class="page-number" href="/page/22/">22</a><a class="page-number" href="/page/23/">23</a><span class="space">&hellip;</span><a class="page-number" href="/page/87/">87</a><a class="extend next" rel="next" href="/page/22/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -803,6 +809,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-bridge-pattern/">C++ 設計模式 - 橋接模式 Bridge Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-chain-of-responsibility-pattern/">C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern</a>
           </li>
         
@@ -816,10 +826,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-iterator-pattern/">C++ 設計模式 - 迭代器模式 Iterator Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-state-pattern/">C++ 設計模式 - 狀態模式 State Pattern</a>
           </li>
         
       </ul>
@@ -838,7 +844,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">211</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">212</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
