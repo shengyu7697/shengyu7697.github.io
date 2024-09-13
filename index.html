@@ -107,6 +107,76 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-interpreter-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-interpreter-pattern/" class="article-date">
+  <time datetime="2024-09-10T12:00:00.000Z" itemprop="datePublished">2024-09-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-interpreter-pattern/">C++ 設計模式 - 解釋器模式 Interpreter Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <h1><span id="解釋器模式-interpreter-pattern">解釋器模式 Interpreter Pattern</span></h1><p>大家有沒有想過當你在終端機輸入指令時，電腦是如何理解並執行這些指令的？或者當你使用正則表達式搜尋文字時，背後的機制是什麼？這些看似神奇的功能背後，其實都隱藏著一個強大而優雅的設計模式，那就是解釋器模式 Interpreter Pattern，今天就來聊聊這個模式，幫助我們理解當電腦「讀懂」我們的指令時背後的魔法。  </p>
+<h2><span id="什麼是解釋器模式">什麼是解釋器模式？</span></h2><p>解釋器模式是一種行為型設計模式，主要用來解析語言、處理簡單語法規則的。這個模式背後的想法其實很簡單：我們定義一套「語法規則」，然後讓每個「字元」或「符號」有自己專屬的解釋方式。這樣我們就能依照語法，逐步分析出我們想要的結果。  </p>
+<p>打個比方，就像我們學習一種新語言時，會先學習單字，接著組合句子，最後可以用來進行溝通。解釋器模式就像是這個過程的數位版，先定義每個「單字」的意思，再教你如何解釋這些字。  </p>
+<h2><span id="解釋器模式在計算機中的應用">解釋器模式在計算機中的應用</span></h2><p>計算機應該是最能體現解釋器模式的例子之一。想像你有一個簡單的計算機，輸入表達式如「2 + 3 * 4」，然後計算出結果。解釋器模式就可以幫助我們將這些數字與運算符號組合成一個能夠「理解」的語法樹。  </p>
+<p>首先先定義一個 <code>Expression</code> 介面，它會有一個 <code>interpret()</code> 方法。這個方法負責對數字和符號進行解釋，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 抽象表達式</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Expression</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">interpret</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~Expression() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>接著定義具體的 <code>NumberExpression</code>（數字表達式）和 <code>OperatorExpression</code>（運算符表達式）。數字表達式會簡單地回傳它自己的值，而運算符表達式則會對兩個子表達式進行計算，比如加法、乘法等。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 數字表達式</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NumberExpression</span> :</span> <span class="keyword">public</span> Expression &#123;</span><br><span class="line">    <span class="keyword">int</span> number;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    NumberExpression(<span class="keyword">int</span> num) : number(num) &#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">interpret</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> number;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 加法表達式</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AddExpression</span> :</span> <span class="keyword">public</span> Expression &#123;</span><br><span class="line">    Expression* left;</span><br><span class="line">    Expression* right;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    AddExpression(Expression* l, Expression* r) : left(l), right(r) &#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">interpret</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> left-&gt;interpret() + right-&gt;interpret();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 乘法表達式</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MultiplyExpression</span> :</span> <span class="keyword">public</span> Expression &#123;</span><br><span class="line">    Expression* left;</span><br><span class="line">    Expression* right;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    MultiplyExpression(Expression* l, Expression* r) : left(l), right(r) &#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">interpret</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> left-&gt;interpret() * right-&gt;interpret();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>在前面已經定義了基礎的 NumberExpression、AddExpression 和 MultiplyExpression 類別。接下來我們在客戶端來實際使用這些表達式，讓整個流程完整起來。  </p>
+<p>我們會有一個解析器來遍歷表達式，並一步步解釋每個部分。假設我們要處理一個簡單的表達式「2 + 3」，客戶端的邏輯會像下面這樣：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 建立一個表示數字2的NumberExpression</span></span><br><span class="line">    Expression* num1 = <span class="keyword">new</span> NumberExpression(<span class="number">2</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 建立一個表示數字3的NumberExpression</span></span><br><span class="line">    Expression* num2 = <span class="keyword">new</span> NumberExpression(<span class="number">3</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 建立一個表示加法的AddExpression，將兩個數字作為參數傳入</span></span><br><span class="line">    Expression* addExpr = <span class="keyword">new</span> AddExpression(num1, num2);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> result = addExpr-&gt;interpret();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"2 + 3 = "</span> &lt;&lt; result &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    Expression* mulExpr = <span class="keyword">new</span> MultiplyExpression(num1, num2);</span><br><span class="line">    result = mulExpr-&gt;interpret();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"2 * 3 = "</span> &lt;&lt; result &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 釋放記憶體</span></span><br><span class="line">    <span class="keyword">delete</span> num1;</span><br><span class="line">    <span class="keyword">delete</span> num2;</span><br><span class="line">    <span class="keyword">delete</span> addExpr;</span><br><span class="line">    <span class="keyword">delete</span> mulExpr;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行上述程式碼，我們會得到以下輸出，當我們將表達式「2 + 3」傳給計算機時，解釋器就會根據我們定義的語法規則一步步處理，最終給出結果。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2 + 3 = 5</span><br><span class="line">2 * 3 = 6</span><br></pre></td></tr></table></figure></p>
+<p>在這個範例中，客戶端的角色就是負責將表達式拼接在一起，然後使用解釋器模式的物件來完成運算。這樣任何新加入的運算符或表達式，只需要擴展 Expression 類別，而不用改動客戶端的邏輯，保持程式的靈活性和可維護性。  </p>
+<h2><span id="解釋器模式的優缺點">解釋器模式的優缺點</span></h2><p>說到解釋器模式的優點，它最大的魅力就在於可以輕鬆地擴展和修改語法規則。比如我們可以在不改變原有架構的情況下，輕鬆加入新的運算符號或功能，這讓解釋器模式在處理語法解析時非常靈活。  </p>
+<p>解釋器模式的缺點也很明顯。當語法規則變得越來越複雜時，類別的數量會激增，這可能導致程式碼的維護和理解變得困難。另外解釋器模式的效能並不高，尤其是當處理大規模語法時，效能的瓶頸會更加明顯。  </p>
+<h2><span id="總結">總結</span></h2><p>解釋器模式就像一個小型語法解析器，適合用來處理簡單的語法規則，像是計算機這樣的場景。它的擴展性讓我們可以在程式中輕鬆加入更多規則，但同時也要留意其效能和維護性。對於那些需要頻繁變更規則、處理複雜語法的情況，解釋器模式提供了一個簡潔且靈活的解決方案。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-interpreter-pattern/" data-id="cm10u4xhs00o14npqf7ee6e0i" data-title="C++ 設計模式 - 解釋器模式 Interpreter Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-bridge-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-bridge-pattern/" class="article-date">
@@ -180,7 +250,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-bridge-pattern/" data-id="cm10o288v00o0vspqszi4v0jn" data-title="C++ 設計模式 - 橋接模式 Bridge Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-bridge-pattern/" data-id="cm10u4xhs00o04npqpbvncn1o" data-title="C++ 設計模式 - 橋接模式 Bridge Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -248,7 +318,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-chain-of-responsibility-pattern/" data-id="cm10o288u00nzvspqp7eq46cz" data-title="C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-chain-of-responsibility-pattern/" data-id="cm10u4xhs00nz4npqz5a4a5ib" data-title="C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -323,7 +393,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-memento-pattern/" data-id="cm10o288u00nyvspq730ba6am" data-title="C++ 設計模式 - 備忘錄模式 Memento Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-memento-pattern/" data-id="cm10u4xhr00ny4npq5t9lnx20" data-title="C++ 設計模式 - 備忘錄模式 Memento Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -392,7 +462,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm10o288u00nxvspqfspqk89g" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm10u4xhr00nx4npq3onqgsfl" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -459,7 +529,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm10o288s00nwvspqmwe6cot8" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm10u4xhq00nw4npqlu8qmdpr" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -529,7 +599,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm10o288r00nvvspqsmg9vpx2" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm10u4xhq00nv4npq7j9e3l71" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -601,7 +671,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm10o288r00nuvspqcc8jkvi3" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm10u4xhp00nu4npqk1sk2thb" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -679,7 +749,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm10o288q00ntvspqeobr19qp" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm10u4xhp00nt4npqi7azq0va" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -757,83 +827,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm10o288q00nsvspq5en6aa0j" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-builder-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-builder-pattern/" class="article-date">
-  <time datetime="2024-08-31T12:00:00.000Z" itemprop="datePublished">2024-08-31</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-builder-pattern/">C++ 設計模式 - 建造者模式 Builder Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>當你進入餐廳點餐時，菜單上琳瑯滿目的選擇可能讓你感到無從下手。你可以選擇一個套餐，但如果你有特別的需求，例如多點一份沙拉，少放一點醬料，這時候就需要進行個性化的訂單。而這樣的流程，正是建造者模式 Builder Pattern 的精髓所在。它不僅在生活中隨處可見，在軟體設計中更是強大而實用的一種模式。  </p>
-<h2><span id="什麼是建造者模式">什麼是建造者模式？</span></h2><p>建造者模式是一種建立型設計模式，它將物件的建立過程分解為多個步驟，並且可以根據需求有選擇地組合這些步驟，最終產生我們所需的物件。這樣的設計模式特別適合用於那些需要一步步構建，且每一步可能有不同選擇的複雜物件。  </p>
-<p>建造者模式通常包含以下角色：  </p>
-<ol>
-<li>Product（產品）：最終被構建的複雜物件。  </li>
-<li>Builder（建造者）：定義構建物件的抽象介面。  </li>
-<li>ConcreteBuilder（具體建造者）：實現 Builder 介面，提供具體的構建步驟。  </li>
-<li>Director（指揮者）：負責使用建造者來構建產品，控制建造的過程。  </li>
-</ol>
-<h2><span id="建造者模式在訂製汽車中的應用">建造者模式在訂製汽車中的應用</span></h2><p>讓我們以訂製汽車為例來說明建造者模式的應用。想像你正在購買一輛新車，經銷商會給你提供一系列選項，從引擎、輪胎到內裝，你可以自由選擇搭配，打造一輛專屬於你的車輛。這正是建造者模式最典型的應用場景。  </p>
-<p>我們需要定義最終要建造的產品 <code>Car</code> 類別，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 產品類 Product</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> engine;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> wheels;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> interior;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setEngine</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; engineType)</span> </span>&#123;</span><br><span class="line">        engine = engineType;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setWheels</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; wheelType)</span> </span>&#123;</span><br><span class="line">        wheels = wheelType;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setInterior</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; interiorType)</span> </span>&#123;</span><br><span class="line">        interior = interiorType;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">showSpecifications</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Engine: "</span> &lt;&lt; engine &lt;&lt; <span class="string">"\n"</span></span><br><span class="line">                  &lt;&lt; <span class="string">"Wheels: "</span> &lt;&lt; wheels &lt;&lt; <span class="string">"\n"</span></span><br><span class="line">                  &lt;&lt; <span class="string">"Interior: "</span> &lt;&lt; interior &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>再定義一個 <code>Builder</code> 介面，它包含了構建汽車各部分的方法，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 建造者介面 Builder</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CarBuilder</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">buildEngine</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">buildWheels</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">buildInterior</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> Car* <span class="title">getCar</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~CarBuilder() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>接著我們建立具體的建造者類別，例如一個豪華汽車的建造者，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體建造者 ConcreteBuilder</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LuxuryCarBuilder</span> :</span> <span class="keyword">public</span> CarBuilder &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Car* car;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    LuxuryCarBuilder() &#123;</span><br><span class="line">        car = <span class="keyword">new</span> Car();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">buildEngine</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        car-&gt;setEngine(<span class="string">"V8 Turbo Engine"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">buildWheels</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        car-&gt;setWheels(<span class="string">"Alloy Wheels"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">buildInterior</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        car-&gt;setInterior(<span class="string">"Leather Interior"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">Car* <span class="title">getCar</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> car;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>然後我們建立一個指揮者來控制建造的過程，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 指揮者 Director</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CarDirector</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    CarBuilder* builder;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    CarDirector(CarBuilder* builder) : builder(builder) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">Car* <span class="title">construct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        builder-&gt;buildEngine();</span><br><span class="line">        builder-&gt;buildWheels();</span><br><span class="line">        builder-&gt;buildInterior();</span><br><span class="line">        <span class="keyword">return</span> builder-&gt;getCar();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>當你需要訂製一輛豪華汽車時，只需透過建造者模式來構建它，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    CarBuilder* builder = <span class="keyword">new</span> LuxuryCarBuilder();</span><br><span class="line">    <span class="function">CarDirector <span class="title">director</span><span class="params">(builder)</span></span>;</span><br><span class="line">    Car* car = director.construct();</span><br><span class="line"></span><br><span class="line">    car-&gt;showSpecifications();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> car;</span><br><span class="line">    <span class="keyword">delete</span> builder;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>這樣的設計讓我們可以輕鬆地改變汽車的設定，或者在需要時引入新的建造者，而不必修改現有的邏輯。建造者模式提供了靈活的物件構建過程，使得我們可以在不同需求下產生不同的產品。  </p>
-<h2><span id="建造者模式的優缺點">建造者模式的優缺點</span></h2><p>建造者模式的優點在於它的靈活性和可擴展性。由於構建過程是分步驟進行的，我們可以輕鬆地在不同的情境下進行客製化，無論是增加新功能還是修改現有步驟，都不會影響整個系統的設計。這樣的設計模式特別適合那些物件結構複雜且需要逐步構建的場景。  </p>
-<p>建造者模式也有缺點。由於每一個具體建造者都必須實現所有的建造步驟，這會導致大量的程式碼重複，特別是在類似的建造者之間。並且當物件的構建步驟過多時，可能會使得建造者變得臃腫，降低了程式碼的可讀性與維護性。另外指揮者雖然讓建造過程更具組織性，但也可能產生額外的複雜度。  </p>
-<h2><span id="總結">總結</span></h2><p>建造者模式特別適合於建立複雜物件或者需要靈活設定的物件。它就像是一個精密的工廠流水線，可以根據不同的需求生產出不同的產品，而且每個產品都保持品質與一致性。在現代軟體開發中，無論是複雜的汽車製造、蓋房屋，還是表單產生器，建造者模式都能幫助我們應對，當你下次面對需要建立複雜物件，或者需要根據不同情況建立不同類型物件的場景時，不妨考慮使用建造者模式。它可能正是你解決問題的關鍵。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-builder-pattern/" data-id="cm10o288q00nrvspq1bvl4vxy" data-title="C++ 設計模式 - 建造者模式 Builder Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm10u4xhp00ns4npq3perw4us" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -880,6 +874,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-interpreter-pattern/">C++ 設計模式 - 解釋器模式 Interpreter Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-bridge-pattern/">C++ 設計模式 - 橋接模式 Bridge Pattern</a>
           </li>
         
@@ -893,10 +891,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-mediator-pattern/">C++ 設計模式 - 中介者模式 Mediator Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-iterator-pattern/">C++ 設計模式 - 迭代器模式 Iterator Pattern</a>
           </li>
         
       </ul>
@@ -915,7 +909,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">212</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">213</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
