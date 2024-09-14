@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <!-- Google Adsense -->
+  <script async data-ad-client="ca-pub-8106207149031244" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- End Google Adsense -->
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-08PF7150CV"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-08PF7150CV');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>C++ 設計模式 - 享元模式 Flyweight Pattern | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="當你玩大型多人線上遊戲（MMO）時，畫面上有成百上千個玩家角色，擁有著不同的裝備、武器和坐騎，你有沒有想過，遊戲引擎是如何管理這麼多個體的？如果每一個角色都佔據完整的記憶體空間，電腦恐怕早已爆掉！這背後的祕密之一，就是我們今天要講的「享元模式」。   什麼是享元模式？享元模式（Flyweight Pattern）是一種結構型設計模式，目的在減少物件建立時佔用的記憶體空間。它透過共享大量相似物件中的">
+<meta name="keywords" content="C&#x2F;C++,設計模型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 設計模式 - 享元模式 Flyweight Pattern">
+<meta property="og:url" content="https://shengyu7697.github.io/cpp-flyweight-pattern/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="當你玩大型多人線上遊戲（MMO）時，畫面上有成百上千個玩家角色，擁有著不同的裝備、武器和坐騎，你有沒有想過，遊戲引擎是如何管理這麼多個體的？如果每一個角色都佔據完整的記憶體空間，電腦恐怕早已爆掉！這背後的祕密之一，就是我們今天要講的「享元模式」。   什麼是享元模式？享元模式（Flyweight Pattern）是一種結構型設計模式，目的在減少物件建立時佔用的記憶體空間。它透過共享大量相似物件中的">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2024-09-14T14:50:07.183Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ 設計模式 - 享元模式 Flyweight Pattern">
+<meta name="twitter:description" content="當你玩大型多人線上遊戲（MMO）時，畫面上有成百上千個玩家角色，擁有著不同的裝備、武器和坐騎，你有沒有想過，遊戲引擎是如何管理這麼多個體的？如果每一個角色都佔據完整的記憶體空間，電腦恐怕早已爆掉！這背後的祕密之一，就是我們今天要講的「享元模式」。   什麼是享元模式？享元模式（Flyweight Pattern）是一種結構型設計模式，目的在減少物件建立時佔用的記憶體空間。它透過共享大量相似物件中的">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cpp-flyweight-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-flyweight-pattern/" class="article-date">
+  <time datetime="2024-09-11T12:00:00.000Z" itemprop="datePublished">2024-09-11</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C++ 設計模式 - 享元模式 Flyweight Pattern
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>當你玩大型多人線上遊戲（MMO）時，畫面上有成百上千個玩家角色，擁有著不同的裝備、武器和坐騎，你有沒有想過，遊戲引擎是如何管理這麼多個體的？如果每一個角色都佔據完整的記憶體空間，電腦恐怕早已爆掉！這背後的祕密之一，就是我們今天要講的「享元模式」。  </p>
+<h2><span id="什麼是享元模式">什麼是享元模式？</span></h2><p>享元模式（Flyweight Pattern）是一種結構型設計模式，目的在減少物件建立時佔用的記憶體空間。它透過共享大量相似物件中的共通部分來降低記憶體使用，特別適合用在場景中有大量細微差異的物件。這樣的做法不僅節省了資源，也讓系統執行更有效率。  </p>
+<p>在享元模式中，會將可共享的部分抽出，放到單一實體中進行管理，而非每個物件都擁有自己的複本。對於那些不可共享的部分，則會透過引數進行傳遞，這樣就能避免重複建立類似的物件。  </p>
+<p>享元（Flyweight）這個術語源自拳擊界，在拳擊比賽中，Flyweight 指的是一個較輕量級(57kg以下)的選手級別。這個詞在設計模式中被借用，是因為享元模式的核心理念與輕量的概念相吻合：目的是減輕系統的記憶體負擔，讓程式變得更「輕」，更高效。享元模式透過共享物件的內部狀態，達到了減少記憶體佔用的效果。  </p>
+<h2><span id="享元模式在圖形系統中的應用">享元模式在圖形系統中的應用</span></h2><p>最常見的享元模式例子之一，就是在圖形系統中處理複雜的場景。想像你正在開發一個繪圖應用程式，必須在畫布上顯示上千個相同的圓形。每個圓的顏色、大小和座標可能不同，但圓的輪廓和基本形狀是相同的。我們可以利用享元模式，來共享這些圓的形狀，只根據需要改變其他屬性來展示不同的圓形。  </p>
+<p>首先我們需要定義一個共享的「圓形」物件，  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 圓形基類，提供繪製方法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Circle</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Circle(<span class="built_in">std</span>::<span class="built_in">string</span> color) : color(color) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span> radius)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Drawing "</span> &lt;&lt; color &lt;&lt; <span class="string">" circle at ("</span> &lt;&lt; x &lt;&lt; <span class="string">", "</span> &lt;&lt; y &lt;&lt; <span class="string">") with radius "</span> &lt;&lt; radius &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> color;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>然後我們可以建立一個「圓形工廠」，負責管理和提供共享的圓形物件，  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CircleFactory</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Circle&gt; getCircle(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; color) &#123;</span><br><span class="line">        <span class="keyword">if</span> (circles.find(color) == circles.end()) &#123;</span><br><span class="line">            circles[color] = <span class="built_in">std</span>::make_shared&lt;Circle&gt;(color);</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Creating circle of color: "</span> &lt;&lt; color &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> circles[color];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unordered_map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Circle&gt;&gt; circles;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>接下來客戶端可以透過 <code>CircleFactory</code> 來取得不同顏色的圓形，並指定其座標和半徑，這樣便可以有效地共享相同顏色的圓形實體，  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    CircleFactory factory;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> redCircle = factory.getCircle(<span class="string">"Red"</span>);</span><br><span class="line">    redCircle-&gt;draw(<span class="number">10</span>, <span class="number">10</span>, <span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> blueCircle = factory.getCircle(<span class="string">"Blue"</span>);</span><br><span class="line">    blueCircle-&gt;draw(<span class="number">20</span>, <span class="number">20</span>, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> anotherRedCircle = factory.getCircle(<span class="string">"Red"</span>);</span><br><span class="line">    anotherRedCircle-&gt;draw(<span class="number">30</span>, <span class="number">30</span>, <span class="number">15</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Creating circle of color: Red</span><br><span class="line">Drawing Red circle at (10, 10) with radius 5</span><br><span class="line">Creating circle of color: Blue</span><br><span class="line">Drawing Blue circle at (20, 20) with radius 10</span><br><span class="line">Drawing Red circle at (30, 30) with radius 15</span><br></pre></td></tr></table></figure></p>
+<p>這裡我們重複使用了紅色圓形，而不必每次都建立新的紅色圓形。程式輸出將顯示紅色圓形只建立了一次，這就是享元模式的精髓——重複利用可共享的部分，節省記憶體。  </p>
+<h2><span id="享元模式的優缺點">享元模式的優缺點</span></h2><p>享元模式最大的優點，當然就是<strong>節省記憶體</strong>。當我們需要建立大量相似的物件時，這種模式可以極大減少不必要的記憶體消耗，提升程式的效能。例如在繪圖系統、文字處理器，甚至是遊戲引擎中，都可以看到享元模式的影子。只要那些物件之間有許多相同的部分，就能採用享元模式進行共享。  </p>
+<p>然而這種共享資源的方式也不是沒有代價。享元模式的<strong>複雜性</strong>較高，因為需要將物件分為共享的內部狀態與不可共享的外部狀態。開發人員在使用時必須額外考慮如何管理這些狀態，避免產生混淆。另外在某些情況下，為了維護享元物件的內部狀態一致性，可能會導致更多的<strong>同步問題</strong>，特別是在多執行緒的環境下。  </p>
+<h2><span id="總結">總結</span></h2><p>享元模式是一種在需要大量建立相似物件的場景下非常有用的設計模式，透過共享物件來大幅減少記憶體消耗。在像是繪圖系統、遊戲開發等領域，我們可以利用這個模式來有效管理大量物件。然而，享元模式的實現需要仔細設計和管理內部狀態與外部狀態的區別，以避免增加不必要的複雜度。這個模式不會讓你的程式「飛起來」，但絕對能讓它執行得更順暢。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-flyweight-pattern/" data-id="cm129kruc00o2tdpqwf8t0thw" data-title="C++ 設計模式 - 享元模式 Flyweight Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <!-- <div id="ads-2">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="1792535573"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+ -->
+    <!-- ads-2 -->
+    <!-- ads-4 -->
+    <div id="ads-4">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-format="autorelaxed"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="5600353687"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <!-- ads-4 -->
+    
+<nav id="article-nav">
+  
+  
+    <a href="/cpp-interpreter-pattern/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">C++ 設計模式 - 解釋器模式 Interpreter Pattern</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/cpp-flyweight-pattern/">C++ 設計模式 - 享元模式 Flyweight Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-interpreter-pattern/">C++ 設計模式 - 解釋器模式 Interpreter Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-bridge-pattern/">C++ 設計模式 - 橋接模式 Bridge Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-chain-of-responsibility-pattern/">C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern</a>
+          </li>
+        
+          <li>
+            <a href="/cpp-memento-pattern/">C++ 設計模式 - 備忘錄模式 Memento Pattern</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=500&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="500" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">214</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!-- ads-3 -->
+  <div id="ads-3">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="8896181732"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+  <!-- ads-3 -->
+</div>
+<script>
+  function setSidebarHeight(sidebar) {
+    let ad1h = document.getElementById("ads-1").clientHeight; // 280
+    //let ad2h = document.getElementById("ads-2").clientHeight; // 280
+    let ad3h = document.getElementById("ads-3").clientHeight; // 600
+    let ad4h = 0;
+    let elem = document.getElementById("ads-4");
+    if (elem != null) {
+      ad4h = elem.clientHeight; // 447
+    }
+    let mainh = document.getElementById("main").clientHeight;
+    let sidebarh = mainh + ad1h + ad4h - ad3h;
+    sidebar.style.height = sidebarh+"px";
+    console.log("set sidebar height = " + sidebarh + "px (" + mainh + "+" + ad1h + "+" + ad4h + "-" + ad3h + ")");
+  }
+
+  function fixSidebarHeight() {
+    let sidebar = document.getElementById("sidebar");
+    console.log("sidebar height is " + sidebar.style.height);
+
+    if (sidebar.style.height == "auto") {
+      console.log("sidebar height is auto !, fix it.");
+      setSidebarHeight(sidebar);
+    }
+
+    const observer = new MutationObserver(function (mutations, observer) {
+      console.log("observer sidebar height is " + sidebar.style.height);
+      if (sidebar.style.height == "auto") {
+        setSidebarHeight(sidebar);
+      }
+    });
+
+    observer.observe(sidebar, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+
+  console.log("width = " + window.innerWidth);
+  if (window.innerWidth >= 768) {
+    console.log("width >= 768");
+    fixSidebarHeight();
+  } else {
+    console.log("width < 768");
+  }
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

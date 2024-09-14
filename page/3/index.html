@@ -107,6 +107,76 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-observer-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-observer-pattern/" class="article-date">
+  <time datetime="2024-08-22T12:00:00.000Z" itemprop="datePublished">2024-08-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-observer-pattern/">C++ 設計模式 - 觀察者模式 Observer Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>今天你訂閱了一個喜歡的 YouTube 頻道，這個頻道一旦有新影片發布，你就會收到通知。不需要你反覆檢查頻道是否有新內容，所有更新自動發送到你手上。在軟體開發中，我們常常需要處理這樣的情境，當一個物件的狀態發生變化時，其他相關物件需要自動更新，並做出相應的回應。這種情境下我們就可以運用觀察者模式 Observer Pattern。  </p>
+<h2><span id="什麼是觀察者模式">什麼是觀察者模式？</span></h2><p>觀察者模式是一種行為設計模式，它定義了一種一對多的依賴關係，當一個物件（被觀察者）發生改變時，所有依賴它的物件（觀察者）都會自動收到通知並更新自己。這讓系統中的物件之間能夠鬆散耦合，保持靈活性和可維護性。  </p>
+<h2><span id="觀察者模式在-youtube-訂閱的應用">觀察者模式在 YouTube 訂閱的應用</span></h2><p>在這個範例中，我們將 YouTube 頻道視為「被觀察者」，訂閱該頻道的使用者則是「觀察者」。當頻道有新影片上傳時，所有訂閱者都會自動收到通知。讓我們用 C++ 來實踐這個概念。  </p>
+<p>我們定義一個 <code>Observer</code> 介面，所有的觀察者（訂閱者）都要實作這個介面。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Observer</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; videoTitle)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~Observer() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>接著我們定義一個 <code>Subject</code> 介面，讓被觀察者（YouTube 頻道）管理觀察者的訂閱和通知。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Subject</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">addObserver</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Observer&gt; observer)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">removeObserver</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Observer&gt; observer)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">notifyObservers</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~Subject() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>接下來我們實作一個具體的 <code>YouTubeChannel</code> 類別，這個類別代表 YouTube 頻道，當有新影片發布時，它會通知所有的訂閱者。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">YouTubeChannel</span> :</span> <span class="keyword">public</span> Subject &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">list</span>&lt;<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Observer&gt;&gt; subscribers;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> latestVideo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addObserver</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Observer&gt; observer)</span> override </span>&#123;</span><br><span class="line">        subscribers.push_back(observer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">removeObserver</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Observer&gt; observer)</span> override </span>&#123;</span><br><span class="line">        subscribers.remove(observer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">notifyObservers</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; observer : subscribers) &#123;</span><br><span class="line">            observer-&gt;update(latestVideo);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">uploadNewVideo</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; videoTitle)</span> </span>&#123;</span><br><span class="line">        latestVideo = videoTitle;</span><br><span class="line">        notifyObservers();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>最後我們可以定義多個觀察者來代表不同的訂閱者，他們會在接收到新影片通知時，顯示影片的標題。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Subscriber</span> :</span> <span class="keyword">public</span> Observer &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Subscriber(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name) : name(name) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">update</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; videoTitle)</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; name &lt;&lt; <span class="string">" received notification: "</span> </span><br><span class="line">            &lt;&lt; videoTitle &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>當我們將 <code>Subscriber</code> 加入 <code>YouTubeChannel</code> 的訂閱者清單時，頻道一旦上傳新影片，所有的訂閱者都會自動收到通知。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    YouTubeChannel channel;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Subscriber&gt; alice = <span class="built_in">std</span>::make_shared&lt;Subscriber&gt;(<span class="string">"Alice"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Subscriber&gt; bob = <span class="built_in">std</span>::make_shared&lt;Subscriber&gt;(<span class="string">"Bob"</span>);</span><br><span class="line"></span><br><span class="line">    channel.addObserver(alice);</span><br><span class="line">    channel.addObserver(bob);</span><br><span class="line">    channel.uploadNewVideo(<span class="string">"First Video"</span>);</span><br><span class="line"></span><br><span class="line">    channel.removeObserver(bob);</span><br><span class="line">    channel.uploadNewVideo(<span class="string">"Second Video"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Alice received notification: First Video</span><br><span class="line">Bob received notification: First Video</span><br><span class="line">Alice received notification: Second Video</span><br></pre></td></tr></table></figure></p>
+<p>這個範例中使用了觀察者模式來模擬 YouTube 訂閱系統。當 YouTube 頻道上傳新影片時，所有的訂閱者都會自動收到通知。這讓我們的系統能夠更靈活地應對訂閱和通知的需求。  </p>
+<h2><span id="觀察者模式的優點">觀察者模式的優點</span></h2><p>以這個例子來說，使用觀察者模式降低了耦合度，訂閱者和 YouTube 頻道之間的關係是鬆散的，YouTube 頻道不需要知道實際上是誰訂閱了它，它只需要通知所有訂閱者，這讓系統更容易擴展跟維護。  </p>
+<p>同時也具備擴展性，你可以輕鬆地新增或移除訂閱者，而不需要修改 YouTube 頻道的程式碼。  </p>
+<h2><span id="總結">總結</span></h2><p>觀察者模式是一種常見的設計模式，能有效處理多個物件之間的通知和更新需求。在我們生活中無所不在，例如：股票價格變化時，關注該股票的投資者都會收到通知，天氣變化時，訂閱天氣服務的使用者都會收到更新，電子報發布時，訂閱的讀者也會收到信件。下次你在設計系統時，如果遇到一對多的依賴關係，並且希望它們能夠自動更新的情況，不妨試試觀察者模式！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-observer-pattern/" data-id="cm129kru300nitdpqapc2oull" data-title="C++ 設計模式 - 觀察者模式 Observer Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-strategy-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-strategy-pattern/" class="article-date">
@@ -165,7 +235,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strategy-pattern/" data-id="cm123i30n00nhkgpq75ug9lwe" data-title="C++ 設計模式 - 策略模式 Strategy Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strategy-pattern/" data-id="cm129kru300nhtdpqvp830fjj" data-title="C++ 設計模式 - 策略模式 Strategy Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -248,7 +318,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <li><a href="/cpp-composite-pattern/" title="組合模式 Composite Pattern：樹形結構處理">組合模式 Composite Pattern：樹形結構處理</a>  </li>
 <li><a href="/cpp-decorator-pattern/" title="裝飾者模式 Decorator Pattern：動態新增功能">裝飾者模式 Decorator Pattern：動態新增功能</a>  </li>
 <li><a href="/cpp-facade-pattern/" title="門面模式 Facade Pattern：簡化接口">門面模式 Facade Pattern：簡化接口</a>  </li>
-<li>享元模式 Flyweight Pattern：共享物件以節省記憶體  </li>
+<li><a href="/cpp-flyweight-pattern/" title="享元模式 Flyweight Pattern：共享物件以節省記憶體">享元模式 Flyweight Pattern：共享物件以節省記憶體</a>  </li>
 <li><a href="/cpp-proxy-pattern/" title="代理模式 Proxy Pattern：控制物件的訪問">代理模式 Proxy Pattern：控制物件的訪問</a>  
 </li>
 </ul>
@@ -271,7 +341,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm123i30m00ngkgpq4fs6yxu6" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm129kru200ngtdpqhjtaqa0u" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模型/">設計模型</a></li></ul>
@@ -356,7 +426,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm123i30m00nfkgpq5s8bo8q8" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm129kru200nftdpqirmh0tx4" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -444,7 +514,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-post/" data-id="cm123i30m00nekgpq9q8uuj20" data-title="PHP $_POST 變數用途、語法與實用範例詳解" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-post/" data-id="cm129kru200netdpqhqjs97pq" data-title="PHP $_POST 變數用途、語法與實用範例詳解" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -539,7 +609,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-substr/" data-id="cm123i30l00ndkgpqqv806n1s" data-title="PHP substr 函式全面解析與應用範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-substr/" data-id="cm129kru100ndtdpqy2e18whe" data-title="PHP substr 函式全面解析與應用範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -637,7 +707,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-str_pad/" data-id="cm123i30l00nckgpqsu3ln21q" data-title="PHP str_pad 函式用途、語法與實用範例解析" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-str_pad/" data-id="cm129kru100nctdpqhfdmjxvh" data-title="PHP str_pad 函式用途、語法與實用範例解析" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -723,7 +793,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-uniqid/" data-id="cm123i30l00nbkgpqioprg5ty" data-title="如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-uniqid/" data-id="cm129kru100nbtdpqa4ueisds" data-title="如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -787,7 +857,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-wordpress/" data-id="cm123i30k00nakgpqv5pd3rua" data-title="Ubuntu 下安裝 wordpress" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-wordpress/" data-id="cm129kru000natdpqbrubiply" data-title="Ubuntu 下安裝 wordpress" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -873,99 +943,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-isset/" data-id="cm123i30k00n9kgpqqdl8tk0w" data-title="深入理解 PHP 中的 isset 用法、範例及最佳實踐" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-isset/" data-id="cm129kru000n9tdpqmnm92jhb" data-title="深入理解 PHP 中的 isset 用法、範例及最佳實踐" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-printf" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-printf/" class="article-date">
-  <time datetime="2024-07-12T12:00:00.000Z" itemprop="datePublished">2024-07-12</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-printf/">如何使用 C/C++ 中的 printf 函式：詳盡指南</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ printf 用法與範例，在C/C++編程中，經常需要將資料印出。而<code>printf</code>函式正是這樣一個常用且強大的工具，它用於格式化輸出到標準輸出（如螢幕）。本文將深入探討<code>printf</code>函式的基本用法和一些高級技巧，幫助您更好地掌握這個函式，printf 詳細用法範例請繼續往下閱讀。  </p>
-<p>C 語言要將資料格式化輸出到標準輸出(stdout)可以使用 printf，要使用 printf 的話需要引入的標頭檔 <code>&lt;stdio.h&gt;</code>，如果要使用 C++ 的標頭檔則是引入 <code>&lt;cstdio&gt;</code>，<br>printf 函式原型為<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">printf</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * format, ...)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p><code>const char *format</code>：格式化字串，定義了輸出的格式。該字串包含普通字元和格式說明符。普通字元直接輸出，格式說明符用來格式化並插入後續變數。</p>
-<p><code>...</code>：可變參數清單，包含要格式化的資料。這些資料將根據格式化字串中的格式說明符依次插入。</p>
-<p><code>printf</code> 函式的回傳值是輸出字元的總數。如果發生輸出錯誤，則回傳一個負數。</p>
-<h2><span id="cc-printf-基本用法">C/C++ printf 基本用法</span></h2><p>使用 <code>printf</code> 的基本用法如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"格式化字串"</span>, 變數<span class="number">1</span>, 變數<span class="number">2</span>, ...);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2><span id="格式化字串中的格式說明符">格式化字串中的格式說明符</span></h2><p>格式化字串包含文字和格式說明符，格式說明符用於指示如何格式化變數。以下是常見的格式說明符：</p>
-<ul>
-<li><code>%d</code>：整數（十進位）</li>
-<li><code>%f</code>：浮點數</li>
-<li><code>%c</code>：單個字元</li>
-<li><code>%s</code>：字串</li>
-<li><code>%x</code>：整數（十六進位）</li>
-</ul>
-<h2><span id="範例">範例</span></h2><p>以下是一些 <code>printf</code> 函式的範例程式碼：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">42</span>;</span><br><span class="line">    <span class="keyword">float</span> f = <span class="number">3.14159</span>;</span><br><span class="line">    <span class="keyword">char</span> c = <span class="string">'A'</span>;</span><br><span class="line">    <span class="keyword">char</span> str[] = <span class="string">"Hello, World!"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"整數：%d\n"</span>, i);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"浮點數：%f\n"</span>, f);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"字元：%c\n"</span>, c);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"字串：%s\n"</span>, str);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>執行以上程式碼，輸出結果如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">整數：42</span><br><span class="line">浮點數：3.141590</span><br><span class="line">字元：A</span><br><span class="line">字串：Hello, World!</span><br></pre></td></tr></table></figure>
-<h2><span id="高級用法">高級用法</span></h2><h3><span id="指定寬度和精度">指定寬度和精度</span></h3><p>您可以使用格式說明符來指定輸出的寬度和精度，例如：</p>
-<ul>
-<li><code>%5d</code>：最小寬度為 5 的整數</li>
-<li><code>%.2f</code>：小數點後保留 2 位的浮點數</li>
-<li><code>%5.2f</code>：最小寬度為 5 且小數點後保留 2 位的浮點數</li>
-</ul>
-<p>以下是相應的範例程式碼：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">42</span>;</span><br><span class="line">    <span class="keyword">float</span> f = <span class="number">3.14159</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"寬度為 5 的整數：%5d\n"</span>, i);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"小數點後保留 2 位的浮點數：%.2f\n"</span>, f);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"寬度為 5 且小數點後保留 2 位的浮點數：%5.2f\n"</span>, f);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>執行以上程式碼，輸出結果如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">寬度為 5 的整數：   42</span><br><span class="line">小數點後保留 2 位的浮點數：3.14</span><br><span class="line">寬度為 5 且小數點後保留 2 位的浮點數： 3.14</span><br></pre></td></tr></table></figure>
-<h2><span id="小結">小結</span></h2><p><code>printf</code> 是 C 和 C++ 中格式化輸出的基本工具。透過使用格式說明符和各種選項，您可以輕鬆地控制輸出的格式，滿足不同的需求。掌握這些技巧，將讓您的編程工作更加得心應手。</p>
-<p>以上就是 C/C++ printf 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-printf-format/" title="C/C++ printf 參數說明">C/C++ printf 參數說明</a><br><a href="/cpp-scanf/" title="C/C++ scanf 用法與範例">C/C++ scanf 用法與範例</a><br><a href="/cpp-sscanf/" title="C/C++ sscanf 用法與範例">C/C++ sscanf 用法與範例</a><br><a href="/cpp-snprintf/" title="C/C++ snprintf 用法與範例">C/C++ snprintf 用法與範例</a><br><a href="/cpp-sprintf/" title="C/C++ sprintf 用法與範例">C/C++ sprintf 用法與範例</a><br><a href="/cpp-printf-size_t/" title="C/C++ printf 列印 size_t 的方法">C/C++ printf 列印 size_t 的方法</a><br><a href="/cpp-printf-int64_t-uint64_t/" title="32/64bit 作業系統 printf 列印 int64_t / uint64_t 的方法">32/64bit 作業系統 printf 列印 int64_t / uint64_t 的方法</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-printf/" data-id="cm123i30j00n7kgpq6jiz8er1" data-title="如何使用 C/C++ 中的 printf 函式：詳盡指南" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
 
     </footer>
   </div>
@@ -1009,6 +990,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-flyweight-pattern/">C++ 設計模式 - 享元模式 Flyweight Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-interpreter-pattern/">C++ 設計模式 - 解釋器模式 Interpreter Pattern</a>
           </li>
         
@@ -1022,10 +1007,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-memento-pattern/">C++ 設計模式 - 備忘錄模式 Memento Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-mediator-pattern/">C++ 設計模式 - 中介者模式 Mediator Pattern</a>
           </li>
         
       </ul>
@@ -1044,7 +1025,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">213</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">214</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
