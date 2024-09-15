@@ -107,6 +107,101 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-vscode-debugging-on-mac" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/vscode-debugging-on-mac/" class="article-date">
+  <time datetime="2022-06-06T14:00:00.000Z" itemprop="datePublished">2022-06-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/vscode-debugging-on-mac/">macOS 使用 VS Code Debugger 除錯教學</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹在 macOS 使用 Visual Studio Code(VS Code) 設定 C/C++ 除錯的環境，  </p>
+<p>以下 macOS 使用 VS Code 設定除錯環境的內容大概分為  </p>
+<ul>
+<li>VS Code 除錯環境設定  </li>
+<li>VS Code 安裝 CodeLLDB extension  </li>
+<li>VS Code 偵錯前先編譯  </li>
+<li>VS Code 開啟 make 專案  </li>
+<li>VS Code 開啟 cmake 專案  </li>
+<li>VS Code 錯誤排除  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2><span id="vs-code-除錯環境設定">VS Code 除錯環境設定</span></h2><p>我的 VS Code 版本為 1.67.2，macOS 版本為 10.13.4，<br>在新專案下按下 F5 時如果沒有 <code>.vscode/launch.json</code> 設定檔的話，會跳出一些選項讓你選擇，如圖中的 C++ (GDB/LLDB)<br><img src="/vscode-debugging-on-mac/vscode-debugging-1.png" title="vscode lldb debugging">  </p>
+<p>新專案下沒有 <code>.vscode/tasks.json</code> 設定檔的話，也會跳出選項讓你選擇，由於 macOS 早就已經棄用 gcc，所以這邊是選擇使用 clang，<br><img src="/vscode-debugging-on-mac/vscode-debugging-2.png" title="vscode lldb debugging">  </p>
+<p>會在資料夾下產生 .vscode/launch.json 設定如下，如果沒有的話自己手動新增也可以，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"(lldb) Launch"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppdbg"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>編譯 C/C++ 時記得加上 <code>-g</code> 選項，按 F5 執行 Start Debugging 後，<br>出現 <code>Unable to start debugging. LLDB exited unexpectedly with exit code 137 (0x89).</code> 如下圖所示，<br><img src="/vscode-debugging-on-mac/vscode-debugging-3.png" title="vscode lldb debugging">  </p>
+<p>看到<a href="https://blog.csdn.net/weixin_42147726/article/details/112537822" rel="noopener external nofollow noreferrer" target="_blank">這篇文章</a>分享將 <code>.vscode/launch.json</code> 的 type 從原本的 <code>cppdbg</code> 改成 <code>lldb</code> 就可以使用了，type 改成 <code>lldb</code> 後像這樣，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"(lldb) Launch"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>將 <code>.vscode/launch.json</code> 的 type 改成 <code>lldb</code> 後，再按 F5 執行 Start Debugging 後，<br>出現 <code>Configured debug type &#39;lldb&#39; is not supported.</code> 如下圖所示，<br><img src="/vscode-debugging-on-mac/vscode-debugging-4.png" title="vscode lldb debugging">  </p>
+<p>看到<a href="https://github.com/vknabel/vscode-swift-development-environment/issues/29" rel="noopener external nofollow noreferrer" target="_blank">這篇 troyibm 這位網友</a>他也遇到同樣的問題，結果是安裝了 CodeLLDB 擴充套件就可以使用了！那我們來安裝 CodeLLDB 擴充套件吧。  </p>
+<h2><span id="vs-code-安裝-codelldb-extension">VS Code 安裝 CodeLLDB extension</span></h2><p>接下來就安裝<a href="https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb" rel="noopener external nofollow noreferrer" target="_blank">CodeLLDB</a>擴充套件，<br>網頁有寫支援的平台，  </p>
+<ul>
+<li>Linux with glibc 2.18+ for x86_64, aarch64 or armhf,  </li>
+<li>MacOS X 10.10+ for x86_64 and 11.0+ for arm64,  </li>
+<li>Windows 10 for x86_64.  </li>
+</ul>
+<p>看起來三大平台都有支援。  </p>
+<p>接著再次 F5 執行 Start Debugging 終於成功了！<br><img src="/vscode-debugging-on-mac/vscode-debugging-5.png" title="vscode lldb debugging">  </p>
+<p>經過這次安裝 CodeLLDB extension 後，之後在新專案要 按 F5 時會有 LLDB 新的選項，可以直接選擇 LLDB，<br><img src="/vscode-debugging-on-mac/vscode-debugging-6.png" title="vscode lldb debugging">  </p>
+<p>選擇 LLDB 後產生的 launch.json 如下，然後記得修改 program 裡的名稱，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Debug"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/&lt;your program&gt;"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceFolder&#125;"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="vs-code-偵錯前先編譯">VS Code 偵錯前先編譯</span></h2><p>VS Code 按下 F5 要先編譯再啟動偵錯的話，要在 launch.json 加上 preLaunchTask，如下範例，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Debug"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceFolder&#125;"</span>,</span><br><span class="line">            <span class="attr">"preLaunchTask"</span>: <span class="string">"C/C++: clang++ build"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>launch.json 的 <code>&quot;preLaunchTask&quot;: &quot;C/C++: clang++ build&quot;</code> 是對應到 tasks.json 的 label 名稱，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppbuild"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: clang++ build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"/usr/bin/clang++"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [</span><br><span class="line">                <span class="string">"-fdiagnostics-color=always"</span>,</span><br><span class="line">                <span class="string">"-g"</span>,</span><br><span class="line">                <span class="string">"$&#123;file&#125;"</span>,</span><br><span class="line">                <span class="string">"-o"</span>,</span><br><span class="line">                <span class="string">"$&#123;fileDirname&#125;/a.out"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"options"</span>: &#123;</span><br><span class="line">                <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>這樣按 F5 啟動偵錯前會先編譯，成功編譯才會啟動偵錯。  </p>
+<p>詳細的 <code>.vscode</code> 設定可以參考 <a href="https://github.com/shengyu7697/vscode-debugging/tree/master/mac-lldb" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/shengyu7697/vscode-debugging/tree/master/mac-lldb</a>  </p>
+<p>其他參考<br><a href="https://code.visualstudio.com/docs/cpp/launch-json-reference" rel="noopener external nofollow noreferrer" target="_blank">launch.json 參數說明</a><br><a href="https://blog.csdn.net/ZCShouCSDN/article/details/60466707" rel="noopener external nofollow noreferrer" target="_blank">Visual Studio Code （VSCode） 之 C/C++ 调试配置详解</a><br><a href="https://ithelp.ithome.com.tw/articles/10190238" rel="noopener external nofollow noreferrer" target="_blank">[VSCode] Visual Studio Code 執行 C++ (2) - IntelliSense + Building + Debugging</a>  </p>
+<h2><span id="make-專案">make 專案</span></h2><p>make 專案編譯時會使用 Makefile 來執行裡面的腳本，所以 <code>.vscode/tasks.json</code> 不能在使用 <code>cppbuild</code> type 要換成 <code>shell</code> 來執行 make 這個指令，  </p>
+<p>然後 command 換成 <code>cd ${workspaceFolder}; /usr/bin/make</code>，如下所示，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: make build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;; /usr/bin/make"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"options"</span>: &#123;</span><br><span class="line">                <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>這邊也可以參考 <a href="https://stackoverflow.com/questions/57808398/using-visual-studio-code-tasks-to-automate-c-makefiles-in-multiple-folders" rel="noopener external nofollow noreferrer" target="_blank">Stack Overflow</a> 跟 <a href="https://gist.github.com/mattmc3/c021236c92c03b61d92c0ff233940643" rel="noopener external nofollow noreferrer" target="_blank">github gist</a> 兩篇的其他種做法。  </p>
+<h2><span id="cmake-專案">cmake 專案</span></h2><p>cmake 專案在 generate 時，要使用 <code>cmake -DCMAKE_BUILD_TYPE=Debug ..</code> 給定編譯 Debug 版本，之後編譯出來的執行檔才有除錯的資訊，或者在 CMakeLists.txt 直接寫死是 Debug 版本，<br><figure class="highlight cmake"><figcaption><span>CMakeLists.txt</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(CMAKE_BUILD_TYPE <span class="string">"Debug"</span>)</span><br></pre></td></tr></table></figure></p>
+<p><code>.vscode/tasks.json</code> 這邊可以參考<a href="https://blog.csdn.net/u012372584/article/details/123010410" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>的寫法，將 cmake generate 與 cmake build 分成兩個 task，再用 C/C++: cmake build 這個 task 將前兩者串起來，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: cmake build"</span>,</span><br><span class="line">            <span class="attr">"dependsOrder"</span>: <span class="string">"sequence"</span>,</span><br><span class="line">            <span class="attr">"dependsOn"</span>:[<span class="string">"cmake generate"</span>, <span class="string">"cmake build"</span>]</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"cmake generate"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;/build; /usr/bin/env cmake .."</span>,</span><br><span class="line">            <span class="attr">"args"</span>: []</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"cmake build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;/build; /usr/bin/env cmake --build ."</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line"></span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"options"</span>: &#123;</span><br><span class="line">        <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceRoot&#125;/build"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="vs-code-錯誤排除">VS Code 錯誤排除</span></h2><p>如果在除錯的過程中逐步執行發現跳不到原始碼遇到 <code>Could not load source ... &#39;SourceRequest&#39; not supported</code> 這樣的錯誤訊息的話，可能就是找不到原始碼的路徑，可能就是因為執行檔跟原始碼擺放路徑不同，解決方式就是在 launch.json 使用 <code>sourceFileMap</code> 將正確的路徑對應好，再次啟動就可以正確找到了～～  </p>
+<p>以上就是 macOS 使用 VS Code Debugger 除錯介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br><a href="https://www.youtube.com/watch?v=G9gnSGKYIg4" rel="noopener external nofollow noreferrer" target="_blank">Debug a C++ project in VS Code - Youtube</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/vscode-debugging-on-ubuntu/" title="Ubuntu 使用 VS Code Debugger 除錯教學">Ubuntu 使用 VS Code Debugger 除錯教學</a><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/vscode-add-cpp-include-path/" title="VS Code 新增 C++ 標頭檔路徑">VS Code 新增 C++ 標頭檔路徑</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-mac/" data-id="cm12x5j9e00ih4xpq3bz681n0" data-title="macOS 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-mac-openssl" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/mac-openssl/" class="article-date">
@@ -175,7 +270,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cm129xlwb00iixgpqr0fa2xa7" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-openssl/" data-id="cm12x5j9d00ig4xpqxo0794tg" data-title="macOS 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -242,7 +337,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cm129xlwb00ihxgpqe6ohqc75" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-spotify/" data-id="cm12x5j9d00if4xpqqfjreyen" data-title="Ubuntu 安裝 Spotify 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -316,7 +411,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cm129xlwa00igxgpqipfiug0a" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-openssl/" data-id="cm12x5j9c00ie4xpq0i18t6gc" data-title="Ubuntu 2 種安裝 OpenSSL 的方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/">openssl</a></li></ul>
@@ -379,7 +474,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cm129xlwa00ifxgpq4bpfs0u7" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-suspend-command/" data-id="cm12x5j9c00id4xpq4vvh00jk" data-title="Ubuntu 休眠指令" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -445,7 +540,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cm129xlwa00iexgpquy8csods" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/mac-xocde-version/" data-id="cm12x5j9c00ic4xpqs3dhwbcm" data-title="macOS 查詢 Xcode 版本的 3 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
@@ -510,7 +605,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-attribute-packed/" data-id="cm129xlw900idxgpqhay6qd8e" data-title="C/C++ __attribute__((__packed__)) 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-attribute-packed/" data-id="cm12x5j9b00ib4xpq7f15d3vd" data-title="C/C++ __attribute__((__packed__)) 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -571,7 +666,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-uid/" data-id="cm129xlw900icxgpqr6sgieet" data-title="Android UID 定義" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-uid/" data-id="cm12x5j9b00ia4xpq8yjj80j1" data-title="Android UID 定義" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -630,7 +725,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-su/" data-id="cm129xlw900ibxgpqwhhp12dw" data-title="Android su 切換使用者指令用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-su/" data-id="cm12x5j9b00i94xpqqs2acv9x" data-title="Android su 切換使用者指令用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -703,76 +798,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cm129xlw800iaxgpqu3qfngg8" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-snprintf" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-snprintf/" class="article-date">
-  <time datetime="2022-05-02T14:00:00.000Z" itemprop="datePublished">2022-05-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-snprintf/">C/C++ snprintf 用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 C/C++ snprintf 的用法與範例，C/C++ 可以使用 snprintf 格式化輸出到 buffer 裡，除此之外還可以指定輸出的字元數。  </p>
-<p>C/C++ 要使用 snprintf 的話需要引入的標頭檔 <code>&lt;stdio.h&gt;</code>，如果要使用 C++ 的標頭檔則是引入 <code>&lt;cstdio&gt;</code>，<br>snprintf 函式原型為<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">snprintf</span><span class="params">(<span class="keyword">char</span> * buffer, <span class="keyword">size_t</span> n, <span class="keyword">const</span> <span class="keyword">char</span> * format, ...)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p>buffer：指向一塊字元陣列的指標，格式化輸出的結果字串輸出到這裡，該 buffer 需要足夠的空間存放結果。<br>n：指定輸出的最大字元數。<br>format：format 是格式控制字串，format 可被隨後的附加參數中指定的值替換，並按需求進行格式化，跟 printf 的 format 用法一樣。<br>…：可變引數 argument，依序替換 format 中的格式化種類。  </p>
-<h2><span id="cc-snprintf-格式化輸出基本用法">C/C++ snprintf 格式化輸出基本用法</span></h2><p>這邊介紹 C/C++ snprintf 格式化輸出的基本用法，snprintf 函式會在中將格式化輸出的一連串字元存到 buffer 裡。隨後的每個引數 argument 是根據 format 中的對應格式進行轉換和輸出。  </p>
-<p>使用 sprintf 的話沒有方法可以限制寫入的字元數，這表示使用 sprintf 撰寫出的程式碼很容易發生緩衝區溢位。跟 sprintf 相比 snprintf 可以指定要寫入 buffer 的字元數。  </p>
-<p>這邊介紹 C/C++ snprintf 格式化輸出，例如將數字格式化輸出成字串到 buffer 裡、將浮點數格式化輸出成字串到 buffer 裡，<br><figure class="highlight cpp"><figcaption><span>cpp-snprintf.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-snprintf.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buf[<span class="number">128</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> str[] = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">char</span> c = <span class="string">'a'</span>;</span><br><span class="line">    <span class="keyword">int</span> num = <span class="number">123</span>;</span><br><span class="line">    <span class="keyword">float</span> f = <span class="number">5.4321f</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">snprintf</span>(buf, <span class="number">128</span>, <span class="string">"string: %s\n"</span>, str);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s"</span>, buf);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">snprintf</span>(buf, <span class="number">128</span>, <span class="string">"character: %c\n"</span>, c);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s"</span>, buf);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">snprintf</span>(buf, <span class="number">128</span>, <span class="string">"integer: %d\n"</span>, num);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s"</span>, buf);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">snprintf</span>(buf, <span class="number">128</span>, <span class="string">"float: %f\n"</span>, f);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s"</span>, buf);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">string: hello world</span><br><span class="line">character: a</span><br><span class="line">integer: 123</span><br><span class="line">float: 5.432100</span><br></pre></td></tr></table></figure></p>
-<p>這邊再介紹一個範例，有時需要將一些資料格式化輸出並且連接在一起，這時可以使用 snprintf 搭配 strcat，snprintf 將資料格式化輸出到 tmp 後，再使用 strcat 連接 tmp 到 buf 裡，最後再用 printf 輸出結果，詳見下列範例，<br><figure class="highlight cpp"><figcaption><span>cpp-snprintf2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-snprintf2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> hex[] = &#123;<span class="number">0x01</span>, <span class="number">0x02</span>, <span class="number">0x03</span>, <span class="number">0x1a</span>, <span class="number">0x2b</span>, <span class="number">0x3c</span>&#125;;</span><br><span class="line">    <span class="keyword">char</span> tmp[<span class="number">128</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">char</span> buf[<span class="number">128</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(hex); i++) &#123;</span><br><span class="line">        <span class="built_in">snprintf</span>(tmp, <span class="keyword">sizeof</span>(tmp), <span class="string">"0x%02x, "</span>, hex[i]);</span><br><span class="line">        <span class="built_in">strcat</span>(buf, tmp);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"hex : %s\n"</span>, buf);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>輸出結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hex : 0x01, 0x02, 0x03, 0x1a, 0x2b, 0x3c,</span><br></pre></td></tr></table></figure></p>
-<p>以上就是 C/C++ snprintf 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其它參考<br>snprintf - C++ Reference<br><a href="https://www.cplusplus.com/reference/cstdio/snprintf/" rel="noopener external nofollow noreferrer" target="_blank">https://www.cplusplus.com/reference/cstdio/snprintf/</a>  </p>
-<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-sprintf/" title="C/C++ sprintf 用法與範例">C/C++ sprintf 用法與範例</a><br><a href="/cpp-strcat/" title="C/C++ strcat 用法與範例">C/C++ strcat 用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-snprintf/" data-id="cm129xlw800i9xgpqlfghh53d" data-title="C/C++ snprintf 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strlen/" data-id="cm12x5j9a00i84xpqat4id1on" data-title="C/C++ strlen 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -819,6 +845,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/cpp-prototype-pattern/">C++ 設計模式 - 原型模式 Prototype Pattern</a>
+          </li>
+        
+          <li>
             <a href="/cpp-flyweight-pattern/">C++ 設計模式 - 享元模式 Flyweight Pattern</a>
           </li>
         
@@ -832,10 +862,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/cpp-chain-of-responsibility-pattern/">C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-memento-pattern/">C++ 設計模式 - 備忘錄模式 Memento Pattern</a>
           </li>
         
       </ul>
@@ -854,7 +880,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">214</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">215</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 
