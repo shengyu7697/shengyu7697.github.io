@@ -107,6 +107,308 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-dependency-inversion-principle" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/dependency-inversion-principle/" class="article-date">
+  <time datetime="2024-09-18T12:00:00.000Z" itemprop="datePublished">2024-09-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/dependency-inversion-principle/">設計原則 - 依賴反轉原則 Dependency Inversion Principle</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>在軟體設計中，我們經常面對類別之間的依賴關係。想像你正在開發一個龐大的系統，當中某個小功能需要變更，卻發現一改動就要牽扯到許多不相關的部分。這種情況下你是不是會開始懷疑，設計是否有問題？  </p>
+<p>這就是設計原則出現的原因，特別是「依賴反轉原則 (Dependency Inversion Principle, DIP)」，它能幫助我們建立靈活的系統，避免高耦合的噩夢。  </p>
+<h2><span id="什麼是依賴反轉原則">什麼是依賴反轉原則？</span></h2><p>依賴反轉原則是一種解決依賴問題的設計原則，依賴反轉原則強調：<strong>高層模組不應依賴於低層模組，兩者都應依賴於抽象</strong>。這聽起來可能有點抽象，但換句話說，就是我們要將具體的細節抽象化，讓不同層級的模組之間解耦不直接依賴彼此的實作，進而減少維護成本與錯誤的機會。  </p>
+<p>依賴反轉原則主要包含兩個重點：  </p>
+<ol>
+<li>高層模組不應該依賴於低層模組。  </li>
+<li>兩者應該依賴於抽象（介面或抽象類別）。  </li>
+</ol>
+<p>用最白話的方式來理解，就是「大腦不應該直接控制肌肉運動，而是應該透過神經傳導」。同樣道理，應用程式的高層邏輯不應該直接依賴底層細節，而是應該透過一層抽象來進行溝通。  </p>
+<h2><span id="依賴反轉原則的例子">依賴反轉原則的例子</span></h2><p>我們先來看一個不遵守依賴反轉原則的例子。  </p>
+<h3><span id="錯誤的設計違反依賴反轉原則">錯誤的設計，違反依賴反轉原則</span></h3><p>想像你正在設計一個點餐系統，在原始設計裡你可能會這樣實作：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CreditCard</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pay</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 信用卡付款邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Order</span> &#123;</span></span><br><span class="line">    CreditCard creditCard;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">processOrder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        creditCard.pay();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>這個程式看起來沒什麼問題，但如果突然要新增其他付款方式，例如 PayPal 呢？每當系統需要支援新的付款方式時，你都得改 <code>Order</code> class 類別，這樣的設計很容易隨著功能擴充而變得脆弱。  </p>
+<p>在上面的範例中，<code>Order</code> 類別直接依賴於 <code>CreditCard</code> 類別，這就是違反依賴反轉原則的設計。這樣一來，只要 <code>CreditCard</code> 類別有變動，或者你要加入其他付款方式，<code>Order</code> 的實作就需要大幅改動，這導致系統的維護變得更加困難，擴充性也大打折扣。  </p>
+<h3><span id="正確的設計遵守依賴反轉原則">正確的設計，遵守依賴反轉原則</span></h3><p>我們可以透過抽象的方式解決這個問題。這裡的解決方案就是將付款方式抽象出來，讓 <code>Order</code> 類別不再直接依賴於具體的 <code>CreditCard</code>，而是依賴於一個抽象的付款介面：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PaymentMethod</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">pay</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CreditCard</span> :</span> <span class="keyword">public</span> PaymentMethod &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pay</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// 信用卡付款邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PayPal</span> :</span> <span class="keyword">public</span> PaymentMethod &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">pay</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// PayPal付款邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Order</span> &#123;</span></span><br><span class="line">    PaymentMethod&amp; paymentMethod;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Order(PaymentMethod&amp; method) : paymentMethod(method) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">processOrder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        paymentMethod.pay();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在這個範例中，<code>Order</code> 類別不再依賴具體的 <code>CreditCard</code> 或 <code>PayPal</code>，而是依賴於 <code>PaymentMethod</code> 這個抽象介面。這樣，如果將來要新增其他付款方式，我們只需要實作新的付款類別（實作 <code>PaymentMethod</code> class），而不必動到 <code>Order</code> 類別。這樣的設計就遵循了依賴反轉原則，達到了靈活且可擴展的目的。  </p>
+<h2><span id="為什麼這麼做">為什麼這麼做？</span></h2><p>當我們遵循依賴反轉原則，會發現系統變得更加彈性，維護性也提高了。具體實作的變動不會影響高層邏輯，這意味著在不改動核心業務邏輯的情況下，我們可以輕鬆替換或擴充底層的具體實作。  </p>
+<p>例如在付款系統中，隨著業務發展，可能會有新的付款方式不斷加入。依賴反轉原則讓我們在不改動核心訂單處理的情況下，直接新增其他付款方式，保持系統的穩定性與靈活性。  </p>
+<p>但這樣做也有一點缺點，就是會讓設計稍微複雜，特別是對於一些小型專案來說，過度抽象反而會增加開發的負擔。但隨著系統成長，這種設計方式能帶來的好處將遠大於初期的設計成本。  </p>
+<h2><span id="實際應用">實際應用</span></h2><p>依賴反轉原則在很多場景中都非常實用，特別是在大型系統或複雜應用中。例如在網路應用中，我們常常會有不同的資料存取方式，如 SQL、NoSQL 或是基於第三方的 API。透過依賴反轉原則，我們可以為高層邏輯設計一個統一的資料存取介面，而實際的資料庫選擇則可以在不同情況下自由切換，而不影響應用層邏輯。  </p>
+<p>這樣的設計原則也可以應用在許多場景，例如日誌系統、通知系統、甚至是硬體裝置的驅動層。每當你需要擴充或替換具體實作，而不想改動核心邏輯時，依賴反轉原則都是你的好幫手。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/dependency-inversion-principle/" data-id="cm19ca0f800o9j4pq5j9qk88b" data-title="設計原則 - 依賴反轉原則 Dependency Inversion Principle" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-interface-segregation-principle" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/interface-segregation-principle/" class="article-date">
+  <time datetime="2024-09-17T12:00:00.000Z" itemprop="datePublished">2024-09-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/interface-segregation-principle/">設計原則 - 介面隔離原則 Interface Segregation Principle</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>想像一下，你的程式裡有一個大型介面，每次新增功能都得修改這個介面，這樣不僅讓開發變得複雜，也讓維護變得困難。這就是為什麼我們需要「介面隔離原則 (Interface Segregation Principle, ISP)」。這個原則告訴我們，與其讓程式依賴一個龐大且複雜的介面，不如讓它們只依賴於它們真正需要的介面，這樣可以讓程式碼更加靈活和容易維護。  </p>
+<h2><span id="什麼是介面隔離原則">什麼是介面隔離原則？</span></h2><p>介面隔離原則的核心概念是：<strong>不要強迫一個類別實作它不需要的介面方法</strong>。這意味著我們應該將大的介面拆分為更小、更具針對性的介面，讓類別只依賴它們所需要的功能。  </p>
+<p>想像一下，如果你是一名廚師，而你的工作清單裡除了煮飯，還包含了洗衣、修車等不相關的工作，你肯定會覺得困擾。對於軟體設計來說，大型介面就像這樣的工作清單，讓不必要的依賴進入系統，增加了複雜性。  </p>
+<h2><span id="介面隔離原則的例子">介面隔離原則的例子</span></h2><p>讓我們用一個具體例子來看，什麼樣的設計會違反介面隔離原則。  </p>
+<h3><span id="錯誤的設計違反介面隔離原則">錯誤的設計，違反介面隔離原則</span></h3><p>假設我們有一個 <code>Worker</code> 介面，裡面定義了各種工作相關的功能，包括寫程式、做簡報、煮飯等：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IWorker</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">code</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">cook</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">present</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>現在，如果有一個 <code>Programmer</code> 類別需要實作這個介面，它只需要寫程式，但仍然得實作 <code>cook</code> 和 <code>present</code> 方法，這些它根本不會用到：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Programmer</span> :</span> <span class="keyword">public</span> IWorker &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">code</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// 寫程式的邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">cook</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// 不需要，但必須實作</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">present</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// 不需要，但必須實作</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>這種設計顯然是違反了 ISP 的，因為 <code>Programmer</code> 類別被強迫實作了它根本不需要的功能。這不僅讓程式碼冗長，還會帶來未來維護的麻煩。  </p>
+<h3><span id="正確的設計遵守介面隔離原則">正確的設計，遵守介面隔離原則</span></h3><p>正確的設計應該將這些功能分離為多個小介面，讓類別只實作它所需要的功能。例如，我們可以這樣做：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IProgrammer</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">code</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ICook</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">cook</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IPresenter</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">present</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>現在，<code>Programmer</code> 類別只需要實作 <code>IProgrammer</code> 介面，完全不需要理會與它無關的 <code>cook</code> 和 <code>present</code> 方法：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Programmer</span> :</span> <span class="keyword">public</span> IProgrammer &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">code</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// 寫程式的邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>這樣的設計遵守了介面隔離原則，讓類別只專注於它該做的事情，減少了不必要的依賴和負擔。  </p>
+<h2><span id="為什麼這麼做">為什麼這麼做？</span></h2><p>遵守 ISP 有很多好處。首先它讓程式碼更加模組化和易於理解。當介面變小、變專注時，開發者可以更容易地了解每個介面的職責，這減少了混亂。  </p>
+<p>其次，這樣的設計讓我們更容易進行修改和擴展。假如未來需要新增功能，只需修改特定的小介面，而不會影響其他不相關的部分。這讓系統更加穩定，減少了修改時引入錯誤的風險。  </p>
+<p>再者，遵守 ISP 讓我們可以避免不必要的依賴。當類別依賴於一個龐大的介面時，即便只使用其中一部分功能，它仍然會受到整個介面的影響。這種依賴會讓程式變得臃腫且難以維護。  </p>
+<p>然而，過度拆分介面也可能帶來額外的複雜性。因此，我們在實踐 ISP 時，應該保持平衡，確保每個介面都有明確的職責，而不過度細化。  </p>
+<h2><span id="實際應用">實際應用</span></h2><p>在大型專案中，遵守介面隔離原則是保持程式碼品質和穩定性的關鍵。例如，在開發圖形使用者介面 (GUI) 時，按鈕、下拉選單等 UI 元件可能會有不同的互動方式。將這些行為拆分成小介面，能夠讓每個元件專注於它自己的功能，而不會被不必要的行為所束縛。  </p>
+<p>另一個應用場景是在大型企業軟體開發中，當需要同時面對不同的使用者需求時，我們可以透過小介面來應對不同的需求變化，確保每個功能都能獨立變動，保持靈活性。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/interface-segregation-principle/" data-id="cm19ca0f700o8j4pq83ekncj9" data-title="設計原則 - 介面隔離原則 Interface Segregation Principle" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-liskov-substitution-principle" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/liskov-substitution-principle/" class="article-date">
+  <time datetime="2024-09-16T12:00:00.000Z" itemprop="datePublished">2024-09-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/liskov-substitution-principle/">設計原則 - 里氏替換原則 Liskov Substitution Principle</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>你是否曾經遇到過這樣的情況：你寫了一個子類別，卻發現當它被應用於父類別的場景時，程式突然出現了問題？這其實是違反了「里氏替換原則 (Liskov Substitution Principle, LSP)」的例子。LSP 是面向物件設計中的一個重要原則，能幫助我們在使用繼承時保持程式的穩定性。  </p>
+<h2><span id="什麼是里氏替換原則">什麼是里氏替換原則？</span></h2><p>簡單來說，里氏替換原則強調：<strong>所有的子類別應該可以替換掉它們的父類別，而不會影響程式的正確性</strong>。也就是說，如果你的程式原本使用的是父類別，那麼它也應該能夠正常使用任何一個子類別而不會出錯。  </p>
+<p>這個原則是對繼承的一種保障：繼承不是僅僅為了重複使用父類別的程式碼，而是為了保證「子類別能夠完全取代父類別」。如果子類別的行為和父類別不同，甚至違反了父類別的預期，那麼就會破壞系統的穩定性，這就是違反 LSP 的表現。  </p>
+<h2><span id="里氏替換原則的例子">里氏替換原則的例子</span></h2><p>讓我們來看一個簡單的例子，理解什麼樣的設計違反了里氏替換原則。  </p>
+<h3><span id="錯誤的設計違反里氏替換原則">錯誤的設計，違反里氏替換原則</span></h3><p>假設我們有一個 <code>Bird</code> 類別，以及繼承它的 <code>Penguin</code> 類別：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bird</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 鳥類的飛行行為</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Penguin</span> :</span> <span class="keyword">public</span> Bird &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="built_in">std</span>::logic_error(<span class="string">"Penguins can't fly!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在這個例子中，<code>Penguin</code> 類別違反了 LSP，因為當程式預期所有的 <code>Bird</code> 都能飛時，<code>Penguin</code> 的 <code>fly</code> 方法卻會拋出異常，這顯然不是正確的行為。雖然企鵝是鳥類，但它不能飛，這導致了子類別無法正常替換父類別。  </p>
+<h3><span id="正確的設計遵守里氏替換原則">正確的設計，遵守里氏替換原則</span></h3><p>要解決這個問題，我們應該重新思考類別的設計。或許「飛行」不應該是所有鳥類的共同行為，而應該是飛行鳥類的特徵。因此，我們可以將飛行行為從 <code>Bird</code> 類別中移除，並且將其移到專門處理飛行鳥類的類別中：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bird</span> &#123;</span></span><br><span class="line">    <span class="comment">// 一般鳥類的屬性與行為</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FlyingBird</span> :</span> <span class="keyword">public</span> Bird &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 飛行行為</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Penguin</span> :</span> <span class="keyword">public</span> Bird &#123;</span><br><span class="line">    <span class="comment">// 企鵝的行為，無需實現 fly 方法</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>經過重新設計後，現在 <code>Penguin</code> 類別不需要再拋出異常，因為它不會被要求飛行，而 <code>FlyingBird</code> 類別則專注於飛行鳥類的行為。這樣的設計遵守了 LSP，因為 <code>Penguin</code> 不再被強迫擁有與其不符合的行為。  </p>
+<h2><span id="為什麼這麼做">為什麼這麼做？</span></h2><p>遵守里氏替換原則能夠讓程式更具穩定性與可預測性。當你的子類別能夠無縫替換父類別時，系統能夠更有效地進行擴展，維護起來也更加容易。  </p>
+<p>不遵守 LSP 的問題在於，當子類別無法替換父類別時，往往會導致難以發現的錯誤。這些錯誤可能在某些特定情境下才會顯現出來，這使得除錯變得非常困難。  </p>
+<p>此外 LSP 的好處在於<strong>保持繼承的正確性與一致性</strong>。當我們設計一個基底類別時，我們期望所有的子類別都能遵循同樣的行為規範，而不是為每一個子類別設定不同的特例。遵守 LSP 意味著我們的設計是穩定且易於預測的，這對於大型專案來說至關重要。  </p>
+<p>當然，過度應用繼承或過於強求遵守 LSP 可能會導致程式碼設計變得複雜，因此在實踐中，我們應該根據具體需求靈活應用這一原則。  </p>
+<h2><span id="實際應用">實際應用</span></h2><p>LSP 在實際應用中是非常常見的，尤其是在框架設計或 API 開發中尤為重要。設計一個良好的框架或函式庫時，確保子類別能夠無縫替換父類別，能夠讓開發者更加輕鬆地進行擴展和修改，而不必擔心破壞現有系統。  </p>
+<p>例如在 GUI 開發中，一個基礎的按鈕類別可能會被許多不同的按鈕類別繼承（如「送出按鈕」或「取消按鈕」）。這些子按鈕應該都能被替換為基礎的按鈕類別，而不會出現意外行為。遵守 LSP 可以讓整個界面的行為更為一致，也讓開發更為順暢。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/liskov-substitution-principle/" data-id="cm19ca0f700o7j4pqy5sunlb4" data-title="設計原則 - 里氏替換原則 Liskov Substitution Principle" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-open-closed-principle" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/open-closed-principle/" class="article-date">
+  <time datetime="2024-09-15T12:00:00.000Z" itemprop="datePublished">2024-09-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>在軟體設計中，我們經常面對需求變更的挑戰。想像一下，當客戶突然提出新需求時，你的系統卻因為架構過於死板，導致每次要修改功能都得重新調整大量程式碼。這不僅會耗費時間，還會增加出錯的機會。這時候「開放封閉原則 (Open-Closed Principle, OCP)」就能派上用場，幫助我們的程式保持靈活性，同時又能控制變更帶來的風險。  </p>
+<h2><span id="什麼是開放封閉原則">什麼是開放封閉原則？</span></h2><p>開放封閉原則，簡單來說就是<strong>軟體應該對擴展開放，對修改封閉</strong>。也就是說我們應該設計程式，使其能夠在不修改既有程式碼的情況下，透過擴展來新增功能。  </p>
+<p>換句話說，當我們的需求改變時，應該可以透過增加新類別或新功能來解決，而不是去修改現有的邏輯。這樣的好處是，既能保護原有系統的穩定性，又能快速適應變化。  </p>
+<h2><span id="開放封閉原則的例子">開放封閉原則的例子</span></h2><p>讓我們來看一個不符合開放封閉原則的例子，來感受這個原則的意義。  </p>
+<h3><span id="錯誤的設計違反開放封閉原則">錯誤的設計，違反開放封閉原則</span></h3><p>假設我們在設計一個圖形繪製程式，原本只需要支援兩種圖形——圓形和方形，我們的程式可能會這樣寫：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> ShapeType &#123;</span><br><span class="line">    Circle,</span><br><span class="line">    Square</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ShapeDrawer</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">drawShape</span><span class="params">(ShapeType type)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (type == Circle) &#123;</span><br><span class="line">            <span class="comment">// 畫圓形的邏輯</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == Square) &#123;</span><br><span class="line">            <span class="comment">// 畫方形的邏輯</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>這段程式碼運作良好，但當需求改變，客戶希望支援更多的圖形類型時，我們就必須不斷修改 <code>ShapeDrawer</code> 類別，加入新的條件分支。如果圖形種類越來越多，例如三角形、橢圓與菱形等，這段程式碼會變得越來越臃腫且難以維護。  </p>
+<p>上述例子顯然違反了開放封閉原則。因為每當我們需要新增一種新圖形，都得進行程式碼修改，這不僅增加了錯誤的風險，也讓系統變得更加脆弱。理想的情況下，我們應該能在不改動既有程式碼的情況下，輕鬆地增加新圖形的繪製功能。  </p>
+<h3><span id="正確的設計遵守開放封閉原則">正確的設計，遵守開放封閉原則</span></h3><p>為了符合開放封閉原則，我們可以運用抽象類別與多型的設計來解決這個問題：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Circle</span> :</span> <span class="keyword">public</span> Shape &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// 畫圓形的邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Square</span> :</span> <span class="keyword">public</span> Shape &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123;</span><br><span class="line">        <span class="comment">// 畫方形的邏輯</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ShapeDrawer</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">drawShape</span><span class="params">(<span class="keyword">const</span> Shape&amp; shape)</span> </span>&#123;</span><br><span class="line">        shape.draw();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在這個設計中，<code>ShapeDrawer</code> 不再依賴於具體的圖形類型，所有圖形的繪製邏輯都由各自的類別來負責。如果我們需要新增一種新圖形，例如三角形，我們只需新增一個 <code>Triangle</code> 類別，實作其 <code>draw</code> 方法，而不需要修改 <code>ShapeDrawer</code> 類別。這樣我們就可以輕鬆擴展功能，而不必改動既有的程式碼，符合了開放封閉原則。  </p>
+<h2><span id="為什麼這麼做">為什麼這麼做？</span></h2><p>開放封閉原則帶來的最大好處就是<strong>系統的穩定性與可擴展性</strong>。當我們能夠在不修改現有程式碼的情況下擴展功能時，就能減少意外錯誤的風險，也能保持系統的穩定性。這在大型專案或持續演進的系統中顯得重要。  </p>
+<p>同時，這樣的設計還讓我們的程式更加容易維護和理解。每個圖形的繪製邏輯都被封裝在各自的類別中，遵循單一職責原則 (Single Responsibility Principle)，不會讓 <code>ShapeDrawer</code> 類別變得臃腫不堪。  </p>
+<p>當然，開放封閉原則也有其限制，特別是當我們過度抽象時，可能會使系統設計變得過於複雜。在小型專案中，這種設計的好處可能不那麼明顯，但隨著系統規模增大，這種方式的優勢會逐漸顯現。  </p>
+<h2><span id="實際應用">實際應用</span></h2><p>開放封閉原則廣泛應用於各種場景，尤其是在<strong>框架設計</strong>與<strong>第三方擴展</strong>時非常實用。舉例來說，許多應用程式框架都提供了一系列的抽象介面，開發者可以在不修改框架核心程式碼的情況下，透過實作這些介面來擴展功能，這正是開放封閉原則的應用。  </p>
+<p>同樣地，在一些策略模式或工廠模式的應用中，我們也會看到開放封閉原則的影子。無論是新增業務邏輯、加入新的功能模組，還是替換現有功能，遵守這個原則都能讓我們的系統保持穩定且靈活。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/open-closed-principle/" data-id="cm19ca0f600o6j4pqmfci7v22" data-title="設計原則 - 開放封閉原則 Open-Closed Principle" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-single-responsibility-principle" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/single-responsibility-principle/" class="article-date">
@@ -168,7 +470,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/single-responsibility-principle/" data-id="cm198pc9500o5pepqthbhtw5v" data-title="設計原則 - 單一職責原則 Single Responsibility Principle" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/single-responsibility-principle/" data-id="cm19ca0f500o5j4pqtp6wm6wm" data-title="設計原則 - 單一職責原則 Single Responsibility Principle" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -250,7 +552,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-visitor-pattern/" data-id="cm198pc9500o4pepqnz21akor" data-title="C++ 設計模式 - 訪問者模式 Visitor Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-visitor-pattern/" data-id="cm19ca0f500o4j4pqtdtn32ma" data-title="C++ 設計模式 - 訪問者模式 Visitor Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -330,7 +632,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-prototype-pattern/" data-id="cm198pc9400o3pepq568jli4b" data-title="C++ 設計模式 - 原型模式 Prototype Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-prototype-pattern/" data-id="cm19ca0f400o3j4pquq2kzmkn" data-title="C++ 設計模式 - 原型模式 Prototype Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -403,7 +705,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-flyweight-pattern/" data-id="cm198pc9400o2pepqlujfr6kj" data-title="C++ 設計模式 - 享元模式 Flyweight Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-flyweight-pattern/" data-id="cm19ca0f400o2j4pqh6v166bq" data-title="C++ 設計模式 - 享元模式 Flyweight Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -476,7 +778,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-interpreter-pattern/" data-id="cm198pc9300o1pepqj80eco2r" data-title="C++ 設計模式 - 解釋器模式 Interpreter Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-interpreter-pattern/" data-id="cm19ca0f300o1j4pqjmwaoefl" data-title="C++ 設計模式 - 解釋器模式 Interpreter Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -561,286 +863,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-bridge-pattern/" data-id="cm198pc9200o0pepqcj5qxu51" data-title="C++ 設計模式 - 橋接模式 Bridge Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-chain-of-responsibility-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-chain-of-responsibility-pattern/" class="article-date">
-  <time datetime="2024-09-08T12:00:00.000Z" itemprop="datePublished">2024-09-08</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-chain-of-responsibility-pattern/">C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>想像你在公司工作，遇到一個問題，你先向主管反映，如果主管無法解決，再往上報告給更高層級的主管，直到有人能解決問題。這就是「責任鏈模式」的核心概念。這種模式允許你把任務逐層傳遞，直到某個物件可以處理它。在軟體設計中，這可以讓系統更加靈活，避免固定的條件判斷，提升維護性。  </p>
-<h2><span id="什麼是責任鏈模式">什麼是責任鏈模式？</span></h2><p>責任鏈模式是一種行為型設計模式，允許多個物件按順序處理請求。每個物件有機會決定是否處理請求，或者將其轉交給下一個物件。這樣一來我們可以將不同的職責模組化，讓每個物件專注於自己的職責範圍，而不用關心整個處理流程。  </p>
-<p>想像你正在玩一個熱門的多人線上遊戲。當你遇到問題需要幫助時，你可能會先詢問遊戲內的自動客服系統。如果自動客服無法解決，問題會被轉到人工客服。如果人工客服也無法處理，問題可能會被上報給技術支援團隊。這就是一個典型的責任鏈模式應用場景。  </p>
-<h2><span id="責任鏈模式在客戶支援系統中的應用">責任鏈模式在客戶支援系統中的應用</span></h2><p>一個常見的應用例子是客戶支援系統，當客戶送出問題時，問題可能由多個不同層級的支援人員來處理：自動客服、人工客服、技術支援團隊等。每個層級都會檢查問題，如果無法解決，就會向上級遞交，直到問題被解決。  </p>
-<p>首先我們定義一個抽象的處理者類，每個處理者 Handler（如客服）都有一個處理請求的方法，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 處理者 Handler</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CustomerServiceHandler</span> &#123;</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    CustomerServiceHandler* nextHandler;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~CustomerServiceHandler() = <span class="keyword">default</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">setNext</span><span class="params">(CustomerServiceHandler* handler)</span> </span>&#123;</span><br><span class="line">        nextHandler = handler;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>然後我們實現具體的處理者類，具體的 Handler 如自動客服、人工客服和技術支援團隊繼承這個介面，並實現處理方法，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體處理者 Concrete Handlers</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AutomatedSystem</span> :</span> <span class="keyword">public</span> CustomerServiceHandler &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (request == <span class="string">"簡單問題"</span>) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"自動系統：我可以回答這個簡單問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nextHandler != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            nextHandler-&gt;handleRequest(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HumanAgent</span> :</span> <span class="keyword">public</span> CustomerServiceHandler &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (request == <span class="string">"複雜問題"</span>) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"人工客服：我來處理這個複雜問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nextHandler != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            nextHandler-&gt;handleRequest(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TechnicalSupport</span> :</span> <span class="keyword">public</span> CustomerServiceHandler &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; request)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (request == <span class="string">"技術問題"</span>) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"技術支援團隊：我們會深入研究並解決這個問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nextHandler != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            nextHandler-&gt;handleRequest(request);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"無法解決這個問題。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>最後客戶端可以這樣使用，當客戶發出請求時，系統會從自動客服開始，如果無法處理，請求會傳遞到下一個層級，直到問題解決，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 建立三個處理者</span></span><br><span class="line">    AutomatedSystem* autoSystem = <span class="keyword">new</span> AutomatedSystem();</span><br><span class="line">    HumanAgent* humanAgent = <span class="keyword">new</span> HumanAgent();</span><br><span class="line">    TechnicalSupport* techSupport = <span class="keyword">new</span> TechnicalSupport();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 設定責任鏈</span></span><br><span class="line">    autoSystem-&gt;setNext(humanAgent);</span><br><span class="line">    humanAgent-&gt;setNext(techSupport);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 測試不同請求</span></span><br><span class="line">    autoSystem-&gt;handleRequest(<span class="string">"簡單問題"</span>);</span><br><span class="line">    autoSystem-&gt;handleRequest(<span class="string">"複雜問題"</span>);</span><br><span class="line">    autoSystem-&gt;handleRequest(<span class="string">"技術問題"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> autoSystem;</span><br><span class="line">    <span class="keyword">delete</span> humanAgent;</span><br><span class="line">    <span class="keyword">delete</span> techSupport;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">自動系統：我可以回答這個簡單問題。</span><br><span class="line">人工客服：我來處理這個複雜問題。</span><br><span class="line">技術支援團隊：我們會深入研究並解決這個問題。</span><br></pre></td></tr></table></figure></p>
-<h2><span id="責任鏈模式的優缺點">責任鏈模式的優缺點</span></h2><p>責任鏈模式的一大優點是它讓系統更加靈活。新增一個處理者 Handler 不需要修改其他 Handler 的程式碼，只需要在責任鏈中插入新的 Handler 即可，這極大地提高了擴展性。同時 Handler 之間的耦合度降低，每個 Handler 只專注於自己能解決的問題。  </p>
-<p>然而這個模式也有一些的缺點。如果責任鏈過長請求可能會經過很多 Handler，增加了系統的處理時間。此外如果沒有適當的終止條件，請求可能會在處理鏈中無限傳遞。  </p>
-<h2><span id="總結">總結</span></h2><p>責任鏈模式讓我們能夠將職責分散到不同的處理者 Handler 中，提升了系統的可擴展性和維護性。在某些需要多層處理的場景，像是客戶支援系統或是事件處理系統中，這是一種非常有效的解決方案。這個模式避免了一堆 <code>if-else</code> 的條件判斷，讓系統更靈活但也需要注意過長的處理鏈條可能帶來的效率問題。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-chain-of-responsibility-pattern/" data-id="cm198pc9100nzpepqbnm4926f" data-title="C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-memento-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-memento-pattern/" class="article-date">
-  <time datetime="2024-09-07T12:00:00.000Z" itemprop="datePublished">2024-09-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-memento-pattern/">C++ 設計模式 - 備忘錄模式 Memento Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>假如你正在玩一個遊戲，過了一個困難的關卡，突然間手滑點錯選項，整個進度被重置，你會不會希望有個「存檔」功能讓你可以回到那個關卡？這正是備忘錄模式 Memento Pattern 可以幫助我們解決的問題。備忘錄模式讓我們可以在需要時保存某個物件的狀態，並在必要時恢復到之前的狀態，像是一個系統的「後悔藥」。  </p>
-<h2><span id="什麼是備忘錄模式">什麼是備忘錄模式？</span></h2><p>備忘錄模式是一種行為型設計模式，用來保存物件的狀態，這樣就可以在未來的某個時刻還原這些狀態。這個模式提供了一個方法讓物件能夠保存自己的狀態，並且在不違反封裝原則的情況下將其恢復。備忘錄模式可以想像成一個「快照」，讓我們可以回到某個特定的時間點，而不用擔心破壞系統的其他部分。  </p>
-<p>這個模式的基本角色包括：  </p>
-<ol>
-<li>Originator（發起者）：擁有狀態並可以建立或恢復備忘錄。  </li>
-<li>Memento（備忘錄）：保存Originator的內部狀態，並且只有Originator可以訪問它。  </li>
-<li>Caretaker（照顧者）：負責管理備忘錄，但不會修改其內容，只會在需要時請求Originator恢復狀態。  </li>
-</ol>
-<h2><span id="備忘錄模式在文字編輯器中的應用">備忘錄模式在文字編輯器中的應用</span></h2><p>一個很常見的應用例子就是文字編輯器中的「復原」與「重做」功能。當你編輯檔案時，每一次的修改都可以被記錄下來，這樣當你需要復原時，可以回到先前的狀態。讓我們用一個簡單的C++範例來解釋。  </p>
-<p>首先我們需要定義一個保存狀態的備忘錄類別，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Memento 備忘錄介面</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Memento</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Memento(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; content) : content(content) &#123;&#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getContent</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> content; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> content;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>接下來我們定義發起者類別（文字編輯器），這個類別會保存當前的狀態，並且能夠建立或恢復備忘錄，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Originator 發起者類別</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TextEditor</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">appendText</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; text)</span> </span>&#123;</span><br><span class="line">        content += text;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setText</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; text)</span> </span>&#123;</span><br><span class="line">        content = text;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getText</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> content;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">Memento <span class="title">save</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Memento(content);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">restore</span><span class="params">(<span class="keyword">const</span> Memento&amp; memento)</span> </span>&#123;</span><br><span class="line">        content = memento.getContent();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> content;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>照顧者會管理這些備忘錄，但它不會直接操作它們的內容，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 照顧者類別 History</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">History</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">push</span><span class="params">(<span class="keyword">const</span> Memento&amp; memento)</span> </span>&#123;</span><br><span class="line">        mementos.push_back(memento);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">Memento <span class="title">pop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mementos.empty()) &#123;</span><br><span class="line">            <span class="keyword">return</span> Memento(<span class="string">""</span>); <span class="comment">// 若無備忘錄可恢復，回傳空狀態</span></span><br><span class="line">        &#125;</span><br><span class="line">        Memento lastMemento = mementos.back();</span><br><span class="line">        mementos.pop_back();</span><br><span class="line">        <span class="keyword">return</span> lastMemento;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Memento&gt; mementos;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>在客戶端，讓我們看看如何使用這個文字編輯器系統，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    TextEditor editor;</span><br><span class="line">    History history;</span><br><span class="line"></span><br><span class="line">    editor.appendText(<span class="string">"123"</span>);</span><br><span class="line">    history.push(editor.save());</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Current Text: "</span> &lt;&lt; editor.getText() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    editor.appendText(<span class="string">"456"</span>);</span><br><span class="line">    history.push(editor.save());</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Current Text: "</span> &lt;&lt; editor.getText() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    editor.appendText(<span class="string">"789"</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Current Text: "</span> &lt;&lt; editor.getText() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 恢復到之前的狀態</span></span><br><span class="line">    editor.restore(history.pop());</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"After Undo: "</span> &lt;&lt; editor.getText() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    editor.restore(history.pop());</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"After Undo: "</span> &lt;&lt; editor.getText() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Current Text: 123</span><br><span class="line">Current Text: 123456</span><br><span class="line">Current Text: 123456789</span><br><span class="line">After Undo: 123456</span><br><span class="line">After Undo: 123</span><br></pre></td></tr></table></figure></p>
-<p>這個範例示範了如何使用備忘錄模式來實現文字編輯器中的復原功能。發起者（文字編輯器）負責建立和恢復備忘錄，而照顧者則管理這些狀態。  </p>
-<h2><span id="備忘錄模式的優缺點">備忘錄模式的優缺點</span></h2><p>備忘錄模式最明顯的優點是它允許我們在不影響物件封裝的前提下保存和恢復狀態，這對於系統的靈活性和可維護性非常重要。舉例來說，文字編輯器的「復原」功能就是一個非常實用的情境，它可以讓我們安心編輯，隨時恢復先前狀態，減少操作錯誤的風險。  </p>
-<p>備忘錄模式也有的缺點，當系統需要保存的狀態非常龐大時，備忘錄會佔用大量的記憶體，進而影響效能。尤其在大型系統中，若狀態保存頻繁，可能會導致記憶體使用量過高。  </p>
-<h2><span id="總結">總結</span></h2><p>備忘錄模式特別適合應用於那些需要保存和恢復狀態的系統中，例如文字編輯器、遊戲或設定管理工具等。它讓我們可以在操作中放心地進行改變，隨時可以回到之前的狀態。然而我們也應該根據具體情況來決定是否使用，避免不必要的記憶體消耗。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-memento-pattern/" data-id="cm198pc9100nypepqzkpojkdp" data-title="C++ 設計模式 - 備忘錄模式 Memento Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-mediator-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-mediator-pattern/" class="article-date">
-  <time datetime="2024-09-06T12:00:00.000Z" itemprop="datePublished">2024-09-06</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-mediator-pattern/">C++ 設計模式 - 中介者模式 Mediator Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>有時候我們在開發大型系統時，會發現各個物件之間的溝通漸漸變得複雜無比，像是織了一張錯綜複雜的蜘蛛網。每個物件彼此依賴，要新增或修改功能時牽一髮而動全身。這時候中介者模式 Mediator Pattern 就像是一個「協調者」，能讓物件之間的溝通變得有條不紊，不用每個物件都互相認識。今天我們來聊聊這個神奇的模式！  </p>
-<h2><span id="什麼是中介者模式">什麼是中介者模式？</span></h2><p>中介者模式是一種行為型設計模式，用來定義一個物件，負責協調其他多個物件之間的互動。這個模式的核心概念是：物件之間不直接溝通，而是透過一個「中介者」來傳遞訊息或協調行為。這樣做的好處是，我們可以減少物件之間的耦合度，使系統更易於維護與擴展。  </p>
-<p>打個比方，想像你在公司裡面工作，當你需要和不同部門溝通時，不需要直接找每個部門的人，而是透過人力資源部門（HR）。HR 就是這裡的「中介者」，它負責協調你與各部門之間的溝通，讓事情變得更簡單明瞭。  </p>
-<h2><span id="中介者模式在聊天室應用中的實例">中介者模式在聊天室應用中的實例</span></h2><p>最經典的中介者模式應用場景之一就是「聊天室」。在一個聊天室中，每個使用者都可以發訊息給其他使用者。如果沒有中介者模式，所有使用者都需要相互認識才能互相溝通，這會讓系統變得非常混亂且難以擴展。而有了中介者後，每個使用者只需要和中介者溝通，中介者再把訊息傳遞給其他相關的使用者。  </p>
-<p>首先我們先定義中介者介面，中介者需要有一個統一的介面，定義訊息如何在物件間傳遞，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ChatUser</span>;</span> <span class="comment">// 前向宣告</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 中介者介面</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ChatRoom</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(<span class="keyword">const</span> ChatUser* sender, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~ChatRoom() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>這個具體的中介者負責管理聊天室中的使用者，並將訊息傳遞給正確的接收者，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 具體中介者</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ConcreteChatRoom</span> :</span> <span class="keyword">public</span> ChatRoom &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;ChatUser*&gt; chatUsers;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addUser</span><span class="params">(ChatUser* user)</span> </span>&#123;</span><br><span class="line">        chatUsers.push_back(user);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(<span class="keyword">const</span> ChatUser* sender, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message)</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (ChatUser* user : chatUsers) &#123;</span><br><span class="line">            <span class="keyword">if</span> (user != sender) &#123;</span><br><span class="line">                user-&gt;receive(sender-&gt;getName() + <span class="string">": "</span> + message);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>聊天室的使用者實作一個可以和中介者溝通的介面，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 參與者</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ChatUser</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    ChatRoom* chatRoom;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ChatUser(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name, ChatRoom* room) : name(name), chatRoom(room) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">send</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message)</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; name &lt;&lt; <span class="string">" 發送消息: "</span> &lt;&lt; message &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        chatRoom-&gt;sendMessage(<span class="keyword">this</span>, message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">receive</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; message)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; name &lt;&lt; <span class="string">" 收到消息: "</span> &lt;&lt; message &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getName</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>在客戶端，使用者透過中介者來發送和接收訊息，而不需要知道其他使用者的存在，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 客戶端使用</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ConcreteChatRoom room;</span><br><span class="line">    </span><br><span class="line">    <span class="function">ChatUser <span class="title">john</span><span class="params">(<span class="string">"John"</span>, &amp;room)</span></span>;</span><br><span class="line">    <span class="function">ChatUser <span class="title">alice</span><span class="params">(<span class="string">"Alice"</span>, &amp;room)</span></span>;</span><br><span class="line"></span><br><span class="line">    room.addUser(&amp;john);</span><br><span class="line">    room.addUser(&amp;alice);</span><br><span class="line"></span><br><span class="line">    john.send(<span class="string">"Hello, Alice!"</span>);</span><br><span class="line">    alice.send(<span class="string">"Hi, John!"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">John 發送消息: Hello, Alice!</span><br><span class="line">Alice 收到消息: John: Hello, Alice!</span><br><span class="line">Alice 發送消息: Hi, John!</span><br><span class="line">John 收到消息: Alice: Hi, John!</span><br></pre></td></tr></table></figure></p>
-<h2><span id="中介者模式的優缺點">中介者模式的優缺點</span></h2><p>中介者模式最大的優勢是「解耦」，它避免了各個物件直接互相依賴，這使得系統結構更加清晰，新增或移除物件時，不需要修改其他物件的程式碼。同時，這也讓我們可以更靈活地修改中介者的行為，達到自訂溝通規則的目的。  </p>
-<p>中介者模式也有其潛在的缺點。隨著系統的擴展，中介者本身可能會變得非常複雜，尤其當有很多物件要透過中介者溝通時，這個中介者可能會變成一個大型的、難以維護的類別，反而會增加系統的負擔。  </p>
-<h2><span id="總結">總結</span></h2><p>中介者模式特別適合應用於多個物件需要互相溝通的情況下，比如聊天室、事件處理系統等。透過中介者可以有效地減少物件之間的耦合，讓系統更加靈活。當然和其他設計模式一樣，我們也要根據具體的需求謹慎使用，避免讓中介者本身變得過於複雜。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm198pc9000nxpepq36ik6qad" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-iterator-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-iterator-pattern/" class="article-date">
-  <time datetime="2024-09-05T12:00:00.000Z" itemprop="datePublished">2024-09-05</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-iterator-pattern/">C++ 設計模式 - 迭代器模式 Iterator Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>你是否曾經面對過需要遍歷一個集合、而又不希望暴露它的內部結構的情況？這就像我們在看一本書時，並不需要知道書本是如何裝訂的，只需要翻頁就好。這時迭代器模式就派上用場了。迭代器模式提供了一種簡單且一致的方式來訪問集合中的元素，讓你不必為了遍歷資料而大費周章。  </p>
-<h2><span id="什麼是迭代器模式">什麼是迭代器模式？</span></h2><p>迭代器模式是一種行為設計模式，它允許你逐一訪問集合物件的元素，而不需要暴露其底層的表示方式。想像你有一個儲存很多物件的容器，但你並不想揭露這些物件如何被儲存的細節。透過迭代器模式，你可以透過一個統一的界面來訪問這些元素，無論是陣列、鏈結串列還是其他資料結構，都可以輕鬆遍歷。  </p>
-<h2><span id="迭代器模式在音樂播放清單中的應用">迭代器模式在音樂播放清單中的應用</span></h2><p>假設我們有一個音樂播放清單，這個清單內部可能是用陣列或鏈結串列來儲存歌曲，但作為使用者，你只想能夠播放下一首歌，不關心它的儲存結構。我們可以使用迭代器模式來實現這個功能。  </p>
-<p>首先我們需要定義一個迭代器介面，這個介面會告訴使用者是否有下一首歌，並且允許他們拿到下一首歌曲，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 迭代器介面</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Iterator</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">hasNext</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">next</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~Iterator() &#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>接下來我們建立一個音樂清單類別，並且實作一個迭代器，這個迭代器會知道如何遍歷歌曲清單，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 音樂清單迭代器</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PlaylistIterator</span> :</span> <span class="keyword">public</span> Iterator &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; songs;</span><br><span class="line">    <span class="keyword">int</span> position;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    PlaylistIterator(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt;&amp; songs)</span><br><span class="line">     : songs(songs), position(<span class="number">0</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">hasNext</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> position &lt; songs.size();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">next</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (hasNext()) &#123;</span><br><span class="line">            <span class="keyword">return</span> songs[position++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 音樂清單類別</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Playlist</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; songs;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addSong</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; song)</span> </span>&#123;</span><br><span class="line">        songs.push_back(song);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">Iterator* <span class="title">createIterator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> PlaylistIterator(songs);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>在客戶端使用時，使用者不需要知道清單如何儲存歌曲，他們只需要使用迭代器提供的 <code>next()</code> 方法來依序播放，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Playlist playlist;</span><br><span class="line">    playlist.addSong(<span class="string">"Song 1"</span>);</span><br><span class="line">    playlist.addSong(<span class="string">"Song 2"</span>);</span><br><span class="line">    playlist.addSong(<span class="string">"Song 3"</span>);</span><br><span class="line"></span><br><span class="line">    Iterator* it = playlist.createIterator();</span><br><span class="line">    <span class="keyword">while</span> (it-&gt;hasNext()) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Playing: "</span> &lt;&lt; it-&gt;next() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">delete</span> it;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在這個例子中，我們定義了一個 <code>Iterator</code> 介面，並且在 <code>PlaylistIterator</code> 中實作了這個介面，用來遍歷歌曲清單。使用者只需要呼叫 <code>hasNext()</code> 和 <code>next()</code> 方法來逐步訪問清單中的歌曲，完全不用擔心清單的內部實現。  </p>
-<h2><span id="迭代器模式的優缺點">迭代器模式的優缺點</span></h2><p>迭代器模式的優點在於它提供了一種統一的方式來遍歷集合，不論集合的內部結構如何變化。就像你可以用同樣的方法翻閱紙質書或電子書一樣，迭代器讓不同類型的集合能夠提供相同的操作方式。這使得程式碼變得更加靈活，因為你不需要修改訪問邏輯來適應不同的集合類型。  </p>
-<p>迭代器模式也有一些缺點。由於每一種集合類型都需要自己的迭代器實現，這會增加一些額外的程式碼。並且在某些情況下，如果集合的大小或複雜度較大，迭代器的操作效能可能會受到影響。除此之外，記憶體管理也需要謹慎處理。  </p>
-<h2><span id="總結">總結</span></h2><p>迭代器模式在需要遍歷複雜集合結構時非常實用，它提供了一個簡單、統一的操作介面。透過將遍歷行為封裝在迭代器中，程式設計師能夠專注於如何使用集合，而不是關心其內部細節。正如我們看書時只需專注於閱讀，不必擔心書本的裝訂一樣，迭代器模式讓操作集合變得更加直觀。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm198pc9000nwpepqcvti6r1p" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-bridge-pattern/" data-id="cm19ca0f200o0j4pqxy7ufxw7" data-title="C++ 設計模式 - 橋接模式 Bridge Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -887,23 +910,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/dependency-inversion-principle/">設計原則 - 依賴反轉原則 Dependency Inversion Principle</a>
+          </li>
+        
+          <li>
+            <a href="/interface-segregation-principle/">設計原則 - 介面隔離原則 Interface Segregation Principle</a>
+          </li>
+        
+          <li>
+            <a href="/liskov-substitution-principle/">設計原則 - 里氏替換原則 Liskov Substitution Principle</a>
+          </li>
+        
+          <li>
+            <a href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
+          </li>
+        
+          <li>
             <a href="/single-responsibility-principle/">設計原則 - 單一職責原則 Single Responsibility Principle</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-visitor-pattern/">C++ 設計模式 - 訪問者模式 Visitor Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-prototype-pattern/">C++ 設計模式 - 原型模式 Prototype Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-flyweight-pattern/">C++ 設計模式 - 享元模式 Flyweight Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-interpreter-pattern/">C++ 設計模式 - 解釋器模式 Interpreter Pattern</a>
           </li>
         
       </ul>
@@ -922,7 +945,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">217</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

@@ -107,6 +107,265 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-implement-atoi" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-implement-atoi/" class="article-date">
+  <time datetime="2022-07-28T14:00:00.000Z" itemprop="datePublished">2022-07-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-implement-atoi/">C/C++ 實作 atoi 的方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ 實作 atoi 字串轉數字的方法，標準函式庫已經有提供 atoi，如果是要自己實作 atoi 可以參考這篇的做法，有時候面試考題也會考實作 atoi，所以多學一些是好事，另外要注意的是 atoi 可能會與標準函式庫提供的同名重複定義，要確認輸入型別是否不一樣，否則的話就換個名字，避免衝突。  </p>
+<p>以下的 myatoi 字串轉數字實作方法為先判斷正負號，如果是負號開頭的話就在 sign 變數設定為 -1 記錄一下，最後的數字再乘上 sign 即可，主要邏輯為一個 while 迴圈去使用 isdigit 判斷每個字元是不是數字，該字元是數字的話就將字元減去 <code>&#39;0&#39;</code> 就可以得到數字，然後將該數字再加上之前的 sum * 10，最後整個 while 迴圈會遇到 <code>&#39;\0&#39;</code> 結束字元時 isdigit 會判斷成不是數字進而終止 while 迴圈，最後再將 sum 乘上 sign 變數就可以回傳最終結果。  </p>
+<p>這邊有對數字前有多餘的空格作處理，有多餘的空格的話可以使用 isspace 來跳過該空格，另外還有針對 32 bit 整數邊界進行處理，大於 2147483647 回傳 2147483647，小於 -2147483648 則回傳 -2147483648，另外輸入是超長的數字字串是 long 存不下的話，也會針對 len 長度太長進行邊界處理。<br><figure class="highlight cpp"><figcaption><span>cpp-implement-atoi.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-implement-atoi.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ctype.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">myatoi</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> sign = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">isspace</span>(s[i])) &#123; i++; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (s[i] == <span class="string">'-'</span>) &#123;</span><br><span class="line">        sign = <span class="number">-1</span>;</span><br><span class="line">        i++;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s[i] == <span class="string">'+'</span>) &#123;</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">isdigit</span>(s[i])) &#123;</span><br><span class="line">        sum = sum * <span class="number">10</span> + s[i] - <span class="string">'0'</span>;</span><br><span class="line">        i++;</span><br><span class="line">        len++;</span><br><span class="line">        <span class="keyword">if</span> (len &gt; <span class="number">10</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sum = sum * sign;</span><br><span class="line">    <span class="keyword">if</span> (sum &gt; <span class="number">2147483647</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2147483647</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (sum &lt; <span class="number">-2147483648</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-2147483648</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"123"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"0032"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"4193 with words"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"   -42"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"-91283472332"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"+1"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"20000000000000000000"</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"atoi: %d\n"</span>, myatoi(<span class="string">"00000-42a1234"</span>));</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">atoi: 123</span><br><span class="line">atoi: 32</span><br><span class="line">atoi: 4193</span><br><span class="line">atoi: -42</span><br><span class="line">atoi: -2147483648</span><br><span class="line">atoi: 1</span><br><span class="line">atoi: 2147483647</span><br><span class="line">atoi: 0</span><br></pre></td></tr></table></figure></p>
+<p>atoi 同時也是 LeetCode 的題目，可以看看 <a href="https://leetcode.com/problems/string-to-integer-atoi/" rel="noopener external nofollow noreferrer" target="_blank">LeetCode 8. String to Integer (atoi)</a>，可以看看我之前的 <a href="/cpp-string-to-integer-atoi/" title="解題">解題</a>。  </p>
+<p>以上就是 C++ C/C++ 實作 atoi 的方法介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-integer-to-string/" title="C/C++ 整數轉字串的方法與範例">C/C++ 整數轉字串的方法與範例</a><br><a href="/cpp-virtual/" title="C++ virtual 的兩種用法">C++ virtual 的兩種用法</a><br><a href="/cpp-string-reverse/" title="C/C++ 字串反轉 reverse">C/C++ 字串反轉 reverse</a><br><a href="/cpp-call-by-value-pointer-reference/" title="C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別">C/C++ call by value傳值, call by pointer傳址, call by reference傳參考 的差別</a><br><a href="/cpp-class-template/" title="C++ 類別樣板 class template">C++ 類別樣板 class template</a><br><a href="/std-sort/" title="std::sort 用法與範例">std::sort 用法與範例</a><br><a href="/std-find/" title="std::find 用法與範例">std::find 用法與範例</a><br><a href="/std-queue/" title="std::queue 用法與範例">std::queue 用法與範例</a><br><a href="/std-map/" title="std::map 用法與範例">std::map 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-implement-atoi/" data-id="cm19ca0d100izj4pqkdgtippk" data-title="C/C++ 實作 atoi 的方法" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-vscode-enable-format-on-save" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/vscode-enable-format-on-save/" class="article-date">
+  <time datetime="2022-07-25T14:00:00.000Z" itemprop="datePublished">2022-07-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/vscode-enable-format-on-save/">Visual Studio Code 存檔自動排版的2種方式</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇介紹 Visual Studio Code 存檔自動排版 format，開啟 Visual Studio Code 存檔自動排版有兩種方式，  </p>
+<p>VS Code 存檔自動排版的方法分為這兩種方式，  </p>
+<ul>
+<li>從 UI 介面開啟存檔自動排版  </li>
+<li>從 setting.json 設定檔開啟存檔自動排版  </li>
+</ul>
+<h2><span id="從-ui-介面開啟存檔自動排版">從 UI 介面開啟存檔自動排版</span></h2><p>用 <code>Ctrl + ,</code> 快捷鍵打開設定 setting，macOS 快捷鍵是 <code>Cmd + ,</code><br><img src="/vscode-enable-format-on-save/vscode-enable-format-on-save-1.png" title="vscode enable format on save">  </p>
+<p>選擇 <code>Text Editor &gt; Formatting</code>，將 <code>Format On Save</code> 勾選起來，這樣就會存檔時自動排版了，中文介面的話是選擇 <code>文字編輯器 &gt; 格式化</code>，<br><img src="/vscode-enable-format-on-save/vscode-enable-format-on-save-2.png" title="vscode enable format on save">  </p>
+<h2><span id="從-settingjson-設定檔開啟存檔自動排版">從 setting.json 設定檔開啟存檔自動排版</span></h2><p>從 setting.json 設定檔開啟存檔自動排版的方法就是在 setting.json 加上 <code>&quot;editor.formatOnSave&quot;: true</code> 就是存檔時進行自動排版，也可以關閉另外使用 Alt + Shift + F 手動執行自動排版，<br><figure class="highlight json"><figcaption><span>setting.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"editor.formatOnSave"</span>: <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上就是 Visual Studio Code 存檔自動排版的2種方式介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其他參考<br>vscode settings - How do you format code on save in VS Code - Stack Overflow<br><a href="https://stackoverflow.com/questions/39494277/how-do-you-format-code-on-save-in-vs-code" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/39494277/how-do-you-format-code-on-save-in-vs-code</a><br><a href="https://linuxpip.org/vscode-format-on-save/" rel="noopener external nofollow noreferrer" target="_blank">https://linuxpip.org/vscode-format-on-save/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/vscode-enable-format-on-save/" data-id="cm19ca0d000iyj4pqhhucg3hs" data-title="Visual Studio Code 存檔自動排版的2種方式" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-filename-macro" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-filename-macro/" class="article-date">
+  <time datetime="2022-07-21T14:00:00.000Z" itemprop="datePublished">2022-07-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-filename-macro/">C/C++ __FILENAME__ macros 巨集</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ <code>__FILENAME__</code> macros 巨集的用法，C/C++ 標準的預定義巨集裡沒有原始檔檔名 <code>__FILENAME__</code> 巨集，只有原始檔檔案路徑 <code>__FILE__</code> 巨集，以下內容介紹透過一些方法來得到 <code>__FILENAME__</code> 巨集。  </p>
+<p>C/C++ 標準的預定義巨集 macros 中有 <code>__FILE__</code>，通常是印出該原始檔的絕對路徑，例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/full/path/to/file.c</span><br></pre></td></tr></table></figure></p>
+<p>但是如果只想印出原始檔的檔名的話，像下面輸出這樣，要怎麼做呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file.c</span><br></pre></td></tr></table></figure></p>
+<p>由於 C/C++ 標準的預定義巨集沒有 <code>__FILENAME__</code> 這樣的巨集可以使用，那我們就自己作一個 <code>__FILENAME__</code> 巨集，<br>如下範例，原理是用 <a href="/cpp-strrchr/" title="strrchr">strrchr</a> 從右邊開始尋找 <code>&#39;/&#39;</code> 有找到的話就回傳找到的指標+1，使用 strrchr 需要加入標頭檔 <code>#include &lt;string.h&gt;</code>，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __FILENAME__ (strrchr(__FILE__, <span class="meta-string">'/'</span>) ? strrchr(__FILE__, <span class="meta-string">'/'</span>) + 1 : __FILE__)</span></span><br></pre></td></tr></table></figure></p>
+<p>如果是 Windows 平台的話，就將 <code>&#39;/&#39;</code> 換成 <code>&#39;\\&#39;</code>，如下範例，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __FILENAME__ (strrchr(__FILE__, <span class="meta-string">'\\'</span>) ? strrchr(__FILE__, <span class="meta-string">'\\'</span>) + 1 : __FILE__)</span></span><br></pre></td></tr></table></figure></p>
+<p>以上就是 C/C++ <code>__FILENAME__</code> macros 巨集介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>參考<br><a href="https://stackoverflow.com/questions/8487986/file-macro-shows-full-path" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/8487986/file-macro-shows-full-path</a>  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-strrchr/" title="C/C++ strrchr 用法與範例">C/C++ strrchr 用法與範例</a><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-string-find/" title="C/C++ 字串搜尋的3種方法">C/C++ 字串搜尋的3種方法</a><br><a href="/cpp-strstr/" title="C/C++ strstr 用法與範例">C/C++ strstr 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-filename-macro/" data-id="cm19ca0d000iwj4pq04s24fkt" data-title="C/C++ __FILENAME__ macros 巨集" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-strrchr" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-strrchr/" class="article-date">
+  <time datetime="2022-07-18T14:00:00.000Z" itemprop="datePublished">2022-07-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-strrchr/">C/C++ strrchr 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ strrchr 用法與範例，strrchr 是從字串右側開始向左搜尋字元的函式，以下介紹如何使用 strrchr 函式。  </p>
+<p>C/C++ 要從字串右側開始搜尋字元可以使用 strrchr 來完成，要使用 strrchr 的話需要引入的標頭檔 <code>&lt;string.h&gt;</code>，如果要使用 C++ 的標頭檔則是引入 <code>&lt;cstring&gt;</code>，<br>strrchr 函式原型為<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span> * <span class="title">strrchr</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * str, <span class="keyword">int</span> character)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p><code>strrchr()</code> 會從 str 字串右側開始搜尋 character 字元，有找到會回傳指向 character 字元的指標，沒找到會回傳 NULL，來看看下面的 strrchr 用法範例吧！<br><figure class="highlight cpp"><figcaption><span>cpp-strrchr.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strrchr.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> str[] = <span class="string">"This is a c-style string"</span>;</span><br><span class="line">    <span class="keyword">char</span> *pch;</span><br><span class="line">    pch = <span class="built_in">strrchr</span>(str, <span class="string">'s'</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"found at %d\n"</span>, pch-str+<span class="number">1</span>);  </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果如下，字串從右側找到第一個的 s 字元在第 19 字元，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">found at 19</span><br></pre></td></tr></table></figure></p>
+<p>另外 strrchr 也很常被用來去除路徑中的 <code>&#39;/&#39;</code> 字元進而得到檔案名稱，Windows 下則是 <code>&#39;\\&#39;</code>，如下範例所示，<br><figure class="highlight cpp"><figcaption><span>cpp-strrchr2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-strrchr2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> path[] = <span class="string">"/full/path/to/file.c"</span>;</span><br><span class="line">    <span class="keyword">char</span> *pch;</span><br><span class="line">    pch = <span class="built_in">strrchr</span>(path, <span class="string">'/'</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"found at %d\n"</span>, pch-path+<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"filename = %s\n"</span>, pch+<span class="number">1</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">found at 14</span><br><span class="line">filename = file.c</span><br></pre></td></tr></table></figure></p>
+<p>以上就是 C/C++ strrchr 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p>其它參考<br>strrchr - C++ Reference<br><a href="https://www.cplusplus.com/reference/cstring/strrchr/" rel="noopener external nofollow noreferrer" target="_blank">https://www.cplusplus.com/reference/cstring/strrchr/</a>  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-strchr/" title="C/C++ strchr 用法與範例">C/C++ strchr 用法與範例</a><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-string-find/" title="C/C++ 字串搜尋的3種方法">C/C++ 字串搜尋的3種方法</a><br><a href="/cpp-strstr/" title="C/C++ strstr 用法與範例">C/C++ strstr 用法與範例</a><br><a href="/cpp-strcmp/" title="C/C++ strcmp 用法與範例">C/C++ strcmp 用法與範例</a><br><a href="/cpp-strcat/" title="C/C++ strcat 用法與範例">C/C++ strcat 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-strrchr/" data-id="cm19ca0d000ixj4pq31gtjyw5" data-title="C/C++ strrchr 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-strchr" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-strchr/" class="article-date">
@@ -159,7 +418,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-strchr/" data-id="cm198pc7200ivpepq5f51wckd" data-title="C/C++ strchr 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-strchr/" data-id="cm19ca0cz00ivj4pqn1taapcl" data-title="C/C++ strchr 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -215,7 +474,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/hexo-special-symbol/" data-id="cm198pc7200iupepq7u7vu1xz" data-title="Hexo 特殊符號轉義問題" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/hexo-special-symbol/" data-id="cm19ca0cz00iuj4pq1x3qgfpo" data-title="Hexo 特殊符號轉義問題" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hexo/">Hexo</a></li></ul>
@@ -286,7 +545,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-vector-char-to-string/" data-id="cm198pc7100itpepqjthec9gt" data-title="C++ std::vector&lt;char&gt; 轉 std::string 的 2 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-vector-char-to-string/" data-id="cm19ca0cz00itj4pqb3caajhs" data-title="C++ std::vector&lt;char&gt; 轉 std::string 的 2 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -359,7 +618,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-string-to-vector-char/" data-id="cm198pc7100ispepqeqpcony6" data-title="C++ std::string 轉 std::vector&lt;char&gt; 的 2 種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-string-to-vector-char/" data-id="cm19ca0cy00isj4pqtviakdh6" data-title="C++ std::string 轉 std::vector&lt;char&gt; 的 2 種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -426,7 +685,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/shell-script-check-if-directory-exists/" data-id="cm198pc7100irpepqk3v4ahhw" data-title="Shell Script 判斷目錄資料夾是否存在" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/shell-script-check-if-directory-exists/" data-id="cm19ca0cy00irj4pqlcpc5sbr" data-title="Shell Script 判斷目錄資料夾是否存在" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li></ul>
@@ -487,303 +746,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-reverse/" data-id="cm198pc7000iqpepq2os32l9a" data-title="Android adb reverse 通訊埠轉發用法教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/android-adb-reverse/" data-id="cm19ca0cx00iqj4pqus3ljyrp" data-title="Android adb reverse 通訊埠轉發用法教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lldb" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lldb/" class="article-date">
-  <time datetime="2022-06-27T14:00:00.000Z" itemprop="datePublished">2022-06-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lldb/">LLDB 除錯教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 LLDB 除錯教學，LLDB Debugger 是 LLVM 專案的除錯元件。在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 LLDB 來替 C/C++ 程式偵錯。  </p>
-<p>以下 LLDB 除錯教學的內容大概分為這幾部分，  </p>
-<ul>
-<li>clang/clang++ 編譯 C/C++ 程式  </li>
-<li>LLDB 進行除錯  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2><span id="clangclang-編譯-cc-程式">clang/clang++ 編譯 C/C++ 程式</span></h2><p>我的桌機環境為 Ubuntu 16.04，以下為一個簡單的 C/C++ 程式，使用 <code>clang++ main.cpp -g -o a.out</code> 進行編譯，編譯成功後會產生 a.out 執行檔，<code>-g</code> 表示帶有除錯資訊，這邊當然也可以使用 gcc/g++ 去編譯 C/C++ 程式 (<code>g++ main.cpp -g -o a.out</code>)，gcc/g++ 編譯後的程式 LLDB 也可以進行除錯，<br><figure class="highlight cpp"><figcaption><span>main.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// clang++ main.cpp -g -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> s = <span class="string">"hello world"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        sum += i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>程式輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hello world</span><br><span class="line">sum=10</span><br><span class="line">end</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="lldb-進行除錯">LLDB 進行除錯</span></h2><p>接著使用 lldb 指令對 a.out 進行除錯，執行 <code>lldb ./a.out</code> 指令進入 lldb 交互介面，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ lldb ./a.out </span><br><span class="line">(lldb) target create <span class="string">"./a.out"</span></span><br><span class="line">Current executable <span class="built_in">set</span> to <span class="string">'./a.out'</span> (x86_64).</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<p>輸入 <code>b main.cpp:14</code> 插入中斷點在 main.cpp 的 14 行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b main.cpp:14</span><br><span class="line">Breakpoint 1: <span class="built_in">where</span> = a.out`main + 188 at main.cpp:14, address = 0x0000000000400c2c</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<p>輸入 <code>b</code> 印出目前設定的中斷點，這個指令跟 gdb 有所不同，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = &apos;main.cpp&apos;, line = 14, exact_match = 0, locations = 1</span><br><span class="line">  1.1: where = a.out`main + 188 at main.cpp:14, address = a.out[0x0000000000400c2c], unresolved, hit count = 0 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>按下 <code>r</code> 開始執行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">(lldb) r</span><br><span class="line">Process 24479 launched: <span class="string">'./a.out'</span> (x86_64)</span><br><span class="line">hello world</span><br><span class="line">Process 24479 stopped</span><br><span class="line">* thread <span class="comment">#1, name = 'a.out', stop reason = breakpoint 1.1</span></span><br><span class="line">    frame <span class="comment">#0: 0x0000000000400c2c a.out`main at main.cpp:14</span></span><br><span class="line">   11       &#125;</span><br><span class="line">   12  </span><br><span class="line">   13       std::cout &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">-&gt; 14       std::cout &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">   15       std::cout &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line">   16  </span><br><span class="line">   17       <span class="built_in">return</span> 0;</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<p>再次輸入 <code>b</code> 印出目前設定的中斷點，可以看到中斷點被觸發幾次，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) b</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: file = <span class="string">'main.cpp'</span>, line = 14, exact_match = 0, locations = 1, resolved = 1, hit count = 1</span><br><span class="line">  1.1: <span class="built_in">where</span> = a.out`main + 188 at main.cpp:14, address = 0x0000000000400c2c, resolved, hit count = 1 </span><br><span class="line"></span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<p>接著按 <code>c</code> 繼續執行直到程式結束，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(lldb) c</span><br><span class="line">Process 24479 resuming</span><br><span class="line">sum=10</span><br><span class="line">end</span><br><span class="line">Process 24479 exited with status = 0 (0x00000000)</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以下為 lldb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>b</code>：印出目前設定的中斷點（這個指令跟 gdb 有所不同）<br><code>po &lt;變數名稱&gt;</code>：印出目前變數的值，例如：<code>po sum</code><br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
-<p>以上就是 LLDB 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其他參考<br>LLDB 玩樂筆記. 最近在寫 uTensor 的 CNN Demo 文章，code 是可以… | by Dboy Liao | Medium<br><a href="https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff" rel="noopener external nofollow noreferrer" target="_blank">https://dboyliao.medium.com/lldb-%E7%8E%A9%E6%A8%82%E7%AD%86%E8%A8%98-f5f5d5ed89ff</a>  </p>
-<p><strong>相關主題</strong><br><a href="/gdb/" title="gdb 除錯教學">gdb 除錯教學</a><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/lldb/" data-id="cm198pc7000ippepqp5f94leu" data-title="LLDB 除錯教學" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-gdbserver" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/gdbserver/" class="article-date">
-  <time datetime="2022-06-23T14:00:00.000Z" itemprop="datePublished">2022-06-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/gdbserver/">gdbserver 遠端除錯教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹使用 gdbserver 來遠端除錯教學，gdb 可以透過網路對遠端的程式進行除錯，需要遠端執行 gdbserver 以及搭配本地端 gdb 一起使用，而 gdbserver 是 server 的角色，而 gdb 是 client 的角色，一旦 gdb 連上遠端的 gdbserver 後，之後就使用 gdb 進行除錯，跟平常的 gdb 使用上沒有差異，我的桌機環境為 Ubuntu 16.04，  </p>
-<p><strong>Remote 端</strong><br>在 Remote 端執行 gdbserver，執行 gdbserver 後面參數加上 <code>&lt;ip:port&gt;</code> 監聽的ip位址與port通訊埠以及要偵錯的執行檔路徑，這邊範例使用 port 20000，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdbserver 192.168.0.2:20000 samplehello</span><br></pre></td></tr></table></figure></p>
-<p>gdbserver 要使用 attach 的方式的話，後面接上程式的 pid 即可，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdbserver 192.168.0.2:20000 --attach &lt;pid&gt;</span><br></pre></td></tr></table></figure></p>
-<p><strong>Local 端</strong><br>在 Local 端執行 gdb，後面參數接上執行檔(debug 版本，no striped)，執行 gdb 後使用 <code>target remote &lt;ip:port&gt;</code> 來連上遠端的 gdbserver，這邊範例是連上本地端的 port 20000，這樣 Remote 的 gdbserver 就收到連線請求，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb samplehello</span><br><span class="line">(gdb) target remote 192.168.0.2:20000</span><br></pre></td></tr></table></figure></p>
-<p>一般 gdb 除錯時是使用 r 開始執行程式。不過遠端除錯時，遠端的 gdbserver 已經 run 了，所以 gdb 要用 c 來繼續執行，不能用 r。  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以下為 gdb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>info b</code>：印出目前設定的中斷點<br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
-<p>以上就是 gdbserver 遠端除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p><strong>相關主題</strong><br><a href="/gdb/" title="gdb 除錯教學">gdb 除錯教學</a><br><a href="/lldb/" title="LLDB 除錯教學">LLDB 除錯教學</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gdbserver/" data-id="cm198pc7000iopepq0dmpoooy" data-title="gdbserver 遠端除錯教學" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-gdb" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/gdb/" class="article-date">
-  <time datetime="2022-06-20T14:00:00.000Z" itemprop="datePublished">2022-06-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/gdb/">gdb 除錯教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 gdb 除錯教學，全名為 GNU Debugger，是 GNU 軟體系統中的標準偵錯器 Debugger，在使用 Debugger 時可以單步執行、執行到中斷點、查看變數內容、印出呼叫堆疊等等功能，是程式設計師的常用工具，以下將會介紹編譯完 C/C++ 程式後怎麼使用 gdb 來替 C/C++ 程式偵錯。  </p>
-<p>以下 gdb 除錯教學的內容大概分為這幾部分，  </p>
-<ul>
-<li>gcc/g++ 編譯 C/C++ 程式  </li>
-<li>gdb 進行除錯  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2><span id="gccg-編譯-cc-程式">gcc/g++ 編譯 C/C++ 程式</span></h2><p>我的桌機環境為 Ubuntu 16.04，以下為一個簡單的 C/C++ 程式，使用 <code>g++ main.cpp -g -o a.out</code> 進行編譯，編譯成功後會產生 a.out 執行檔，<code>-g</code> 表示帶有除錯資訊，<br><figure class="highlight cpp"><figcaption><span>main.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ main.cpp -g -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> s = <span class="string">"hello world"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        sum += i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; s &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"end\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>程式輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hello world</span><br><span class="line">sum=10</span><br><span class="line">end</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="gdb-進行除錯">gdb 進行除錯</span></h2><p>接著使用 gdb 指令對 a.out 進行除錯，執行 <code>gdb ./a.out</code> 指令進入 gdb 交互介面，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ gdb ./a.out </span><br><span class="line">GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.5) 7.11.1</span><br><span class="line">Copyright (C) 2016 Free Software Foundation, Inc.</span><br><span class="line">License GPLv3+: GNU GPL version 3 or later &lt;http://gnu.org/licenses/gpl.html&gt;</span><br><span class="line">This is free software: you are free to change and redistribute it.</span><br><span class="line">There is NO WARRANTY, to the extent permitted by law.  Type <span class="string">"show copying"</span></span><br><span class="line">and <span class="string">"show warranty"</span> <span class="keyword">for</span> details.</span><br><span class="line">This GDB was configured as <span class="string">"x86_64-linux-gnu"</span>.</span><br><span class="line">Type <span class="string">"show configuration"</span> <span class="keyword">for</span> configuration details.</span><br><span class="line">For bug reporting instructions, please see:</span><br><span class="line">&lt;http://www.gnu.org/software/gdb/bugs/&gt;.</span><br><span class="line">Find the GDB manual and other documentation resources online at:</span><br><span class="line">&lt;http://www.gnu.org/software/gdb/documentation/&gt;.</span><br><span class="line">For <span class="built_in">help</span>, <span class="built_in">type</span> <span class="string">"help"</span>.</span><br><span class="line">Type <span class="string">"apropos word"</span> to search <span class="keyword">for</span> commands related to <span class="string">"word"</span>...</span><br><span class="line">Reading symbols from a.out...done.</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
-<p>輸入 <code>b main.cpp:14</code> 插入中斷點在 main.cpp 的 14 行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) b main.cpp:14</span><br><span class="line">Breakpoint 1 at 0x400c09: file main.cpp, line 14.</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
-<p>輸入 <code>info b</code> 印出目前設定的中斷點，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info b</span><br><span class="line">Num     Type           Disp Enb Address            What</span><br><span class="line">1       breakpoint     keep y   0x0000000000400c09 in main() at main.cpp:14</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>按下 <code>r</code> 開始執行，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) r</span><br><span class="line">Starting program: /home/shengyu/a.out </span><br><span class="line">hello world</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main () at main.cpp:14</span><br><span class="line">14	    std::cout &lt;&lt; <span class="string">"sum="</span> &lt;&lt; sum &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
-<p>再次輸入 <code>info b</code> 印出目前設定的中斷點，可以看到中斷點被觸發幾次，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info b</span><br><span class="line">Num     Type           Disp Enb Address            What</span><br><span class="line">1       breakpoint     keep y   0x0000000000400c09 <span class="keyword">in</span> main() at main.cpp:14</span><br><span class="line">	breakpoint already hit 1 time</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
-<p>接著按 <code>c</code> 繼續執行直到程式結束，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(gdb) c</span><br><span class="line">Continuing.</span><br><span class="line">sum=10</span><br><span class="line">end</span><br><span class="line">[Inferior 1 (process 14925) exited normally]</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure></p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以下為 gdb 常用的指令，<br><code>r</code>：run 開始執行<br><code>c</code>：continue 繼續執行<br><code>b main.cpp:14</code>：設定中斷點<br><code>info b</code>：印出目前設定的中斷點<br><code>bt</code>：backtrace 印出程式呼叫的堆疊<br><code>q</code>：quit 離開  </p>
-<p>以上就是 gdb 除錯教學介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其他參考<br>C語言工具使用，GDB個人學習筆記 - iT 邦幫忙::一起幫忙解決難題，拯救 IT 人的一天<br><a href="https://ithelp.ithome.com.tw/articles/10257294" rel="noopener external nofollow noreferrer" target="_blank">https://ithelp.ithome.com.tw/articles/10257294</a>  </p>
-<p><strong>相關主題</strong><br><a href="/gdbserver/" title="gdbserver 遠端除錯教學">gdbserver 遠端除錯教學</a><br><a href="/lldb/" title="LLDB 除錯教學">LLDB 除錯教學</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/gdb/" data-id="cm198pc6z00inpepqqgiome5l" data-title="gdb 除錯教學" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-vscode-debugging-on-ubuntu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/vscode-debugging-on-ubuntu/" class="article-date">
-  <time datetime="2022-06-16T14:00:00.000Z" itemprop="datePublished">2022-06-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/vscode-debugging-on-ubuntu/">Ubuntu 使用 VS Code Debugger 除錯教學</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹在 Ubuntu 使用 Visual Studio Code(VS Code) 設定 C/C++ 除錯的環境，  </p>
-<p>以下 Ubuntu 使用 VS Code 設定除錯環境的內容大概分為  </p>
-<ul>
-<li>VS Code 除錯環境設定  </li>
-<li>VS Code 偵錯前先編譯  </li>
-<li>VS Code 開啟 make 專案  </li>
-<li>VS Code 開啟 cmake 專案  </li>
-<li>VS Code 錯誤排除  </li>
-</ul>
-<p>那我們開始吧！  </p>
-<h2><span id="vs-code-除錯環境設定">VS Code 除錯環境設定</span></h2><p>我的 VS Code 版本為 1.68.0，Ubuntu 版本為 16.04，<br>在新專案下按下 F5 時如果沒有 <code>.vscode/launch.json</code> 設定檔的話，會跳出一些選項讓你選擇，如圖中的 C++:  clang++<br><img src="/vscode-debugging-on-ubuntu/vscode-debugging-1.png" title="vscode lldb debugging">  </p>
-<p>編譯時，新專案下沒有 <code>.vscode/tasks.json</code> 設定檔的話，也會跳出選項讓你選擇，這邊是示範選擇使用 clang++，用 g++ 也可以，<br><img src="/vscode-debugging-on-ubuntu/vscode-debugging-2.png" title="vscode lldb debugging">  </p>
-<p>會在資料夾下產生 .vscode/launch.json 設定如下，如果沒有的話自己手動新增也可以，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"clang - Build and debug active file"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppdbg"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"setupCommands"</span>: [</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="attr">"description"</span>: <span class="string">"Enable pretty-printing for gdb"</span>,</span><br><span class="line">                    <span class="attr">"text"</span>: <span class="string">"-enable-pretty-printing"</span>,</span><br><span class="line">                    <span class="attr">"ignoreFailures"</span>: <span class="literal">true</span></span><br><span class="line">                &#125;</span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"miDebuggerPath"</span>: <span class="string">"/usr/bin/lldb-mi"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>編譯 C/C++ 時記得加上 <code>-g</code> 選項，按 F5 執行 Start Debugging 後，就成功了！<br><img src="/vscode-debugging-on-ubuntu/vscode-debugging-3.png" title="vscode lldb debugging">  </p>
-<h2><span id="vs-code-偵錯前先編譯">VS Code 偵錯前先編譯</span></h2><p>VS Code 按下 F5 要先編譯再啟動偵錯的話，要在 launch.json 加上 preLaunchTask，如下範例，<br><figure class="highlight"><figcaption><span>.vscode/launch.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    // Use IntelliSense to learn about possible attributes.</span><br><span class="line">    // Hover to view descriptions of existing attributes.</span><br><span class="line">    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">    "version": "0.2.0",</span><br><span class="line">    "configurations": [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"clang - Build and debug active file"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppdbg"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/a.out"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"stopAtEntry"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span>,</span><br><span class="line">            <span class="attr">"environment"</span>: [],</span><br><span class="line">            <span class="attr">"externalConsole"</span>: <span class="literal">false</span>,</span><br><span class="line">            <span class="attr">"MIMode"</span>: <span class="string">"lldb"</span>,</span><br><span class="line">            <span class="attr">"setupCommands"</span>: [</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="attr">"description"</span>: <span class="string">"Enable pretty-printing for gdb"</span>,</span><br><span class="line">                    <span class="attr">"text"</span>: <span class="string">"-enable-pretty-printing"</span>,</span><br><span class="line">                    <span class="attr">"ignoreFailures"</span>: <span class="literal">true</span></span><br><span class="line">                &#125;</span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"preLaunchTask"</span>: <span class="string">"C/C++: clang build active file"</span>,</span><br><span class="line">            <span class="attr">"miDebuggerPath"</span>: <span class="string">"/usr/bin/lldb-mi"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>launch.json 的 <code>&quot;preLaunchTask&quot;: &quot;C/C++: clang build active file&quot;</code> 是對應到 tasks.json 的 label 名稱，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"cppbuild"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: clang build active file"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"/usr/bin/clang++"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [</span><br><span class="line">                <span class="string">"-g"</span>,</span><br><span class="line">                <span class="string">"$&#123;file&#125;"</span>,</span><br><span class="line">                <span class="string">"-o"</span>,</span><br><span class="line">                <span class="string">"$&#123;fileDirname&#125;/a.out"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"options"</span>: &#123;</span><br><span class="line">                <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"Task generated by Debugger."</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>這樣按 F5 啟動偵錯前會先編譯，成功編譯才會啟動偵錯。  </p>
-<p>詳細的 <code>.vscode</code> 設定可以參考 <a href="https://github.com/shengyu7697/vscode-debugging/tree/master/ubuntu-lldb" rel="noopener external nofollow noreferrer" target="_blank">https://github.com/shengyu7697/vscode-debugging/tree/master/ubuntu-lldb</a>  </p>
-<p>其他參考<br><a href="https://code.visualstudio.com/docs/cpp/launch-json-reference" rel="noopener external nofollow noreferrer" target="_blank">launch.json 參數說明</a><br><a href="https://blog.csdn.net/ZCShouCSDN/article/details/60466707" rel="noopener external nofollow noreferrer" target="_blank">Visual Studio Code （VSCode） 之 C/C++ 调试配置详解</a><br><a href="https://ithelp.ithome.com.tw/articles/10190238" rel="noopener external nofollow noreferrer" target="_blank">[VSCode] Visual Studio Code 執行 C++ (2) - IntelliSense + Building + Debugging</a>  </p>
-<h2><span id="vs-code-開啟-make-專案">VS Code 開啟 make 專案</span></h2><p>make 專案編譯時會使用 Makefile 來執行裡面的腳本，所以 <code>.vscode/tasks.json</code> 不能在使用 <code>cppbuild</code> type 要換成 <code>shell</code> 來執行 make 這個指令，  </p>
-<p>然後 command 換成 <code>cd ${workspaceFolder}; /usr/bin/make</code>，如下所示，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: make build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;; /usr/bin/make"</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line">            <span class="attr">"options"</span>: &#123;</span><br><span class="line">                <span class="attr">"cwd"</span>: <span class="string">"$&#123;fileDirname&#125;"</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>這邊也可以參考 <a href="https://stackoverflow.com/questions/57808398/using-visual-studio-code-tasks-to-automate-c-makefiles-in-multiple-folders" rel="noopener external nofollow noreferrer" target="_blank">Stack Overflow</a> 跟 <a href="https://gist.github.com/mattmc3/c021236c92c03b61d92c0ff233940643" rel="noopener external nofollow noreferrer" target="_blank">github gist</a> 兩篇的其他種做法。  </p>
-<h2><span id="vs-code-開啟-cmake-專案">VS Code 開啟 cmake 專案</span></h2><p>cmake 專案在 generate 時，要使用 <code>cmake -DCMAKE_BUILD_TYPE=Debug ..</code> 給定編譯 Debug 版本，之後編譯出來的執行檔才有除錯的資訊，或者在 CMakeLists.txt 直接寫死是 Debug 版本，<br><figure class="highlight cmake"><figcaption><span>CMakeLists.txt</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(CMAKE_BUILD_TYPE <span class="string">"Debug"</span>)</span><br></pre></td></tr></table></figure></p>
-<p><code>.vscode/tasks.json</code> 這邊可以參考<a href="https://blog.csdn.net/u012372584/article/details/123010410" rel="noopener external nofollow noreferrer" target="_blank">這篇</a>的寫法，將 cmake generate 與 cmake build 分成兩個 task，再用 C/C++: cmake build 這個 task 將前兩者串起來，<br><figure class="highlight json"><figcaption><span>.vscode/tasks.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"tasks"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"C/C++: cmake build"</span>,</span><br><span class="line">            <span class="attr">"dependsOrder"</span>: <span class="string">"sequence"</span>,</span><br><span class="line">            <span class="attr">"dependsOn"</span>:[<span class="string">"cmake generate"</span>, <span class="string">"cmake build"</span>]</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"cmake generate"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;/build; /usr/bin/env cmake .."</span>,</span><br><span class="line">            <span class="attr">"args"</span>: []</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"shell"</span>,</span><br><span class="line">            <span class="attr">"label"</span>: <span class="string">"cmake build"</span>,</span><br><span class="line">            <span class="attr">"command"</span>: <span class="string">"cd $&#123;workspaceFolder&#125;/build; /usr/bin/env cmake --build ."</span>,</span><br><span class="line">            <span class="attr">"args"</span>: [],</span><br><span class="line"></span><br><span class="line">            <span class="attr">"problemMatcher"</span>: [</span><br><span class="line">                <span class="string">"$gcc"</span></span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">"group"</span>: &#123;</span><br><span class="line">                <span class="attr">"kind"</span>: <span class="string">"build"</span>,</span><br><span class="line">                <span class="attr">"isDefault"</span>: <span class="literal">true</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"detail"</span>: <span class="string">"偵錯工具產生的工作。"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"options"</span>: &#123;</span><br><span class="line">        <span class="attr">"cwd"</span>: <span class="string">"$&#123;workspaceRoot&#125;/build"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"2.0.0"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2><span id="vs-code-錯誤排除">VS Code 錯誤排除</span></h2><p>如果在除錯的過程中逐步執行發現跳不到原始碼遇到 <code>Could not load source ... &#39;SourceRequest&#39; not supported</code> 這樣的錯誤訊息的話，可能就是找不到原始碼的路徑，可能就是因為執行檔跟原始碼擺放路徑不同，解決方式就是在 launch.json 使用 <code>sourceFileMap</code> 將正確的路徑對應好，再次啟動就可以正確找到了～～  </p>
-<p>以上就是 Ubuntu 使用 VS Code Debugger 除錯介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其他參考<br><a href="https://www.youtube.com/watch?v=G9gnSGKYIg4" rel="noopener external nofollow noreferrer" target="_blank">Debug a C++ project in VS Code - Youtube</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/vscode-debugging-on-mac/" title="macOS 使用 VS Code Debugger 除錯教學">macOS 使用 VS Code Debugger 除錯教學</a><br><a href="/vscode-shortcuts/" title="Visual Studio Code 常用快捷鍵">Visual Studio Code 常用快捷鍵</a><br><a href="/vscode-add-cpp-include-path/" title="VS Code 新增 C++ 標頭檔路徑">VS Code 新增 C++ 標頭檔路徑</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/vscode-debugging-on-ubuntu/" data-id="cm198pc6z00impepqe1wpq2lt" data-title="Ubuntu 使用 VS Code Debugger 除錯教學" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Visual-Studio-Code/">Visual Studio Code</a></li></ul>
 
     </footer>
   </div>
@@ -827,23 +793,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/dependency-inversion-principle/">設計原則 - 依賴反轉原則 Dependency Inversion Principle</a>
+          </li>
+        
+          <li>
+            <a href="/interface-segregation-principle/">設計原則 - 介面隔離原則 Interface Segregation Principle</a>
+          </li>
+        
+          <li>
+            <a href="/liskov-substitution-principle/">設計原則 - 里氏替換原則 Liskov Substitution Principle</a>
+          </li>
+        
+          <li>
+            <a href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
+          </li>
+        
+          <li>
             <a href="/single-responsibility-principle/">設計原則 - 單一職責原則 Single Responsibility Principle</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-visitor-pattern/">C++ 設計模式 - 訪問者模式 Visitor Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-prototype-pattern/">C++ 設計模式 - 原型模式 Prototype Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-flyweight-pattern/">C++ 設計模式 - 享元模式 Flyweight Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-interpreter-pattern/">C++ 設計模式 - 解釋器模式 Interpreter Pattern</a>
           </li>
         
       </ul>
@@ -862,7 +828,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">217</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

@@ -107,6 +107,304 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-pragma-pack" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-pragma-pack/" class="article-date">
+  <time datetime="2022-11-10T14:00:00.000Z" itemprop="datePublished">2022-11-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-pragma-pack/">C/C++ pragma pack 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C/C++ #pragma pack 用法與範例。  </p>
+<p>現代的編譯器幾乎都會進行最佳化，所以有時候某資料結構佔用的 bytes 數可能不是你想像的，原因是因為編譯器會為了運行效能進行最佳化，如下列範例所示，<br><figure class="highlight cpp"><figcaption><span>cpp-pragma-pack.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pragma-pack.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharCharInt</span> &#123;</span> <span class="keyword">char</span> c; <span class="keyword">char</span> c2; <span class="keyword">int</span> i; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">IntCharChar</span> &#123;</span> <span class="keyword">int</span> i;  <span class="keyword">char</span> c;  <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharIntChar</span> &#123;</span> <span class="keyword">char</span> c; <span class="keyword">int</span> i;   <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CharCharInt</span> <span class="title">charcharint</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">IntCharChar</span> <span class="title">intcharchar</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CharIntChar</span> <span class="title">charintchar</span>;</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharCharInt) "</span> &lt;&lt; <span class="keyword">sizeof</span>(charcharint) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(IntCharChar) "</span> &lt;&lt; <span class="keyword">sizeof</span>(intcharchar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharIntChar) "</span> &lt;&lt; <span class="keyword">sizeof</span>(charintchar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我的平台輸出如下，CharCharInt 手算的話應該為 6，但是編譯器進行最佳化時會變成 8，<br>而 CharIntChar 會因為順序關係而造成最佳化結果不同變成 12，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sizeof(CharCharInt) 8</span><br><span class="line">sizeof(IntCharChar) 8</span><br><span class="line">sizeof(CharIntChar) 12</span><br></pre></td></tr></table></figure></p>
+<p>通常在跨平台或資料結構的網路通訊中會需要資料對齊，<br>那麼如果要一定讓它強制對齊的話呢？Windows 與 Linux / macOS 作法不同，<br>在 Linux / macOS 下是這樣做，要加上 <code>__attribute__((__packed__))</code>，適用於 GCC 編譯器，詳細用法可看<a href="/cpp-attribute-packed/" title="這篇">這篇</a>。<br>在 Windows 下是使用 <code>#pragma pack</code>，這寫法原本只適用於 Visual C++ 編譯器，但後來 GCC 為了相容性也加入了這個語法的支援，<br><figure class="highlight cpp"><figcaption><span>cpp-pragma-pack2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-pragma-pack2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//#pragma pack(push)</span></span><br><span class="line"><span class="comment">//#pragma pack(1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> pack(push, 1)</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharCharInt</span> &#123;</span> <span class="keyword">char</span> c; <span class="keyword">char</span> c2; <span class="keyword">int</span> i; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">IntCharChar</span> &#123;</span> <span class="keyword">int</span> i;  <span class="keyword">char</span> c;  <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CharIntChar</span> &#123;</span> <span class="keyword">char</span> c; <span class="keyword">int</span> i;   <span class="keyword">char</span> c2; &#125;;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> pack(pop)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CharCharInt</span> <span class="title">charcharint</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">IntCharChar</span> <span class="title">intcharchar</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CharIntChar</span> <span class="title">charintchar</span>;</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharCharInt) "</span> &lt;&lt; <span class="keyword">sizeof</span>(charcharint) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(IntCharChar) "</span> &lt;&lt; <span class="keyword">sizeof</span>(intcharchar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"sizeof(CharIntChar) "</span> &lt;&lt; <span class="keyword">sizeof</span>(charintchar) &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我的平台輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sizeof(CharCharInt) 6</span><br><span class="line">sizeof(IntCharChar) 6</span><br><span class="line">sizeof(CharIntChar) 6</span><br></pre></td></tr></table></figure></p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>以上就是 C/C++ pragma pack 的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 C/C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-attribute-packed/" title="C/C++ __attribute__((__packed__)) 用法與範例">C/C++ __attribute__((__packed__)) 用法與範例</a><br><a href="/cpp-sizeof/" title="C/C++ sizeof 用法與範例">C/C++ sizeof 用法與範例</a><br><a href="/cpp-typedef/" title="C/C++ typedef 用法與範例">C/C++ typedef 用法與範例</a><br><a href="/cpp-define/" title="C/C++ define 用法與範例">C/C++ define 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-pragma-pack/" data-id="cm19ca0dc00jtj4pqjij92nrh" data-title="C/C++ pragma pack 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-write-binary-file" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-write-binary-file/" class="article-date">
+  <time datetime="2022-11-07T14:00:00.000Z" itemprop="datePublished">2022-11-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-write-binary-file/">C++ 寫入二進制檔用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C++ 寫入二進制檔的用法與範例， </p>
+<p>以下 C++ 寫入二進制檔的用法介紹將分為這幾部份，  </p>
+<ul>
+<li>C++ std::ofstream 寫入二進制檔  </li>
+<li>C++ 將 C-Style 字元陣列的資料寫入二進制檔  </li>
+<li>C++ 將 <code>vector&lt;char&gt;</code> 的資料寫入二進制檔  </li>
+<li>C++ 將 string 的資料寫入二進制檔  </li>
+<li>C++ 將 struct 資料寫入二進制檔  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2><span id="c-stdofstream-寫入二進制檔">C++ std::ofstream 寫入二進制檔</span></h2><p>這邊示範用 C++ std::ofstream 來寫入二進制檔案(binary)，建立完 ofstream 後使用 <code>ofstream::open()</code> 來開檔並指定 <code>std::ios::binary</code> 二進制模式，如果開檔成功的話，就將資料放進 ofstream 流寫入二進制檔，<br>假如只寫入單純一筆 int 的資料的話，範例如下，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-write.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-write.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::ofstream ofs;</span><br><span class="line">    </span><br><span class="line">    ofs.open(<span class="string">"output.bin"</span>, <span class="built_in">std</span>::ios::out | <span class="built_in">std</span>::ios::binary);</span><br><span class="line">    <span class="keyword">if</span> (!ofs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> num = <span class="number">3</span>;</span><br><span class="line">    ofs.write((<span class="keyword">char</span> *)&amp;num, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    ofs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>hexdump output.bin 輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ hexdump output.bin</span><br><span class="line">0000000 03 00 00 00</span><br><span class="line">0000004</span><br></pre></td></tr></table></figure></p>
+<p>假如要寫入字元的資料的話，範例如下，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-write2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-write2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::ofstream ofs;</span><br><span class="line">    </span><br><span class="line">    ofs.open(<span class="string">"output.bin"</span>, <span class="built_in">std</span>::ios::out | <span class="built_in">std</span>::ios::binary);</span><br><span class="line">    <span class="keyword">if</span> (!ofs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ofs &lt;&lt; <span class="string">'a'</span>;</span><br><span class="line">    ofs &lt;&lt; <span class="string">'b'</span>;</span><br><span class="line">    ofs &lt;&lt; <span class="string">'c'</span>;</span><br><span class="line">    ofs &lt;&lt; <span class="string">'d'</span>;</span><br><span class="line">    ofs &lt;&lt; <span class="string">'e'</span>;</span><br><span class="line">    ofs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>hexdump output.bin 輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ hexdump output.bin</span><br><span class="line">0000000 61 62 63 64 65</span><br><span class="line">0000005</span><br></pre></td></tr></table></figure></p>
+<p>要用 ifstream 讀取二進制檔的資料的話可以看看<a href="/cpp-read-binary-file/" title="這篇">這篇</a>。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="c-將-c-style-字元陣列的資料寫入二進制檔">C++ 將 C-Style 字元陣列的資料寫入二進制檔</span></h2><p>這邊介紹 C++ std::ofstream 寫入二進制檔到 C-Style 字元陣列裡，開檔跟上個範例不同的是這次我們在 ofstream 建構時一併開檔，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-write3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-write3.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">5</span>] = &#123;<span class="number">0x61</span>, <span class="number">0x62</span>, <span class="number">0x63</span>, <span class="number">0x64</span>, <span class="number">0x65</span>&#125;;</span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">//char buffer[5] = &#123;'a', 'b', 'c', 'd', 'e'&#125;;</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ofstream <span class="title">ofs</span><span class="params">(<span class="string">"output.bin"</span>, <span class="built_in">std</span>::ios::out | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ofs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ofs.write(buffer, <span class="keyword">sizeof</span>(buffer));</span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">/*for (int i = 0; i &lt; sizeof(buffer); i++) &#123;</span></span><br><span class="line"><span class="comment">        ofs &lt;&lt; buffer[i];</span></span><br><span class="line"><span class="comment">    &#125;*/</span></span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">//ofs &lt;&lt; buffer;</span></span><br><span class="line">    ofs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出同上。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="c-將-vectorltchargt-的資料寫入二進制檔">C++ 將 <code>vector&lt;char&gt;</code> 的資料寫入二進制檔</span></h2><p>這邊示範經常使用到的 std::vector 容器，將 std::vector 容器裡的元素(這邊示範 char) 寫入到二進制檔裡，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-write4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-write4.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">char</span>&gt; buffer;</span><br><span class="line">    buffer.push_back(<span class="string">'a'</span>);</span><br><span class="line">    buffer.push_back(<span class="string">'b'</span>);</span><br><span class="line">    buffer.push_back(<span class="string">'c'</span>);</span><br><span class="line">    buffer.push_back(<span class="string">'d'</span>);</span><br><span class="line">    buffer.push_back(<span class="string">'e'</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ofstream <span class="title">ofs</span><span class="params">(<span class="string">"output.bin"</span>, <span class="built_in">std</span>::ios::out | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ofs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//ofs.write(&amp;buffer.front(), buffer.size());</span></span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;b : buffer) &#123;</span><br><span class="line">        ofs &lt;&lt; b;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">//ofs &lt;&lt; &amp;buffer.front();</span></span><br><span class="line">    ofs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出同上。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="c-將-string-的資料寫入二進制檔">C++ 將 string 的資料寫入二進制檔</span></h2><p>這邊示範經常使用到的 std::string 容器，將 std::string 容器裡的元素寫入到二進制檔裡，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-write5.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-write5.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">string</span> str = <span class="string">"abcde"</span>;</span><br><span class="line">    <span class="comment">//string str = &#123;1,2,3,4&#125;;</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ofstream <span class="title">ofs</span><span class="params">(<span class="string">"input.bin"</span>, <span class="built_in">std</span>::ios::out | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ofs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ofs.write(&amp;str.front(), str.size());</span><br><span class="line">    <span class="comment">//ofs.write(&amp;str[0], str.size());</span></span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">/*for (auto &amp;b : str) &#123;</span></span><br><span class="line"><span class="comment">        ofs &lt;&lt; b;</span></span><br><span class="line"><span class="comment">    &#125;*/</span></span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">//ofs &lt;&lt; &amp;str.front(); // 遇到 '\0' 就停止</span></span><br><span class="line">    ofs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出同上。  </p>
+<h2><span id="c-將-struct-資料寫入二進制檔">C++ 將 struct 資料寫入二進制檔</span></h2><p>這邊示範 C++ 用 ofstream 將 struct 資料寫入二進制檔，寫入 struct 資料前先寫入 struct 的筆數，這樣在讀取二進制檔案時可以方便先知道要讀取幾筆 struct 資料，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-write6.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-write6.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Student</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">4</span>];</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Student</span> <span class="title">st</span>[3] = &#123;</span></span><br><span class="line">        &#123;<span class="number">1</span>, <span class="string">"ab"</span>, <span class="number">18</span>&#125;,</span><br><span class="line">        &#123;<span class="number">2</span>, <span class="string">"cd"</span>, <span class="number">19</span>&#125;,</span><br><span class="line">        &#123;<span class="number">3</span>, <span class="string">"ef"</span>, <span class="number">20</span>&#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">int</span> count = <span class="number">3</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ofstream <span class="title">ofs</span><span class="params">(<span class="string">"output.bin"</span>, <span class="built_in">std</span>::ios::out | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ofs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ofs.write((<span class="keyword">char</span> *)&amp;count, <span class="keyword">sizeof</span>(<span class="keyword">int</span>)); <span class="comment">// 寫入筆數</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        ofs.write((<span class="keyword">char</span> *)&amp;st[i], <span class="keyword">sizeof</span>(struct Student));</span><br><span class="line">    &#125;</span><br><span class="line">    ofs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>hexdump output.bin 輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ hexdump output.bin</span><br><span class="line">0000000 03 00 00 00 01 00 00 00 61 62 00 00 12 00 00 00</span><br><span class="line">0000010 02 00 00 00 63 64 00 00 13 00 00 00 03 00 00 00</span><br><span class="line">0000020 65 66 00 00 14 00 00 00</span><br><span class="line">0000028</span><br></pre></td></tr></table></figure></p>
+<p>要用 ifstream 將二進制檔的資料讀取到 struct 裡的話可以看看<a href="/cpp-read-binary-file/" title="這篇">這篇</a>。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>以上就是 C++ 寫入二進制檔的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-read-binary-file/" title="C++ 讀取二進制檔用法與範例">C++ 讀取二進制檔用法與範例</a><br><a href="/cpp-read-text-file/" title="C++ 讀取文字檔用法與範例">C++ 讀取文字檔用法與範例</a><br><a href="/cpp-write-text-file/" title="C++ 寫入文字檔用法與範例">C++ 寫入文字檔用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-write-binary-file/" data-id="cm19ca0dc00jsj4pquvrpm8ow" data-title="C++ 寫入二進制檔用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpp-read-binary-file" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-read-binary-file/" class="article-date">
+  <time datetime="2022-11-03T14:00:00.000Z" itemprop="datePublished">2022-11-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-read-binary-file/">C++ 讀取二進制檔用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 介紹 C++ 讀取二進制檔的用法與範例，  </p>
+<p>以下 C++ 讀取二進制檔的用法介紹將分為這幾部份，  </p>
+<ul>
+<li>C++ std::ifstream 讀取二進制檔資料  </li>
+<li>C++ 讀取二進制檔到 C-Style 陣列裡  </li>
+<li>C++ 一次讀取全部二進制到 <code>vector&lt;char&gt;</code> 裡  </li>
+<li>C++ 一次讀取全部二進制到 string 裡  </li>
+<li>C++ 讀取二進制檔資料到 struct 裡  </li>
+</ul>
+<p>那我們開始吧！  </p>
+<h2><span id="c-stdifstream-讀取二進制檔資料">C++ std::ifstream 讀取二進制檔資料</span></h2><p>這邊示範 C++ std::ifstream 讀取二進制檔資料(binary)，ifstream 要讀取二進制檔案資料的話，開檔模式要用 <code>std::ios::binary</code> 表示二進制模式，假如只讀取單純一筆 int 的資料的話，範例如下，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-read.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-read.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::ifstream ifs;</span><br><span class="line">    <span class="keyword">int</span> num;</span><br><span class="line"></span><br><span class="line">    ifs.open(<span class="string">"input.bin"</span>, <span class="built_in">std</span>::ios::in | <span class="built_in">std</span>::ios::binary);</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ifs.read((<span class="keyword">char</span> *)&amp;num, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; num;</span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3</span><br></pre></td></tr></table></figure></p>
+<h2><span id="c-讀取二進制檔到-c-style-陣列裡">C++ 讀取二進制檔到 C-Style 陣列裡</span></h2><p>這邊介紹 C++ std::ifstream 讀取二進制檔到 C-Style 陣列裡，建立完 ifstream 後使用 <code>ifstream::open()</code> 來開檔並指定 <code>std::ios::binary</code> 二進制模式，開檔跟上個範例不同的是這次我們在 ifstream 建構時一併開檔，如果開檔成功的話，就讀出內容並且印出來，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-read2.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-read2.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buffer[<span class="number">256</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.bin"</span>, <span class="built_in">std</span>::ios::in | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ifs.read(buffer, <span class="keyword">sizeof</span>(buffer));</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; buffer;</span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>假設我們的輸入的二進制內容是 abcde，結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">abcde</span><br></pre></td></tr></table></figure></p>
+<p>要用 ofstream 將資料寫入二進制檔的範例可以看<a href="/cpp-write-binary-file/" title="這篇">這篇</a>。  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<h2><span id="c-一次讀取全部二進制到-vectorltchargt-裡">C++ 一次讀取全部二進制到 <code>vector&lt;char&gt;</code> 裡</span></h2><p>這邊示範 C++ 一次讀取全部二進制到 <code>vector&lt;char&gt;</code> 裡，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-read3.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-read3.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.bin"</span>, <span class="built_in">std</span>::ios::in | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">char</span>&gt; buffer;</span><br><span class="line">    buffer.assign(<span class="built_in">std</span>::istreambuf_iterator&lt;<span class="keyword">char</span>&gt;(ifs), <span class="built_in">std</span>::istreambuf_iterator&lt;<span class="keyword">char</span>&gt;());</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; buffer.size(); i++) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; buffer[i] &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a b c d e</span><br></pre></td></tr></table></figure></p>
+<h2><span id="c-一次讀取全部二進制到-string-裡">C++ 一次讀取全部二進制到 string 裡</span></h2><p>這邊示範 C++ 一次讀取全部二進制到 string 裡，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-read4.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-read4.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.bin"</span>, <span class="built_in">std</span>::ios::in | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">string</span> str;</span><br><span class="line">    str.assign(<span class="built_in">std</span>::istreambuf_iterator&lt;<span class="keyword">char</span>&gt;(ifs), <span class="built_in">std</span>::istreambuf_iterator&lt;<span class="keyword">char</span>&gt;());</span><br><span class="line">    <span class="comment">// or</span></span><br><span class="line">    <span class="comment">//ifs &gt;&gt; str;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; str.size(); i++) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; str[i] &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">        <span class="comment">//cout &lt;&lt; (int)str[i] &lt;&lt; " ";</span></span><br><span class="line">    &#125;</span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a b c d e</span><br></pre></td></tr></table></figure></p>
+<h2><span id="c-讀取二進制檔資料到-struct-裡">C++ 讀取二進制檔資料到 struct 裡</span></h2><p>這邊示範 C++ 用 ifstream 將二進制檔的資料讀取到 struct 裡，先用 <code>ifstream::read()</code> 讀一個 int 知道有幾筆 struct 的資料後，之後再用 for 迴圈搭配 <code>ifstream::read()</code> 讀取 count 次 struct 的資料，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-read5.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-read5.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Student</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">4</span>];</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Student</span> <span class="title">st</span>[10] = &#123;</span><span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> count;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.bin"</span>, <span class="built_in">std</span>::ios::in | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ifs.read((<span class="keyword">char</span> *)&amp;count, <span class="keyword">sizeof</span>(<span class="keyword">int</span>)); <span class="comment">// 讀取筆數</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"count: "</span> &lt;&lt; count &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        ifs.read((<span class="keyword">char</span> *)&amp;st[i], <span class="keyword">sizeof</span>(struct Student));</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"id: "</span> &lt;&lt; st[i].id </span><br><span class="line">             &lt;&lt; <span class="string">", name: "</span> &lt;&lt; st[i].name </span><br><span class="line">             &lt;&lt; <span class="string">", age: "</span> &lt;&lt; st[i].age &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">count: 3</span><br><span class="line">id: 1, name: ab, age: 18</span><br><span class="line">id: 2, name: cd, age: 19</span><br><span class="line">id: 3, name: ef, age: 20</span><br></pre></td></tr></table></figure></p>
+<p>更好的寫法是讀完筆數後，去 new 動態記憶體配置對應的 struct 筆數，如下所示，跟上例不同的地方還有這次我把 <code>ifstream::read()</code> 一次讀取 count 筆 struct 資料，<br><figure class="highlight cpp"><figcaption><span>cpp-binary-read6.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ cpp-binary-read6.cpp -o a.out</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Student</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">4</span>];</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> count;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function">ifstream <span class="title">ifs</span><span class="params">(<span class="string">"input.bin"</span>, <span class="built_in">std</span>::ios::in | <span class="built_in">std</span>::ios::binary)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (!ifs.is_open()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Failed to open file.\n"</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">// EXIT_FAILURE</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ifs.read((<span class="keyword">char</span> *)&amp;count, <span class="keyword">sizeof</span>(<span class="keyword">int</span>)); <span class="comment">// 讀取筆數</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"count: "</span> &lt;&lt; count &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Student</span> *<span class="title">st</span> = <span class="title">new</span> <span class="title">Student</span>[<span class="title">count</span>];</span></span><br><span class="line">    ifs.read((<span class="keyword">char</span> *)st, <span class="keyword">sizeof</span>(struct Student) * count);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"id: "</span> &lt;&lt; st[i].id </span><br><span class="line">             &lt;&lt; <span class="string">", name: "</span> &lt;&lt; st[i].name </span><br><span class="line">             &lt;&lt; <span class="string">", age: "</span> &lt;&lt; st[i].age &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ifs.close();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>結果輸出同上。要如何用 ofstream 將 struct 寫入二進制檔的範例可以看<a href="/cpp-write-binary-file/" title="這篇">這篇</a>，  </p>
+<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
+<p>以上就是 C++ 讀取二進制檔的用法與範例介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br>如果你想學習 C++ 相關技術，可以參考看看下面的文章，<br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/cpp-write-binary-file/" title="C++ 寫入二進制檔用法與範例">C++ 寫入二進制檔用法與範例</a><br><a href="/cpp-read-text-file/" title="C++ 讀取文字檔用法與範例">C++ 讀取文字檔用法與範例</a><br><a href="/cpp-write-text-file/" title="C++ 寫入文字檔用法與範例">C++ 寫入文字檔用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-read-binary-file/" data-id="cm19ca0db00jrj4pqy0og24e4" data-title="C++ 讀取二進制檔用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-mac-zsh-completions" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/mac-zsh-completions/" class="article-date">
+  <time datetime="2022-10-31T12:00:00.000Z" itemprop="datePublished">2022-10-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/mac-zsh-completions/">macOS 安裝 zsh-completions 輸入指令自動完成</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>macOS 使用 zsh 要自動完成的話要安裝 zsh-completions，macOS Mojave (10.14) 之前的版本預設 shell 是 bash。從 macOS Catalina (10.15.x) 開始使用 zsh 做為預設登入 shell，想要知道你現在用的 shell 是哪種的話可以透過 <code>echo $SHELL</code> 指令來了解，以我的電腦 10.15.7 為例的話<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="variable">$SHELL</span></span><br><span class="line">/bin/zsh</span><br></pre></td></tr></table></figure></p>
+<p>這表示目前使用的 shell 是 zsh<br>如何變更預設 shell 可以看這篇 <a href="https://support.apple.com/zh-tw/HT208050" rel="noopener external nofollow noreferrer" target="_blank">Apple 官方的教學</a>。  </p>
+<p>但是預設 zsh 下輸入指令按 tab 時沒有自動完成的話會很不好使用，所以以下介紹怎麼安裝 zsh 自動完成，<br>brew 安裝 zsh-completions 指令如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install zsh-completions</span><br></pre></td></tr></table></figure></p>
+<p>安裝最後的畫面如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">==&gt; Pouring zsh-completions--0.33.0.all.bottle.tar.gz</span><br><span class="line">==&gt; Caveats</span><br><span class="line">To activate these completions, add the following to your .zshrc:</span><br><span class="line"></span><br><span class="line">  autoload -Uz compinit</span><br><span class="line">  compinit</span><br><span class="line"></span><br><span class="line">You may also need to force rebuild `zcompdump`:</span><br><span class="line"></span><br><span class="line">  rm -f ~/.zcompdump; compinit</span><br><span class="line"></span><br><span class="line">Additionally, if you receive &quot;zsh compinit: insecure directories&quot; warnings when attempting</span><br><span class="line">to load these completions, you may need to run this:</span><br><span class="line"></span><br><span class="line">  chmod -R go-w &apos;/usr/local/share/zsh&apos;</span><br><span class="line"></span><br><span class="line">zsh completions have been installed to:</span><br><span class="line">  /usr/local/share/zsh/site-functions</span><br><span class="line">==&gt; Summary</span><br><span class="line">🍺  /usr/local/Cellar/zsh-completions/0.33.0: 147 files, 1.2MB</span><br></pre></td></tr></table></figure></p>
+<p>在 <code>~/.zshrc</code> 添加以下內容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">autoload -Uz compinit</span><br><span class="line">compinit</span><br></pre></td></tr></table></figure></p>
+<p>之後開新的終端機，遇到下面這樣的錯誤訊息需要執行 <code>chmod -R go-w &#39;/usr/local/share/zsh&#39;</code> 可以解決，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zsh compinit: insecure directories, run compaudit for list.</span><br><span class="line">Ignore insecure directories and continue [y] or abort compinit [n]?</span><br></pre></td></tr></table></figure></p>
+<p>這樣就搞定囉！開新的終端機試試效果吧！  </p>
+<p>以上就是 macOS 安裝 zsh-completions 自動完成指令介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/mac-move-dock-to-other-screen/" title="mac 雙螢幕延伸模式的 dock 切換方法">mac 雙螢幕延伸模式的 dock 切換方法</a><br><a href="/mac-screen-sharing/" title="macOS Screen Sharing 用指令開啟螢幕分享">macOS Screen Sharing 用指令開啟螢幕分享</a><br><a href="/mac-download-an-older-version-of-xcode/" title="macOS 安裝舊版的 Xcode 版本">macOS 安裝舊版的 Xcode 版本</a><br><a href="/mac-upgrade/" title="macOS 版本升級的方法">macOS 版本升級的方法</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/mac-zsh-completions/" data-id="cm19ca0db00jqj4pqwx7sx5mn" data-title="macOS 安裝 zsh-completions 輸入指令自動完成" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-git-format-patch" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/git-format-patch/" class="article-date">
@@ -182,7 +480,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/git-format-patch/" data-id="cm198pc7d00jppepq4goc5ouy" data-title="git format-patch 製作 patch 與匯入 patch" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/git-format-patch/" data-id="cm19ca0da00jpj4pqojlxu5c0" data-title="git format-patch 製作 patch 與匯入 patch" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
@@ -248,7 +546,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/windows-10-fix-100-disk-usage/" data-id="cm198pc7c00jopepqggoowv1o" data-title="Windows 10 硬碟使用率 100% 電腦緩慢的解決方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/windows-10-fix-100-disk-usage/" data-id="cm19ca0da00joj4pqogyyyu1r" data-title="Windows 10 硬碟使用率 100% 電腦緩慢的解決方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
@@ -316,7 +614,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-exit/" data-id="cm198pc7c00jnpepqlfv04if1" data-title="C/C++ exit 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-exit/" data-id="cm19ca0da00jnj4pq2gtj48hs" data-title="C/C++ exit 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -403,7 +701,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-sizeof/" data-id="cm198pc7c00jmpepqmm1ip6gr" data-title="C/C++ sizeof 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-sizeof/" data-id="cm19ca0d900jmj4pqi09q4gsj" data-title="C/C++ sizeof 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -496,7 +794,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-define/" data-id="cm198pc7b00jlpepqc32tg09y" data-title="C/C++ define 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-define/" data-id="cm19ca0d900jlj4pq7xzfrnqi" data-title="C/C++ define 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -569,270 +867,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-typedef/" data-id="cm198pc7b00jkpepqqlypq52v" data-title="C/C++ typedef 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-typedef/" data-id="cm19ca0d900jkj4pqj2y5rg9j" data-title="C/C++ typedef 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-android-adb-install-apk-install-failed-update-incompatible" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/android-adb-install-apk-install-failed-update-incompatible/" class="article-date">
-  <time datetime="2022-10-06T14:00:00.000Z" itemprop="datePublished">2022-10-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/android-adb-install-apk-install-failed-update-incompatible/">Android adb install INSTALL_FAILED_UPDATE_INCOMPATIBLE 解決方法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇介紹 Android adb install apk 出現 INSTALL_FAILED_UPDATE_INCOMPATIBLE 解決方法。  </p>
-<p>adb 指令的安裝方式可以參考<a href="/android-adb/" title="這篇">這篇</a>。  </p>
-<h2><span id="adb-install-apk-install_failed_update_incompatible-錯誤">adb install apk INSTALL_FAILED_UPDATE_INCOMPATIBLE 錯誤</span></h2><p>用 adb install abc.apk 時遇到 INSTALL_FAILED_UPDATE_INCOMPATIBLE 錯誤訊息時怎麼辦，  </p>
-<p>解決方法：<br>簡單的方式是移除原本的套件 package，用 adb uninstall 移除該套件名 package name，如果移除套件 com.xxx.xxx 就這樣下，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb uninstall com.xxx.xxx</span><br></pre></td></tr></table></figure></p>
-<p>參考<br>android - INSTALL_FAILED_UPDATE_INCOMPATIBLE when I try to install compiled .apk on device - Stack Overflow<br><a href="https://stackoverflow.com/questions/11891848/install-failed-update-incompatible-when-i-try-to-install-compiled-apk-on-device" rel="noopener external nofollow noreferrer" target="_blank">https://stackoverflow.com/questions/11891848/install-failed-update-incompatible-when-i-try-to-install-compiled-apk-on-device</a>  </p>
-<p><strong>相關主題</strong><br><a href="/android-adb/" title="Android adb 基本用法教學">Android adb 基本用法教學</a><br><a href="/android-adb-logcat/" title="Android adb logcat 基本用法教學">Android adb logcat 基本用法教學</a><br><a href="/android-adb-logcat-read-unexpected-eof/" title="Android adb logcat 出現 read unexpected eof 解決方法">Android adb logcat 出現 read unexpected eof 解決方法</a><br><a href="/android-adb-set-date/" title="Android adb 同步時間/設定時間">Android adb 同步時間/設定時間</a><br><a href="/android-adb-shell-input/" title="Android adb shell input 事件用法">Android adb shell input 事件用法</a><br><a href="/android-adb-forward/" title="Android adb forward 通訊埠轉發用法教學">Android adb forward 通訊埠轉發用法教學</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/android-adb-install-apk-install-failed-update-incompatible/" data-id="cm198pc7b00jjpepq2yn21pvd" data-title="Android adb install INSTALL_FAILED_UPDATE_INCOMPATIBLE 解決方法" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-software-remote-desktop" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/software-remote-desktop/" class="article-date">
-  <time datetime="2022-10-03T14:00:00.000Z" itemprop="datePublished">2022-10-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/software-remote-desktop/">3種免費遠端桌面軟體推薦</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Windows/macOS/Ubuntu 跨平台免費遠端桌面軟體。  </p>
-<p>以下3種免費遠端桌面軟體推薦分為  </p>
-<ul>
-<li>TeamViewer  </li>
-<li>Chrome Remote Desktop  </li>
-<li>AnyDesk  </li>
-</ul>
-<h2><span id="teamviewer">TeamViewer</span></h2><img src="/software-remote-desktop/teamviewer.png" width="600" title="TeamViewer 15">  
-<p>TeamViewer 是一款用於遠端存取以及遠端控制和遠端維護電腦和其他終端裝置的軟體，發布於 2005 年。功能性被逐步擴大。TeamViewer 不需要註冊，非商業領域免費使用，這有助於軟體的廣泛傳播。  </p>
-<p><strong>多平台支援性與特色</strong><br>Server伺服端（被控制）支援平台：Windows / macOS / Linux / Chrome OS / Raspberry Pi<br>Client客戶端（控制）支援手機行動裝置：Yes<br>需要外網IP：不需要<br>需要帳號：不需要註冊帳號  </p>
-<p><strong>下載安裝</strong><br>電腦版（Windows/macOS/Ubuntu）：<a href="https://www.teamviewer.com/tw/teamviewer-automatic-download/" rel="noopener external nofollow noreferrer" target="_blank">Chrome 遠端桌面</a><br>Chrome 擴充：<a href="https://chrome.google.com/webstore/detail/chrome-remote-desktop/inomeogfingihgjfjlpeplalcfajhgai" rel="noopener external nofollow noreferrer" target="_blank">Chrome Remote Desktop</a><br>Android：<a href="https://play.google.com/store/apps/details?id=com.teamviewer.teamviewer.market.mobile" rel="noopener external nofollow noreferrer" target="_blank">TeamViewer遠端控制版本</a><br>iOS：<a href="https://apps.apple.com/us/app/teamviewer/id692035811" rel="noopener external nofollow noreferrer" target="_blank">TeamViewer Remote Control</a>  </p>
-<p>官網連結：<a href="https://www.teamviewer.com/" rel="noopener external nofollow noreferrer" target="_blank">https://www.teamviewer.com/</a>  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="chrome-remote-desktop">Chrome Remote Desktop</span></h2><img src="/software-remote-desktop/chrome_remote_desktop.png" width="600" title="Chrome Remote Desktop">  
-<p>Chrome 遠端桌面是 Google 開發的遠端桌面軟體工具，允許使用者通過 Google 開發的專有協議（內部稱為Chromoting）遠端控制其他電腦的桌面。特色為快速且完全免費。需要 Chrome 瀏覽器跟 google 帳號。  </p>
-<p><strong>多平台支援性與特色</strong><br>Server伺服端（被控制）支援平台：Windows / macOS / Linux<br>Client客戶端（控制）支援手機行動裝置：Yes<br>需要外網IP：不需要<br>需要帳號：需要註冊 Gmail 帳號  </p>
-<p><strong>下載安裝</strong><br>電腦網頁版：<a href="https://remotedesktop.google.com/access/" rel="noopener external nofollow noreferrer" target="_blank">Chrome 遠端桌面</a><br>Chrome 擴充：<a href="https://chrome.google.com/webstore/detail/chrome-remote-desktop/inomeogfingihgjfjlpeplalcfajhgai" rel="noopener external nofollow noreferrer" target="_blank">Chrome Remote Desktop</a><br>Android：<a href="https://play.google.com/store/apps/details?id=com.google.chromeremotedesktop" rel="noopener external nofollow noreferrer" target="_blank">Chrome 遠端桌面</a><br>iOS：<a href="https://apps.apple.com/tw/app/chrome-%E9%81%A0%E7%AB%AF%E6%A1%8C%E9%9D%A2/id944025852" rel="noopener external nofollow noreferrer" target="_blank">Chrome 遠端桌面</a>  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<h2><span id="anydesk">AnyDesk</span></h2><img src="/software-remote-desktop/anydesk.png" width="500" title="AnyDesk">  
-<p>AnyDesk 是一款由德國公司 AnyDesk Software GmbH 推出的遠端桌面軟體。使用者可以通過該軟體遠端控制電腦，同時還能與被控制的電腦之間進行文件傳輸。是近幾年的新興免費遠端桌面軟體。  </p>
-<p><strong>多平台支援性與特色</strong><br>Server伺服端（被控制）支援平台：Windows / macOS / Linux / FreeBSD / Raspberry Pi / Chrome OS<br>Client客戶端（控制）支援手機行動裝置：Yes<br>需要外網IP：不需要<br>需要帳號：不需要註冊帳號  </p>
-<p><strong>下載安裝</strong><br>Windows：<a href="https://download.anydesk.com/AnyDesk.exe" rel="noopener external nofollow noreferrer" target="_blank">AnyDesk 遠端桌面軟體</a><br>macOS：<a href="https://download.anydesk.com/anydesk.dmg" rel="noopener external nofollow noreferrer" target="_blank">AnyDesk 遠端桌面軟體</a><br>Android：<a href="https://play.google.com/store/apps/details?id=com.anydesk.anydeskandroid" rel="noopener external nofollow noreferrer" target="_blank">AnyDesk 遠端桌面軟體</a><br>iOS：<a href="https://apps.apple.com/tw/app/anydesk/id1176131273" rel="noopener external nofollow noreferrer" target="_blank">AnyDesk 遠端桌面軟體</a>  </p>
-<p>官網連結：<a href="https://anydesk.com" rel="noopener external nofollow noreferrer" target="_blank">https://anydesk.com</a>  </p>
-<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-8106207149031244" data-ad-slot="3222287843"></ins><script>    (adsbygoogle = window.adsbygoogle || []).push({});</script>  
-<p>以上就是3種免費遠端桌面軟體的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其它參考<br>【遠端桌面】4款2022年最常用免費遠端控制軟體分享！TeamViewer、Chrome、AnyDesk、Wayk Now<br><a href="https://kikinote.net/157800" rel="noopener external nofollow noreferrer" target="_blank">https://kikinote.net/157800</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/software-remote-desktop/" data-id="cm198pc7a00jipepqa2mljpdk" data-title="3種免費遠端桌面軟體推薦" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Software/">Software</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-line-screen-sharing" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/line-screen-sharing/" class="article-date">
-  <time datetime="2022-09-29T14:00:00.000Z" itemprop="datePublished">2022-09-29</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/line-screen-sharing/">LINE 分享螢幕畫面（電腦螢幕畫面與手機螢幕畫面）</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇記錄 LINE 分享螢幕畫面的方法，要確定 LINE 的版本是 5.23.0 以上，才有分享螢幕畫面的功能，Windows LINE 5.23.0 大約是 2020.3.16 上線，macOS LINE 5.23.0 大約是 2020.3.18 上線。  </p>
-<h2><span id="line-分享電腦螢幕畫面">LINE 分享電腦螢幕畫面</span></h2><p>以下為網路上找的不錯文章，  </p>
-<p>疫情應援，LINE電腦版5.23.0「分享螢幕畫面」功能全新升級！<br><a href="https://www.nova.com.tw/article/ef/content/615ac9d381911" rel="noopener external nofollow noreferrer" target="_blank">https://www.nova.com.tw/article/ef/content/615ac9d381911</a>  </p>
-<p>疫情應援，LINE電腦版5.23.0「分享螢幕畫面」功能全新升級！<br><a href="https://official-blog-tw.line.me/archives/82467713.html" rel="noopener external nofollow noreferrer" target="_blank">https://official-blog-tw.line.me/archives/82467713.html</a>  </p>
-<p>LINE共享螢幕功能教學－用LINE就能和多人即時分享電腦螢幕畫面，手機、電腦都能看。<br><a href="https://www.pkstep.com/archives/57538" rel="noopener external nofollow noreferrer" target="_blank">https://www.pkstep.com/archives/57538</a><br>教學是 windows 介面，分享時如果有雙螢幕的話，會讓你選擇要分享哪一個螢幕，  </p>
-<p>LINE 分享螢幕教學大公開【適用手機、電腦版 LINE】<br><a href="https://tw.imyfone.com/line/line-screen-sharing/" rel="noopener external nofollow noreferrer" target="_blank">https://tw.imyfone.com/line/line-screen-sharing/</a><br>教學是 windows 介面，這版的畫面比較接近目前的版本  </p>
-<p>【科技新知】如何用LINE即時分享自己的「螢幕畫面」給好友？電腦/手機版都適用<br><a href="https://www.jyes.com.tw/news.php?act=view&amp;id=815" rel="noopener external nofollow noreferrer" target="_blank">https://www.jyes.com.tw/news.php?act=view&amp;id=815</a><br>教學是 windows 介面，  </p>
-<h2><span id="line-分享手機螢幕畫面">LINE 分享手機螢幕畫面</span></h2><p>LINE 分享螢幕教學大公開【適用手機、電腦版 LINE】<br><a href="https://tw.imyfone.com/line/line-screen-sharing/" rel="noopener external nofollow noreferrer" target="_blank">https://tw.imyfone.com/line/line-screen-sharing/</a>  </p>
-<p>【科技新知】如何用LINE即時分享自己的「螢幕畫面」給好友？電腦/手機版都適用<br><a href="https://www.jyes.com.tw/news.php?act=view&amp;id=815" rel="noopener external nofollow noreferrer" target="_blank">https://www.jyes.com.tw/news.php?act=view&amp;id=815</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/windows-10-screen-record/" title="Windows 10 螢幕錄影">Windows 10 螢幕錄影</a><br><a href="/ubuntu-screen-recorder/" title="Ubuntu 桌面錄影軟體">Ubuntu 桌面錄影軟體</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/line-screen-sharing/" data-id="cm198pc7a00jhpepquphm2lqy" data-title="LINE 分享螢幕畫面（電腦螢幕畫面與手機螢幕畫面）" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-windows-10-screen-record" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/windows-10-screen-record/" class="article-date">
-  <time datetime="2022-09-26T14:00:00.000Z" itemprop="datePublished">2022-09-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/windows-10-screen-record/">Windows 10 螢幕錄影</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Windows 10 螢幕錄影的用法與快捷鍵，以及錄完後的檔案儲存路徑在哪。  </p>
-<p>按下 <code>Windows鍵 + G</code> 快捷鍵就能叫出 Windows 錄影的選單，<br><code>Windows鍵 + ALT + R</code> 進行錄影功能，再按一次則結束錄影，<br><code>Windows鍵 + Alt + Print Screen</code> 進行螢幕截圖，  </p>
-<p>要找遊戲短片和螢幕擷取畫面的儲存路徑的話，請選取 <code>開始 &gt; 設定 &gt; 遊戲 &gt; 擷取</code> 然後選取 <code>開啟資料夾</code>。  </p>
-<p>以上就是 Windows 10 螢幕錄影的介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！  </p>
-<p>其它參考<br>Windows 螢幕錄影教學：Win10 內建錄影軟體<br><a href="https://tw.imyfone.com/pc-tips/screen-record-windows/" rel="noopener external nofollow noreferrer" target="_blank">https://tw.imyfone.com/pc-tips/screen-record-windows/</a><br>內建 Windows 10 螢幕錄影功能：用遊戲列錄製軟體教學影片<br><a href="https://www.playpcesor.com/2017/09/windows-10-record-screen.html" rel="noopener external nofollow noreferrer" target="_blank">https://www.playpcesor.com/2017/09/windows-10-record-screen.html</a><br><a href="https://support.microsoft.com/zh-tw/windows/windows-%E4%B8%AD%E6%88%91%E7%9A%84%E9%81%8A%E6%88%B2%E7%9F%AD%E7%89%87%E5%92%8C%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%E5%84%B2%E5%AD%98%E5%9C%A8%E4%BD%95%E8%99%95-71480e4e-e691-3406-8be3-31b2d7e3f0c9#ID0EBD=Windows_10" rel="noopener external nofollow noreferrer" target="_blank">Windows 中我的遊戲短片和螢幕擷取畫面儲存在何處？</a>  </p>
-<p><strong>其它相關文章推薦</strong><br><a href="/ubuntu-screen-recorder/" title="Ubuntu 桌面錄影軟體">Ubuntu 桌面錄影軟體</a><br><a href="/line-screen-sharing/" title="LINE 分享螢幕畫面（電腦螢幕畫面與手機螢幕畫面）">LINE 分享螢幕畫面（電腦螢幕畫面與手機螢幕畫面）</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/windows-10-screen-record/" data-id="cm198pc7a00jgpepquo767aaq" data-title="Windows 10 螢幕錄影" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Windows/">Windows</a></li></ul>
 
     </footer>
   </div>
@@ -876,23 +914,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/dependency-inversion-principle/">設計原則 - 依賴反轉原則 Dependency Inversion Principle</a>
+          </li>
+        
+          <li>
+            <a href="/interface-segregation-principle/">設計原則 - 介面隔離原則 Interface Segregation Principle</a>
+          </li>
+        
+          <li>
+            <a href="/liskov-substitution-principle/">設計原則 - 里氏替換原則 Liskov Substitution Principle</a>
+          </li>
+        
+          <li>
+            <a href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
+          </li>
+        
+          <li>
             <a href="/single-responsibility-principle/">設計原則 - 單一職責原則 Single Responsibility Principle</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-visitor-pattern/">C++ 設計模式 - 訪問者模式 Visitor Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-prototype-pattern/">C++ 設計模式 - 原型模式 Prototype Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-flyweight-pattern/">C++ 設計模式 - 享元模式 Flyweight Pattern</a>
-          </li>
-        
-          <li>
-            <a href="/cpp-interpreter-pattern/">C++ 設計模式 - 解釋器模式 Interpreter Pattern</a>
           </li>
         
       </ul>
@@ -911,7 +949,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">217</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
     </div>
   </div>
 

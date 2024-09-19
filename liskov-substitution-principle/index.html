@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <!-- Google Adsense -->
+  <script async data-ad-client="ca-pub-8106207149031244" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- End Google Adsense -->
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-08PF7150CV"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-08PF7150CV');
+</script>
+<!-- End Google Analytics -->
+
+  
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N29SVMB');</script>
+<!-- End Google Tag Manager -->
+
+  
+  <title>設計原則 - 里氏替換原則 Liskov Substitution Principle | ShengYu Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="你是否曾經遇到過這樣的情況：你寫了一個子類別，卻發現當它被應用於父類別的場景時，程式突然出現了問題？這其實是違反了「里氏替換原則 (Liskov Substitution Principle, LSP)」的例子。LSP 是面向物件設計中的一個重要原則，能幫助我們在使用繼承時保持程式的穩定性。   什麼是里氏替換原則？簡單來說，里氏替換原則強調：所有的子類別應該可以替換掉它們的父類別，而不會影響程式">
+<meta name="keywords" content="C&#x2F;C++,設計模式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="設計原則 - 里氏替換原則 Liskov Substitution Principle">
+<meta property="og:url" content="https://shengyu7697.github.io/liskov-substitution-principle/index.html">
+<meta property="og:site_name" content="ShengYu Talk">
+<meta property="og:description" content="你是否曾經遇到過這樣的情況：你寫了一個子類別，卻發現當它被應用於父類別的場景時，程式突然出現了問題？這其實是違反了「里氏替換原則 (Liskov Substitution Principle, LSP)」的例子。LSP 是面向物件設計中的一個重要原則，能幫助我們在使用繼承時保持程式的穩定性。   什麼是里氏替換原則？簡單來說，里氏替換原則強調：所有的子類別應該可以替換掉它們的父類別，而不會影響程式">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2024-09-19T13:40:07.101Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="設計原則 - 里氏替換原則 Liskov Substitution Principle">
+<meta name="twitter:description" content="你是否曾經遇到過這樣的情況：你寫了一個子類別，卻發現當它被應用於父類別的場景時，程式突然出現了問題？這其實是違反了「里氏替換原則 (Liskov Substitution Principle, LSP)」的例子。LSP 是面向物件設計中的一個重要原則，能幫助我們在使用繼承時保持程式的穩定性。   什麼是里氏替換原則？簡單來說，里氏替換原則強調：所有的子類別應該可以替換掉它們的父類別，而不會影響程式">
+  
+    <link rel="alternate" href="/atom.xml" title="ShengYu Talk" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N29SVMB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">ShengYu Talk</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首頁</a>
+        
+          <a class="main-nav-link" href="/categories/Python教學/">Python教學</a>
+        
+          <a class="main-nav-link" href="/categories/C-C-教學/">C/C++教學</a>
+        
+          <a class="main-nav-link" href="/archives">歸檔</a>
+        
+          <a class="main-nav-link" href="/tags">標籤</a>
+        
+          <a class="main-nav-link" href="/projects">Projects</a>
+        
+          <a class="main-nav-link" href="/about">關於我</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        <a id="nav-linkedin-link" class="nav-icon" href="https://www.linkedin.com/in/shengyu-peng-48b664a6" rel="external nofollow noreferrer" title="Linkedin"></a>
+        <a id="nav-facebook-link" class="nav-icon" href="https://www.facebook.com/shengyu7697" rel="external nofollow noreferrer" title="Facebook"></a>
+        <a id="nav-github-link" class="nav-icon" href="https://github.com/shengyu7697" rel="external nofollow noreferrer" title="GitHub"></a>
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜尋"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜尋"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shengyu7697.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-liskov-substitution-principle" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/liskov-substitution-principle/" class="article-date">
+  <time datetime="2024-09-16T12:00:00.000Z" itemprop="datePublished">2024-09-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      設計原則 - 里氏替換原則 Liskov Substitution Principle
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>你是否曾經遇到過這樣的情況：你寫了一個子類別，卻發現當它被應用於父類別的場景時，程式突然出現了問題？這其實是違反了「里氏替換原則 (Liskov Substitution Principle, LSP)」的例子。LSP 是面向物件設計中的一個重要原則，能幫助我們在使用繼承時保持程式的穩定性。  </p>
+<h2><span id="什麼是里氏替換原則">什麼是里氏替換原則？</span></h2><p>簡單來說，里氏替換原則強調：<strong>所有的子類別應該可以替換掉它們的父類別，而不會影響程式的正確性</strong>。也就是說，如果你的程式原本使用的是父類別，那麼它也應該能夠正常使用任何一個子類別而不會出錯。  </p>
+<p>這個原則是對繼承的一種保障：繼承不是僅僅為了重複使用父類別的程式碼，而是為了保證「子類別能夠完全取代父類別」。如果子類別的行為和父類別不同，甚至違反了父類別的預期，那麼就會破壞系統的穩定性，這就是違反 LSP 的表現。  </p>
+<h2><span id="里氏替換原則的例子">里氏替換原則的例子</span></h2><p>讓我們來看一個簡單的例子，理解什麼樣的設計違反了里氏替換原則。  </p>
+<h3><span id="錯誤的設計違反里氏替換原則">錯誤的設計，違反里氏替換原則</span></h3><p>假設我們有一個 <code>Bird</code> 類別，以及繼承它的 <code>Penguin</code> 類別：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bird</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 鳥類的飛行行為</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Penguin</span> :</span> <span class="keyword">public</span> Bird &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="built_in">std</span>::logic_error(<span class="string">"Penguins can't fly!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在這個例子中，<code>Penguin</code> 類別違反了 LSP，因為當程式預期所有的 <code>Bird</code> 都能飛時，<code>Penguin</code> 的 <code>fly</code> 方法卻會拋出異常，這顯然不是正確的行為。雖然企鵝是鳥類，但它不能飛，這導致了子類別無法正常替換父類別。  </p>
+<h3><span id="正確的設計遵守里氏替換原則">正確的設計，遵守里氏替換原則</span></h3><p>要解決這個問題，我們應該重新思考類別的設計。或許「飛行」不應該是所有鳥類的共同行為，而應該是飛行鳥類的特徵。因此，我們可以將飛行行為從 <code>Bird</code> 類別中移除，並且將其移到專門處理飛行鳥類的類別中：  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bird</span> &#123;</span></span><br><span class="line">    <span class="comment">// 一般鳥類的屬性與行為</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FlyingBird</span> :</span> <span class="keyword">public</span> Bird &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">fly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 飛行行為</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Penguin</span> :</span> <span class="keyword">public</span> Bird &#123;</span><br><span class="line">    <span class="comment">// 企鵝的行為，無需實現 fly 方法</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>經過重新設計後，現在 <code>Penguin</code> 類別不需要再拋出異常，因為它不會被要求飛行，而 <code>FlyingBird</code> 類別則專注於飛行鳥類的行為。這樣的設計遵守了 LSP，因為 <code>Penguin</code> 不再被強迫擁有與其不符合的行為。  </p>
+<h2><span id="為什麼這麼做">為什麼這麼做？</span></h2><p>遵守里氏替換原則能夠讓程式更具穩定性與可預測性。當你的子類別能夠無縫替換父類別時，系統能夠更有效地進行擴展，維護起來也更加容易。  </p>
+<p>不遵守 LSP 的問題在於，當子類別無法替換父類別時，往往會導致難以發現的錯誤。這些錯誤可能在某些特定情境下才會顯現出來，這使得除錯變得非常困難。  </p>
+<p>此外 LSP 的好處在於<strong>保持繼承的正確性與一致性</strong>。當我們設計一個基底類別時，我們期望所有的子類別都能遵循同樣的行為規範，而不是為每一個子類別設定不同的特例。遵守 LSP 意味著我們的設計是穩定且易於預測的，這對於大型專案來說至關重要。  </p>
+<p>當然，過度應用繼承或過於強求遵守 LSP 可能會導致程式碼設計變得複雜，因此在實踐中，我們應該根據具體需求靈活應用這一原則。  </p>
+<h2><span id="實際應用">實際應用</span></h2><p>LSP 在實際應用中是非常常見的，尤其是在框架設計或 API 開發中尤為重要。設計一個良好的框架或函式庫時，確保子類別能夠無縫替換父類別，能夠讓開發者更加輕鬆地進行擴展和修改，而不必擔心破壞現有系統。  </p>
+<p>例如在 GUI 開發中，一個基礎的按鈕類別可能會被許多不同的按鈕類別繼承（如「送出按鈕」或「取消按鈕」）。這些子按鈕應該都能被替換為基礎的按鈕類別，而不會出現意外行為。遵守 LSP 可以讓整個界面的行為更為一致，也讓開發更為順暢。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/liskov-substitution-principle/" data-id="cm19ca0f700o7j4pqy5sunlb4" data-title="設計原則 - 里氏替換原則 Liskov Substitution Principle" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+    <!-- ads-2 -->
+    <!-- <div id="ads-2">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="1792535573"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+ -->
+    <!-- ads-2 -->
+    <!-- ads-4 -->
+    <div id="ads-4">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-format="autorelaxed"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="5600353687"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+    <!-- ads-4 -->
+    
+<nav id="article-nav">
+  
+    <a href="/interface-segregation-principle/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          設計原則 - 介面隔離原則 Interface Segregation Principle
+        
+      </div>
+    </a>
+  
+  
+    <a href="/open-closed-principle/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">設計原則 - 開放封閉原則 Open-Closed Principle</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">精選文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li><a href="/python-tutorial/">Python 基礎教學目錄</a></li>
+        
+          <li><a href="/cpp-tutorial/">C/C++ 入門教學目錄</a></li>
+        
+          <li><a href="/linux-tutorial/">Linux 常用指令教學懶人包</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/dependency-inversion-principle/">設計原則 - 依賴反轉原則 Dependency Inversion Principle</a>
+          </li>
+        
+          <li>
+            <a href="/interface-segregation-principle/">設計原則 - 介面隔離原則 Interface Segregation Principle</a>
+          </li>
+        
+          <li>
+            <a href="/liskov-substitution-principle/">設計原則 - 里氏替換原則 Liskov Substitution Principle</a>
+          </li>
+        
+          <li>
+            <a href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
+          </li>
+        
+          <li>
+            <a href="/single-responsibility-principle/">設計原則 - 單一職責原則 Single Responsibility Principle</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">粉絲專頁</h3>
+    <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fshengyu7697&tabs=timeline&width=280&height=500&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="280" height="500" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分類</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    <div class="widget-wrap" style="position:sticky; position:-webkit-sticky; top:0;">
+  <!-- ads-3 -->
+  <div id="ads-3">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="8896181732"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+   (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+  <!-- ads-3 -->
+</div>
+<script>
+  function setSidebarHeight(sidebar) {
+    let ad1h = document.getElementById("ads-1").clientHeight; // 280
+    //let ad2h = document.getElementById("ads-2").clientHeight; // 280
+    let ad3h = document.getElementById("ads-3").clientHeight; // 600
+    let ad4h = 0;
+    let elem = document.getElementById("ads-4");
+    if (elem != null) {
+      ad4h = elem.clientHeight; // 447
+    }
+    let mainh = document.getElementById("main").clientHeight;
+    let sidebarh = mainh + ad1h + ad4h - ad3h;
+    sidebar.style.height = sidebarh+"px";
+    console.log("set sidebar height = " + sidebarh + "px (" + mainh + "+" + ad1h + "+" + ad4h + "-" + ad3h + ")");
+  }
+
+  function fixSidebarHeight() {
+    let sidebar = document.getElementById("sidebar");
+    console.log("sidebar height is " + sidebar.style.height);
+
+    if (sidebar.style.height == "auto") {
+      console.log("sidebar height is auto !, fix it.");
+      setSidebarHeight(sidebar);
+    }
+
+    const observer = new MutationObserver(function (mutations, observer) {
+      console.log("observer sidebar height is " + sidebar.style.height);
+      if (sidebar.style.height == "auto") {
+        setSidebarHeight(sidebar);
+      }
+    });
+
+    observer.observe(sidebar, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+
+  console.log("width = " + window.innerWidth);
+  if (window.innerWidth >= 768) {
+    console.log("width >= 768");
+    fixSidebarHeight();
+  } else {
+    console.log("width < 768");
+  }
+</script>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 ShengYu<br>
+      Powered by <a href="http://hexo.io/" rel="external nofollow noreferrer" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首頁</a>
+  
+    <a href="/categories/Python教學/" class="mobile-nav-link">Python教學</a>
+  
+    <a href="/categories/C-C-教學/" class="mobile-nav-link">C/C++教學</a>
+  
+    <a href="/archives" class="mobile-nav-link">歸檔</a>
+  
+    <a href="/tags" class="mobile-nav-link">標籤</a>
+  
+    <a href="/projects" class="mobile-nav-link">Projects</a>
+  
+    <a href="/about" class="mobile-nav-link">關於我</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
