@@ -107,6 +107,97 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-ubuntu-x11vnc" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/ubuntu-x11vnc/" class="article-date">
+  <time datetime="2018-09-15T14:00:00.000Z" itemprop="datePublished">2018-09-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/ubuntu-x11vnc/">Ubuntu 安裝 x11vnc VNC Server</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 紀錄在 Ubuntu 16.04 / Ubuntu 18.04 下安裝 x11vnc VNC Server，x11vnc 是一個遠端桌面伺服器，它允許使用者通過 VNC 協議來遠端訪問和控制正在運行的 X Window System（通常稱為 X11）桌面環境，也就是 x11vnc 會傳輸整個 X Window 的畫面，跟其他 vnc server 不太一樣，所以在使用時建議要設定密碼已達到最低程度的保護，<br>以下為 Ubuntu 安裝 VNC server 的內容，大概分為這幾部份，  </p>
+<ul>
+<li>Ubuntu 安裝 x11vnc VNC Server  </li>
+<li>設定 VNC 密碼  </li>
+<li>手動啟動 x11vnc server  </li>
+<li>x11vnc 參數說明  </li>
+<li>自動啟動 x11vnc server (開機自動啟動)  </li>
+<li>確認 x11vnc server 狀態  </li>
+<li>Ubuntu VNC 客戶端程式  </li>
+<li>Windows VNC 客戶端程式  </li>
+<li>macOS VNC 客戶端程式  </li>
+<li>SSH 通訊埠轉發  </li>
+</ul>
+<h2><span id="ubuntu-安裝-x11vnc-vnc-server">Ubuntu 安裝 x11vnc VNC Server</span></h2><p>使用 apt 指令來安裝 x11vnc server<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install x11vnc</span><br></pre></td></tr></table></figure></p>
+<h2><span id="設定-vnc-密碼">設定 VNC 密碼</span></h2><p>設定 x11vnc 的連線密碼，使用 <code>x11vnc -storepasswd</code> 指令來設定之後未來 vnc 的連線密碼，並指定要將密碼存放在 <code>/etc/x11vnc.pass</code> 路徑下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo x11vnc -storepasswd /etc/x11vnc.pass</span><br><span class="line">Enter VNC password: </span><br><span class="line">Verify password:    </span><br><span class="line">Write password to /etc/x11vnc.pass?  [y]/n y</span><br><span class="line">Password written to: /etc/x11vnc.pass</span><br></pre></td></tr></table></figure></p>
+<h2><span id="手動啟動-x11vnc-server">手動啟動 x11vnc server</span></h2><p>手動啟動 x11vnc server，Ubuntu 16.04 可以使用下列指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo x11vnc \</span><br><span class="line">-display :0 \</span><br><span class="line">-auth /var/run/lightdm/root/:0 \</span><br><span class="line">-forever -bg \</span><br><span class="line">-noxdamage -noxrecord -noxfixes \</span><br><span class="line">-rfbauth /etc/x11vnc.pass \</span><br><span class="line">-rfbport 5900 \</span><br><span class="line">-o /var/log/x11vnc.log</span><br></pre></td></tr></table></figure></p>
+<p>Ubuntu 18.04 可以使用下列指令，跟上面 Ubuntu 16.04 的差別在 <code>-auth</code> 參數，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo x11vnc \</span><br><span class="line">-display :0 \</span><br><span class="line">-auth /run/user/1000/gdm/Xauthority \</span><br><span class="line">-forever -bg \</span><br><span class="line">-noxdamage -noxrecord -noxfixes \</span><br><span class="line">-rfbauth /etc/x11vnc.pass \</span><br><span class="line">-rfbport 5900 \</span><br><span class="line">-o /var/log/x11vnc.log</span><br></pre></td></tr></table></figure></p>
+<p>因為使用 <code>-bg</code> 參數會放到背景執行，所以要關閉 x11vnc server 可以使用 kill / killall 指令，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo killall x11vnc</span><br></pre></td></tr></table></figure></p>
+<p>或者 x11vnc 來關閉 x11vnc server<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x11vnc -R stop</span><br></pre></td></tr></table></figure></p>
+<h2><span id="x11vnc-參數說明">x11vnc 參數說明</span></h2><p>以下為常用的一些 x11vnc 參數與說明，<br><code>-display :0</code>：顯示和本地端的 DISPLAY :0, 即客戶端看到的畫面和本地端看的畫面一樣<br><code>-usepw</code>：使用密碼<br><code>-nopw</code>：不使用密碼<br><code>-rfbauth</code>：指定之前設定好的 vnc 連線密碼檔<br><code>-bg</code>：背景執行<br><code>-forever</code>：繼續監聽更多 vnc 連線，沒有這個參數的話會在第一個客戶端離線後，就退出程式<br><code>-rfbport</code>：指定 vnc 的連接埠<br><code>-o</code>：輸出日誌<br><code>-auth guess</code> 讓 vnc 自行猜測進行連線<br><code>-auth /var/lib/gdm/:0.Xauth</code> 使用 GDM 的 X-Session 進行連線<br><code>-auth /var/run/lightdm/root/:0</code> 使用 lightdm 的 X-Session 進行連線<br><code>-viewonly</code>：所有客戶端只能看，沒有控制權，即不能控制滑鼠與鍵盤(預設關閉)<br><code>-shared</code>：VNC display is shared, i.e. more than one viewer can<br>    connect at the same time (default off).<br><code>-geometry WxH</code>：顯示的大小，例如：-geometry 1024x768  </p>
+<h2><span id="自動啟動-x11vnc-server-開機自動啟動">自動啟動 x11vnc server (開機自動啟動)</span></h2><p>Ubuntu 要開機自動啟動 x11vnc server 的話，就要寫一個 service 的設定檔，方法如下，<br>編輯 x11vnc.service，內容如下，這份設定適用於 Ubuntu 16.04，<br>Ubuntu 18.04 就把 <code>-auth</code> 改成 <code>/run/user/1000/gdm/Xauthority</code> 即可，<br>ExecStop 這行可有可無，<br><figure class="highlight plain"><figcaption><span>x11vnc.service</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=x11vnc</span><br><span class="line">After=multi-user.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">ExecStart=/usr/bin/x11vnc \</span><br><span class="line">-display :0 \</span><br><span class="line">-auth /var/run/lightdm/root/:0 \</span><br><span class="line">-forever -loop -noxdamage -repeat \</span><br><span class="line">-rfbauth /etc/x11vnc.pass \</span><br><span class="line">-rfbport 5900 \</span><br><span class="line">-o /var/log/x11vnc.log \</span><br><span class="line">-shared</span><br><span class="line">ExecStop=/usr/bin/x11vnc -R stop</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure></p>
+<p>移動 x11vnc.service 到 <code>/etc/systemd/system/</code> 路徑下，並修改存取權限<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mv ~/x11vnc.service /etc/systemd/system/</span><br><span class="line">sudo chmod 644 /etc/systemd/system/x11vnc.service</span><br><span class="line">sudo chown root:root /etc/systemd/system/x11vnc.service</span><br></pre></td></tr></table></figure></p>
+<p>重新載入設定值與啟動 x11vnc server 服務<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reload</span><br><span class="line">sudo systemctl enable x11vnc.service # 啟用 x11vnc 服務</span><br><span class="line">sudo systemctl start x11vnc.service # 啟動 x11vnc 服務</span><br></pre></td></tr></table></figure></p>
+<h2><span id="確認-x11vnc-server-狀態">確認 x11vnc server 狀態</span></h2><p>確認 x11vnc server 有在執行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl status x11vnc</span><br></pre></td></tr></table></figure></p>
+<p>或者用 ps 指令確認 x11vnc server 有在執行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ps aux | grep x11vnc</span><br></pre></td></tr></table></figure></p>
+<p>用 netstat 指令確認 x11vnc server 的監聽埠 5900<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ netstat -l | grep 5900</span><br><span class="line">tcp        0      0 *:5900                  *:*                     LISTEN     </span><br><span class="line">tcp6       0      0 [::]:5900               [::]:*                  LISTEN</span><br></pre></td></tr></table></figure></p>
+<h2><span id="ubuntu-vnc-客戶端程式">Ubuntu VNC 客戶端程式</span></h2><p>Ubuntu 可以使用內建的 <code>Remmina Remote Desktop Client</code> 來進行 VNC 連線，一些必要的設定與選項如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Name: xxx</span><br><span class="line">Protocol: VNC-Virtual Network Computing</span><br><span class="line">Server: ip:</span><br><span class="line">User name:</span><br><span class="line">Password: your password</span><br><span class="line">Color depth: High color(16bit)</span><br><span class="line">Quality: Good</span><br></pre></td></tr></table></figure></p>
+<p>若是區域網路內的連線，Color depth 可以選到最高 True color(24bit)  </p>
+<img src="/ubuntu-x11vnc/remmina-remote-desktop-client.png" title="remmina remote desktop client">  
+<h2><span id="windows-vnc-客戶端程式">Windows VNC 客戶端程式</span></h2><p>在 Windows 可以選用 <a href="https://www.realvnc.com/en/connect/download/viewer/" rel="noopener external nofollow noreferrer" target="_blank">REAL VNC</a> 這款免費的 VNC Viewer，  </p>
+<img src="/ubuntu-x11vnc/download-vnc-viewer.png" title="download vnc viewer">  
+<h2><span id="macos-vnc-客戶端程式">macOS VNC 客戶端程式</span></h2><p>macOS 內建有 VNC 客戶端程式，要使用 macOS 內建的 VNC 客戶端程式的方式法是 <code>Finder &gt; 前往 &gt; 連接伺服器</code>，之後輸入 <code>vnc://&lt;ip&gt;</code>，例如 <code>vnc://192.168.1.5</code> 再按連線即可。<br><img src="/ubuntu-x11vnc/mac-vnc-client.png" title="mac os vnc client">  </p>
+<h2><span id="ssh-通訊埠轉發">SSH 通訊埠轉發</span></h2><p>要安全地使用 x11vnc 的話，可以搭配 ssh 來達成安全性，<br>概念是將 x11vnc 改成綁定本機端 loopback 網路介面，這樣外部的連線就無法連上，  </p>
+<p>x11vnc 要綁定本機端 loopback 網路介面的方法是加上 <code>-localhost</code> 的參數，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x11vnc -localhost ... -rfbport 5900 ...</span><br></pre></td></tr></table></figure></p>
+<p>客戶端要使用 VNC 前，先用 ssh 通訊埠轉發，同時要確定客戶端沒有 5900 的服務正在開啟中，例如客戶端也有一個 VNC Server 的服務剛好也是使用 5900 的話就需要先關閉或改用其他 port，以下 ssh 指令使用後會登入遠端電腦並轉發這些通訊埠，一旦 ssh 連線終止轉發通訊埠也會終止，所以 ssh 登入後就保持連線直到使用完畢再終止連線即可，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh &lt;x11vnc-server-host&gt; -L 5900:localhsot:5900</span><br></pre></td></tr></table></figure></p>
+<p>然後客戶端再用 VNC 連接自己本機端的 port 5900 <code>vnc://localhost:5900</code> 即可。<br>如果 VNC 嘗試連線失敗時 ssh terminal 出現 <code>channel 3: open failed: administratively prohibited: open failed</code> 的錯誤訊息的話，可將 localhsot 改用 127.0.0.1 試試。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh &lt;x11vnc-server-host&gt; -L 5900:127.0.0.1:5900</span><br></pre></td></tr></table></figure></p>
+<p>其它參考<br>x11vnc(1) - Linux man page<br><a href="https://linux.die.net/man/1/x11vnc" rel="noopener external nofollow noreferrer" target="_blank">https://linux.die.net/man/1/x11vnc</a><br>Bahut: VNC server for Cinnamon with systemd<br><a href="http://bahut.alma.ch/2018/10/vnc-server-for-cinnamon-with-systemd.html" rel="noopener external nofollow noreferrer" target="_blank">http://bahut.alma.ch/2018/10/vnc-server-for-cinnamon-with-systemd.html</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/mac-screen-sharing/" title="macOS Screen Sharing 用指令開啟螢幕分享">macOS Screen Sharing 用指令開啟螢幕分享</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/ubuntu-x11vnc/" data-id="cm1hz2al00021h5pqse8oirpg" data-title="Ubuntu 安裝 x11vnc VNC Server" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ubuntu-anaconda" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/ubuntu-anaconda/" class="article-date">
@@ -164,7 +255,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-anaconda/" data-id="cm1htcg310021a6pqun88cwcm" data-title="在 Ubuntu 下安裝 Anaconda" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-anaconda/" data-id="cm1hz2akz0020h5pqdvzluiox" data-title="在 Ubuntu 下安裝 Anaconda" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -231,7 +322,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-use-pycharm-ide-ubuntu/" data-id="cm1htcg310020a6pqz7f63urm" data-title="Python 在 Ubuntu 下使用 Pycharm IDE 教學" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-use-pycharm-ide-ubuntu/" data-id="cm1hz2akz001zh5pqn30zeyyv" data-title="Python 在 Ubuntu 下使用 Pycharm IDE 教學" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -298,7 +389,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/install-qt-on-windows-use-msvc/" data-id="cm1htcg30001za6pq8i7k553n" data-title="安裝 Qt 在 Windows 7 (使用MSVC)" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/install-qt-on-windows-use-msvc/" data-id="cm1hz2aky001yh5pqjwjz0rzn" data-title="安裝 Qt 在 Windows 7 (使用MSVC)" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -362,7 +453,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-winusb/" data-id="cm1htcg2y001xa6pqqgkciigg" data-title="Ubuntu 安裝 WinUSB(WoeUSB)" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-winusb/" data-id="cm1hz2akx001xh5pqqyxluo5j" data-title="Ubuntu 安裝 WinUSB(WoeUSB)" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -418,7 +509,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/eclipse-tab-to-4-spaces/" data-id="cm1htcg2x001va6pqh25npp9i" data-title="Eclipse tab 轉換 4 spaces" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/eclipse-tab-to-4-spaces/" data-id="cm1hz2akw001vh5pqz0usaps0" data-title="Eclipse tab 轉換 4 spaces" class="article-share-link">Share</a>
       
       
     </footer>
@@ -471,7 +562,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/sublime-tab-to-4-spaces/" data-id="cm1htcg2y001wa6pqipf6br3u" data-title="Sublime Text tab 轉換 4 spaces" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/sublime-tab-to-4-spaces/" data-id="cm1hz2akw001wh5pqtud4uwhf" data-title="Sublime Text tab 轉換 4 spaces" class="article-share-link">Share</a>
       
       
     </footer>
@@ -527,7 +618,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-md5sum/" data-id="cm1htcg2w001sa6pq3ph19el2" data-title="Linux md5sum 指令用法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/linux-md5sum/" data-id="cm1hz2akv001sh5pqlt4aslsc" data-title="Linux md5sum 指令用法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li></ul>
@@ -588,7 +679,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-chinese-garbled-problem/" data-id="cm1htcg2w001ta6pq2zqlh5md" data-title="Qt5的中文亂碼問題如何解決" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-chinese-garbled-problem/" data-id="cm1hz2akv001th5pq1atlp5ih" data-title="Qt5的中文亂碼問題如何解決" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
@@ -652,69 +743,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/qt-deploy-exe/" data-id="cm1htcg2x001ua6pqjw8f68ea" data-title="Qt產生的exe發布方式" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/qt-deploy-exe/" data-id="cm1hz2akv001uh5pqw4tix1sn" data-title="Qt產生的exe發布方式" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Qt/">Qt</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-conversion-euler-to-matrix" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/conversion-euler-to-matrix/" class="article-date">
-  <time datetime="2018-03-30T14:00:00.000Z" itemprop="datePublished">2018-03-30</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/conversion-euler-to-matrix/">旋轉矩陣 轉 尤拉角 (Conversion Euler To Matrix)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>我寫出了屬於我自己的兩種版本, 如下</p>
-<h2><span id="版本一">版本一</span></h2><p><a href="http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToEuler/index.htm" rel="noopener external nofollow noreferrer" target="_blank">參考來源</a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** this conversion uses conventions as described on page:</span></span><br><span class="line"><span class="comment">*   https://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm</span></span><br><span class="line"><span class="comment">*   Coordinate System: right hand</span></span><br><span class="line"><span class="comment">*   Positive angle: right hand</span></span><br><span class="line"><span class="comment">*   Order of euler angles: heading first, then attitude, then bank</span></span><br><span class="line"><span class="comment">*   matrix row column ordering:</span></span><br><span class="line"><span class="comment">*   [m00 m01 m02]</span></span><br><span class="line"><span class="comment">*   [m10 m11 m12]</span></span><br><span class="line"><span class="comment">*   [m20 m21 m22]*/</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">rotate</span><span class="params">(matrix  m)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Assuming the angles are in radians.</span></span><br><span class="line">	<span class="keyword">if</span> (m.m10 &gt; <span class="number">0.998</span>) &#123; <span class="comment">// singularity at north pole</span></span><br><span class="line">		heading = Math.atan2(m.m02,m.m22);</span><br><span class="line">		attitude = Math.PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (m.m10 &lt; -<span class="number">0.998</span>) &#123; <span class="comment">// singularity at south pole</span></span><br><span class="line">		heading = Math.atan2(m.m02,m.m22);</span><br><span class="line">		attitude = -Math.PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	heading = Math.atan2(-m.m20,m.m00);</span><br><span class="line">	bank = Math.atan2(-m.m12,m.m11);</span><br><span class="line">	attitude = Math.asin(m.m10);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>轉成 opencv 的版本, 且對應到我的座標系 (x, z 對調), 最後 x y 軸還加上負號.<br>bank(x) -&gt; attitude(x)<br>heading(y) -&gt; heading(y)<br>attitude(z) -&gt; bank(z)<br>euclideanspace -&gt; 我的座標系(OpennGL)</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Assuming the angles are in radians.</span></span><br><span class="line">	<span class="keyword">float</span> heading, attitude, bank;</span><br><span class="line">	<span class="keyword">if</span> (R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) &gt; <span class="number">0.998</span>) &#123; <span class="comment">// singularity at north pole</span></span><br><span class="line">		heading = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">		attitude = M_PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span> Vec3f(bank, heading, attitude);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) &lt; <span class="number">-0.998</span>) &#123; <span class="comment">// singularity at south pole</span></span><br><span class="line">		heading = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">		attitude = -M_PI/<span class="number">2</span>;</span><br><span class="line">		bank = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">return</span> Vec3f(bank, heading, attitude);</span><br><span class="line">	&#125;</span><br><span class="line">	heading = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">	bank = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>),R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">	attitude = <span class="built_in">asin</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> Vec3f(-bank, -heading, attitude);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2><span id="版本二">版本二</span></h2><p><a href="https://www.learnopencv.com/rotation-matrix-to-euler-angles/" rel="noopener external nofollow noreferrer" target="_blank">參考來源</a><br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Checks if a matrix is a valid rotation matrix.</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">isRotationMatrix</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Mat Rt;</span><br><span class="line">    transpose(R, Rt);</span><br><span class="line">    Mat shouldBeIdentity = Rt * R;</span><br><span class="line">    Mat I = Mat::eye(<span class="number">3</span>,<span class="number">3</span>, shouldBeIdentity.type());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> norm(I, shouldBeIdentity) &lt; <span class="number">1e-6</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** rotation matrix to euler angles</span></span><br><span class="line"><span class="comment">*   Coordinate System: right hand</span></span><br><span class="line"><span class="comment">*   Positive angle: right hand</span></span><br><span class="line"><span class="comment">*   Order of euler angles: heading first, then attitude, then bank</span></span><br><span class="line"><span class="comment">*   matrix row column ordering:</span></span><br><span class="line"><span class="comment">*   [m00 m01 m02]</span></span><br><span class="line"><span class="comment">*   [m10 m11 m12]</span></span><br><span class="line"><span class="comment">*   [m20 m21 m22]*/</span></span><br><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(isRotationMatrix(R));</span><br><span class="line">    <span class="keyword">float</span> sy = <span class="built_in">sqrt</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) +  R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) );</span><br><span class="line">    <span class="keyword">bool</span> singular = sy &lt; <span class="number">1e-6</span>; <span class="comment">// If</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> x, y, z;</span><br><span class="line">    <span class="keyword">if</span> (!singular)</span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">1</span>) , R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Vec3f(x, y, z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>轉成 我的座標系 (z 軸加上負號).<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Vec3f <span class="title">matrix2Euler</span><span class="params">(<span class="keyword">const</span> Mat &amp;R)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(isRotationMatrix(R));</span><br><span class="line">    <span class="keyword">float</span> sy = <span class="built_in">sqrt</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>) +  R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) * R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>) );</span><br><span class="line">    <span class="keyword">bool</span> singular = sy &lt; <span class="number">1e-6</span>; <span class="comment">// If</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> x, y, z;</span><br><span class="line">    <span class="keyword">if</span> (!singular)</span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">1</span>) , R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">2</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="built_in">atan2</span>(R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">0</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">0</span>,<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        x = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">2</span>), R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">1</span>,<span class="number">1</span>));</span><br><span class="line">        y = <span class="built_in">atan2</span>(-R.at&lt;<span class="keyword">double</span>&gt;(<span class="number">2</span>,<span class="number">0</span>), sy);</span><br><span class="line">        z = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Vec3f(x, y, -z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/conversion-euler-to-matrix/" data-id="cm1htcg2v001ra6pqm6bsuf20" data-title="旋轉矩陣 轉 尤拉角 (Conversion Euler To Matrix)" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenGL/">OpenGL</a></li></ul>
 
     </footer>
   </div>
@@ -727,7 +759,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/80/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/79/">79</a><a class="page-number" href="/page/80/">80</a><span class="page-number current">81</span><a class="page-number" href="/page/82/">82</a><a class="page-number" href="/page/83/">83</a><span class="space">&hellip;</span><a class="page-number" href="/page/87/">87</a><a class="extend next" rel="next" href="/page/82/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/80/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/79/">79</a><a class="page-number" href="/page/80/">80</a><span class="page-number current">81</span><a class="page-number" href="/page/82/">82</a><a class="page-number" href="/page/83/">83</a><span class="space">&hellip;</span><a class="page-number" href="/page/88/">88</a><a class="extend next" rel="next" href="/page/82/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -758,6 +790,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/premature-optimization/">軟體開發常見陷阱：過早優化 Premature Optimization</a>
+          </li>
+        
+          <li>
             <a href="/dependency-inversion-principle/">設計原則 - 依賴反轉原則 Dependency Inversion Principle</a>
           </li>
         
@@ -771,10 +807,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
-          </li>
-        
-          <li>
-            <a href="/single-responsibility-principle/">設計原則 - 單一職責原則 Single Responsibility Principle</a>
           </li>
         
       </ul>
@@ -793,7 +825,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/軟體開發/">軟體開發</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 

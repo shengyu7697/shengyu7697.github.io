@@ -107,6 +107,72 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-std-weak_ptr" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/std-weak_ptr/" class="article-date">
+  <time datetime="2021-08-26T14:00:00.000Z" itemprop="datePublished">2021-08-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/std-weak_ptr/">C++ std::weak_ptr 用法與範例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>本篇 ShengYu 將介紹 C++ 的 std::weak_ptr 用法，  </p>
+<p><strong>需要引入的標頭檔</strong>：<code>&lt;memory&gt;</code>，編譯需要支援 C++11  </p>
+<h2><span id="weak_ptr-檢查參考的物件是否過期">weak_ptr 檢查參考的物件是否過期</span></h2><p>用 weak_ptr 檢查參考的物件是否過期，如果該物件被釋放 (delete) 的話那麼表示已過期，  </p>
+<p>如下列範例所示，將 Size 物件從 shared_ptr 建立 weak_ptr <code>wp</code> 後，可以發現 <code>wp.use_count()</code> 是 1 不是 2，這時用 <code>wp.expired()</code> 來檢查是否過期，結果顯示還沒過期，接著將原本的 shared_ptr <code>sp</code> 指向 nullptr，那麼 reference count 降為 0 後 Size 物件會被 delete，接著再次使用 <code>wp.expired()</code> 來檢查是否過期，結果顯示已過期了，<br><figure class="highlight cpp"><figcaption><span>std-std-weak_ptr.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// g++ std-std-weak_ptr.cpp -o a.out -std=c++11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Size</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Size() &#123;&#125;</span><br><span class="line">    Size(<span class="keyword">int</span> w, <span class="keyword">int</span> h) : width(w),  height(h)  &#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> width  = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> height = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">shared_ptr</span>&lt;Size&gt; sp = make_shared&lt;Size&gt;(<span class="number">10</span>, <span class="number">20</span>);</span><br><span class="line">    weak_ptr&lt;Size&gt; wp(sp);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; wp.use_count() &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (wp.expired()) &#123; <span class="comment">// 如果 wp 沒有指向任何物件的話</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"wp was expired\n"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"wp does not expire\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sp = <span class="literal">nullptr</span>; <span class="comment">// reference count 降為 0，Size 物件被 delete</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (wp.expired()) &#123; <span class="comment">// 如果 wp 沒有指向任何物件的話</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"wp was expired\n"</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"wp does not expire\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>輸出如下，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">wp does not expire</span><br><span class="line">wp was expired</span><br></pre></td></tr></table></figure></p>
+<h2><span id="從-weak_ptr-轉-shared_ptr">從 weak_ptr 轉 shared_ptr</span></h2><p>weak_ptr 轉 shared_ptr 有兩種方式，一種是使用 weak_ptr.lock，如果該物件還沒被釋放的話可以成功的轉換成 shared_ptr，如果該物件被釋放的話則會回傳 nullptr，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">shared_ptr</span>&lt;Size&gt; sp = wp.lock();</span><br></pre></td></tr></table></figure></p>
+<p>另一種方式是使用 shared_ptr 的建構子，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">shared_ptr</span>&lt;Size&gt; sp(wp);</span><br></pre></td></tr></table></figure></p>
+<p>其它參考<br>std::weak_ptr - cppreference.com<br><a href="https://en.cppreference.com/w/cpp/memory/weak_ptr" rel="noopener external nofollow noreferrer" target="_blank">https://en.cppreference.com/w/cpp/memory/weak_ptr</a>  </p>
+<p><strong>其它相關文章推薦</strong><br><a href="/cpp-tutorial/" title="C/C++ 新手入門教學懶人包">C/C++ 新手入門教學懶人包</a><br><a href="/std-unique_ptr/" title="std::unique_ptr 用法與範例">std::unique_ptr 用法與範例</a><br><a href="/std-shared_ptr/" title="std::shared_ptr 用法與範例">std::shared_ptr 用法與範例</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/std-weak_ptr/" data-id="cm1hz2as700foh5pq32zv0snp" data-title="C++ std::weak_ptr 用法與範例" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-parameter-argument" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-parameter-argument/" class="article-date">
@@ -160,7 +226,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-parameter-argument/" data-id="cm1htcga000foa6pq2hgbxvwy" data-title="C/C++ 程式的 Parameter 與 Argument 差異" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-parameter-argument/" data-id="cm1hz2as600fnh5pqxzje34fj" data-title="C/C++ 程式的 Parameter 與 Argument 差異" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -223,7 +289,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/github-update-pull-request/" data-id="cm1htcga000fna6pqz3k1ayu4" data-title="Github 如何更新 pull request" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/github-update-pull-request/" data-id="cm1hz2as600fmh5pqa5patfq5" data-title="Github 如何更新 pull request" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Github/">Github</a></li></ul>
@@ -290,7 +356,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-lhs-rhs/" data-id="cm1htcg9z00fma6pqf20ksqac" data-title="C++ lhs 與 rhs 是什麼？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-lhs-rhs/" data-id="cm1hz2as600flh5pqy99j3y70" data-title="C++ lhs 與 rhs 是什麼？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -385,7 +451,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-unordered_set/" data-id="cm1htcg9z00fla6pqelzfx627" data-title="C++ std::unordered_set 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-unordered_set/" data-id="cm1hz2as500fkh5pqy3xgt3wc" data-title="C++ std::unordered_set 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -451,7 +517,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/python-opencv-flip/" data-id="cm1htcg9z00fka6pqkor9cgyh" data-title="Python OpenCV 影像垂直翻轉，水平翻轉 flip" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/python-opencv-flip/" data-id="cm1hz2as500fjh5pqkdb5kayf" data-title="Python OpenCV 影像垂直翻轉，水平翻轉 flip" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
@@ -525,7 +591,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-string-find/" data-id="cm1htcg9y00fja6pqcp1mkwra" data-title="C/C++ 字串搜尋的3種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-string-find/" data-id="cm1hz2as500fih5pqjtqoaikj" data-title="C/C++ 字串搜尋的3種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -586,7 +652,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/opencv-camera/" data-id="cm1htcg9y00fia6pqvml518l9" data-title="C++ OpenCV 顯示camera攝影機串流影像" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/opencv-camera/" data-id="cm1hz2as400fhh5pqqqrg9oi5" data-title="C++ OpenCV 顯示camera攝影機串流影像" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCV/">OpenCV</a></li></ul>
@@ -660,7 +726,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-string-append/" data-id="cm1htcg9y00fha6pqygoqg5ei" data-title="C/C++ 字串連接的3種方法" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-string-append/" data-id="cm1hz2as400fgh5pq9s9bggrp" data-title="C/C++ 字串連接的3種方法" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
@@ -739,70 +805,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/std-list/" data-id="cm1htcg9x00fga6pqwn79ltgo" data-title="C++ std::list 用法與範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/std-list/" data-id="cm1hz2as400ffh5pq5okpx5lo" data-title="C++ std::list 用法與範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-linux-cat" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/linux-cat/" class="article-date">
-  <time datetime="2021-07-22T14:00:00.000Z" itemprop="datePublished">2021-07-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/linux-cat/">Linux cat 讀取檔案用法與範例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 介紹 Linux cat 讀取檔案用法與範例，Linux cat 這個指令的作用是將檔案內容從第一行開始全部顯示在標準輸出(螢幕)上或者也可以用 pipe 的方式串接給別的指令。  </p>
-<h2><span id="cat-檔案">cat 檔案</span></h2><p>將 file.txt 檔案內容輸出到標準輸出(螢幕)，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat file.txt</span><br></pre></td></tr></table></figure></p>
-<p>將 file.txt 檔案內容輸出到標準輸出(螢幕)，順便顯示行號，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat -n input.txt</span><br></pre></td></tr></table></figure></p>
-<p>將 file.txt 檔案內容輸出到 file2.txt，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat file.txt &gt; file2.txt</span><br></pre></td></tr></table></figure></p>
-<p>將 file.txt 檔案清空，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /dev/null &gt; file.txt</span><br></pre></td></tr></table></figure></p>
-<h2><span id="cat-檔案後-pipe-給-grep-搜尋">cat 檔案後 pipe 給 grep 搜尋</span></h2><p>cat 檔案後 pipe 串接導給 grep 搜尋 foo 字串，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat file.txt | grep foo</span><br></pre></td></tr></table></figure></p>
-<p><strong>其它相關文章推薦</strong><br><a href="/linux-tutorial/" title="Linux 常用指令教學懶人包">Linux 常用指令教學懶人包</a><br><a href="/linux-cut/" title="Linux cut 字串處理用法與範例">Linux cut 字串處理用法與範例</a><br><a href="/linux-find/" title="Linux find 尋找檔案/尋找資料夾用法與範例">Linux find 尋找檔案/尋找資料夾用法與範例</a><br><a href="/linux-grep-ack-ag/" title="Linux grep/ack/ag 搜尋字串用法與範例">Linux grep/ack/ag 搜尋字串用法與範例</a><br><a href="/linux-tee/" title="Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例">Linux tee 同時螢幕標準輸出和輸出到檔案用法與範例</a><br><a href="/linux-xargs/" title="Linux xargs 參數列表轉換用法與範例">Linux xargs 參數列表轉換用法與範例</a><br><a href="/linux-tail/" title="Linux tail 持續監看檔案輸出用法與範例">Linux tail 持續監看檔案輸出用法與範例</a><br><a href="/linux-du/" title="Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例">Linux du 查詢硬碟剩餘空間/資料夾容量用法與範例</a><br><a href="/linux-wget/" title="Linux wget 下載檔案用法與範例">Linux wget 下載檔案用法與範例</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/linux-cat/" data-id="cm1htcg9x00ffa6pqzo94x8td" data-title="Linux cat 讀取檔案用法與範例" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
 
     </footer>
   </div>
@@ -815,7 +821,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/31/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="page-number" href="/page/31/">31</a><span class="page-number current">32</span><a class="page-number" href="/page/33/">33</a><a class="page-number" href="/page/34/">34</a><span class="space">&hellip;</span><a class="page-number" href="/page/87/">87</a><a class="extend next" rel="next" href="/page/33/">下一頁 &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/31/">&laquo; 上一頁</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="page-number" href="/page/31/">31</a><span class="page-number current">32</span><a class="page-number" href="/page/33/">33</a><a class="page-number" href="/page/34/">34</a><span class="space">&hellip;</span><a class="page-number" href="/page/88/">88</a><a class="extend next" rel="next" href="/page/33/">下一頁 &raquo;</a>
   </nav>
 
 </section>
@@ -846,6 +852,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/premature-optimization/">軟體開發常見陷阱：過早優化 Premature Optimization</a>
+          </li>
+        
+          <li>
             <a href="/dependency-inversion-principle/">設計原則 - 依賴反轉原則 Dependency Inversion Principle</a>
           </li>
         
@@ -859,10 +869,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
-          </li>
-        
-          <li>
-            <a href="/single-responsibility-principle/">設計原則 - 單一職責原則 Single Responsibility Principle</a>
           </li>
         
       </ul>
@@ -881,7 +887,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/軟體開發/">軟體開發</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
