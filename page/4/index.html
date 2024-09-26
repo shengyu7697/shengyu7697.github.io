@@ -107,6 +107,76 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-strategy-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-strategy-pattern/" class="article-date">
+  <time datetime="2024-08-21T12:00:00.000Z" itemprop="datePublished">2024-08-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-strategy-pattern/">C++ 設計模式 - 策略模式 Strategy Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>在日常開發中，我們常需要對檔案進行壓縮，而不同的壓縮格式（如 Zip、Rar、7z 等）各有其優缺點。有時候我們希望能夠根據當下需求自由地切換壓縮方式，而不需要改動太多的程式碼。這時候策略模式 Strategy Pattern 就可以幫我們輕鬆實現這個需求。  </p>
+<h2><span id="什麼是策略模式">什麼是策略模式？</span></h2><p>策略模式是一種行為設計模式，它可以讓我們定義一系列的演算法，將每個演算法封裝起來，並讓它們可以互相替換使用。這樣一來程式碼不僅更加靈活，也更容易擴展跟維護了。  </p>
+<p>簡單來說，策略模式就是讓程式可以隨意更換的「策略」，讓程式能夠靈活地應對不同種的情況。  </p>
+<h2><span id="策略模式在壓縮器中的應用">策略模式在壓縮器中的應用</span></h2><p>假設你正在開發一個檔案壓縮的功能。一開始你可能只支援 ZIP 格式壓縮。但隨著使用者需求的增加，你發現需要添加 RAR、7Z 等其他壓縮格式的支援。  </p>
+<p>你的程式碼可能會寫成這樣：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Compressor</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">compress</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; format)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (format == <span class="string">"zip"</span>) &#123;</span><br><span class="line">            <span class="comment">// ZIP 壓縮邏輯</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (format == <span class="string">"rar"</span>) &#123;</span><br><span class="line">            <span class="comment">// RAR 壓縮邏輯</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (format == <span class="string">"7z"</span>) &#123;</span><br><span class="line">            <span class="comment">// 7Z 壓縮邏輯</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="built_in">std</span>::runtime_error(<span class="string">"不支援的格式"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>這種方法的問題在於每次新增新的壓縮格式時，都需要修改 Compressor 類別。這違反了「開放封閉原則」，也就是軟體應該對擴展開放，對修改封閉。  </p>
+<p>讓我們看看如何使用策略模式來改進這個設計：  </p>
+<p>我們先定義一個壓縮策略介面 CompressionStrategy，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CompressionStrategy</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">compress</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">virtual</span> ~CompressionStrategy() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>然後為每種壓縮格式實作具體的策略，分別為 ZipStrategy、RarStrategy、SevenZipStrategy，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ZipStrategy</span> :</span> <span class="keyword">public</span> CompressionStrategy &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">compress</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename)</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"使用 ZIP 壓縮 "</span> &lt;&lt; filename &lt;&lt; <span class="string">" 檔案\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RarStrategy</span> :</span> <span class="keyword">public</span> CompressionStrategy &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">compress</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename)</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"使用 RAR 壓縮 "</span> &lt;&lt; filename &lt;&lt; <span class="string">" 檔案\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SevenZipStrategy</span> :</span> <span class="keyword">public</span> CompressionStrategy &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">compress</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename)</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"使用 7Z 壓縮 "</span> &lt;&lt; filename &lt;&lt; <span class="string">" 檔案\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>根據此情境在設計時，建立一個 Compressor 壓縮器，又為稱上下文類別，這個 Compressor 類別可以根據需求動態選擇不同的壓縮策略。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Compressor</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;CompressionStrategy&gt; strategy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Compressor(<span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;CompressionStrategy&gt; strategy) </span><br><span class="line">        : strategy(<span class="built_in">std</span>::move(strategy)) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setStrategy</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;CompressionStrategy&gt; newStrategy)</span> </span>&#123;</span><br><span class="line">        strategy = <span class="built_in">std</span>::move(newStrategy);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">compress</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; filename)</span> </span>&#123;</span><br><span class="line">        strategy-&gt;compress(filename);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>當需要使用壓縮器時，可以這樣寫，Compressor 將會執行已經選擇的壓縮策略進行壓縮，然後也可以執行期間更換壓縮策略，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">Compressor <span class="title">compressor</span><span class="params">(<span class="built_in">std</span>::make_unique&lt;ZipStrategy&gt;())</span></span>;</span><br><span class="line">    compressor.compress(<span class="string">"file1.txt"</span>);  <span class="comment">// 輸出：使用 ZIP 壓縮 file1.txt 檔案</span></span><br><span class="line"></span><br><span class="line">    compressor.setStrategy(<span class="built_in">std</span>::make_unique&lt;SevenZipStrategy&gt;());</span><br><span class="line">    compressor.compress(<span class="string">"file2.txt"</span>);  <span class="comment">// 輸出：使用 7Z 壓縮 file2.txt 檔案</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="策略模式的優點">策略模式的優點</span></h2><p>使用策略模式，讓我們能夠方便地擴展壓縮器的功能，當需要增加新的壓縮格式時，只需新增一個實作了 CompressionStrategy 介面，並將其設定到 Compressor 中即可，完全不需要修改現有 Compressor 與其它壓縮策略的程式碼。另外策略模式還能讓程式碼變得更加清晰易懂，避免大量的條件判斷或分支邏輯，使系統在面對複雜業務需求時，依然能保持穩定和易於維護。  </p>
+<h2><span id="總結">總結</span></h2><p>策略模式是一個很實用的設計模式，能夠有效解決系統中某些功能需要頻繁變動或擴展的問題。在這個壓縮器範例中，我們看到如何使用策略模式來靈活地切換壓縮格式，並保持程式碼的清晰和可維護性。並能在日後的開發中靈活運用它，讓你的程式碼更加優雅。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-strategy-pattern/" data-id="cm1jfxlc200nhdbpq79yc38ja" data-title="C++ 設計模式 - 策略模式 Strategy Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-design-patterns" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-design-patterns/" class="article-date">
@@ -206,7 +276,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm1j8sbrn00nfv5pq83xezyrn" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-design-patterns/" data-id="cm1jfxlc200ngdbpqlz8u8u0o" data-title="C++ 設計模式入門：什麼是設計模式？為什麼要學習它們？" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -291,7 +361,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm1j8sbrn00nev5pq8jd8ygbj" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-session/" data-id="cm1jfxlc100nfdbpq0jn9t88b" data-title="PHP 中的 Session 用途與實踐範例：完整指南" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -379,7 +449,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-post/" data-id="cm1j8sbrm00ndv5pqjnngsqwa" data-title="PHP $_POST 變數用途、語法與實用範例詳解" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-post/" data-id="cm1jfxlc100nedbpq1eunh4so" data-title="PHP $_POST 變數用途、語法與實用範例詳解" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -474,7 +544,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-substr/" data-id="cm1j8sbrm00ncv5pqlih6m9wr" data-title="PHP substr 函式全面解析與應用範例" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-substr/" data-id="cm1jfxlc100nddbpq7fw9diqg" data-title="PHP substr 函式全面解析與應用範例" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -572,7 +642,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-str_pad/" data-id="cm1j8sbrm00nbv5pqzsxidb08" data-title="PHP str_pad 函式用途、語法與實用範例解析" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-str_pad/" data-id="cm1jfxlc000ncdbpqq4977w57" data-title="PHP str_pad 函式用途、語法與實用範例解析" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -658,7 +728,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-uniqid/" data-id="cm1j8sbrl00nav5pqlu7dl4zd" data-title="如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-uniqid/" data-id="cm1jfxlc000nbdbpq9m3bendu" data-title="如何使用 PHP 的 uniqid 函式產生唯一ID並提高應用程式安全性" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -722,7 +792,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/ubuntu-wordpress/" data-id="cm1j8sbrl00n9v5pqxrf3qhmi" data-title="Ubuntu 下安裝 wordpress" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/ubuntu-wordpress/" data-id="cm1jfxlc000nadbpqf3n2s8oe" data-title="Ubuntu 下安裝 wordpress" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-Command/">Linux Command</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Shell-Script/">Shell Script</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/">Ubuntu</a></li></ul>
@@ -808,7 +878,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/php-isset/" data-id="cm1j8sbrl00n8v5pqz0wfmi6u" data-title="深入理解 PHP 中的 isset 用法、範例及最佳實踐" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/php-isset/" data-id="cm1jfxlbz00n9dbpqru0aw9eq" data-title="深入理解 PHP 中的 isset 用法、範例及最佳實踐" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -897,73 +967,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-printf/" data-id="cm1j8sbrk00n5v5pqgv8yjmtj" data-title="如何使用 C/C++ 中的 printf 函式：詳盡指南" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-printf/" data-id="cm1jfxlbz00n7dbpqktppwblt" data-title="如何使用 C/C++ 中的 printf 函式：詳盡指南" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-mac-rdp-client" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/mac-rdp-client/" class="article-date">
-  <time datetime="2024-07-12T12:00:00.000Z" itemprop="datePublished">2024-07-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/mac-rdp-client/">macOS 下 RDP client 遠端桌面軟體</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>本篇 ShengYu 紀錄 macOS 下 RDP client 軟體，RDP 就是我們常聽到 Windows 的遠端桌面使用的協議，這次我是要在macOS 下 RDP client 來連接到遠端的 Ubuntu 24.04 電腦，而 Ubuntu 24.04 內建的就是支援 RDP，不要問我為什麼是 RDP 而不是 VNC 我不知道，想知道怎麼使用的繼續看下去，理論上這個軟體也可以連接到遠端的 Windows 上。</p>
-<p>一般來說，到 Mac App Store 的  <a href="https://apps.apple.com/us/app/microsoft-remote-desktop/id1295203466" rel="noopener external nofollow noreferrer" target="_blank">Microsoft Remote Desktop 或者叫 Microsoft 遠端桌面</a> 下載安裝即可使用。</p>
-<p>但假如你的 macOS 跟我一樣已經升不上去停留在 macOS 11.x 的話，那麼你是無法從 App store 下載的</p>
-<p>到<a href="https://learn.microsoft.com/zh-tw/windows-server/remote/remote-desktop-services/clients/mac-whatsnew" rel="noopener external nofollow noreferrer" target="_blank">適用於 macOS 的遠端桌面用戶端的新功能</a>裡點選<a href="https://install.appcenter.ms/orgs/rdmacios-k2vy/apps/microsoft-remote-desktop-for-mac/distribution_groups/all-users-of-microsoft-remote-desktop-for-mac" rel="noopener external nofollow noreferrer" target="_blank">Microsoft AppCenter</a><br>從這邊下載歷史舊版本</p>
-<p>Version 10.8.4 (2111) 可用<br>Jun 15, 2023 at 02:59<br>60.05 MB</p>
-<p>Version 10.9.3 (2158) 可用<br>Sep 22, 2023 at 05:35<br>55.47 MB</p>
-<p>Version 10.9.6 (2185) 可用<br>Feb 14, 2024 at 07:31<br>55.64 MB</p>
-<p>基本上 10.9.6 (2185) 以下的版本都可以使用，超過以上的版本會需要更高的 macOS 版本。</p>
-<p>可能遇到的問題：可以開啟但連線後無法開啟新畫面，<br>其中一個原因是因為你的 Ubuntu 已經螢幕鎖定了，需要解鎖<br><a href="https://help.ubuntu.com/stable/ubuntu-help/session-screenlocks.html" rel="noopener external nofollow noreferrer" target="_blank">解除螢幕鎖定</a>：<code>Settings</code> &gt; <code>Privacy &amp; Security</code><br>如果 <code>Automatic Screen Lock</code> 已開啟，將其關閉。</p>
-<p>以上就是 macOS 下 RDP client 遠端桌面軟體介紹，<br>如果你覺得我的文章寫得不錯、對你有幫助的話記得 <a href="https://www.facebook.com/shengyu7697/" rel="noopener external nofollow noreferrer" target="_blank">Facebook 按讚</a>支持一下！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/mac-rdp-client/" data-id="cm1j8sbrk00n7v5pqi3zmh53c" data-title="macOS 下 RDP client 遠端桌面軟體" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/macOS/">macOS</a></li></ul>
 
     </footer>
   </div>
@@ -1007,6 +1014,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/technical-debt/">軟體開發常見陷阱：技術債累積過多</a>
+          </li>
+        
+          <li>
             <a href="/premature-optimization/">軟體開發常見陷阱：過早優化 Premature Optimization</a>
           </li>
         
@@ -1020,10 +1031,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/liskov-substitution-principle/">設計原則 - 里氏替換原則 Liskov Substitution Principle</a>
-          </li>
-        
-          <li>
-            <a href="/open-closed-principle/">設計原則 - 開放封閉原則 Open-Closed Principle</a>
           </li>
         
       </ul>
@@ -1042,7 +1049,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/軟體開發/">軟體開發</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/軟體開發/">軟體開發</a><span class="category-list-count">2</span></li></ul>
     </div>
   </div>
 
