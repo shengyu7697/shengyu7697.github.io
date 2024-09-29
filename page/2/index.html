@@ -107,6 +107,79 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp-flyweight-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/cpp-flyweight-pattern/" class="article-date">
+  <time datetime="2024-09-11T12:00:00.000Z" itemprop="datePublished">2024-09-11</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/cpp-flyweight-pattern/">C++ 設計模式 - 享元模式 Flyweight Pattern</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <!-- ads-1 -->
+        <div id="ads-1">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-8106207149031244"
+    data-ad-slot="4194519399"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+        <!-- ads-1 -->
+        <p>當你玩大型多人線上遊戲（MMO）時，畫面上有成百上千個玩家角色，擁有著不同的裝備、武器和坐騎，你有沒有想過，遊戲引擎是如何管理這麼多個體的？如果每一個角色都佔據完整的記憶體空間，電腦恐怕早已爆掉！這背後的祕密之一，就是我們今天要講的「享元模式」。  </p>
+<h2><span id="什麼是享元模式">什麼是享元模式？</span></h2><p>享元模式（Flyweight Pattern）是一種結構型設計模式，目的在減少物件建立時佔用的記憶體空間。它透過共享大量相似物件中的共通部分來降低記憶體使用，特別適合用在場景中有大量細微差異的物件。這樣的做法不僅節省了資源，也讓系統執行更有效率。  </p>
+<p>在享元模式中，會將可共享的部分抽出，放到單一實體中進行管理，而非每個物件都擁有自己的複本。對於那些不可共享的部分，則會透過引數進行傳遞，這樣就能避免重複建立類似的物件。  </p>
+<p>享元（Flyweight）這個術語源自拳擊界，在拳擊比賽中，Flyweight 指的是一個較輕量級(57kg以下)的選手級別。這個詞在設計模式中被借用，是因為享元模式的核心理念與輕量的概念相吻合：目的是減輕系統的記憶體負擔，讓程式變得更「輕」，更高效。享元模式透過共享物件的內部狀態，達到了減少記憶體佔用的效果。  </p>
+<h2><span id="享元模式在圖形系統中的應用">享元模式在圖形系統中的應用</span></h2><p>最常見的享元模式例子之一，就是在圖形系統中處理複雜的場景。想像你正在開發一個繪圖應用程式，必須在畫布上顯示上千個相同的圓形。每個圓的顏色、大小和座標可能不同，但圓的輪廓和基本形狀是相同的。我們可以利用享元模式，來共享這些圓的形狀，只根據需要改變其他屬性來展示不同的圓形。  </p>
+<p>首先我們需要定義一個共享的「圓形」物件，  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 圓形基類，提供繪製方法</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Circle</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Circle(<span class="built_in">std</span>::<span class="built_in">string</span> color) : color(color) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">draw</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span> radius)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Drawing "</span> &lt;&lt; color &lt;&lt; <span class="string">" circle at ("</span> &lt;&lt; x &lt;&lt; <span class="string">", "</span> &lt;&lt; y &lt;&lt; <span class="string">") with radius "</span> &lt;&lt; radius &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> color;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>然後我們可以建立一個「圓形工廠」，負責管理和提供共享的圓形物件，  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CircleFactory</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Circle&gt; getCircle(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; color) &#123;</span><br><span class="line">        <span class="keyword">if</span> (circles.find(color) == circles.end()) &#123;</span><br><span class="line">            circles[color] = <span class="built_in">std</span>::make_shared&lt;Circle&gt;(color);</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Creating circle of color: "</span> &lt;&lt; color &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> circles[color];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unordered_map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Circle&gt;&gt; circles;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>接下來客戶端可以透過 <code>CircleFactory</code> 來取得不同顏色的圓形，並指定其座標和半徑，這樣便可以有效地共享相同顏色的圓形實體，  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    CircleFactory factory;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> redCircle = factory.getCircle(<span class="string">"Red"</span>);</span><br><span class="line">    redCircle-&gt;draw(<span class="number">10</span>, <span class="number">10</span>, <span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> blueCircle = factory.getCircle(<span class="string">"Blue"</span>);</span><br><span class="line">    blueCircle-&gt;draw(<span class="number">20</span>, <span class="number">20</span>, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> anotherRedCircle = factory.getCircle(<span class="string">"Red"</span>);</span><br><span class="line">    anotherRedCircle-&gt;draw(<span class="number">30</span>, <span class="number">30</span>, <span class="number">15</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>執行上述程式碼，我們會得到以下輸出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Creating circle of color: Red</span><br><span class="line">Drawing Red circle at (10, 10) with radius 5</span><br><span class="line">Creating circle of color: Blue</span><br><span class="line">Drawing Blue circle at (20, 20) with radius 10</span><br><span class="line">Drawing Red circle at (30, 30) with radius 15</span><br></pre></td></tr></table></figure></p>
+<p>這裡我們重複使用了紅色圓形，而不必每次都建立新的紅色圓形。程式輸出將顯示紅色圓形只建立了一次，這就是享元模式的精髓——重複利用可共享的部分，節省記憶體。  </p>
+<h2><span id="享元模式的優缺點">享元模式的優缺點</span></h2><p>享元模式最大的優點，當然就是<strong>節省記憶體</strong>。當我們需要建立大量相似的物件時，這種模式可以極大減少不必要的記憶體消耗，提升程式的效能。例如在繪圖系統、文字處理器，甚至是遊戲引擎中，都可以看到享元模式的影子。只要那些物件之間有許多相同的部分，就能採用享元模式進行共享。  </p>
+<p>然而這種共享資源的方式也不是沒有代價。享元模式的<strong>複雜性</strong>較高，因為需要將物件分為共享的內部狀態與不可共享的外部狀態。開發人員在使用時必須額外考慮如何管理這些狀態，避免產生混淆。另外在某些情況下，為了維護享元物件的內部狀態一致性，可能會導致更多的<strong>同步問題</strong>，特別是在多執行緒的環境下。  </p>
+<h2><span id="總結">總結</span></h2><p>享元模式是一種在需要大量建立相似物件的場景下非常有用的設計模式，透過共享物件來大幅減少記憶體消耗。在像是繪圖系統、遊戲開發等領域，我們可以利用這個模式來有效管理大量物件。然而，享元模式的實現需要仔細設計和管理內部狀態與外部狀態的區別，以避免增加不必要的複雜度。這個模式不會讓你的程式「飛起來」，但絕對能讓它執行得更順暢。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://shengyu7697.github.io/cpp-flyweight-pattern/" data-id="cm1nhohf700o26epqwd3kehzw" data-title="C++ 設計模式 - 享元模式 Flyweight Pattern" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp-interpreter-pattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/cpp-interpreter-pattern/" class="article-date">
@@ -168,7 +241,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-interpreter-pattern/" data-id="cm1m3o1c900o1uppq3ly09fqd" data-title="C++ 設計模式 - 解釋器模式 Interpreter Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-interpreter-pattern/" data-id="cm1nhohf700o16epq5brsd4sn" data-title="C++ 設計模式 - 解釋器模式 Interpreter Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -253,7 +326,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-bridge-pattern/" data-id="cm1m3o1c800o0uppqw3ou73qt" data-title="C++ 設計模式 - 橋接模式 Bridge Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-bridge-pattern/" data-id="cm1nhohf700o06epqr71y2orp" data-title="C++ 設計模式 - 橋接模式 Bridge Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -321,7 +394,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-chain-of-responsibility-pattern/" data-id="cm1m3o1c700nzuppqsmqr85ef" data-title="C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-chain-of-responsibility-pattern/" data-id="cm1nhohf500nz6epqk81em5jd" data-title="C++ 設計模式 - 責任鏈模式 Chain of Responsibility Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -396,7 +469,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-memento-pattern/" data-id="cm1m3o1c700nyuppqiov923cw" data-title="C++ 設計模式 - 備忘錄模式 Memento Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-memento-pattern/" data-id="cm1nhohf500ny6epqthdr7w7j" data-title="C++ 設計模式 - 備忘錄模式 Memento Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -465,7 +538,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm1m3o1c600nxuppq5sj2z78t" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-mediator-pattern/" data-id="cm1nhohf400nx6epq8s4vkq62" data-title="C++ 設計模式 - 中介者模式 Mediator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -532,7 +605,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm1m3o1c600nwuppqw3qd10di" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-iterator-pattern/" data-id="cm1nhohf400nw6epqnodcrexd" data-title="C++ 設計模式 - 迭代器模式 Iterator Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -602,7 +675,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm1m3o1c500nvuppqhwll2qdg" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-state-pattern/" data-id="cm1nhohf300nv6epqcx3q4nf2" data-title="C++ 設計模式 - 狀態模式 State Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -674,7 +747,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm1m3o1c500nuuppqio218t31" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-facade-pattern/" data-id="cm1nhohf300nu6epqzdr8pn1w" data-title="C++ 設計模式 - 門面模式 Facade Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -752,85 +825,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm1m3o1c400ntuppq4sjkzecq" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpp-adapter-pattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/cpp-adapter-pattern/" class="article-date">
-  <time datetime="2024-09-01T12:00:00.000Z" itemprop="datePublished">2024-09-01</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C-C-教學/">C/C++教學</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/cpp-adapter-pattern/">C++ 設計模式 - 轉接器模式 Adapter Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-        <!-- ads-1 -->
-        <div id="ads-1">
-  <ins class="adsbygoogle"
-    style="display:block"
-    data-ad-client="ca-pub-8106207149031244"
-    data-ad-slot="4194519399"
-    data-ad-format="auto"
-    data-full-width-responsive="true"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-        <!-- ads-1 -->
-        <p>當你旅行時，面對世界各地形形色色的插座，每個國家的插座形狀和電壓都可能不一樣，而你只帶了一台手機充電器。如果沒有一個合適的插頭轉接器，你的電子裝置將無法使用，例如台灣手機充電器帶去歐洲不能直接使用，接上了轉接頭就可以使用了。這個轉接器的角色就像是軟體開發中的轉接器模式 Adapter Pattern。在軟體開發中，我們經常需要整合不同的系統或使用第三方函式庫。但有時這些系統或函式庫的介面與我們的程式碼不相容。轉接器模式它的功能在於讓兩個原本不相容的介面協同工作，讓你可以在不更改既有程式碼的情況下，輕鬆地整合不同的系統或類別。  </p>
-<h2><span id="什麼是轉接器模式">什麼是轉接器模式？</span></h2><p>轉接器模式是一種結構型設計模式，它將原本介面不相容而不能一起工作的類能夠協同工作。簡單來說，轉接器就像是一個轉換器，將一個類的介面轉換成客戶端所期望的另一種介面。  </p>
-<p>這種模式讓原本不相容的類可以一起工作，而無需修改它們的原始碼。它在我們需要使用一個現有的類，但是其介面與我們的需求不匹配時特別有用。  </p>
-<p>轉接器模式通常用於解決因現有程式碼無法修改或類別不相容而導致的整合問題。加入轉接器後，我們可以在不更改既有類別的情況下，實現介面的一致性，達到程式碼的複用性和擴展性。  </p>
-<p>轉接器模式通常包含以下角色：  </p>
-<ol>
-<li>目標介面（Target）：客戶端所期望的介面。  </li>
-<li>轉接者（Adaptee）：需要被轉接的類，它有著不相容的介面。  </li>
-<li>轉接器（Adapter）：將轉接者的介面轉換為目標介面的類別。  </li>
-</ol>
-<h2><span id="轉接器模式在json到xml轉換中的應用">轉接器模式在JSON到XML轉換中的應用</span></h2><p>讓我們用一個例子來理解轉接器模式：JSON到XML的資料格式轉換。  </p>
-<p>假設你正在開發一個系統，這個系統需要處理XML格式的資料。但是你發現有一個非常好用的第三方函式庫，可以提供你所需的所有資料，唯一的問題是這個函式庫輸出的是JSON格式。這時就可以使用轉接器模式幫助我們解決這個問題。  </p>
-<p>讓我們用程式碼來模擬這個場景：  </p>
-<p>首先我們定義目標介面（XML資料提供者），<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">XMLData</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getXMLData</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>然後我們有一個現有的類（JSON資料提供者），它的介面與目標介面不相容，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSONData</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getJSONData</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"&#123;\"name\": \"John\", \"age\": 30&#125;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>現在我們建立一個轉接器類，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">JSONToXMLAdapter</span> :</span> <span class="keyword">public</span> XMLData &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    JSONData* jsonData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    JSONToXMLAdapter(JSONData* data) : jsonData(data) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">getXMLData</span><span class="params">()</span> override </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> jsonData = <span class="keyword">this</span>-&gt;jsonData-&gt;getJSONData();</span><br><span class="line">        <span class="comment">// 實際的JSON到XML的轉換邏輯</span></span><br><span class="line">        <span class="comment">// 為了簡化，我們只做一個模擬的轉換</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> xmlData = <span class="string">"&lt;person&gt;&lt;name&gt;John&lt;/name&gt;&lt;age&gt;30&lt;/age&gt;&lt;/person&gt;"</span>;</span><br><span class="line">        <span class="keyword">return</span> xmlData;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>最後客戶端（使用者）可以這樣使用，<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    JSONData* jsonData = <span class="keyword">new</span> JSONData();</span><br><span class="line">    XMLData* xmlData = <span class="keyword">new</span> JSONToXMLAdapter(jsonData);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"XML Data: "</span> &lt;&lt; xmlData-&gt;getXMLData() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> xmlData;</span><br><span class="line">    <span class="keyword">delete</span> jsonData;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在這個例子中，<code>JSONToXMLAdapter</code> 類扮演了轉接器的角色。它實現了 <code>XMLData</code> 介面，同時內部持有一個 <code>JSONData</code> 物件。當呼叫 <code>getXMLData()</code> 方法時，轉接器會先取得JSON資料，然後將其轉換為XML格式，從而實現了從JSON到XML的轉換。  </p>
-<h2><span id="轉接器模式的優缺點">轉接器模式的優缺點</span></h2><p>轉接器模式的一個顯著優點是，透過使用轉接器我們可以讓原本不相容的系統或類別協同工作，而無需修改它們的原始程式碼。這在處理第三方庫或舊系統時特別有用，因為我們通常無法直接修改這些程式碼。另外轉接器模式還遵循了開放封閉原則，允許我們引入新的轉接器而不會破壞現有的程式碼。  </p>
-<p>轉接器模式也有缺點。它增加了系統的複雜性，因為引入了新的類和介面。在某些情況下，過度使用轉接器可能會導致程式碼難以理解和維護。由於轉接器模式涉及到不同類別介面之間的轉換，這可能會導致一些性能開銷，特別是在大型應用中，頻繁的介面轉換可能會對系統的效能產生影響，因為它在原介面和目標介面之間增加了一個間接層。  </p>
-<h2><span id="總結">總結</span></h2><p>轉接器模式是一種強大的工具，讓我們可以輕鬆地解決系統整合和類別不相容的問題。透過這種模式我們能夠在不改變既有程式碼的前提下，加入新功能或整合外部系統，從而提高系統的靈活性和可擴展性。然而在使用轉接器模式時，也需要考慮到其可能帶來的效能消耗和程式碼複雜性問題。但在許多情況下，轉接器模式帶來的靈活性和複用性遠遠超過了這些小缺點。作為一個優秀的軟體工程師，了解並正確使用轉接器模式可以幫助你更好地處理現實世界中的各種介面不相容問題。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://shengyu7697.github.io/cpp-adapter-pattern/" data-id="cm1m3o1c400nsuppqqpxzccql" data-title="C++ 設計模式 - 轉接器模式 Adapter Pattern" class="article-share-link">Share</a>
+      <a data-url="https://shengyu7697.github.io/cpp-composite-pattern/" data-id="cm1nhohf200nt6epqin3qq7nt" data-title="C++ 設計模式 - 組合模式 Composite Pattern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-C/">C/C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/設計模式/">設計模式</a></li></ul>
@@ -877,6 +872,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul>
         
           <li>
+            <a href="/anti-pattern/">反模式：常見的不良設計實踐</a>
+          </li>
+        
+          <li>
             <a href="/technical-debt/">軟體開發常見陷阱：技術債累積過多</a>
           </li>
         
@@ -890,10 +889,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
           <li>
             <a href="/interface-segregation-principle/">設計原則 - 介面隔離原則 Interface Segregation Principle</a>
-          </li>
-        
-          <li>
-            <a href="/liskov-substitution-principle/">設計原則 - 里氏替換原則 Liskov Substitution Principle</a>
           </li>
         
       </ul>
@@ -912,7 +907,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="widget-wrap">
     <h3 class="widget-title">分類</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/軟體開發/">軟體開發</a><span class="category-list-count">2</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Arduino/">Arduino</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C-C-教學/">C/C++教學</a><span class="category-list-count">221</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Github/">Github</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git教學/">Git教學</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/OpenCV教學/">OpenCV教學</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/PHP教學/">PHP教學</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python教學/">Python教學</a><span class="category-list-count">239</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Qt教學/">Qt教學</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/軟體開發/">軟體開發</a><span class="category-list-count">3</span></li></ul>
     </div>
   </div>
 
